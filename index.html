@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Computer Vision — Study Notes</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      padding: 4rem 1.5rem 2rem;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header p { color: var(--muted); margin-top: 0.5rem; }
+    main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 4rem;
+      display: grid;
+      gap: 1rem;
+    }
+    a.card {
+      display: block;
+      text-decoration: none;
+      background: var(--card);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      color: var(--text);
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    a.card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+    a.card h2 { font-size: 1.15rem; color: var(--accent); }
+    a.card p { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 2rem 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Computer Vision</h1>
+    <p>Study notes, deep dives &amp; session guides</p>
+  </header>
+  <main>
+    <a class="card" href="cv_web_1.html">
+      <h2>CV Webinar 1 — Image Processing Techniques</h2>
+      <p>Foundations of image processing</p>
+    </a>
+    <a class="card" href="CV2_DeepDive.html">
+      <h2>CV Chapter 2 — Deep Dive Study Guide</h2>
+      <p>Detailed chapter 2 walkthrough</p>
+    </a>
+    <a class="card" href="CV_Session3_WorldClass.html">
+      <h2>CV Session 3 — Low Level Vision</h2>
+      <p>BITS Pilani WILP</p>
+    </a>
+    <a class="card" href="CV_Session4_WorldClass.html">
+      <h2>CV Session 4 — Edge Detection &amp; Low-Level Vision</h2>
+      <p>Edge detection techniques</p>
+    </a>
+    <a class="card" href="CV_assignment1_1_1%201.html">
+      <h2>Assignment 1 — Executed Notebook</h2>
+      <p>CV assignment 1.1.1</p>
+    </a>
+  </main>
+  <footer>
+    Computer Vision · M.Tech SEM2
+  </footer>
+</body>
+</html>
