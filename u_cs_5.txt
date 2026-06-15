@@ -1,0 +1,1021 @@
+Computer Vision (S2-25_AIMLCZG525) - Prof. Dhruba Adhikary-20260530_103250-Meeting Recording
+May 30, 2026, 5:02AM
+4h 0m 0s
+
+Dhruba Adhikary . started transcription
+
+Dhruba Adhikary .   0:13
+Okay, good morning everyone. Am I audible?
+
+NIKHIL V. KAPRE .   0:19
+Yes.
+
+B. KRISHNA MOHAN .   0:20
+Good morning, sir. Yes.
+
+SUJOY SAHA .   0:22
+Yes, sir.
+
+Dhruba Adhikary .   0:22
+Good. Okay, so I already see 2 hands raised up. Shashwat, please go ahead. What's your query?
+
+RISHABH AGNIHOTRI .   0:24
+Morning, sir.
+
+SHASHWAT JAIN .   0:32
+Sir, I have a doubt about the assignment submission. So do all the group members have to submit the same file or just a single file will be if necessary?
+
+Dhruba Adhikary .   0:35
+Haan.
+No, you submit, you submit as a group, you submit as a group.
+
+SHASHWAT JAIN .   0:44
+Okay, Sir, so just a one person is required to submit a file, right?
+
+Dhruba Adhikary .   0:48
+For the entire group, yes.
+
+SHASHWAT JAIN .   0:51
+Okay, so the thing is when one of my group member submitted, so it doesn't show shows that all of the members have submitted.
+
+DHOLE JAYDEEP APPASAHEB .   1:02
+Right, for us it is still showing need to be submitted.
+
+SHASHWAT JAIN .   1:03
+On capital.
+
+Dhruba Adhikary .   1:07
+Okay, let me check with operations on that and as well as with the TAS like how they have configured it, okay, just give me till today end of day, okay, I will check with the ops team and get back to you on this, okay, in the meanwhile, like.
+
+SHASHWAT JAIN .   1:20
+Stop.
+
+Dhruba Adhikary .   1:26
+Please do raise all of these concerns right on the discussion page. Okay, so even when you write a mail, the discussion page and the emails, right, they are continuously being monitored by the TAs. Okay, so sometimes the emails may get lost, but on the discussion page, right, I pretty much login.
+
+SHASHWAT JAIN .   1:31
+Okay.
+
+Dhruba Adhikary .   1:47
+To the portal everyday, right? So I will see that and I will respond to it immediately or make the DS respond to it immediately. Okay, Shashwat, and I will take care of this.
+
+SHASHWAT JAIN .   2:00
+okay, sure.
+
+NARAHARI MANIDEEP .   2:01
+Yeah, about the video also Durupa, like where we submit the video.
+
+Dhruba Adhikary .   2:01
+Yeah.
+Yeah, for the video, we will publish an Excel sheet wherein you will just paste the link. It will be the same group selection page. Okay, in that, we will just be giving you an video. There will be an additional column video link assignment one wherein you can put the video link for your respective.
+Assignment group, OK.
+
+B. PRASANNA .   2:30
+Can we submit the video link in the PDF? Can we submit the video link in the PDF itself and then?
+
+NARAHARI MANIDEEP .   2:31
+But the street is not yet public now.
+
+AYUSH KUMAR GUPTA .   2:40
+Currently, do the solution in the absence. It might possible that other folks can also.
+
+B. PRASANNA .   2:45
+Yeah, correct. So we will embed it in the PDF, Sir.
+His screen is frozen.
+
+NIKHIL V. KAPRE .   3:02
+Doesn't harm to actually additionally submitted in the PDF as well.
+
+B. PRASANNA .   3:05
+Yeah, correct. Correct. I agree.
+
+AYUSH KUMAR GUPTA .   3:10
+Yeah, I also have to read the video.
+
+B. PRASANNA .   3:11
+And also all of us can submit that one PDF in irrespective Taxilla, then only one person submitting and other people it will be not visible.
+Let them handle it eventually.
+
+Dhruba Adhikary .   3:33
+Hello, am I audible?
+
+NARAHARI MANIDEEP .   3:34
+Like.
+
+NIKHIL V. KAPRE .   3:37
+Yes, sir.
+
+Dhruba Adhikary .   3:37
+Sorry, hello.
+
+NARAHARI MANIDEEP .   3:38
+Kabhi ho raha.
+
+B. PRASANNA .   3:38
+Yes, sir.
+
+Dhruba Adhikary .   3:39
+Yeah, sorry, I had lost you guys a bit in between. So yeah, Mandeep, you were saying something.
+
+NARAHARI MANIDEEP .   3:46
+Yeah, that Excel sheet link is not yet here, sir, the Excel sheet which you are talking.
+
+Dhruba Adhikary .   3:50
+Yeah, I will share it. I will share it. Ask the TS to share it today, okay?
+
+NARAHARI MANIDEEP .   3:55
+Okay, sir, thank you.
+
+AYUSH KUMAR GUPTA .   3:56
+But if we put the video link in the Excel sheet, it might be possible that other folks can also look at our negatives.
+
+B. PRASANNA .   4:05
+So.
+
+Dhruba Adhikary .   4:06
+So yeah, let others see, right? Ayush, what's the harm in that, right? Your peers learning from you, right? But at the same time, right?
+
+AYUSH KUMAR GUPTA .   4:14
+No, but you mentioned the reason like reason policy.
+
+Dhruba Adhikary .   4:19
+So plagiarism policy is definitely there. So we will be publishing the video link once the assignment link is closed. That is why that link has not yet been pasted, right? So once the assignment deadline passes, after that all of you will have 48 hours or 24 hours.
+
+AYUSH KUMAR GUPTA .   4:28
+Okay, that's good.
+
+Dhruba Adhikary .   4:37
+Depending on the Ts discretion within which time you will be uploading your like video links. Okay, Ayush.
+
+B. PRASANNA .   4:46
+So can we embed those video link in the PDF and then submit it? That is what we were planning to do as well, in addition to the video link that is you will be sharing the Excel sheet, right?
+
+Dhruba Adhikary .   4:54
+So you can do that, but it is just like copying it from a PDF and then pasting it. Sometimes it becomes a bit troublesome, right? So it is just that in an Excel sheet, the video link is more easier accessible to the TAS. They can just click it, open your group submission, click on the link.
+In an Excel side by side and they can evaluate you. It is just faster and cleaner, Prasanna.
+
+B. PRASANNA .   5:18
+Right, sir. Thank you.
+
+Dhruba Adhikary .   5:20
+Okay, Shubham, your query please.
+
+AYUSH KUMAR GUPTA .   5:21
+There is one more clarification.
+
+Dhruba Adhikary .   5:24
+Just a second, I think. Yeah, please tell me, Ayush.
+
+AYUSH KUMAR GUPTA .   5:25
+Hello.
+Yes.
+Sir, I just submitted the Google collab. So last class you mentioned that you can also submit Google Collab. Sorry, I think there is no right? Okay, thank you.
+
+Dhruba Adhikary .   5:30
+Hello.
+MM.
+Yeah.
+Yeah, as long as it is in IPYNB format, that is fine by me. Okay, so collab, just make sure that whatever you submit right is accessible, right? So by default, when you click on collab, right, you need to access request access to you, right? That becomes problematic, right? The TAS won't request access, they will say like okay, I cannot see it, I do not see it.
+
+AYUSH KUMAR GUPTA .   5:48
+Yes, it is.
+
+Dhruba Adhikary .   6:06
+And also if it is in your personal Colab, right, you can go ahead and make edits even after submission date, right? So that's why from Colab download as IP1P and submit. Yeah, that's fine. That's fine. Yeah. Shubham, your question please.
+
+AYUSH KUMAR GUPTA .   6:14
+Now we download it. Yeah, see it.
+
+SHUBHAM PATRA .   6:23
+Yeah, thank you, Sir. Sir. Actually, I have added 2 screenshot that there is a mention that in that assignment sheet that we can run in colab as well. So I have added 2 screenshot that in the colab successful run in inside inside in the HTML and the PDF itself where.
+
+Dhruba Adhikary .   6:32
+Okay.
+Hey.
+
+SHUBHAM PATRA .   6:42
+I have just shown that this is my BIDS ID, so this has run successful, so that's proof I have given. So will that get any problem when I upload that HTML, it is showing properly with all the results.
+
+Dhruba Adhikary .   6:46
+Okay.
+No, not really. Its fine. Its fine. Sure, its fine.
+
+SHUBHAM PATRA .   6:56
+It's fine, right? OK, fine. And another thing is that although it is mentioned in the assignment sheet, clearly that we will submit only the PDF and HTML, but I think Ayush was asking something related to the IPND file, I mean notebook format. So do we really need to upload? Do we need to upload to notebook file?
+
+Dhruba Adhikary .   7:06
+Okay.
+Yeah, that's also part.
+
+SHUBHAM PATRA .   7:16
+Because there is only one option to approve only one final in assignment submission page.
+
+Dhruba Adhikary .   7:21
+So no. So here is my take, right? I really do not reinforce people to like convert to IPYNB or HTML or PDF, right? Whatever is convenient for you, which I can evaluate, I will accept it. Only one file is needed at the end of the day.
+Okay, whatever be your choice.
+
+SHUBHAM PATRA .   7:39
+So as per instruction, if I as per as per instruction, if I upload the HTML, then that will suffice, right?
+
+Dhruba Adhikary .   7:46
+That is sufficient. That's fine. Okay, we will take last 2 questions. Yeah, please ask.
+
+SHUBHAM PATRA .   7:50
+Thank you. Thank you.
+
+AYUSH KUMAR GUPTA .   7:54
+Sir, just a last query.
+Yeah, sir, we have a desktop or snapshot of the processing image and data setting is it looks like we are overshooting the file size. It's more than 10 minutes, so I returned the file size and removed the sum of.
+So I will be showing the only 2 images.
+So will that be any concerning and also we have we have a...
+
+Dhruba Adhikary .   8:27
+Generally, do not remove. Generally, do not remove any information, download it as an IPYNB and then you compress it using the I love PDF or any format that you want. So generally do not remove information, Mani Deep. Okay, we are interested in seeing.
+
+AYUSH KUMAR GUPTA .   8:45
+It is information.
+
+NARAHARI MANIDEEP .   8:47
+Sure.
+Sir, just to confirm, like tell me wait till your announcement of submitting in Taxila or only one person should upload for a group in Taxila, right?
+
+AYUSH KUMAR GUPTA .   8:50
+Right.
+
+Dhruba Adhikary .   8:58
+Only one person, any one of you within the group can submit in Pakshila. Okay, I will take care of it today itself, right? I will complete that today. Okay, Mani Deep, lets connect post the session. We will see if everything looks good.
+
+NARAHARI MANIDEEP .   9:07
+Okay, sir, thank you. Yeah, thank you.
+
+Dhruba Adhikary .   9:16
+I'll let you know if there are information missing. I'll let you know also. OK, is that does it sound good enough?
+
+NARAHARI MANIDEEP .   9:23
+Okay, sir, thank you. Yes, sir, thank you.
+
+Dhruba Adhikary .   9:27
+Okay, so now there is one announcement, right? So for the last semester, right, that I was taking for computer vision, right? Some students were living in the Gulf area and have been adversely affected by the war scenario, right now.
+As such, they are continuing the course with you currently, right? But they have given a special makeup examination which has happened last week, provided they become eligible, right? They no longer need to attend the classes anymore, right? But however, some of these students have been grouped into year.
+Groups right? Like and as such, they may not be contributing, right? So in that case in the video, just whoever is contributing, just be present, explain your part, and that's it, right? We will mark accordingly. Okay, so that's the only announcement that I have. There is, I would say, like.
+Either way, like if they become eligible for the next semester, they will actually have their marks and they do not need to submit the assignment. If in case you do not become eligible and you are not contributing to the assignment, you are graded as zero. That's simple as that.
+OK, is that clear everyone? So on the video, I expect to see 5 of you or 4 of you. How many of you are in the group? I expect to see your faces. OK, it is just to ensure that we can mark you accordingly.
+Okay, so with that we will start with today's session. Let me put this in slideshow. Yeah, Nikhil.
+
+NIKHIL V. KAPRE .   11:08
+Sorry for that last minute disturbance. The face is necessary. We recorded the video but we did not. We just kept the videos off. Is that okay or no? You want to see our faces?
+
+Dhruba Adhikary .   11:20
+That's fine. Can I see the names over there, Nikhil, like that's fine, that's fine, that's fine. As long as within the group there is no discrepancy that I am, I will readapt my instruction as long as I see the people who are present in the group present in the video also.
+
+NIKHIL V. KAPRE .   11:21
+That's nice. Yeah, names will be visible. Absolutely, absolutely, absolutely. Okay, fair enough.
+Sure.
+
+Dhruba Adhikary .   11:40
+All of them get marked, okay?
+
+NIKHIL V. KAPRE .   11:41
+So we just recorded a Google Meet, everyone logged in and just handed it as they spoken. You know, that's fine. Okay, sure. Perfect. Thanks so much.
+
+Dhruba Adhikary .   11:44
+That's fine.
+That's fine. That's perfectly fine. No fancy stuff needed, okay? Just you explaining your code and your contributions, okay?
+Let me bring up my pen. OK, so in our previous session, we studied about OK.
+XP pen tablet.
+Just one second, please.
+Okay, so in our previous session, we had studied about edge detection, right? Edge and line detection, right? We saw how they form as a fundamental low level vision, right? So how they help a computer system understand the fine grained features and from this.
+How do we construct like say textures and from this textures we can create patterns and parts of objects? Okay, so as you go right, these constitute the lower level of vision right now.
+Another important aspect of low level vision is Harris Corner detector, right? And with that we will start also mid level vision. Okay, so how do we take this features basically Harris Corner detector, edge and line low level vision?
+And how can we go for full blown detection or how can we go for full level like analysis or detection, localization, those sort of things, right? So in today's session, we will study about Harris Corner detection and then we will see histogram of oriented gradients, OK?
+So first and foremost, right? So what is a corner, right? A corner, basically, remember, is a point where intensity changes in multiple directions. Okay, so that is a corner. So in this particular case, this point is a corner because over here the intensity is changing along, say, for instance, X axis.
+And Y axis. Similarly, this is also a corner because it is changing along X&zz&y&zx&y obviously, right? So this is again a corner. Now, corners typically help in motion detection, as you can see in the GIF, right?
+Corners can, once you detect corners right as you move towards them or away from them, their position seems to kind of change. So corners are very critical in order to understand the apparent motion of an object and hence they are one of the critical algorithm pieces.
+Within your modern day ADAS systems, right? So in your ADAS, basically what you do first and foremost, you detect the lane, right, which is just line detection. And post that, if you are turning or if a certain object is coming on the road or something, right, you will detect corners and you will find out, okay.
+Am I moving towards it? Am I moving away from it? And accordingly apply clicks. There are no advanced systems in play in ADAS or anything. It is simply like corner detection, edge detection, and all those sort of things, right? So corner detections basically are corners are basically.
+Areas where intensity changes along multiple directions at the same time and they help us in detecting the apparent motion of an object. Okay, so as I said, right, they can be useful in object recognition, image matching, feature tracking.
+Camera calibration, 3D reconstruction, robotics, AR, OCR, video compression, motion analysis. So out of most of the applications are around video analytics, right? So if anyone is studying video analytics, this is the crux of video analytics, right? Wherein you will do camera calibration, 3D reconstruction of objects, robotics.
+And augmented reality, everything depends on your corner detection. Okay, so basically, yeah.
+
+DESHMUKH HRISHIKESH ACHYUT .   16:18
+Sir.
+To interrupt, Sir, sorry, actually you said that there are no fancy stuff in ADA system, just corner detection is there, right? Okay, so it's apart from our course or study, I'm asking if all the companies, most of the companies, okay.
+
+Dhruba Adhikary .   16:30
+Yeah.
+
+DESHMUKH HRISHIKESH ACHYUT .   16:42
+More Automobile companies have implemented already adapt systems. Okay, so what will be the scope in future in this section? Because only corner detection algorithm and this already existing stuff is being used in that particular area or domain.
+So.
+
+Dhruba Adhikary .   17:01
+So basically, since you asked this, right, ADAS is not just like we have achieved ADAS, right? Complete autonomous driving systems. No, ADAS is divided into multiple levels: level one ADAS, level 2 ADAS, level 3 ADAS, 4.
+5 and 6, most of modern cars within India or probably in Europe, right? They are at max Idas 2 and Idas 3. There is still a long way to go. We have hit a bottleneck, right? So basically Idas one is basically using like line detection, we use something called as.
+
+DESHMUKH HRISHIKESH ACHYUT .   17:30
+Right, sir, yes.
+
+Dhruba Adhikary .   17:39
+You will see it, we use orb, but we will be studying a variant, low level variant of it within our next session, which is SIFT. Like SIFT stands for Scale Invariant Feature Transform, right? So we will be studying about it. OK, you have SIFT, then you have based on SIFT, you have stereo vision.
+Okay, you have monocular vision, okay, you have N number of use cases, right? These methods they do not need any kind of deep learning algorithms. They are simply based on SIFT and corner detection, edge detection, so on and so forth. Okay, now level 2.
+Is where things get interesting. In level 2, you have faced like Tesla is modern day deep learning based network, right? But mostly they will go for mechatronics based system. So still we are in phase 2 stage, right? So mostly.
+They are simplistic algorithms because the reason being on your cars you cannot mount a GPU yet. Okay, only electric cars have that provision. They only have that kind of a power capability that can supply power to a GPU so as to run your deep learning algorithms. That's hence Tesla.
+Okay, or any electric car as such, right? And even for Mahindra, the mass battery power can power a deep learning algorithm. But in most of the cars, right, you do not have sufficient battery power. You need to rely on like techniques that you will study up until your 8th session.
+Right, no fancy deep learning stuff within your cars yet, I would say. Does that answer the question?
+
+DESHMUKH HRISHIKESH ACHYUT .   19:27
+Yes, sir. Yes. Thank you so much.
+
+Dhruba Adhikary .   19:29
+Great, OK, so we will be doing corner detection using multiple techniques, but from your curriculum perspective, we are gonna study about Harris corner detector, OK, which is kind of a local detector. You also have a global corner detector called as a Sheetamadasi corner detector, OK.
+But we that is not within the scope, right? So using corner detection, right? We primarily do our first stages like camera calibration, we detect apparent motion, right? Like as you could see in the image, right? Once you detected the corner, right, as you go towards it, the corner kind of ship.
+Right from viewers perspective, from my perspective, we call this as parallax and it is part of epipolar geometry, right, that we studied, right. So it helps us in detecting motion, right, where we are going, right. So in Harris Corner detector, right, it was an algorithm developed in 1988.
+By see Harris and Stephens right and Harris corner detector not only tells you whether a particular point is a corner or not, OK, it can also tell you the location of edges and flat areas as well, OK.
+It can tell you about edges, corners, and flat areas, all 3 within one algorithm. Okay, so corners are basically like positions, okay, wherein intensity changes in multiple directions. Okay, so over here, this is a corner.
+This is a corner. This is a corner. This is a corner. This is a corner. This is a corner. Intensity is changing along multiple directions. Corners are also places where 2 edges intersect. Okay, so when 2 edges intersect.
+It is called as a corner.
+Okay, because as you can see over here, intensity is dramatically changing, right? This black line, this is again an edge, right? Again, intensity is changing and where 2 intensities are intersecting, we call them as a corner. Okay, any questions, queries? Aishwarya, you have your hand raised.
+
+G M AISHWARYA .   21:56
+Professor, you were mentioning that we recognise motion using corners. Doesn't this assume that the objects we are observing are rigid bodies?
+
+Dhruba Adhikary .   22:01
+Yes.
+
+G M AISHWARYA .   22:09
+For small pockets like water, how does this work? Because they don't have corners.
+
+Dhruba Adhikary .   22:09
+Doesn't get.
+I can explain that actually, but that is completely a detailed discussion that needs to be had. So it involves something called as parallax like which is apparent motion from the eye and you also need to understand epipolar.
+Geometry, so in itself it is a topic, so it will be covered during your webinars, Aishwarya.
+
+G M AISHWARYA .   22:46
+OK, I will try to look up by myself also.
+
+Dhruba Adhikary .   22:46
+Is that OK?
+Okay, sure. And we can connect post session if you want. Okay, we can connect, okay. But as I was asking, is this definition understood? Like what are corners? Corners are basically areas where intensity changes along multiple directions and they can also be defined as areas where 2 edges intersect.
+
+G M AISHWARYA .   22:54
+Okay.
+
+Dhruba Adhikary .   23:11
+Okay, now.
+How do we detect a corner, right? So, say for instance, you have this image, right? You have this image, right? And we take a small pixel, a small box, right? A window pixel candidates, like you can assume it to be a 3 cross 3 window, right? Assume it to be a 3 cross 3 window, right? So this.
+3 cross 3 window, right? I will move it across the image, right? Like in convolution, right? I will take this, I will move it in this direction, move it in this direction, right? And I will try to find where is the intensity changing like we were doing in case of edge detection, right? In case of edge detection, we were having an image.
+And we are having kernel and we were moving that kernel and we were calculating the gradients, right? Gradients along X direction, gradients along Y direction, Z direction, so on and so forth, right? And accordingly, in this particular case also, we are gonna do the same thing. We are gonna take a kernel and we are gonna move it across the image, right?
+And using that kernel, we are gonna find out whether a particular point or whether a particular area is a corner, edge, or a flat area. Okay, so how do we do that, right? Lets define it, right? So, say for instance, I am moving this kernel across my image, right?
+So over here, within this area, there is no intensity change, right? It is plain white colour, correct? Assuming right, we have Gaussian smooth and red, right? So first and foremost, you did a Gaussian filter on top of the image, so it became smoother and you move the.
+Kernel on top of this image in this particular area, right, there is no intensity change. The areas that have no intensity change in any direction, they are called as flats. Okay, now in case we move this window and we see an intensity change, but that intensity changes.
+Along a specific direction, right, along the edge direction, then we call it as an edge right over here in one direction only the intensity changes happening, OK. But when we come to this particular area, right, intensity is changing along this direction and along this direction as well.
+So this is called as a corner. OK, now that we have defined our scenarios, right? OK, we have the basic idea, right? We have the basic idea that we will take our kernel and move it across the image, right? Anywhere where intensity changes.
+Right is either my edge or my corner, okay. If it is changing in only one direction, it is an edge. If it is changing in more than one direction, it is an corner. Anywhere it does not change, it is a flat area. Okay, so we go about taking this right and we move it.
+This kernel right by a very small distance along X axis and Y axis, right? So we move it along X axis by U and along Y axis by V. Okay, so we are gonna move this right? And as we defined like wherever there is no change in intensity, it is a flat area.
+One direction change in intensity, it is an edge. Multiple directions, we call it as corners, right? So with that in mind, right, every time we move the kernel, right? So this is my image and this is my kernel, right, that I am moving, right?
+So first it was here, then it was here, right? It moved by a distance along X axis by U, along Y axis by V, right? So first and foremost, I will take this windowing function W of X comma Y, OK, and I will find out.
+OK, within this intensity, right? Once it was over here, now it is over here. So this was my earlier intensity, right? So say this point was intensity at X comma.
+Y correct. Now I have shifted it right by U comma V in X&y axis to what is the intensity at X plus U comma Y plus V right? So I will take the intensity difference like as we take in derivatives right?
+So I will take the intensity difference I intensity of X plus U comma Y plus V minus I of XY right and I will multiply it with the function right kernel whatever value. So ideally if the kernel is say you know right by 111111.
+One one right, it is one. If you want to start with a different kernel, right, wherein you want to amplify everything, you start with 22222, right? It is your choice. So you have a kernel, okay, so accordingly you define the change in intensity value along.
+X&Y axis, right? So you have a windowing function, you have a shifted intensity value at this particular point minus the original intensity point. OK, so you take the intensity values accordingly, right? Now you have this particular expression, right?
+Now let us expand this right now, this expression minus this right is some sort of a Taylor series, right? So in Taylor series, what happens intensity of I of X plus U comma Y plus V can be written as I of X comma Y plus delta I.
+By delta X, OK, partial derivative of I with respect to X, partial derivative of I with respect to Y, right, multiplied with U&v, and you have higher order terms like second order derivative, right? Then you have 3rd order derivatives, right? You have.
+All of that right infinite series. But since U&v are small, right, so my second and 3rd order derivatives are gonna be really small. So I am gonna approximate that this is my overall expression, right? So I can write I of X plus U, comma Y plus V as I of XY.
+Plus delta I by delta X right multiplied with U delta I by delta Y multiplied with V. So this can be written as I of XY plus I of XY. Okay, I am just writing it as a shorthand right? Del I by del X as I of X.
+OK, multiplied with UV, right? I have just written it in a mathematical format. Now I will just take this value and replace it over here, right? I have XY plus IX into U plus IY into V, right? Same thing I have written over here.
+Okay, minus I of X square, right? So this and this term gets cancelled. What we have at hand is a quadratic equation.
+Okay, is it clear so far what we are doing?
+Everyone, is it clear?
+Yes, no, anything.
+Okay, I will see a thumbs up. Okay, I will proceed in that case. Okay, now since it is a quadratic form, right, we can solve it. Okay, so I will just expand it, right? So IX square I am writing as a okay IY square, I am writing it as C.
+Okay, and 2 IXIYIX multiplied with IYI am writing it as B multiplied with UB, right? Standard expansion of A plus B whole square, whole square, okay.
+So it is a standard expansion, right? And I am approximating right A, B&c, right? So I can write this in an Haitian form, right? It is a quadratic form, right? So a U square plus 2 BUV plus CV square, right? So if I write it in some sort of a Haitian format.
+Right UV multiplied with a matrix of Hessian matrix of A, Bbcu&v, where A is IX square, B is IXIY, OK, C is IY square.
+OK, so basically these are first order derivatives along XY direction squared and the B is basically partial derivative along X&Y axis. So what you get is a standard error, mean squared error kind of a thing, right? You get something like this a fold.
+Basically a convex kind of a fold. Now let us say I have an edge, right? So I have an horizontal edge, right? Wherein industry along X direction is basically zero, right? It is just changing from top to bottom, right? So over here, this will be the up.
+Approximate convex format of it. Now, if IX is basically zero, this term is zero, this term is zero, this term is zero. You only have IY square, so you are left with only C OK, and this is the value that you have. Similarly, if you have a vertical, right?
+IY equal to zero. So in that case, C is zero, OK, B is 0B is zero, only A remains, right? And you have a different kind of a format, OK, so.
+You can represent this as sort of an ellipse, right? So you can see over here this sort of represents an ellipse and basically the axis can be represented as eigenvalues since U of U comma V.
+Multiplied with the Hessian matrix, multiplied with the UV, right? Is basically a constant, right? So you can showcase it in form of eigenvalues, eigenvectors, right?
+Correct.
+Is this understood, everyone?
+Awful, quiet.
+Please explain again. Okay, Rishab, from where should I explain?
+
+RISHABH AGNIHOTRI .   34:13
+Sir, that gender case only eigenvalue swala like.
+
+Dhruba Adhikary .   34:18
+This one from here. Okay, so up until here, everyone understood right what we are doing. We are just taking intensity differences right to check for gradient values, right? So if my kernel is moving by U comma V, right?
+
+RISHABH AGNIHOTRI .   34:19
+yes.
+
+Dhruba Adhikary .   34:38
+Along x&y axis, right? So I will have the new intensity value of I of X plus UY plus V minus IXY which this particular piece I will expand using Taylor series. Okay, this particular piece I will expand using Taylor series. And what does Taylor series say?
+I of X plus U comma Y plus V can be written as it can be represented as I of X comma Y plus delta I by delta X multiplied with U plus delta I by.
+Delta Y multiplied with V plus higher order terms which we can safely ignore because V&U are very small. So ultimately when you multiply with V&U right, they are going to be even smaller, right? So you can almost ignore it, right? So ultimately what you have I of X comma Y.
+Plus you can write this entire term as say IXU, okay, I am just writing it as a shorthand, right? IYV, that's what we have done. So both of these terms, they cancel out and you are left with IXU plus IYV, which is basically IXU.
+Plus IYV squared. OK, now this is my standard quadratic equation, right? Where A is basically IX square, B is basically IXIY OK, and C is IY square. OK, is this clear everyone? I will proceed after that.
+Rishop, is this clear?
+Okay, great. So now.
+Whenever we have a quadratic equation, right? A quadratic equation can have real nonreal roots, right? It can have north number of solutions, correct? So we need to find the solution set for it wherein we can maximise intensity along a single direction or both the direction, right?
+So in that particular case, what do we do, right? So as you can see, right, this convex shape represents infinite number of possibilities, right, of U&v, right. So in this particular case, since I have to maximise for say, find out edges and corners, right, so edges are simpler, right? I know.
+Right. If my intensity is like zero along X axis, right, it is a horizontal edge, right? Intensity is changing vertically, correct? So in this particular case, my IX value is basically zero, which is an horizontal edge. And what happens if my IX is 0a is IX square, right?
+So it is 0B is basically IX multiplied with IY, right? That is zero, and C is IY square, that is not equal to zero.
+OK, that is not equal to zero. So in this particular case, you are left with a Hessian wherein all the 3 terms are zero and you have C and this is the form of it.
+OK, this is the form for it. OK. Similarly, if you have a vertical edge IY equal to zero, right? Only A remains, only A is non zero, correct? So you have a Hessian wherein like this is the form for it once it is represented.
+Okay, in case of IY, right? So since in 2 extreme cases, right, we have A and B. Yes, Raghavendra.
+
+RAGHAVENDRA S P .   38:28
+IX is the X axis right, which is the horizontal.
+
+Dhruba Adhikary .   38:34
+Yes, X.
+
+RAGHAVENDRA S P .   38:36
+So then.
+
+Dhruba Adhikary .   38:36
+And this is bye.
+Yeah.
+
+RAGHAVENDRA S P .   38:42
+Okay, when it is a, it needs to be horizontal which is on the horizontal.
+Okay, I just got confused with this.
+
+Dhruba Adhikary .   38:52
+No, So once you have this 2 values right, where A is non zero and C is non zero, those are 2 extremes, right? And you can also write what we are seeing, right? Ultimately, when we were using Taylor series, right, this was the form that we were exploring, right?
+So we can write it in this particular eigen value eigen vector format, right? Wherein this is very close to equal to UV, right? Row matrix multiplied with the Hessian multiplied with the column matrix UV. Okay, so accordingly, it can be demonstrated as an ellipse.
+Okay, like it can be broken down in terms of principal components and vectors, right? So the eigenvalues and eigenvectors, right? They represent those principal values and principal components, right? So say eigenvalues, they basically represent the axes of the.
+Ellipse right and lambda lambda one and lambda 2 basically show the direction of the change, correct? They show the direction of the change. So if it is changing along IX axis, this is lambda one, right? If it is changing along Y axis, right, this is lambda 2.
+Right, so this lambda one and lambda 2 basically eigen values and eigen vectors, right? So lambda minimum basically shows the direction of the slowest change. Lambda max shows the direction of the fastest change. That is how we break it down into eigen values and eigen vectors.
+OK, now in sense, right? What happens is that we know if both the directions right are large, right? Lambda one and Lambda 2, right? Lambda one and Lambda 2, both are huge.
+OK, that means we are in a corner. OK, what will happen? You will start to get something like a circular shape, OK? But if any of this right is larger than the other one, right?
+Anyone is larger than the other one, right? You will start getting an ellipse, okay? And that will showcase an edge, right? If either lambda one or lambda 2 are greater, they showcase an edge. And in case both lambda one and lambda 2 are small, right, we are in a flat region.
+We have encountered a flat region. So, Harris corner detector, what it basically does, it takes a kernel, it will move it over the image right by a small distance, right, and it will compute gradients, okay, it will compute the gradients, it will compute lambda one.
+And Lambda 2 eigenvalues and eigenvectors. And basically based on that, if it sees like both the values are large, it will say that, okay, it is increasing in all direction, right? The intensity is increasing or the error SD is increasing in all the directions. So it is a corner. If it is increasing on only one direction, it is an edge.
+And if it is not increasing at all, it is a corner, right? So how do we go about it? We compute the eigenvalues lambda one and lambda 2 right from this matrix tensor matrix, right? Which we saw right IX square IXYIXYIY square.
+Basically, A, B&c, right? So basically, we went ahead with a simpler form of it, right? Once we can write it in matrix format, right, we can derive some sort of a corner response function. How we do that? We have this matrix, right, wherein like we have the intensity and gradient at every point.
+So at a particular point we can calculate the determinant of that matrix OK and the trace of that matrix and we have a constant K now this K ranges between 0.04 to 0.06 OK so determinant is Lambda one multiplied with Lambda.
+2 basically right and traces lambda one plus lambda 2 sum of eigen values okay. So we can basically instead of calculating the gradient which as you know is a time consuming process, we directly take the product of the eigenvalues and the eigen vectors okay so.
+This is how it looks like, right? So if both lambda one and lambda 2 are small, you are at a flat area. If lambda one and lambda 2 either of them are large, right? One of them is large, right? You are at an edge and if they are both...
+Equally large, you are at a corner. OK, that's the ideation of it, right? So you can directly take the R right? Determinant is basically lambda one multiplied with lambda 2. Trace is lambda one plus lambda 2, correct?
+So basically, once you have the eigen values and eigen vectors, you can calculate this corner response function rather than calculating the gradient, okay? And in case r is greater than zero, it is a corner. If r is like less than zero, right, it is an edge.
+And if R is very small, 10 to the power -910 to the power -10, right? It is basically a flat area wherein there is no change in intensity values. OK, so this is how Harris corner detector will workout wherein you will see different points like I will show you using code as well.
+So the first and foremost step in Harris corner detection that you have to remember is filter the image with Gaussian, right? Because you are gonna find partial order derivative and if you have noise in that partial order derivative will be garbled, right? You then calculate the derivative along X direction, derivative along Y direction.
+And then you formulate the matrix M, right, which is basically A, Bb&c, right? And then you create the corner response function for this. OK, so let us take for example this particular image, right? so.
+You have a 4 cross 4 matrix, right? And you have to calculate the gradient at every point, right? So.
+Gradient at I of X1 comma one right over here. So we are taking this point.
+So let us take a 3 cross 3, right? This looks like a corner, right? Because intensity is changing along this direction and along this direction also, right? So you have one comma one.
+Sorry, my bad. This is the one right? Indensity is changing along. Let me take an error, Sir.
+OK, so one comma one.
+Okay, so this is one comma one, right? So intensity along X direction is 1 - 130, sorry.
+One comma 2, this is one comma 2. So there is some mistake in the slide. I would say one comma 2 is basically 130 -, 120 / 2. They are taking central difference. Why is that?
+Okay, yeah, I think that numerical was wrong.
+Let us ignore this, OK?
+This is wrong.
+Okay, so let us take this for example, right? We know this formula, right? How do we calculate gradient along X&y? We find out X plus one comma Y minus X of I of XY, right? Similarly, gradient along Y direction is I of X comma Y plus one minus I of XY.
+Right now lets take a simple 4 cross 4 right corner image right and you can see right 2 cross 2 right and down. So over here do you see this 520025200200 right over here intensity is suddenly changing.
+Right over here also intensity is changing, right? So row one to 2, right? So this and this, right? So lets find out right at 1:00 comma 150 -, 50, right? 50 -, 50 Okay, so we have zero.
+One comma 2 right? So we are numbering it 12341234 right? So one comma 2 right? So 50 -, 50 again right? Then again one comma 3 right? Intensity at 1:00 comma.
+3 right, so 200 - 200 is equal to zero intensity along X direction overall zero row 2 to 3 right? So over here right 200 -50, so I will continue to do this right and accordingly for this.
+4 cross 4 matrix, right? I'll have this.
+3 cross 3, right? So 000150, okay, 5200 50 is 15200 50 is 150 again, right? 200 200 is zero. Okay. Similarly, I will calculate it for GY also, right? 000.
+15150, right? So.
+If you see at your corner pixels, 2 comma 2 right over here, right? Both GX of 2 comma 2 and GY of 2 comma 2 are basically large, right? But let's go ahead and build it, right? So intensity along X direction, right? So how will you calculate?
+1515150 square, 150 square, right? 4500, right? I have calculated GX, right? Similarly, I will calculate GY right again, 4500 right? 2 comma 2, right? And B is basically 150 * 150.
+Right, IX multiplied with IY, correct? So 22500, I am finding it at a particular point, right? All of these values, okay, so this is my matrix. So now I can calculate the determinant of it, right? The determinant of it is this particular.
+Number. OK, so you have this minus this is a value and this is a trace, right? Multiplied with this and you have r equal to 10 to the power 9 when r is greater than zero, right? It is a corner.
+When R is like slightly less than zero, it is an edge, and when R is too small, right, it is basically a flat area. OK, so whenever you have an image right in your exams or anywhere, right, you will be given an image, right? It is your job to select an appropriate.
+Corner point, right? And accordingly, you will calculate the GX, the GY matrix, and then you will select a point, OK.
+Sorry, my bad. You will select the point A and accordingly calculate A, B&c, right? A is basically IX square, B is basically IXIYC is basically IY square, right? And then accordingly you will calculate the determinant.
+Trace and the Harris response function. Okay, so you can also do this using the kernel logic, right? As you can see, like pixel by pixel multiplication is time consuming and we had seen the kernel hack, right? So basically you have this matrix, you multiply it with the Sobel filter.
+Or Pruitt filter or a robot filter, whatever the question ask you, right? So 4 cross 4 multiplied with a 3 cross 3, right? Basically gives you this, right? So you take it at a particular point, right? So say for instance, you think this point is your corner point, right?
+So you will align the center with this particular point. Similarly, this particular point with the center over here. So at 2:00, comma 2 neighborhood rows 123, column rows 123, right? So 2 comma 2 right at 50, right? So these are the points 5052102100 so.
+What is IX at 2:00 comma 2? IX at 2:00 comma 2 is basically 450, IY at 2:00 comma 2 is basically 450 again. Similarly, you will calculate them at different points and this is what you will be left with. Okay, IX.
+At 2:00 comma 2 IY at 2:00 comma 2 IX 2 comma 3 IY 2 comma 3 and thereafter all the steps remain basically same. But rather than having to do like it by row by row and column by column, we just used a simple.
+Kernel logic to perform the gradient calculation. OK, is this clear everyone?
+Everyone, is this clear?
+Yes, no, anything.
+
+SUJOY SAHA .   53:26
+Yes, sir.
+
+Dhruba Adhikary .   53:29
+Okay, it is simple gradient calculation that we have done previously, right? What we are doing is we are extrapolating it to calculate a corner response function. That's it, okay.
+OK, so I have added more numericals over here for you to practice. OK, if you want, we will be taking them again during your revision sessions as well after your session 8. During your session 8, we will be taking this up OK again. In the meanwhile, if anyone has any questions queries, please ask.
+
+P RAGHAVENDRA .   54:08
+Sir, I don't see this topic in course content, course initial course content, Harris. I do not see this concept in course content document handover document.
+
+SHUBHAM PATRA .   54:09
+Set.
+
+Dhruba Adhikary .   54:14
+Sorry.
+No, it is there. It has been there since the start of the session. Maybe I'll have to see like it may be highlighted as low level vision, but I'll have to check. But it is definitely part of your course curriculum, Shubham.
+
+P RAGHAVENDRA .   54:23
+Okay.
+
+SHUBHAM PATRA .   54:39
+Yeah, yes, this is Shubham. Can I ask one question? I think that is related to our assignment. I think I at that time have started speaking by a lot of so if.
+
+MONITA ROY CHOUDHARY .   54:41
+Yeah.
+
+Dhruba Adhikary .   54:51
+Maybe we can take it at the end, Shubham. Right now, let's just focus on. Yeah, we'll take it at the end. Okay. Any questions related to Harris corner detector?
+
+SHUBHAM PATRA .   54:54
+Yeah, that's fine.
+That's right. Sure.
+
+Dhruba Adhikary .   55:06
+Anyone, anything?
+
+NARESH K .   55:08
+Sir, you told about the intensity value. Intensity is changing by looking at the matrix values. So can you tell that one, Sir, how?
+
+Dhruba Adhikary .   55:19
+Intensity is by looking at the matrix values right over here.
+
+NARESH K .   55:23
+Yeah, yes, Sir. Yeah, yes.
+
+Dhruba Adhikary .   55:26
+So what is the corner right? Corner is a point where intensity changes in both direction, correct? Yes or no?
+
+NARESH K .   55:33
+Yes, sir, yeah.
+
+Dhruba Adhikary .   55:35
+Correct. Edges where intensity changes only in one direction, correct? So over here, if I have to do a corner detection right, whatever be my problem statement right over here, do you see this 50?
+
+NARESH K .   55:48
+yes.
+
+Dhruba Adhikary .   55:48
+Intensity is changing to 200. Intensity is changing to 200, correct? So this is my corner.
+
+NARESH K .   55:54
+Yes.
+
+Dhruba Adhikary .   55:57
+Over at this particular point, right, both my corner response function should be maximum.
+
+NARESH K .   55:57
+Okay, sir.
+
+Dhruba Adhikary .   56:04
+However, had this been been 5202, 100 right, and this was 50 again and 50 again, this would have been an edge.
+
+NARESH K .   56:16
+Okay, got it sir. Thank you. Thank you, sir. Thank you very much.
+
+Dhruba Adhikary .   56:19
+What else? OK, so with that, we will jump to the demo. I have a quick demo, just one second. I was just preparing something. OK, so say for instance, you taken input image, right? And you define your Sobel filter like I did, right?
+You just want to calculate the gradients, right? But before you perform the Sobel filter, right, you define, okay, I am gonna have an IX square, which is gonna be Sobel squared, IY square, Sobel squared, IXY, Sobel XY, right now can.
+Anyone tell me why I am taking the gradient of the Sobel operator?
+And not the image.
+
+B. KRISHNA MOHAN .   57:14
+Is it because gradient is already calculated in Sobelix?
+
+Dhruba Adhikary .   57:20
+Kind of, but the kernel logic, if you remember when we were discussing convolution, right? If we multiply the Sobel filter and then take the first order derivative, right? Ultimately, what happens is that our computation becomes more expensive, right?
+So in case we take Sobel X, right, we already define it, right? We take a kernel, right? We will define IX square as Sobel X square, okay, and IY square as Sobel Y square, right? So this is just a associative property of convolution, right? Whatever operation you want to perform like.
+After taking the derivative, I would have to square it right for thing IX square. So rather I will take the square of the Sobel filter and then multiply it with the input signal that will be almost equivalent. Okay, so you take the Sobel filter right image right and you take the Sobel.
+X along with the image, you get the gradient along X direction right of the entire image. You basically get GX and GY post that when you square it, you have IX square, IY square, and I of XY right now you.
+Can try to smoothen it, but if you do not want to smoothen the image, that is perfectly fine, right? Post that, we will calculate the determinant and the trace of the matrix, right? So what was the determinant? IX square multiplied with IY square. So how do we calculate the determinant of a 2 cross 2 matrix, right?
+So say for instance, A, Bbc, right? What is the determinant of this A multiplied with C, right? A into C minus B square, right? B multiplied with B, right? This is the determinant. OK, so similarly we write it over here.
+As determinant as IX square multiplied with IY square minus I of XY square which is a into C minus B square trace is IX square plus IY square XK is equal to 0.04 and basically we take the.
+Corner response. Now you will see I am only retaining certain corner points based on a certain threshold, right? Which are really large, right? And accordingly, I have the different corner points, right? I can decide to play around with this right to have different kinds of corner points now.
+I have also created a notebook for you, right, that helps you understand and how element wise Sobel filtering works, how IXIY and everything is calculated, right? I'll include all of it, right? Whatever numericals you are seeing, right, well generated using this IPYNB file.
+Right, so you have certain intensity changes, right? This is a corner. You will clearly understand that, OK, this particular point is a corner over here. Intensity is suddenly changing along multiple axes. OK, so any questions, queries?
+On Harris Connor detector, what are the steps?
+
+RAGHAVENDRA S P .   1:00:34
+Sir, just a small quick question. Can you go to that figure which you are showing which is having points on intensities?
+
+Dhruba Adhikary .   1:00:43
+This one or this one?
+
+RAGHAVENDRA S P .   1:00:45
+Notepad, just now. Yeah, Sir, here those X marks are the location, the X&Y, the point where we have the coordinates, right?
+
+Dhruba Adhikary .   1:00:50
+This one.
+Corners, correct.
+
+RAGHAVENDRA S P .   1:00:57
+So, but that corner is in between these 2 points, so would that be evaluated?
+
+Dhruba Adhikary .   1:01:07
+You have to change the threshold, that's it. So they will be evaluated, right? So even though you be me and you, we are just seeing black and white, right? It is not purely black and white, right? It is some sort of a gray, right? So there are certain intensity variations that do take place, right? So you have to account for that.
+
+RAGHAVENDRA S P .   1:01:17
+Yeah.
+Okay.
+
+Dhruba Adhikary .   1:01:27
+So you will play around with the threshold. That is why you have the fixed value KK ranges from 0.04 to 0.06 for that particular reason to remove the noise and the noisier corner points as such.
+
+RAGHAVENDRA S P .   1:01:42
+So as an outcome, we'll be having the exact the location where there is this change happens, and that would be marked as the edge.
+
+Dhruba Adhikary .   1:01:47
+Okay.
+Correct.
+Correct, correct.
+
+RAGHAVENDRA S P .   1:01:53
+So this threshold would go similar to the hyper parameter tuning in the same way it will work for an optimal threshold, it will give an output. Sir, how is it? Okay.
+
+Dhruba Adhikary .   1:02:01
+Correct, correct, correct, yes. So basically, as you can see over here, right, I am only detecting 2 corner points. There are multiple other corner points also, right? So if I can connect the runtime, you already have the block size, the kernel size, the key parameter, right? You can play around with this and you can see right how it changes.
+
+RAGHAVENDRA S P .   1:02:22
+Okay, thank you, sir.
+
+Dhruba Adhikary .   1:02:24
+Okay, I will provide this. Okay, lets take a quick 5 minute break. Post that, we will start the hog detector. Okay, I will just complete. I will just go and complete my rounds. I will come back 5 to 10 minutes, okay.
+Okay, yeah.
+Hello everyone.
+Am I audible?
+
+MURTAZA MANSOOR CANTEENWALA .   1:16:30
+Yes, sir.
+
+Dhruba Adhikary .   1:16:31
+Okay, great.
+Okay.
+So we covered till Harris corner detector, right? Now we will step into the deeper end of stuff, right? We will study something called as histogram of gradient orient. Okay. And as you will see, like initially we were starting with algorithms that we formulated during the World War 2 and the Soviet era, Cold War era.
+And then we came finally to the 8080s, right, wherein we developed this corner detection algorithm and other things. Similarly, we came up with histogram of oriented gradients. Now, if you go and read up in detail, right, this forms a basis of modern day deep learning training, right? How do we generalise, right? So.
+By 80s, people were already talking about how do we generalise our algorithms, right? How do we move from a specific like, okay, and how do we take it and apply it over a general population like humans, cats, or dogs, right? So the idea is that when we...
+Are processing an image, right? The idea is that every object belonging to a certain category will resemble in some sort of a manner to each other, right? So say, for instance, all of us human beings, right, we resemble one another, right? We have the same set of noses, eyes, mouth.
+The same placement of stuff, right? Similarly, dogs also have the same stuff, right? They have 4 paws. Their face is very distinct from that of a tiger, correct? There are distinct facial markers, there are distinct structural markers for objects, right? So say for instance, a cup, every cup in the world.
+Almost has same distinct markers, right? It will have a holder void in between and it will have a handle. OK, that's a marker, right? That is what defines it, right? So by 80s or early 90s, right, histogram of oriented radiance came in, right? They.
+Look it forward right now, whatever we had so far, right, they were features, right? So say for instance, you have edges, you have lines, you have corners, right? These are all features. Hog, what it did was like it combined all of those features right to give it some sort, but.
+Description like, OK, this is an edge belonging to a dog, this is an edge belonging to a human being, right? And for computer vision, it plays a critical role, right? Because it helps in detection, classification, right? So we start off with the same stuff, right? What we know, what we have been using, every algorithm.
+In the world, from 50s all the way till our current day uses gradients, OK. And we already have something called as gradient orientation or edge direction, right? How do we use that, right? So, fundamentally, think about it, think about your face, right?
+What is the direction of your nose?
+It is pointed towards the ground, right? Always. Does anyone have a nose that points towards the sky, right? Not really, correct? Every human being has a nose that points downward, right? He has set of eyes which are placed in directly 80 degree, right?
+To the nose or 90 degree to the nose. Okay, so there is a distinct direction, right? So Hog goes about and takes this distinct direction and it uses that to recognise patterns. Okay, so say for instance, you have this dog image, right?
+What Hog will do is basically identify directions, histogram of gradients, right? So you can clearly see it is marking the face, right? It is clearly showing like, okay, there are markers like this and this, right?
+So what it does is that, say for instance, if I have to generalise, right, I have to extract features from my face, which is currently what you are doing in your assignments, right? So say for instance, I have like say 1,000,000 faces, okay, I have 1,000,000 faces.
+Out of those 1,000,000 faces, right? I.
+Extract the hog histogram of gradients for all of those 1,000,000, combine them together and create one template.
+This is what ours CNN S or our classification algorithms do. You take, say, an n number of images and you train, you find out a set of weights, and then you use those weights to detect classify. Basically, you create a template hog set the basis for that.
+Right, so you take north number of images and you create a template image. So what we have over here is a hog face pattern generated from a lot of face images, right? So what we are doing, we are doing, we can do feature extraction using hog, OK, we can do object detection, we can do image classification, we can do face recognition. So once I have a template, right?
+I will just find the hog of my face and I will say, am I a human being or not? Right? If it is a match, I'm a human being. If I take the hog of a dog, OK, and compare it with this template, right? Will it match? Absolutely no, right? So.
+I can recognise or distinguish or classify between objects. I can do recognition, right? And this in particular is used in like low cost surveillance systems. Okay, so in low cost surveillance systems, right, you do not use high end calibration, right? So.
+Say, for instance, you have a pedestrian detector, correct? So that pedestrian detector algorithm, right? It is supposed to be a deep learning algorithm, but how do you reduce the cost? Will you be detecting dogs? Will you be detecting cars? Absolutely no, if I have to detect pedestrians.
+I will just be detecting human beings. That's what I will do. So I will have an hog algorithm which will say, OK, with a reasonable confidence this is a human being or not, right? If it is a human being, you can count him, right? That OK, this person entered the mall, the malls visit count is 151600.
+100, 1700 and so on and so forth, correct? It can be used in surveillance systems, so it serves as low cost alternative. And as I was saying, right, these are these low cost mechanisms, right? They can be used on any edge or IoT devices, right? So say for instance, you enter the room, the light.
+Turns on right sensors based on hog or other things, right? Pretty simplistic. OK, so the key concept in this is that we will measure intensity change in an image, OK, and we will also describe the gradient direction of that intensity change.
+Okay, we will divide. It is better to show you, right? So what we will do is that we will take an image, right, whatever be the image, right, and we will find out a 64 cross 128 patch from that image, right? We will take a 64 cross 128 patch, okay.
+Once I take this 64 cross 128 patch, I will divide this into 8 cross 8 matrix each cell with 8 cross 8, right? So 128 / 864 / 8 is 8. How much is this is 16, right?
+So the entire box right is divided into 123456 and 7, right? 7 blocks, 12345.
+121314 and 15, right? So the entire image is divided into 16.
+Sorry, this one is 16 cross 8 blocks. So 128 cross 64 image is divided into 16 cross 8 blocks, right? And each block has 8 cross 8 pixels.
+One block. OK, is this clear everyone what I did with the image?
+Yes, no, anything.
+
+MIKIN TYAGI .   1:25:45
+Sir, divide by 8 is make it 8 by 8, something 8 by 8 matrix.
+
+Dhruba Adhikary .   1:25:50
+Yes. So what did I do? I wanted to make each of my cell of this 128 cross 64, okay, sorry, 64 cross 128 * 8 cross 8.
+So what will I do? I'll divide this by 8 and divide this by 8, right? So each block of 16 cross 8, right, will have 8 cross 8.
+Okay.
+Is this clear, everyone?
+Hello.
+Am I audible, everyone?
+
+BHAWANI PALIWAL .   1:26:35
+Yes, sir, it is clear.
+
+BHARATH KUMAR S .   1:26:37
+Aces.
+
+Dhruba Adhikary .   1:26:37
+Okay.
+Right, so I take my image right with an overlap, right? I will divide each of this image right into 8 cross 8, right? Each block should have 8 cross 8, okay.
+So what I did, I divided my 64 cross 128 image. Okay, sorry, 128 cross 64 image 64 into.
+8 cross 16 blocks, right?
+Sorry, what am I writing? This is 64, this is 128, 128 cross 16. This is should be 16 cross 8. Why is this slide back full up? So you divided by each by 8, right? So you have 16 cross 8.
+Now I will take a 2 cross 2 block of it.
+OK, I'll take a 2 cross 2 block out of it, right? So what happens in this 2 cross 2 blocks of 8, right? So this is my block.
+Okay, so this is 8 cross 8, right? I will take a 2 cross 2 block once it is divided, right? So for each of these blocks, right? I will calculate the gradient along X direction, gradient along Y direction, okay? and.
+For each one of these, right, I will have a total magnitude and an orientation. Okay, I will have an magnitude and I will have a orientation for each one of these.
+Okay, for each one of these blocks, I will have a magnitude and gradient orientation. Now next, what will I do? I will set them into histograms, right? So I have the angles, right? And I have divided them into 9 bins, right? From zero to 180 degree, right?
+So, say for instance, we have this values, right? The gradient directions, OK, the gradient directions and the gradient magnitudes. The slide seems a little bit messed up, but lets go ahead with it. So assuming right for 30 degree, right?
+Say gradient angle is.
+30 degree, right? So where does 30 degree set? 30 degree sets right in between 3040 and 20, okay, so it sits right in between, right? So there is equal contribution to 40 and 20. Now what is the magnitude of this? The magnitude of this is say 50.
+54 as you can see over here, right? So magnitude is 5454 gets equally divided as 27 and 27 to bin 20 and bin 40. Okay, now say for instance, the next angle is say for instance, somewhere close to say.
+I don't know it is like say 81 right? Or something like over here. Let me check. Yeah, may be let us say the angle is 81 right? And the magnitude value is yeah.
+12. Okay, so where does 81 sit? 81 sits between 80 and 100, right? But 81 is closer to 80 in this particular case, right? So it should get rather a larger portion, right? So it should get.
+A larger portion of the magnitude value. So we interpolate and place it over here. How do we do that interpolation? So say for instance my angle is say for instance the magnitude is 13.6 and my angle is 36 degree, right?
+So 36 degrees sets between 20 and 40, right? So I will have what do I do? So 36 - 20 / 20, right? How much is this, right? It is 16 by 20.
+Oh.
+16 by 20 it is 44, Sir, 4, 5 Sir, 4 5th okay and 40 is basically how much 40 -, 36 by 20 equal to 4 by 20.
+Equal to 1/5, okay, so.
+This part will receive.
+This is wrong, I think. Just one second, 36.
+Just a minute, please.
+1340.
+Just one second, I kind of forgot something.
+My formula is correct Y2 -, Y1.
+Just give me one second, please.
+36 is closer to 40.
+Oh.
+Why is this written like this? Just one second.
+Just give me one second. Let me verify the formula. Just give me one second.
+Okay.
+Sorry, am I audible?
+Hello.
+
+BHAWANI PALIWAL .   1:36:37
+Yes.
+
+MURTAZA MANSOOR CANTEENWALA .   1:36:38
+Yes, sir.
+
+Dhruba Adhikary .   1:36:40
+Sorry about that. So I could not access a textbook, so I quickly ran a GPT check. So basically we calculate the gradient magnitude and the orientation, right? So the magnitude at a particular point, say at this particular point, right?
+It is 13.6 right and the angle is 36 degrees. Okay now.
+If had it been 30, right, the split would have been simple, right? 13.6 / 2, correct? But in case of linear interpolation, right, what the formula states are the further the distance, right? So what we are calculating was correct, right? But it is supposed to be the inverse, right?
+So say, for instance, how far the contribution at 40 degree bin is defined by how far, right? How far it has come from the lower point, right? So 36 20 / 20, right? In this case, the contribution at 20:00 degree bin.
+Right, is basically 40 36 20. What is the distance, right? So it is basically 40 20, right? It is always constant, so it is 20 degree, right? So the weightage is defined like, okay, 36 is closer to 40, right?
+So it should get a higher weightage, right? One minus.
+Minus d, correct? So over here that is what we are doing. So distance is defined by 4 5th, right? So 40 degree, basically 4 5th of the contribution, right? So 4 by 5 * 13.6, that is a contribution to 40, okay.
+So they are using a linear interpolation over here and the contribution to the 20th bin is basically 40 minus say 36 / 20. Okay, so that is how they are calculating now for each of these, right? Once you create a histogram, right for every this 2 cross 2 block, right?
+You have histograms orientation between zero to 180 degree, right? You have different values, right? Different values coming up, right? So once you calculate all of these right 13.6 and you are able to bin all this values, right?
+So at the end of the day for zero degree, say you have say 203 100 over here, OK, 400, OK, 200 again over here, you have say 10 over here, you have 200 over here, right? So accordingly for every 8 cross 8 cell, right, you have a histogram, OK.
+You have a histogram created correct now for each of the cells, right? Once you have the histogram created, right, you take the most dominant, I would say, principal orientation, right? So say for instance, in our particular case, in the assumed example, right?
+In this assumed example, right 400 was the highest. So my principal orientation of a particular cell 8 cross 8 cell is say 40 degree. Okay, so accordingly you will see I will go ahead and mark a single orientation of 40 degree. Okay, so.
+Once you have this image, right hog breaks down it into GXGY, OK, and it will break it down into angle, right? And these angles they will give you your principal orientation, OK, you will retain like say for instance you have like say.
+9 different values right out of this is my principal orientation, this has my highest magnitude, right? So say this had a value of 400, so this particular cell or a block will have a value of 400 at 40.
+Degree. Similarly, each of these blocks, right, will have a singular principle orientation and it will have a singular magnitude value which they will leverage, OK, for matching purposes, right? So the ideology is simple, right?
+So given you have a matrix, right, you will calculate the horizontal gradient and the vertical gradient, right? So you will get something like this, right? Just for the central part, okay, I am just taking it for the central part. Okay, this is a horizontal gradient, this is a vertical gradient. Okay, now.
+You calculate the magnitude and the direction, right? Once you have the magnitude matrix and the direction matrix, right? So what do we do? We have to divide it into 10 point histogram bin, right? So this is my 10 point histogram bin, right? So we start off with what we start off with zero.
+Okay, 02040 you have 60801020160 sorry 14160 and 180. Okay, so 25 degree, 25 degree sits between 20.
+And 45, right? So.
+202540, correct?
+So here we go, right? So it is 5 points away and over here it is say 15 points away from 40, right? So accordingly we will calculate what is the overall contribution to this bin and to this bin, right? So say for instance, how do we calculate it?
+So we have 15 / 20 multiplied with 25, right? So 3 and this is 43, 4th of 25. How much is that?
+1/4 of 25 Okay, so how much is 3 4th of 257075 / 4? Yes, ma'am. How much is this?
+
+B. KRISHNA MOHAN .   1:43:01
+Nearly 8 times.
+
+RISHABH AGNIHOTRI .   1:43:09
+Sir, 18.75.
+
+Dhruba Adhikary .   1:43:10
+Okay.
+18 point.
+
+RISHABH AGNIHOTRI .   1:43:13
+75.
+
+Dhruba Adhikary .   1:43:14
+75 right? So this value would be 18.75 okay. This value would be 256 point something right? This value would be 6 point something. You will keep on adding to this right different value. So again 25 will be.
+18.75 right again this would be plus 6 point something right again 25 18.75 right. So accordingly you will keep on adding the contribution until and unless you run out of all the GX&GY right now you can clearly see I can plot a histogram of it.
+And 71, sorry, 20 degree is my dominant, right? So for this entire cell, right, this entire cell, whatever we are gonna take, right, the principal orientation is 20 degree and the magnitude is 71 degree 71, okay.
+So this is how we take the histogram of oriented gradients. Okay, just one second.
+Dog.
+Just one second.
+Just second.
+So.
+Just one second.
+Okay.
+So here we go, right? So we take an input image, right? And basically we directly have an hog with an SK image pattern. We take the histogram of oriented gradients, right? So we take this image right and that particular image.
+Every image right is broken down into 128 cross 64. Within that 128 cross 64, it is further broken down into 8 cross 8 and for those 8 cross 8 cells right blocks we take 2 cross 2 right and for those 2 cross 2 blocks we have a principal orientation.
+And some sort of a I would say magnitude, maximum magnitude attached for it, which gives us, okay, over here, this is the direction in which all the magnitude is moving. This is the direction in which all the magnitude is moving. So it basically creates a template. So the next time I can compare this template with this template and I.
+Can give you an answer for it. OK, so that is histogram of oriented gradients. Any questions, queries, anyone?
+
+BHAWANI PALIWAL .   1:46:15
+Sir, Sir, how does it pans out like when we have RGB channels in the image?
+
+Dhruba Adhikary .   1:46:24
+RGB channels, also we will calculate the same GX&GY, right? So it does not matter, right? So in that particular case, so now that you have a grayscale image, right? For a grayscale, you just do it for one layer, right? In case of RGB, you will do it for all the 3 layers.
+Separately, that's it. Like what you are doing in deep learning right now.
+In deep learning, also you calculate the gradient and the orientation, right? That's what we are doing.
+
+BHAWANI PALIWAL .   1:46:50
+I mean.
+I mean, would that conflict with each other, let's say, in one channel if the gradient is in different direction than the other one?
+
+Dhruba Adhikary .   1:47:04
+No, ultimately, at the end of the day, right, it contributes, right? So say, for instance, my hand, right? It is sort of pinkish in colour, right? Sorry, it is sort of whitish in colour, right? So mostly I would say it has, lets say it combines.
+Red and blue, right? There is no green component associated with it, right? But there's a green component over here, right? Something I am holding a pen, right? That may be green, right? That has its own valuation, right? So you have to think of it in sense of like gradients, like what are the gradients telling me, right?
+What is the direction, histogram of the gradient of the pen or other things, right? We will see this when we go with the colour images as well. But for the moment, remember everything that we are doing with the grayscale image or a 2D image, the exact same process one is to one is translated for your.
+
+BHAWANI PALIWAL .   1:47:52
+Okay.
+
+Dhruba Adhikary .   1:48:03
+RGB images as well, there is no change as such. The only change would be that we will be doing it for all the 3 channels, that's it.
+
+BHAWANI PALIWAL .   1:48:06
+Okay.
+Okay.
+
+Dhruba Adhikary .   1:48:14
+Okay, so in case of 3 dimension image RGB image, it is F of X comma Y comma Z. Okay, so you have X&y, right? You have to calculate gradient along X, gradient along Y, gradient along Z, right? Magnitude is basically GX square.
+
+SHUBHAM PATRA .   1:48:15
+Sir.
+Sir, this is Shubham.
+
+Dhruba Adhikary .   1:48:33
+Plus GY square plus GZ square. OK, and angles are basically angle between XY.
+Angle between YZ and angle between ZX. You will have 3 angles.
+
+BHAWANI PALIWAL .   1:48:52
+Okay, thank you.
+
+Dhruba Adhikary .   1:48:53
+Okay, and from an origin they will give you one singular angle, so you will have to see.
+It for a vector that is suspended in something sort of a 3 dimension. So this will be probably the angle from the origin you will have.
+
+BHAWANI PALIWAL .   1:49:10
+Okay.
+
+Dhruba Adhikary .   1:49:11
+Yeah, okay. Yeah. Are you sure? Query, please.
+
+SHUBHAM PATRA .   1:49:16
+Yeah.
+
+AYUSH KUMAR GUPTA .   1:49:18
+Sir, just a small clarification, what is the recently design project? So can we create a?
+
+Dhruba Adhikary .   1:49:23
+Are you sure voice is not very clearly audible?
+Hello.
+
+AYUSH KUMAR GUPTA .   1:49:31
+Is it better now?
+
+Dhruba Adhikary .   1:49:33
+Yeah, better. Tell me.
+
+AYUSH KUMAR GUPTA .   1:49:34
+Hello, yeah, sir, just a small clarification regarding the enhancement. What if one set reason work or can you create a more than one set and later you can create a symbol like the rate and voting mechanism to classify the website.
+
+Dhruba Adhikary .   1:49:52
+Sorry, Ayush, I was still not able to make out anything what you said, and maybe my network is bad.
+
+AYUSH KUMAR GUPTA .   1:49:59
+Is it better?
+
+Dhruba Adhikary .   1:50:01
+Yeah, it is better at start. Yeah, please say.
+
+AYUSH KUMAR GUPTA .   1:50:04
+Yeah, so my question is what if one filter doesn't work? So can we create more than one filter and later we can use an example like a technique and voting to classify the option?
+
+Dhruba Adhikary .   1:50:17
+Yeah, that is exactly what we do right now. So you create n number of filters in your deep learning, but definitely you can create n number of filters. But even with that, right, Ayush, as we go post mid sem, right, the first topic is image classification in that we will study about.
+Using Hog, how we can do image classification and you will see the performance of that is at max 36%.
+This was at the start of like deep learning era, like in 2008, right? The first algorithms, VGE and AlexNet, right, they achieved like 40% accuracy. So it was on top of this only, right? So we will go through it. But the easier answer is you will not get the same level of accuracy what you see.
+
+AYUSH KUMAR GUPTA .   1:50:47
+Okay.
+Okay, sir.
+
+Dhruba Adhikary .   1:51:06
+In your deep learning algorithms, be prepared for lot lesser, okay, using histogram of oriented gradients and other things. These were essentially developed when the imaging data was not that mature enough, right? And they worked during that time. But now imaging data is far more complicated, right?
+
+AYUSH KUMAR GUPTA .   1:51:39
+Okay, Sir.
+
+Dhruba Adhikary .   1:51:40
+Powerful algorithms for general purposes like they can easily tell you like, okay, this is a cat, this is a dog, this is a human being. They can easily tell you that distinction. So yeah.
+
+AYUSH KUMAR GUPTA .   1:51:53
+Okay.
+
+Dhruba Adhikary .   1:51:54
+Okay, Shubham, your question please.
+
+SHUBHAM PATRA .   1:51:57
+Yeah, sir, my question is that if you go to the Git page where you have shown some image transformation through hog playing hog, so it had the original image and if the hog features is showing like that. So is the objective of hog feature to identify the line or edges and?
+Just to make it vivid.
+
+Dhruba Adhikary .   1:52:16
+No.
+No. So this is a template, right? So next time when you are searching for this building right within your repository, you can just have this hog feature compare like whichever image hog images hog matches this, that is a building. You can sort of say that this is a extracted feature.
+From Hog, I would say which is just showing like in with direction gradients and every textures are moving, yeah.
+
+SHUBHAM PATRA .   1:52:41
+Okay, so that means.
+So it will be used for just similar matches if you want the way are using Google in Google is it is it the same thing applied in Google algorithm as well? I mean Google image.
+
+Dhruba Adhikary .   1:52:52
+Similar matches.
+Google uses something, Google uses something called a SIP spatial invariant transformation. So Google and every image retrieval algorithms, they will use something like that, which we will study in our next lecture.
+
+SHUBHAM PATRA .   1:53:05
+Okay.
+Okay, got it. Thanks.
+
+Dhruba Adhikary .   1:53:20
+Great. So hogs can be. So today you studied about like corner detection, you will have your webinar on this particular topic on monocular slam and stereo slam probably using corner detection and you will also be studying.
+A lot about hog hog as an algorithm, you will be leveraging again and again when you are in a pinch, when you are in a pinch, as in like you are deploying something on edge device or an IoT device, right? To find your landmarks, other things, right? So you will be using both of this algorithm in conjunction.
+Right. They are cheap, low cost alternatives to your high end, deep learning based algorithms which take ton of time and effort and compute power to train. Hog can be done almost on an plentium 4 processor as well, right? So that is how efficient it is. So once you calculate it, so.
+What we the intention of today's session was like basically whatever you had studied so far, right? So far you were studying a lot about like.
+You were studying a lot about features, right? Like something like edges, right? You studied about edges, you studied about edges, you studied about lines, you studied about gradient, right? You studied about gradient angles, right? But how does all of that come together, right?
+You did not have a unified view of it, right? So today we studied corner, right? Corners, basically we saw like, okay, how do we detect corners and edges, right? And flats, we define that, right? Post that hog ties all of it together. Okay, hog ties all of it.
+Together to create you what you will say principal orientation and principal direction, principal magnitude, right? So basically what it does is that it takes your GX, it takes your GY, it basically maps it on to a bin, OK, and it will say OK for this 8 cross 8 cell.
+Okay, for this 8 cross 8 cell, this is my magnitude and this is my direction. So rather than at a particular localised pixel level, it is giving it to you at an 8 cross 8 level so that you can clearly say like okay.
+This is the template, this is how the image looks like and I can compare accordingly, right? So over here, if a runner is running, right, you can clearly see his nose angle, his eyes angle, everything right? And you can match it. And this is what sits behind, I would say, some of Apples algorithm, initial face detection algorithm.
+They have become a lot better using deep learning and the bionic chips, right? But initially, if you see right, even today, face detection is still done using 11 key points, right? 11 key point.
+Face detection, right? Originally derived from this.
+Right. So here you go.
+This is all that you need. What are these? These are basically hog lines and hog feature points only what we initially had, right? So these are the key points that describe like how a face is detected and this particular knowledge has remained sacrosanct over a period of time. We call them as facial landmarks or other things.
+So similarly, everything will have a landmark, right? That is what we are tying together, okay.
+Yes, Rishabh, at the end, we are only taking the 8 cross 8 pixel magnitude, maximum magnitude along a specific direction. So you get both the magnitude as well as the direction. Okay, with that, we will come to the end of the session. Any questions, queries, anyone?
+Yeah, Ayush, please.
+
+AYUSH KUMAR GUPTA .   1:57:30
+Yes, sir. So before starting, I mean this is regarding the assignment submission. So before starting the lecture, you mentioned that you want to see more images in my assignment file. So is it possible to revert the assignment submission? Because I don't want to lose the marks for rest of the groups.
+
+Dhruba Adhikary .   1:57:32
+Yeah.
+Okay.
+
+AYUSH KUMAR GUPTA .   1:57:52
+Initially, we...
+
+Dhruba Adhikary .   1:57:53
+Yeah, sure. Can you send send an email to me? Mark Mark the TS. Okay, mark the TS primarily. I will follow up with them. Okay, Ayush.
+
+AYUSH KUMAR GUPTA .   1:57:55
+Yeah.
+Yeah, I'll email. Yes, sir.
+Do you have any point of contact for that?
+
+Dhruba Adhikary .   1:58:10
+Yeah, it is there on the Takshila portal. So from today I will be posting everything over here on the team's channel only. So last week I know I promised that I will put it on the team's page, but I could not. There was an exam, so I was a bit busy on that.
+
+AYUSH KUMAR GUPTA .   1:58:15
+Okay.
+
+Dhruba Adhikary .   1:58:28
+Particular end, but from this week going from this week, I will be posting it over here. In fact, I will be posting it right away right now. So yeah, I will ask Satya Narayan to like revert the changes, okay.
+
+AYUSH KUMAR GUPTA .   1:58:45
+Yes, sir, I will follow up.
+
+Dhruba Adhikary .   1:58:47
+Okay, sure.
+Yeah, Shubham, your query please.
+
+SHUBHAM PATRA .   1:58:53
+Yeah, and this is related to the assignment. Sir, just one thing I'd like to ask, can we for safe side, can we just zip the IPNB file notebook and also the HTML and upload that if it fits within 10 MB? Is that allowed in zip?
+
+Dhruba Adhikary .   1:59:12
+The portal is not very friendly, right? I mean, you can give it a try, Shubham, right? But imagine like a TA who is evaluating like 60 to 70 groups, right? Watching the videos as well, right?
+In that particular case, like I am pretty sure he will be a little bit ****** *** like when he sees like a zip file that he has to download and then read better. You can put everything in your IP YNB PDF, right? You have an option from collab wherein like you can save everything as a PDF.
+You upload that PDF, that's fine, you compress it.
+
+SHUBHAM PATRA .   1:59:54
+actually PDF PDF is not showing properly, so that's why I have extracted into HTML. So as per the instruction, that is also fine, right? So that's better.
+
+Dhruba Adhikary .   2:00:00
+That's fine.
+That is fine. That is fine. That is fine. Perfectly fine. That is perfectly fine. OK, that is perfectly fine. OK, with that, I will close the session. Thank you everyone. Thanks for joining in.
+
+SHUBHAM PATRA .   2:00:07
+Yeah, okay.
+
+Dhruba Adhikary .   2:00:16
+Thank you. Bye.
+
+BHARATH KUMAR S .   2:00:18
+Thank you.
+
+BHAWANI PALIWAL .   2:00:19
+Thank you.
+
+SHUBHAM PATRA .   2:00:19
+Thank you, sir. Thank you.
+
+RAGHAVENDRA S P .   2:00:21
+Thank you, sir.
+
+MS RAGHUNANDAN .   2:00:22
+Thank you, sir.
+
+MURTAZA MANSOOR CANTEENWALA .   2:00:25
+Thank you.
+
+EMMADISHETTY SRI ADITYA VARMA .   3:32:25
+Policy iterations, okay.
+OK, great. So yeah, so you are discussing on the dynamic programming technique, you are up Zuruki, right? So we saw value iterations and policy iteration, 2 versions of bootstrapping and then learning the stay.

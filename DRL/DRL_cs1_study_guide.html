@@ -207,6 +207,8 @@ button.gho{background:transparent; color:var(--ink); border:1px solid var(--line
     <a href="#lab">Live Demos</a>
     <div class="grp">Exam Prep</div>
     <a href="#quiz">Exam Quiz</a>
+    <a href="#exam-past">Past Exam Qs</a>
+    <a href="#exam-sample">Sample Practice Qs</a>
   </nav>
 </aside>
 
@@ -710,6 +712,217 @@ button.gho{background:transparent; color:var(--ink); border:1px solid var(--line
   <div id="quizbox"></div>
 </section>
 
+<!-- ============ PAST EXAM QUESTIONS ============ -->
+<section id="exam-past">
+  <div class="kic">// EXAM PREP</div>
+  <h2 class="sec">Past Exam Questions — Session 1 Topics Only</h2>
+  <p class="mut">Six questions pulled verbatim (or near-verbatim) from past DRL mid-sem papers, filtered to topics covered in <b>Session 1</b>: RL vs. Supervised/Unsupervised learning, the four RL sub-elements (policy/reward/value/model), the algorithm taxonomy, TD learning, and reward design. Click "Show Solution" for a full worked answer.</p>
+
+  <div class="qz">
+    <div class="head"><span class="dif e">Easy</span><span class="tg">21-Dec-2025 · Q1(a) · 1.5M</span></div>
+    <p class="qs"><b>PE1.</b> A mobile health-monitoring wristband chooses among three modes each hour (low/medium/high power, increasing accuracy), receiving an immediate benefit (reward) based on the user's activity. State why <b>Reinforcement Learning</b> (not supervised learning) fits this setting, and give a <b>one-line distinction between immediate reward and long-term value</b>.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <p><b>Why RL fits:</b> there is no dataset of "correct mode per situation" to learn from — the wristband must improve its mode-selection by <b>interacting with the user over time</b> and observing a scalar reward (benefit) for each choice. This is exactly RL's signature: <b>no supervision</b> (only a reward signal, no labels) and <b>sequential decision-making</b> (today's mode can shape tomorrow's situation, e.g. battery state).</p>
+      <div class="answer">Immediate reward = the one-step feedback R<sub>t+1</sub> for the action just taken; long-term value V(s) = the expected <i>cumulative</i> (future) reward from state s onward — it accounts for downstream consequences the immediate reward alone misses.</div>
+      <div class="insight"><b>Key insight:</b> this is the policy-vs-value-function distinction from Section 06, restated in plain terms — "what just happened" vs. "what this leads to".</div>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif h">Hard · Flagship</span><span class="tg">27-Jan-2024 · Q1(a-c) · 6M</span></div>
+    <p class="qs"><b>PE2.</b> Consider tic-tac-toe. <b>(a)</b> [2M] List the <b>four elements of Reinforcement Learning</b> and give one formal sentence explaining the role of each. <b>(b)</b> [0.5M] Write the <b>Temporal Difference (TD) rule</b> for learning each state's value; explain the elements and how it works. <b>(c)</b> [2M] The current state's value is <b>4.5</b>, and its successor state's value is <b>2.7</b>. Using <b>0.9</b> as the parameter from part (b), revise the estimate of the current state's value. Explain.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <p><b>(a) The four elements (Section 06):</b></p>
+      <ul>
+        <li><b>Policy π(a|s)</b> — the probability the agent selects action a in state s; the rule mapping states to a distribution over actions ("what to do").</li>
+        <li><b>Reward R</b> — the scalar feedback signal received after each action, defining the goal the agent is trying to maximize.</li>
+        <li><b>Value function V(s) / Q(s,a)</b> — the expected cumulative future reward from state s (or from taking action a in s); measures "how good", and is used to derive a good policy.</li>
+        <li><b>Model (optional)</b> — a predictor of the next state and reward given (s,a); mimics environment behaviour and is used for planning.</li>
+      </ul>
+      <p><b>(b) TD rule:</b></p>
+      <div class="f-block">
+        <span class="v">V(S<sub>t</sub>)</span> <span class="op">←</span> <span class="v">V(S<sub>t</sub>)</span> <span class="op">+</span> <span class="a">α</span> <span class="op">[</span> <span class="v">V(S<sub>t+1</sub>)</span> <span class="op">−</span> <span class="v">V(S<sub>t</sub>)</span> <span class="op">]</span>
+      </div>
+      <p style="font-size:14px" class="mut"><span class="f">α</span> is the <b>step-size parameter</b> (0&lt;α≤1) controlling how big each update is. <span class="f">V(S<sub>t+1</sub>)−V(S<sub>t</sub>)</span> is the <b>TD error</b> — the difference between two successive predictions. The rule nudges the old estimate toward the new one — it <b>bootstraps</b> from its own next-step prediction rather than waiting for the game's final outcome.</p>
+      <p><b>(c) Apply the rule with V(S<sub>t</sub>)=4.5, V(S<sub>t+1</sub>)=2.7, α=0.9:</b></p>
+      <div class="f-block">
+        <span class="lbl">TD update</span>
+        <span class="v">V(S<sub>t</sub>)</span> <span class="op">←</span> <span class="v">4.5</span> <span class="op">+</span> <span class="a">0.9</span> <span class="op">×</span> <span class="op">(</span><span class="v">2.7</span> <span class="op">−</span> <span class="v">4.5</span><span class="op">)</span>
+        <br><span class="op">=</span> <span class="v">4.5</span> <span class="op">+</span> <span class="a">0.9</span> <span class="op">×</span> <span class="r">(−1.8)</span>
+        <br><span class="op">=</span> <span class="v">4.5</span> <span class="op">−</span> <span class="v">1.62</span> <span class="op">=</span> <span class="g">2.88</span>
+      </div>
+      <div class="answer">New V(S<sub>t</sub>) = 2.88</div>
+      <div class="insight"><b>Key insight:</b> α=0.9 is large — the estimate jumps <b>90% of the way</b> from 4.5 toward 2.7, landing close to the successor's value. A small α would move it only slightly toward 2.7.</div>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif e">Easy</span><span class="tg">28-Jul-2024 · Q1(a) · 2M</span></div>
+    <p class="qs"><b>PE3.</b> In what ways are <b>Unsupervised Learning</b> and <b>Reinforcement Learning</b> different?</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <ol>
+        <li><b>Data:</b> Unsupervised learning operates on a <b>fixed, unlabelled dataset</b> to find structure within it. RL has <b>no predefined dataset</b> — its "data" (experience) is generated on the fly through <b>interaction with the environment</b>.</li>
+        <li><b>Aim:</b> Unsupervised learning's aim is to <b>discover underlying patterns</b> (e.g. clustering, association) — a largely one-shot mapping. RL's aim is to <b>learn a series of actions</b> (a policy) that maximizes cumulative reward, balancing exploration vs. exploitation.</li>
+        <li><b>Feedback:</b> Unsupervised learning has <b>no feedback signal at all</b>. RL has a <b>scalar reward signal</b> — often sparse and delayed — that drives learning.</li>
+      </ol>
+      <div class="answer">Core distinction: unsupervised = find structure in static unlabelled data with no feedback; RL = learn a sequential policy from a reward signal obtained by acting in an environment.</div>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif m">Medium</span><span class="tg">28-Jul-2024 · Q1(b) · 2M</span></div>
+    <p class="qs"><b>PE4.</b> How are <b>Model-based</b> and <b>Model-free</b> reinforcement learning algorithms different? What scenarios are these approaches appropriate for (in not more than three statements)?</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <p><b>Difference:</b> <b>Model-free</b> algorithms learn a policy and/or value function (π, V, or Q) <b>directly from experience</b>, without ever representing the environment's transition/reward dynamics — e.g. Q-Learning, SARSA. <b>Model-based</b> algorithms learn (or are given) a <b>model</b> that predicts the next state and reward for a given (state, action), and use that model for <b>planning/lookahead</b> before acting — e.g. Dynamic Programming, AlphaZero.</p>
+      <p><b>Scenarios (≤3 statements):</b></p>
+      <ol>
+        <li><b>Model-based</b> is appropriate when the environment's dynamics are <b>known exactly or can be learned accurately</b> (e.g. board games with fixed rules) — planning with the model reduces costly real-world trial-and-error.</li>
+        <li><b>Model-free</b> is appropriate when dynamics are <b>too complex or unknown to model reliably</b>, but interaction/experience is cheap and plentiful (e.g. video games, simulators, robotics).</li>
+        <li><b>Hybrid/actor-critic</b> methods (DDPG, TD3, SAC) bridge both — they learn a model-free critic alongside a policy, without needing an explicit dynamics model.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif m">Medium</span><span class="tg">21-Jul-2024 · Q1(b,c) · 3M+1M</span></div>
+    <p class="qs"><b>PE5.</b> Consider the RL agent learning tic-tac-toe by playing against different randomly-chosen opponents, using <span class="f">V(S<sub>t</sub>) ← V(S<sub>t</sub>) + α[V(S<sub>t+1</sub>) − V(S<sub>t</sub>)]</span>. <b>(b)</b> [3M] Can <span class="f">α</span> be used to encourage exploration? Why or why not? <b>(c)</b> [1M] Name one <b>Model-Based</b> and one <b>Model-Free</b> RL algorithm covered so far.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <div class="answer">(b) No.</div>
+      <p><span class="f">α</span> (the step-size) only controls <b>how strongly the value estimate is updated</b> toward a newly observed estimate — it governs the <b>speed/responsiveness of learning</b>, not <b>which states or actions get visited</b>. Exploration is determined by the <b>action-selection mechanism</b> (e.g. ε-greedy, or here, the randomly-chosen opponent's moves), entirely independent of α. A large α makes the agent adapt quickly to a non-stationary opponent (Section 08's discussion), but it does not by itself cause the agent to <b>try</b> new states — it can even amplify noise from rarely-visited states without ever causing more visits to them.</p>
+      <p><b>(c)</b> Model-Free: <b>Q-Learning</b> (or TD-learning / Monte Carlo). Model-Based: <b>Dynamic Programming / Value Iteration</b> (or AlphaZero — "Given the Model").</p>
+      <div class="insight"><b>Key insight:</b> don't confuse the <i>learning-rate</i> knob (α) with the <i>action-selection/exploration</i> knob (ε, or the opponent's randomness) — they control entirely different things.</div>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif m">Medium</span><span class="tg">28-Jul-2024 · Q3(a) · 2M</span></div>
+    <p class="qs"><b>PE6.</b> In the Gridworld example, rewards are positive for goals, negative for running into the edge of the world, and zero most of the time. Are the <b>signs</b> of these rewards important, or only the <b>intervals</b> between them? Explain.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <p>Both matter, but for different reasons:</p>
+      <ul>
+        <li>The <b>sign</b> gives a basic qualitative direction — goal=good (positive), wall-hit=bad (negative), neutral=0 — so that comparisons between value estimates push the policy toward goals and away from penalties.</li>
+        <li>What actually <b>drives the learned policy</b> is the <b>relative magnitude/interval</b> between rewards: the TD rule and value comparisons only ever look at <i>differences</i>, so a reward landscape uniformly shifted by a constant largely preserves the same relative ordering of actions (the gaps encode "how much better" one outcome is than another — Section 09's "relative magnitude" reward-design principle).</li>
+        <li><b>Caveat:</b> for <b>episodic</b> tasks, adding a constant to every step's reward is not entirely free — e.g. a small negative reward on every non-terminal step creates pressure to finish quickly, which <i>can</i> change the optimal policy. So intervals dominate, but the sign/zero-point convention isn't fully arbitrary either.</li>
+      </ul>
+      <div class="answer">Mainly the intervals (relative magnitudes) — they encode the preference ordering the agent learns from; signs set the qualitative direction but a uniform shift mostly preserves behaviour (except where it changes episode-length incentives).</div>
+    </div>
+  </div>
+
+  <div class="box research">
+    <span class="tag">Pattern across papers</span>
+    <p>Every Session-1-flavoured exam question reduces to one of: (1) classify a scenario across RL/Supervised/Unsupervised or Model-Based/Model-Free, (2) apply the TD update rule numerically, or (3) reason about reward design — signs vs. magnitudes, or relative scale to avoid reward hacking. Master those three moves and you've covered this slide deck's exam surface.</p>
+  </div>
+</section>
+
+<!-- ============ SAMPLE PRACTICE QUESTIONS ============ -->
+<section id="exam-sample">
+  <div class="kic">// EXAM PREP</div>
+  <h2 class="sec">Sample Practice Questions (New)</h2>
+  <p class="mut">Six new questions in the same exam style, covering the same Session 1 topics — TD updates, ML-paradigm classification, the algorithm taxonomy, reward design, agent-environment notation, and conceptual true/false.</p>
+
+  <div class="qz">
+    <div class="head"><span class="dif e">Easy</span><span class="tg">Sample · TD Update</span></div>
+    <p class="qs"><b>SQ1.</b> Apply the TD update rule <span class="f">V(S<sub>t</sub>) ← V(S<sub>t</sub>) + α[V(S<sub>t+1</sub>) − V(S<sub>t</sub>)]</span> given V(S<sub>t</sub>)=0.6, V(S<sub>t+1</sub>)=0.9, α=0.4. Compute the new V(S<sub>t</sub>). Then explain qualitatively what would change if α were instead 0.05.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <div class="f-block">
+        <span class="v">V(S<sub>t</sub>)</span> <span class="op">←</span> <span class="v">0.6</span> <span class="op">+</span> <span class="a">0.4</span> <span class="op">×</span> <span class="op">(</span><span class="v">0.9</span> <span class="op">−</span> <span class="v">0.6</span><span class="op">)</span> <span class="op">=</span> <span class="v">0.6</span> <span class="op">+</span> <span class="v">0.12</span> <span class="op">=</span> <span class="g">0.72</span>
+      </div>
+      <div class="answer">New V(S<sub>t</sub>) = 0.72</div>
+      <p>With α=0.05: V(S<sub>t</sub>) ← 0.6 + 0.05×0.3 = <b>0.615</b> — a much smaller step. The estimate moves slowly toward 0.9, but is more robust to noisy/inconsistent feedback (smoothing), whereas α=0.4 converges faster but is noisier.</p>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif e">Easy</span><span class="tg">Sample · Paradigm Classification</span></div>
+    <p class="qs"><b>SQ2.</b> Classify each scenario as Supervised, Unsupervised, or Reinforcement Learning, with a one-line justification: <b>(1)</b> predicting loan-default risk from a labelled history of past loans (default / no-default). <b>(2)</b> grouping warehouse SKUs into clusters by co-purchase pattern, with no labels. <b>(3)</b> a robot arm learns to grasp objects by trying different grips and receiving a success/failure signal each attempt, improving over thousands of trials.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <ol>
+        <li><b>Supervised</b> — labelled (features → outcome) data; aim is to calculate/predict an outcome (classification).</li>
+        <li><b>Unsupervised</b> — unlabelled data; aim is to discover underlying structure (clustering/association).</li>
+        <li><b>Reinforcement Learning</b> — no labelled "correct grip"; the agent interacts with the environment and improves via reward (success/failure) feedback across sequential trials (exploration vs. exploitation).</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif m">Medium</span><span class="tg">Sample · Algorithm Taxonomy</span></div>
+    <p class="qs"><b>SQ3.</b> Classify each algorithm into the RL taxonomy (Model-Free → Policy Optimization / Model-Free → Q-Learning / Model-Based → Learn the Model / Model-Based → Given the Model) and briefly justify: <b>(a)</b> Vanilla Policy Gradient, <b>(b)</b> DQN, <b>(c)</b> World Models, <b>(d)</b> DDPG.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <ul>
+        <li><b>(a) Policy Gradient</b> — Model-Free → Policy Optimization: directly parameterizes and optimizes π(a|s) via gradient ascent on expected return; no environment model.</li>
+        <li><b>(b) DQN</b> — Model-Free → Q-Learning: learns Q(s,a) from experience (replay buffer), derives the policy greedily; no model.</li>
+        <li><b>(c) World Models</b> — Model-Based → Learn the Model: learns a predictive model of environment dynamics from experience, then plans/imagines rollouts inside it.</li>
+        <li><b>(d) DDPG</b> — bridges Policy Optimization and Q-Learning (actor-critic): learns a deterministic policy (actor) <i>and</i> an action-value critic; still Model-Free overall (no learned dynamics model).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif h">Hard</span><span class="tg">Sample · Reward Design</span></div>
+    <p class="qs"><b>SQ4.</b> A delivery drone must fly from a depot to a customer's location and drop a package. Objective: deliver quickly and safely. Specify State, Action, and a reward-shaping table with at least 5 entries, ensuring catastrophic outcomes dominate by relative magnitude. Then describe one possible <b>reward-hacking</b> failure mode of your design.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <table>
+        <tr><th>Element</th><th>Definition</th></tr>
+        <tr><td><b>State</b></td><td>GPS position, altitude, battery level, obstacle-sensor readings</td></tr>
+        <tr><td><b>Action</b></td><td>pitch/roll/yaw adjustment, throttle, release package</td></tr>
+      </table>
+      <div class="f-block">
+        <span class="lbl">Reward-shaping table</span>
+        Collision with obstacle/building <span class="op">=</span> <span class="r">−500</span>
+        <br>Battery depleted mid-flight (forced landing) <span class="op">=</span> <span class="r">−200</span>
+        <br>Package delivered at correct location <span class="op">=</span> <span class="g">+100</span>
+        <br>Each step's net progress toward destination <span class="op">=</span> <span class="g">+1</span>
+        <br>Flying outside designated air corridor <span class="op">=</span> <span class="r">−20</span>
+        <br>Erratic flight (excess altitude change) <span class="op">=</span> <span class="r">−2</span>
+      </div>
+      <div class="insight"><b>Key insight:</b> −500 / −200 dwarf any achievable sum of +1-per-step progress rewards, so the agent can never trade safety for speed — same "dominant penalty" principle as the autonomous-driving example (Section 09).</div>
+      <p><b>Reward-hacking failure mode:</b> if the +1 "closer to destination" reward is summed without bound and the −20 corridor penalty is small relative to many such steps, the drone could learn to <b>oscillate in/out of the corridor</b> to repeatedly rack up small +1 progress rewards rather than delivering efficiently — or hover near (but not at) the destination to keep collecting proximity rewards without ever releasing the package. <b>Fix:</b> reward progress only on <i>net</i> distance decrease since the last step, and make the terminal success reward dominate the sum of step rewards.</p>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif m">Medium</span><span class="tg">Sample · Agent-Environment Notation</span></div>
+    <p class="qs"><b>SQ5.</b> A robot vacuum is in state S<sub>5</sub> (battery=40%, location=kitchen). It selects action A<sub>5</sub> = "move to living room". The environment responds: the robot is now in the living room with battery=38%, and it receives reward R = −1 (battery cost). Using the standard agent-environment indexing convention, label this transition fully (S<sub>5</sub>, A<sub>5</sub>, R<sub>6</sub>, S<sub>6</sub>) and explain why the reward and next state share the same time index while the action does not.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <div class="f-block">
+        <span class="s">S<sub>5</sub></span> <span class="op">=</span> (battery=40%, location=kitchen)
+        <br><span class="q">A<sub>5</sub></span> <span class="op">=</span> "move to living room"
+        <br><span class="r">R<sub>6</sub></span> <span class="op">=</span> −1 (battery-cost penalty)
+        <br><span class="s">S<sub>6</sub></span> <span class="op">=</span> (battery=38%, location=living room)
+      </div>
+      <div class="answer">By convention, action A<sub>t</sub> is chosen <i>while in</i> S<sub>t</sub> (hence index t), but its <i>consequences</i> — the reward and the resulting next state — are only observed one step later, hence both are indexed t+1.</div>
+    </div>
+  </div>
+
+  <div class="qz">
+    <div class="head"><span class="dif m">Medium</span><span class="tg">Sample · Conceptual Short-Answers</span></div>
+    <p class="qs"><b>SQ6.</b> Answer briefly: <b>(a)</b> True/False — "RL is a type of neural network architecture." Justify. <b>(b)</b> Distinguish a <i>policy</i> from a <i>value function</i> in one sentence each. <b>(c)</b> True/False — "A constant step-size α (never decaying to 0) is preferable for a non-stationary environment." Justify. <b>(d)</b> Give one example each of a model-free and a model-based algorithm.</p>
+    <button class="solbtn" onclick="toggleSol(this)">Show Solution</button>
+    <div class="sol">
+      <p><b>(a) False.</b> RL is a <b>learning paradigm</b> — an agent maximizing cumulative reward through interaction; neural networks are merely one way to <i>implement</i> the function approximators (policy/value) inside an RL agent, hence "Deep" RL.</p>
+      <p><b>(b)</b> <b>Policy π(a|s)</b> = the rule for <i>what action to take</i> in a state (a probability distribution over actions). <b>Value function V(s)/Q(s,a)</b> = an estimate of <i>how good</i> a state (or state-action pair) is, i.e. expected cumulative future reward.</p>
+      <p><b>(c) True.</b> A constant α gives every recent observation a fixed (geometrically-decaying-in-the-past) weight, keeping the agent maximally responsive to drift in a non-stationary environment — at the cost of never fully converging/settling.</p>
+      <p><b>(d)</b> Model-free: <b>Q-Learning</b> (or TD-learning). Model-based: <b>Value/Policy Iteration</b> (Dynamic Programming), or AlphaZero ("Given the Model").</p>
+    </div>
+  </div>
+
+  <div class="box exam">
+    <span class="tag">How to use this set</span>
+    <p>Work PE1–PE6 first under timed conditions, then SQ1–SQ6 without checking solutions — the six sample questions deliberately mirror the six past-paper question <i>shapes</i> (classification, TD numeric, taxonomy, reward design, notation, conceptual T/F) so getting these right is a strong signal you've covered Session 1's exam surface.</p>
+  </div>
+</section>
+
 </main>
 </div>
 <button id="top" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
@@ -729,6 +942,13 @@ function onScroll(){
   navlinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur));
 }
 addEventListener('scroll',onScroll,{passive:true}); onScroll();
+
+/* ---------- show/hide solution ---------- */
+function toggleSol(btn){
+  const sol=btn.nextElementSibling;
+  sol.classList.toggle('show');
+  btn.textContent = sol.classList.contains('show') ? 'Hide Solution' : 'Show Solution';
+}
 
 /* ---------- tabs ---------- */
 function tab(ex,i,btn){
