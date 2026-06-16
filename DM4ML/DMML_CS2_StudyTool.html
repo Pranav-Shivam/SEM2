@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMML CS-2 — Data Management Fundamentals | Study Tool</title>
+<style>
+  /* ── TOKENS ── */
+  :root {
+    --bg:       #0f1117;
+    --bg2:      #161b26;
+    --bg3:      #1e2535;
+    --border:   #2a3147;
+    --text:     #e2e8f0;
+    --muted:    #8892a4;
+    --purple:   #a78bfa;
+    --purple-d: #1e1533;
+    --teal:     #2dd4bf;
+    --teal-d:   #0d2d2a;
+    --amber:    #fbbf24;
+    --amber-d:  #2a1f08;
+    --sky:      #38bdf8;
+    --sky-d:    #0c1f30;
+    --coral:    #fb7185;
+    --coral-d:  #2d0f15;
+    --green:    #4ade80;
+    --red:      #f87171;
+    --sidebar-w: 270px;
+    --font-mono: 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.7; overflow-x: hidden; }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; min-height: 100vh; }
+  #sidebar { width: var(--sidebar-w); min-height: 100vh; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0; }
+  #main { flex: 1; min-width: 0; padding: 32px 40px; }
+
+  /* ── SIDEBAR ── */
+  .sb-header { padding: 20px 18px 12px; border-bottom: 1px solid var(--border); }
+  .sb-logo { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--purple); margin-bottom: 4px; }
+  .sb-title { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+  .mode-tabs { display: flex; gap: 4px; padding: 12px; border-bottom: 1px solid var(--border); }
+  .mode-tab { flex: 1; padding: 6px 4px; font-size: 11px; font-weight: 600; text-align: center; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .2s; }
+  .mode-tab.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+  .progress-wrap { padding: 10px 18px; border-bottom: 1px solid var(--border); }
+  .progress-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .progress-bar-outer { background: var(--bg3); border-radius: 999px; height: 5px; }
+  .progress-bar-inner { height: 5px; border-radius: 999px; background: linear-gradient(90deg, var(--purple), var(--teal)); transition: width .4s; }
+
+  .nav-section { padding: 10px 18px 4px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 18px; cursor: pointer; border-radius: 0; font-size: 13px; color: var(--muted); transition: all .15s; border-left: 3px solid transparent; }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active { color: var(--purple); border-left-color: var(--purple); background: rgba(167,139,250,.07); }
+  .nav-item .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background .2s; }
+  .nav-item.visited .nav-dot { background: var(--teal); }
+  .nav-item.active .nav-dot { background: var(--purple); }
+
+  /* ── PAGE ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--purple); margin-bottom: 6px; }
+  .page-title { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.2; margin-bottom: 8px; }
+  .page-desc { color: var(--muted); font-size: 14px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout { border-radius: 10px; padding: 14px 18px; margin: 16px 0; border-left: 4px solid; }
+  .callout-def { background: var(--purple-d); border-color: var(--purple); }
+  .callout-insight { background: var(--teal-d); border-color: var(--teal); }
+  .callout-exam { background: var(--amber-d); border-color: var(--amber); }
+  .callout-research { background: var(--sky-d); border-color: var(--sky); }
+  .callout-warn { background: var(--coral-d); border-color: var(--coral); }
+  .callout-label { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+  .callout-def .callout-label { color: var(--purple); }
+  .callout-insight .callout-label { color: var(--teal); }
+  .callout-exam .callout-label { color: var(--amber); }
+  .callout-research .callout-label { color: var(--sky); }
+  .callout-warn .callout-label { color: var(--coral); }
+
+  /* ── TABLES ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13.5px; }
+  th { background: var(--bg3); color: var(--purple); font-weight: 700; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+  tr:hover td { background: rgba(167,139,250,.04); }
+
+  /* ── EXPANDABLE CARDS ── */
+  .expand-card { border: 1px solid var(--border); border-radius: 10px; margin: 10px 0; overflow: hidden; }
+  .expand-header { display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; cursor: pointer; background: var(--bg3); font-weight: 600; font-size: 14px; color: var(--text); user-select: none; }
+  .expand-header:hover { background: rgba(167,139,250,.08); }
+  .expand-icon { color: var(--muted); transition: transform .25s; font-size: 18px; }
+  .expand-card.open .expand-icon { transform: rotate(45deg); color: var(--purple); }
+  .expand-body { display: none; padding: 14px 18px; background: var(--bg2); border-top: 1px solid var(--border); }
+  .expand-card.open .expand-body { display: block; }
+
+  /* ── TABS ── */
+  .tab-nav { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab-btn { padding: 7px 16px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all .2s; }
+  .tab-btn.active { background: var(--teal-d); color: var(--teal); border-color: var(--teal); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
+  .flow-box { background: var(--bg3); border: 1px solid var(--purple); color: var(--text); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; text-align: center; }
+  .flow-arrow { color: var(--muted); font-size: 18px; }
+  .flow-box.highlight { background: rgba(167,139,250,.15); border-color: var(--purple); color: var(--purple); }
+  .flow-box.teal { background: rgba(45,212,191,.1); border-color: var(--teal); color: var(--teal); }
+  .flow-box.amber { background: rgba(251,191,36,.1); border-color: var(--amber); color: var(--amber); }
+
+  /* ── CODE BLOCKS ── */
+  pre { background: #0a0e1a; border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; font-family: var(--font-mono); font-size: 12.5px; color: #a9c5e8; overflow-x: auto; margin: 12px 0; line-height: 1.6; }
+  code { font-family: var(--font-mono); font-size: 12.5px; }
+  .inline-code { background: var(--bg3); color: var(--teal); padding: 1px 6px; border-radius: 4px; font-size: 12.5px; }
+
+  h2 { font-size: 20px; font-weight: 700; color: var(--text); margin: 28px 0 10px; }
+  h3 { font-size: 15px; font-weight: 700; color: var(--purple); margin: 20px 0 8px; }
+  p { margin: 8px 0; color: var(--text); }
+  ul, ol { padding-left: 20px; margin: 8px 0; }
+  li { margin: 4px 0; color: var(--text); }
+  strong { color: var(--amber); }
+  em { color: var(--teal); font-style: normal; }
+
+  /* ── QUIZ MODE ── */
+  #quiz-page .q-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .q-num { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .q-text { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 18px; line-height: 1.5; }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-opt { padding: 11px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--text); transition: all .18s; background: var(--bg3); }
+  .q-opt:hover:not([disabled]) { border-color: var(--purple); background: rgba(167,139,250,.08); }
+  .q-opt.correct { border-color: var(--green); background: rgba(74,222,128,.1); color: var(--green); }
+  .q-opt.wrong { border-color: var(--red); background: rgba(248,113,113,.1); color: var(--red); }
+  .q-opt.reveal { border-color: var(--green); background: rgba(74,222,128,.07); }
+  .q-explain { margin-top: 14px; padding: 12px 16px; background: var(--bg3); border-radius: 8px; font-size: 13px; color: var(--muted); display: none; border-left: 3px solid var(--teal); }
+  .q-explain.show { display: block; }
+  .quiz-progress { display: flex; gap: 5px; flex-wrap: wrap; margin: 0 0 20px; }
+  .qp-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+  .qp-dot.correct { background: var(--green); }
+  .qp-dot.wrong { background: var(--red); }
+  #quiz-score { display: none; text-align: center; padding: 40px; background: var(--bg2); border-radius: 16px; border: 1px solid var(--border); }
+  .score-pct { font-size: 64px; font-weight: 800; color: var(--purple); }
+  .score-msg { font-size: 18px; margin-top: 8px; color: var(--text); }
+  .quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+  .btn { padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; transition: all .18s; }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-ghost { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--purple); }
+
+  /* ── FLASHCARD MODE ── */
+  #flashcard-page { max-width: 640px; margin: 0 auto; }
+  .fc-counter { font-size: 13px; color: var(--muted); margin-bottom: 16px; text-align: center; }
+  .fc-wrap { perspective: 900px; height: 280px; cursor: pointer; margin-bottom: 16px; }
+  .fc-inner { width: 100%; height: 100%; position: relative; transition: transform .5s; transform-style: preserve-3d; }
+  .fc-wrap.flipped .fc-inner { transform: rotateY(180deg); }
+  .fc-front, .fc-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; display: flex; align-items: center; justify-content: center; padding: 28px; text-align: center; border: 1px solid var(--border); }
+  .fc-front { background: var(--bg2); }
+  .fc-back { background: var(--bg3); transform: rotateY(180deg); border-color: var(--purple); }
+  .fc-front .fc-q { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.4; }
+  .fc-back .fc-a { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .fc-tap-hint { font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 14px; }
+  .fc-rating { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .fc-rating button { padding: 7px 20px; border-radius: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+  .fc-hard { background: rgba(248,113,113,.15); color: var(--red); }
+  .fc-good { background: rgba(251,191,36,.15); color: var(--amber); }
+  .fc-easy { background: rgba(74,222,128,.15); color: var(--green); }
+  .fc-rating button:hover { opacity: .8; }
+  .fc-nav { display: flex; justify-content: space-between; align-items: center; }
+  .fc-stats { display: flex; gap: 12px; font-size: 12px; }
+  .fc-stat { padding: 3px 10px; border-radius: 99px; font-weight: 700; }
+  .fc-stat-h { background: rgba(248,113,113,.12); color: var(--red); }
+  .fc-stat-g { background: rgba(251,191,36,.12); color: var(--amber); }
+  .fc-stat-e { background: rgba(74,222,128,.12); color: var(--green); }
+
+  /* ── GLOSSARY ── */
+  #gloss-search { width: 100%; padding: 10px 16px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; margin-bottom: 16px; }
+  #gloss-search::placeholder { color: var(--muted); }
+  #gloss-search:focus { outline: none; border-color: var(--purple); }
+
+  /* ── CHECKLIST ── */
+  .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: background .15s; }
+  .check-item:hover { background: var(--bg3); }
+  .check-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--teal); flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+  .check-item label { font-size: 13.5px; color: var(--text); cursor: pointer; line-height: 1.5; }
+  .check-item.done label { text-decoration: line-through; color: var(--muted); }
+  .check-section { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--purple); padding: 12px 14px 4px; }
+  .checklist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .check-progress { font-size: 13px; color: var(--teal); font-weight: 700; }
+
+  /* ── PERF BARS ── */
+  .perf-bar-wrap { margin: 6px 0; }
+  .perf-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .perf-bar-outer { background: var(--bg3); border-radius: 999px; height: 8px; }
+  .perf-bar-fill { height: 8px; border-radius: 999px; transition: width 1s ease; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    #sidebar { width: 100%; height: auto; min-height: unset; position: relative; flex-direction: row; flex-wrap: wrap; overflow-x: auto; }
+    #app { flex-direction: column; }
+    #main { padding: 16px; }
+    .nav-section, .progress-wrap { display: none; }
+    .nav-item { padding: 6px 12px; font-size: 12px; }
+  }
+
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+  .badge-new { background: rgba(167,139,250,.15); color: var(--purple); }
+  .badge-exam { background: rgba(251,191,36,.15); color: var(--amber); }
+
+  /* animation */
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
+  .page.active { animation: fadeIn .25s ease; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<nav id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">DMML · CS-2</div>
+    <div class="sb-title">Data Management Fundamentals</div>
+  </div>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('study')">Study</button>
+    <button class="mode-tab" onclick="setMode('quiz')">Quiz</button>
+    <button class="mode-tab" onclick="setMode('flash')">Cards</button>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Topics Visited</span><span id="prog-text">0 / 10</span></div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="prog-bar" style="width:0%"></div></div>
+  </div>
+
+  <!-- STUDY NAV -->
+  <div id="study-nav">
+    <div class="nav-section">Study Topics</div>
+    <div class="nav-item" data-page="p0" onclick="goPage('p0')"><div class="nav-dot"></div>Agenda & Overview</div>
+    <div class="nav-item" data-page="p1" onclick="goPage('p1')"><div class="nav-dot"></div>Data as Asset</div>
+    <div class="nav-item" data-page="p2" onclick="goPage('p2')"><div class="nav-dot"></div>Data as Liability</div>
+    <div class="nav-item" data-page="p3" onclick="goPage('p3')"><div class="nav-dot"></div>Data Sensitivity (ML)</div>
+    <div class="nav-item" data-page="p4" onclick="goPage('p4')"><div class="nav-dot"></div>Data Reliability</div>
+    <div class="nav-item" data-page="p5" onclick="goPage('p5')"><div class="nav-dot"></div>Data Management</div>
+    <div class="nav-item" data-page="p6" onclick="goPage('p6')"><div class="nav-dot"></div>ETL vs ELT</div>
+    <div class="nav-item" data-page="p7" onclick="goPage('p7')"><div class="nav-dot"></div>Storage Architectures</div>
+    <div class="nav-item" data-page="p8" onclick="goPage('p8')"><div class="nav-dot"></div>Data Lifecycle Phases</div>
+    <div class="nav-item" data-page="p9" onclick="goPage('p9')"><div class="nav-dot"></div>DM Roles & Framework</div>
+    <div class="nav-section" style="margin-top:8px">Tools</div>
+    <div class="nav-item" data-page="pg" onclick="goPage('pg')"><div class="nav-dot"></div>Glossary</div>
+    <div class="nav-item" data-page="pc" onclick="goPage('pc')"><div class="nav-dot"></div>Revision Checklist</div>
+  </div>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main id="main">
+
+<!-- ─── STUDY PAGES ─── -->
+
+<!-- PAGE 0: AGENDA -->
+<div class="page active" id="p0">
+  <div class="page-header">
+    <div class="page-eyebrow">CS-2 · Overview</div>
+    <h1 class="page-title">Agenda & Course Overview</h1>
+    <p class="page-desc">BITS Pilani — Data Management for ML · Lecture 2 · Prof. Sunil Bhutada</p>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Course Context</div>
+    This lecture covers the <strong>Principles of Data</strong>, the practice of <strong>Data Management</strong>, the concept of a <strong>Data Platform</strong>, the 7-component <strong>DM Framework</strong>, the <strong>4 Phases of the Data Lifecycle</strong>, key <strong>DM Roles</strong>, and how everything connects.
+  </div>
+
+  <h2>Today's Agenda</h2>
+  <div class="flow" style="flex-direction:column; align-items:flex-start; gap:10px;">
+    <div style="display:flex; align-items:center; gap:10px;"><div class="flow-box highlight">1 — Principles of Data</div><span style="color:var(--muted); font-size:12px">Asset · Liability · Sensitivity · Reliability</span></div>
+    <div style="display:flex; align-items:center; gap:10px;"><div class="flow-box teal">2 — Data Management</div><span style="color:var(--muted); font-size:12px">Definition · Components</span></div>
+    <div style="display:flex; align-items:center; gap:10px;"><div class="flow-box amber">3 — Data Platform</div><span style="color:var(--muted); font-size:12px">Infrastructure · Tools</span></div>
+    <div style="display:flex; align-items:center; gap:10px;"><div class="flow-box highlight">4 — DM Components</div><span style="color:var(--muted); font-size:12px">7-component Framework</span></div>
+    <div style="display:flex; align-items:center; gap:10px;"><div class="flow-box teal">5 — Data Lifecycle Phases</div><span style="color:var(--muted); font-size:12px">Creation · Ingestion · Processing · Post-processing</span></div>
+    <div style="display:flex; align-items:center; gap:10px;"><div class="flow-box amber">6 — DM Roles</div><span style="color:var(--muted); font-size:12px">Analyst · Engineer · Scientist · Architect · DBA · BI</span></div>
+    <div style="display:flex; align-items:center; gap:10px;"><div class="flow-box highlight">7 — Connecting the Dots</div><span style="color:var(--muted); font-size:12px">Data Engineering, Architecture, Governance overlap</span></div>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚡ Exam Tip — Big Picture</div>
+    Every exam question in this lecture traces back to two tensions: <strong>data as asset vs. liability</strong>, and <strong>structured vs. unstructured</strong> data needs. Keep these two axes in mind for any scenario-based question.
+  </div>
+
+  <h2>Recap: Session 1 Concepts Needed Here</h2>
+  <table>
+    <tr><th>Concept</th><th>Why Relevant Now</th></tr>
+    <tr><td>OLTP vs OLAP</td><td>Warehouse (OLAP) is the basis for data storage discussion</td></tr>
+    <tr><td>Normalization (1NF–5NF)</td><td>Normal forms dictate why warehouses use structured schemas</td></tr>
+    <tr><td>ACID Properties</td><td>Atomicity, Consistency, Isolation, Durability — basis for data reliability</td></tr>
+    <tr><td>BASE Properties</td><td>Basically Available, Soft state, Eventual consistency — NoSQL / Data Lake context</td></tr>
+    <tr><td>ETL Operations</td><td>Filter, Join, Sort, DAS, Pivot — all apply in data pipeline phases</td></tr>
+  </table>
+</div>
+
+<!-- PAGE 1: DATA AS ASSET -->
+<div class="page" id="p1">
+  <div class="page-header">
+    <div class="page-eyebrow">Principles of Data · Topic 1</div>
+    <h1 class="page-title">Data as an Asset</h1>
+    <p class="page-desc">Why data is valuable — and when it stops being worth the cost</p>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    Data is an <strong>asset</strong> when it can be transformed into actionable insight, fuelling better decisions, improved models, and competitive advantage. Like any asset, its value must be weighed against the cost of acquiring, storing, and maintaining it.
+  </div>
+
+  <h2>The Model Error Rate vs. Data Volume Graph</h2>
+  <p>This is one of the most examined graphs in this course. It plots two competing curves against data volume (log scale):</p>
+
+  <div style="background: var(--bg2); border: 1px solid var(--border); border-radius:12px; padding: 20px; margin: 16px 0;">
+    <div style="display:flex; gap:16px; margin-bottom:12px; font-size:13px;">
+      <span style="color: #60a5fa;">■ Blue — Model Error Rate (decreases)</span>
+      <span style="color: var(--coral);">■ Red — Likelihood of Data Problems (increases)</span>
+    </div>
+    <!-- SVG Chart -->
+    <svg viewBox="0 0 480 180" style="width:100%; max-width:480px; font-family:inherit;">
+      <defs>
+        <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#818cf8"/></linearGradient>
+        <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fb7185"/><stop offset="100%" stop-color="#f97316"/></linearGradient>
+      </defs>
+      <!-- Axes -->
+      <line x1="50" y1="10" x2="50" y2="150" stroke="#2a3147" stroke-width="1"/>
+      <line x1="50" y1="150" x2="460" y2="150" stroke="#2a3147" stroke-width="1"/>
+      <!-- X Labels -->
+      <text x="80" y="165" fill="#8892a4" font-size="9">10⁵</text>
+      <text x="180" y="165" fill="#8892a4" font-size="9">10⁷</text>
+      <text x="280" y="165" fill="#8892a4" font-size="9">10⁹</text>
+      <text x="380" y="165" fill="#8892a4" font-size="9">10¹¹</text>
+      <text x="200" y="178" fill="#8892a4" font-size="9" text-anchor="middle">Amount of Data (Log Scale)</text>
+      <!-- Y Label -->
+      <text x="10" y="90" fill="#8892a4" font-size="9" writing-mode="vertical-rl" text-anchor="middle">Rate / Likelihood</text>
+      <!-- Blue curve — decreasing -->
+      <path d="M60 25 C100 30 140 55 200 90 C260 118 320 135 420 142" fill="none" stroke="url(#blueGrad)" stroke-width="2.5"/>
+      <!-- Red curve — increasing late -->
+      <path d="M60 140 C120 138 200 130 270 110 C330 90 370 55 420 20" fill="none" stroke="url(#redGrad)" stroke-width="2.5"/>
+      <!-- Intersection mark -->
+      <circle cx="325" cy="106" r="5" fill="none" stroke="#fbbf24" stroke-width="2"/>
+      <line x1="325" y1="106" x2="325" y2="150" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="310" y="146" fill="#fbbf24" font-size="9">Optimal</text>
+      <!-- Legend -->
+      <rect x="60" y="15" width="12" height="3" fill="#60a5fa" rx="1"/>
+      <text x="76" y="19" fill="#8892a4" font-size="9">Model Error Rate</text>
+      <rect x="60" y="26" width="12" height="3" fill="#fb7185" rx="1"/>
+      <text x="76" y="30" fill="#8892a4" font-size="9">Likelihood of Data Issues</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚡ Frequently Tested</div>
+    <ul>
+      <li><strong>Blue line (error rate):</strong> Drops sharply as data grows → bigger data makes models smarter. After ~10⁸–10⁹ data points, adding more data gives negligible improvement.</li>
+      <li><strong>Red line (data problems):</strong> Starts low, rises steeply at large volumes → noise, corruption, privacy breaches, GIGO.</li>
+      <li><strong>Intersection point = Optimal data volume</strong> — beyond this, cost and risk outweigh accuracy gains.</li>
+      <li>The phrase "sweet spot" in the exam = the intersection point.</li>
+    </ul>
+  </div>
+
+  <h2>Netflix Case Study (Lecture Example)</h2>
+  <div class="callout callout-insight">
+    <div class="callout-label">🌐 Real-World Connection</div>
+    <strong>Netflix</strong> is cited as the gold standard for a data-informed company. Their data use:
+    <ul style="margin-top:8px;">
+      <li><strong>Personalization:</strong> Recommendations based on viewing history</li>
+      <li><strong>Content Acquisition:</strong> Predicting whether original shows will be hits <em>before they are produced</em> (e.g., Kapil Sharma Show — 52 countries, comedy popularity analysis)</li>
+      <li><strong>Streaming Quality:</strong> Optimizing video encoding and server distribution for smooth playback</li>
+    </ul>
+    <p style="margin-top:8px; font-size:13px; color:var(--muted)">Source: <a href="https://research.netflix.com/research-area/analytics" style="color:var(--sky)">research.netflix.com</a></p>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition — Industry Context (2024–2025)</div>
+    IBM's Global CEO Study (2024) found <strong>72% of top-performing CEOs</strong> believe competitive advantage depends on who has the most advanced generative AI capabilities. This directly implies: <em>to leverage AI, organizations must first organize their data architecture</em>. CEOs rank customer/employee experience, enhanced decision-making, and accelerated growth as top AI-driven priorities. <br><span style="color:var(--muted); font-size:12px">Source: IBM Institute for Business Value CEO Survey, 2024</span>
+  </div>
+
+  <h2>Why "More Data = Better" is a Myth</h2>
+  <div class="callout callout-warn">
+    <div class="callout-label">⚠️ Common Misconception</div>
+    Students often write "more data always improves the model." This is wrong beyond the optimal volume. After the saturation point, you get GIGO (Garbage In, Garbage Out), skyrocketing storage costs, increased privacy/breach risk, and harder governance. Always qualify your answer with "up to an optimal volume."
+  </div>
+</div>
+
+<!-- PAGE 2: DATA AS LIABILITY -->
+<div class="page" id="p2">
+  <div class="page-header">
+    <div class="page-eyebrow">Principles of Data · Topic 2</div>
+    <h1 class="page-title">Data as a Liability</h1>
+    <p class="page-desc">The dual nature of data — Collect, Store, Delete lifecycle challenges</p>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition — Dual Nature of Data</div>
+    The same dataset can be an <strong>asset</strong> (value driver) or a <strong>liability</strong> (legal, financial, reputational burden) depending on how it is collected, stored, and managed. Like the proverb <em>"one man's food is another man's poison."</em>
+  </div>
+
+  <h2>The Lifecycle: Collect → Store → Delete</h2>
+  <div class="flow">
+    <div class="flow-box highlight">Collect</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box teal">Store</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box amber">Delete</div>
+  </div>
+  <p>Each phase introduces its own liability risks.</p>
+
+  <!-- TABS for Collect / Store / Delete -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab(this,'tab-collect')">📥 Collect Phase</button>
+    <button class="tab-btn" onclick="switchTab(this,'tab-store')">🗄️ Store Phase</button>
+    <button class="tab-btn" onclick="switchTab(this,'tab-delete')">🗑️ Delete Phase</button>
+  </div>
+
+  <div class="tab-content active" id="tab-collect">
+    <h3>Challenges at the Collect Phase</h3>
+    <p>The biggest myth: <strong>"More data = better, and this stuff is easy."</strong> — Both are false.</p>
+
+    <div class="callout callout-def">
+      <div class="callout-label">📘 PII — Personally Identifiable Information</div>
+      Any data that can uniquely identify a person (name, address, ID number, biometrics, etc.). Collecting PII requires <strong>explicit consent</strong> and a defined <strong>deletion policy</strong> by law (e.g., GDPR).
+    </div>
+
+    <h3>Restrictions in Data Collection</h3>
+    <table>
+      <tr><th>Restriction Type</th><th>Example</th></tr>
+      <tr><td><strong>Location of Organization</strong></td><td>Indian employer stores employee data on Indian servers</td></tr>
+      <tr><td><strong>Location of Data Origin</strong></td><td>EU data cannot leave European countries (GDPR data residency)</td></tr>
+      <tr><td><strong>Organization Policies</strong></td><td>Confidential company data must stay on-premises</td></tr>
+      <tr><td><strong>Data About People (PII)</strong></td><td>Consent required to store; restrictions on how/when</td></tr>
+      <tr><td><strong>Insurance Regulations</strong></td><td>Health insurers follow HIPAA in the US</td></tr>
+    </table>
+
+    <div class="callout callout-insight">
+      <div class="callout-label">🌐 Real-World: Target Pregnancy Prediction (Lecture Example)</div>
+      Target used purchase history to predict which customers were pregnant — so they could send baby product coupons. Their model was so accurate it identified a teenage girl as pregnant <em>before she had told her family</em>. When the father saw the coupons, it became a major privacy scandal. <strong>Lesson: Public shopping data becomes a liability when it uncovers deeply personal information.</strong>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-store">
+    <h3>3 Approaches to Handling Sensitive Data in Storage</h3>
+    <table>
+      <tr><th>#</th><th>Approach</th><th>How</th><th>Note</th></tr>
+      <tr><td>1</td><td><strong>Access Restriction</strong></td><td>Restrict external AND internal users; granular permissions; audit logs</td><td><em>Restrict even employees</em> — key exam phrase</td></tr>
+      <tr><td>2</td><td><strong>Anonymization / Pseudonymization</strong></td><td>Replace PII with fake identifiers (reversible); e.g., postcode for weather</td><td>Reversible with additional key; protects from casual inspection</td></tr>
+      <tr><td>3 ✅</td><td><strong>Connection Removal (Recommended)</strong></td><td>Break the link between PII and model data entirely</td><td>Not trivially reversible; harder than it sounds but most secure</td></tr>
+    </table>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)"><span>🔍 Pseudonymization Example — Postcode</span><span class="expand-icon">+</span></div>
+      <div class="expand-body">
+        <p>For weather predictions, you don't need the exact house address — a <em>general area code (postcode zone)</em> is sufficient. Replace the precise postcode with a zone-level code. This is a form of <strong>differential privacy</strong> — you preserve the utility (weather correlation) without the liability (knowing exactly where someone lives). The replacement is reversible if you have the mapping key.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-exam">
+      <div class="callout-label">⚡ Exam Trap</div>
+      Question: "Which approach to PII in the Store phase is <em>recommended</em>?" → Answer: <strong>Connection Removal (Approach 3)</strong>. Not access restriction, not pseudonymization. The keyword is "recommended."
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-delete">
+    <h3>When Should Data Be Deleted?</h3>
+    <ul>
+      <li>When the user specifies a time period</li>
+      <li>When the organization no longer needs it</li>
+      <li>When governing policies set a cutoff (e.g., GDPR Article 5.1(f))</li>
+    </ul>
+    <p><strong>Lecture Example:</strong> Job portals retain your profile for 6 months only. After that, you must recreate it.</p>
+
+    <div class="callout callout-def">
+      <div class="callout-label">📘 GDPR — General Data Protection Regulation</div>
+      European Union law governing personal data collection, processing, and deletion. Sets legal obligations for when and how data must be erased. Article 17 is the "Right to Erasure" (right to be forgotten).
+    </div>
+
+    <h3>Why Deletion is Harder Than It Seems</h3>
+    <div class="callout callout-warn">
+      <div class="callout-label">⚠️ Warning</div>
+      <strong>Shift+Delete ≠ Gone.</strong> Recovery software can restore files. More critically:
+      <ul style="margin-top:8px;">
+        <li>Data may have been written to <strong>tape drives for archival</strong></li>
+        <li>Data may exist in <strong>multiple backup copies</strong></li>
+        <li>Data may be <strong>replicated across geographic servers</strong></li>
+        <li>Even after primary system deletion, archived copies survive</li>
+      </ul>
+    </div>
+
+    <div class="callout callout-research">
+      <div class="callout-label">🔬 Research Addition — GDPR Enforcement Reality (2024)</div>
+      In 2023–24, GDPR fines exceeded €2.1 billion, with Meta alone fined €1.2 billion for improper data transfers. The "right to erasure" under GDPR Article 17 is extremely difficult to enforce in practice when data has been replicated to cloud CDNs, third-party analytics, and backup tapes. This is exactly the "harder than it seems" problem the lecture describes.<br><span style="color:var(--muted); font-size:12px">Source: CNIL, DPA enforcement tracker, 2024</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <h2>Medical Records — The Classic Example</h2>
+  <p>Medical records can be <em>both</em> an asset (enables treatment, research) <em>and</em> a liability (HIPAA violations, breach lawsuits, reputational damage). The same data item flips roles based on who holds it and how securely.</p>
+</div>
+
+<!-- PAGE 3: DATA SENSITIVITY ML -->
+<div class="page" id="p3">
+  <div class="page-header">
+    <div class="page-eyebrow">Principles of Data · Topic 3</div>
+    <h1 class="page-title">Data Sensitivity of ML Pipelines</h1>
+    <p class="page-desc">Why ML pipelines are more sensitive to data issues than regular data pipelines</p>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    ML pipelines are <strong>unusually sensitive</strong> because models memorize and propagate their training data — leakage, bias, corruption, and distribution shifts all flow downstream into predictions.
+  </div>
+
+  <h2>The Lecture Scenario (E-commerce Example)</h2>
+  <div class="callout callout-insight">
+    <div class="callout-label">🌐 Lecture Scenario</div>
+    An e-commerce company wants to predict <strong>New Year's Eve sales</strong> (Dec 31) across all countries/regions/languages. Due to a technical or human error, <strong>data from one region is lost</strong>. The data pipeline keeps running normally, but the ML pipeline behaves very differently. Why?
+  </div>
+
+  <h3>The Answer</h3>
+  <table>
+    <tr><th>Pipeline Type</th><th>Effect of Missing Region Data</th><th>Why</th></tr>
+    <tr><td><strong>Data Pipeline</strong></td><td>✅ Continues normally</td><td>Not predicting anything — it just moves data. Missing region = smaller dataset, pipeline still runs.</td></tr>
+    <tr><td><strong>ML Pipeline</strong></td><td>❌ Behaves abnormally</td><td>Model includes predictions — missing data = distribution shift → wrong predictions → wrong sales forecasts → business impact.</td></tr>
+  </table>
+
+  <h2>Sensitivity Comparison</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0;">
+    <div class="callout callout-def" style="margin:0">
+      <div class="callout-label">Normal Data Pipelines — Sensitive to:</div>
+      <ul>
+        <li>Volume of input data</li>
+        <li>Correctness of input data</li>
+      </ul>
+    </div>
+    <div class="callout callout-warn" style="margin:0">
+      <div class="callout-label">ML Pipelines — Sensitive to:</div>
+      <ul>
+        <li>Volume of input data</li>
+        <li>Correctness of input data</li>
+        <li><strong>Changes to distribution of data</strong> ← extra!</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚡ Frequently Tested</div>
+    The <strong>key differentiator</strong> for ML pipelines vs. normal pipelines is sensitivity to <strong>distribution shift</strong>. Both care about volume and correctness, but only ML pipelines are broken by a change in data distribution — even if the total volume and format are fine.
+  </div>
+
+  <h2>Training–Serving Skew <span class="badge badge-new">Research Addition</span></h2>
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research — Training–Serving Skew (2024 Industry Practice)</div>
+    A model can score 94% accuracy in offline tests yet fail catastrophically in production because a feature is <em>stale, missing, or computed differently</em> at serving time than at training time. This is called <strong>training–serving skew</strong>. Google's ML best practices manual describes it as "one of the most common and hardest-to-debug issues in production ML." Solutions include feature stores (Feast, Tecton) that guarantee identical feature computation in both training and serving.<br><span style="color:var(--muted); font-size:12px">Source: Google ML Engineering best practices; Tecton feature store docs, 2024</span>
+  </div>
+
+  <h2>Data Drift & Concept Drift <span class="badge badge-new">Research Addition</span></h2>
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition</div>
+    <ul>
+      <li><strong>Data Drift:</strong> The statistical distribution of input features changes over time (e.g., consumer behavior shifts post-pandemic). Models trained on old distributions silently degrade.</li>
+      <li><strong>Concept Drift:</strong> The relationship between features and the target label changes (e.g., fraud patterns evolve to evade detection). More dangerous — the data looks fine but ground truth has shifted.</li>
+    </ul>
+    Modern MLOps platforms (MLflow, Evidently AI, Arize) provide automated drift monitoring dashboards.<br><span style="color:var(--muted); font-size:12px">Source: Evidently AI documentation, 2024–2025</span>
+  </div>
+</div>
+
+<!-- PAGE 4: DATA RELIABILITY -->
+<div class="page" id="p4">
+  <div class="page-header">
+    <div class="page-eyebrow">Principles of Data · Topic 4</div>
+    <h1 class="page-title">Data Reliability</h1>
+    <p class="page-desc">The 5 characteristics of reliable data in distributed environments</p>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <strong>Data Reliability</strong> is the set of minimum characteristics expected from data in a growing distributed environment — whether you can trust the data to be correct, complete, fresh, and available when needed.
+  </div>
+
+  <h2>The 5 Reliability Characteristics (Motivating Questions)</h2>
+  <table>
+    <tr><th>Motivating Question</th><th>Characteristic</th><th>Meaning</th></tr>
+    <tr><td>After some time, what if the needed data is lost?</td><td><strong>Durability</strong></td><td>Data persists even after system failures</td></tr>
+    <tr><td>Are we not supposed to get the same data from all copies?</td><td><strong>Consistency</strong></td><td>All replicas return the same value</td></tr>
+    <tr><td>In a team where data changes frequently, don't we want to time travel?</td><td><strong>Version Control</strong></td><td>Ability to access historical snapshots</td></tr>
+    <tr><td>How fast should data be available for accurate results?</td><td><strong>Performance</strong></td><td>Low latency access for time-sensitive use cases</td></tr>
+    <tr><td>As and when we need, is the data available?</td><td><strong>Availability</strong></td><td>System responds to requests without failure</td></tr>
+  </table>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚡ Homework Question — WHY is Integrity NOT in the list?</div>
+    <strong>Answer:</strong> Integrity is the <em>net result</em> of the other five working correctly. If you have Durability + Consistency + Version Control + Performance + Availability → you have achieved data integrity. It is emergent, not a separate characteristic. This is a commonly asked exam question.
+  </div>
+
+  <h2>Performance Comparison (Illustration)</h2>
+  <div style="margin:16px 0;">
+    <div class="perf-bar-wrap">
+      <div class="perf-bar-label"><span>Durability (HDFS 3-way replication)</span><span>95%</span></div>
+      <div class="perf-bar-outer"><div class="perf-bar-fill" style="width:95%; background: linear-gradient(90deg, var(--purple), var(--teal))"></div></div>
+    </div>
+    <div class="perf-bar-wrap">
+      <div class="perf-bar-label"><span>Consistency (RDBMS Strong)</span><span>99%</span></div>
+      <div class="perf-bar-outer"><div class="perf-bar-fill" style="width:99%; background: linear-gradient(90deg, var(--teal), var(--sky))"></div></div>
+    </div>
+    <div class="perf-bar-wrap">
+      <div class="perf-bar-label"><span>Availability (NoSQL eventual)</span><span>85%</span></div>
+      <div class="perf-bar-outer"><div class="perf-bar-fill" style="width:85%; background: linear-gradient(90deg, var(--amber), var(--coral))"></div></div>
+    </div>
+    <div class="perf-bar-wrap">
+      <div class="perf-bar-label"><span>Performance (In-memory cache)</span><span>90%</span></div>
+      <div class="perf-bar-outer"><div class="perf-bar-fill" style="width:90%; background: linear-gradient(90deg, var(--coral), var(--purple))"></div></div>
+    </div>
+  </div>
+
+  <h2>ACID vs BASE Recap (from Session 1 — used here)</h2>
+  <table>
+    <tr><th>Property</th><th>ACID</th><th>BASE</th></tr>
+    <tr><td>Availability</td><td>Lower</td><td>Highly Available</td></tr>
+    <tr><td>Consistency</td><td>Strong (immediate)</td><td>Eventual</td></tr>
+    <tr><td>Performance</td><td>Lower, more accurate</td><td>Faster, less accurate</td></tr>
+    <tr><td>Scalability</td><td>Difficult to scale</td><td>Highly scalable</td></tr>
+    <tr><td>Use Cases</td><td>Banking, Finance, E-commerce</td><td>Social media, Real-time analytics, Big Data</td></tr>
+  </table>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research — The CAP Theorem Connection</div>
+    The CAP Theorem (Brewer, 2000) states that a distributed system can guarantee at most <em>two</em> of: <strong>Consistency, Availability, Partition Tolerance</strong>. ACID databases choose C+A (sacrifice P). NoSQL/BASE systems choose A+P (sacrifice strong C). This is the theoretical foundation for why Data Lakes use eventual consistency — partition tolerance and availability matter more at petabyte scale.<br><span style="color:var(--muted); font-size:12px">Source: Brewer (2000); Gilbert & Lynch, ACM SIGACT, 2002</span>
+  </div>
+</div>
+
+<!-- PAGE 5: DATA MANAGEMENT -->
+<div class="page" id="p5">
+  <div class="page-header">
+    <div class="page-eyebrow">Data Management</div>
+    <h1 class="page-title">What is Data Management?</h1>
+    <p class="page-desc">Definition, components, data governance, and data security</p>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <strong>Data Management</strong> is the practice of <em>collecting, processing, and using data securely and efficiently</em> for better business outcomes. A strong data management strategy implements four core components to streamline strategy and operations.
+  </div>
+
+  <h2>Four Core Components</h2>
+  <div class="flow" style="flex-wrap:wrap;">
+    <div class="flow-box highlight">1. Data Integration & Processing</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box teal">2. Data Storage</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box amber">3. Data Governance</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-box" style="border-color:var(--coral); color:var(--coral)">4. Data Security</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="expand-card open">
+    <div class="expand-header" onclick="toggleExpand(this)"><span>📊 Component 3: Data Governance</span><span class="expand-icon">+</span></div>
+    <div class="expand-body">
+      <table>
+        <tr><th>Aspect</th><th>Detail</th></tr>
+        <tr><td><strong>Why?</strong></td><td>Promotes availability; ensures compliance</td></tr>
+        <tr><td><strong>What?</strong></td><td>Set of standards and business processes to ensure data assets are leveraged effectively</td></tr>
+        <tr><td><strong>Includes</strong></td><td>Processes, Policies, Tools</td></tr>
+        <tr><td><strong>Ensures</strong></td><td>Data Quality, Data Access, Data Usability, Data Security</td></tr>
+        <tr><td><strong>Who?</strong></td><td>Data Governance Councils</td></tr>
+      </table>
+      <div class="callout callout-def" style="margin-top:12px">
+        <div class="callout-label">📘 Metadata</div>
+        <strong>Metadata = Data about Data.</strong> Since data is spread across many systems, you need a repository that tracks WHERE data lives. Like a library index — the catalog is metadata, the books are the data. Activities include: aligning taxonomies across data sources, defining roles and responsibilities for data access.
+      </div>
+    </div>
+  </div>
+
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)"><span>🔐 Component 4: Data Security</span><span class="expand-icon">+</span></div>
+    <div class="expand-body">
+      <div class="callout callout-def">
+        <div class="callout-label">📘 Definition</div>
+        Data security sets <strong>guardrails</strong> in place to protect digital information from unauthorized access, corruption, or theft.
+      </div>
+      <p><strong>Why it matters:</strong> Data loss can be devastating to any business; breaches result in costly financial and brand consequences.</p>
+      <p><strong>How it's done:</strong></p>
+      <ul>
+        <li><strong>Encryption:</strong> Data at rest and in transit</li>
+        <li><strong>Data Masking:</strong> Hide sensitive fields in views/exports</li>
+        <li><strong>Controlled Access:</strong> "Can you see the salary slip of your colleague? Can you see the medical reports of a fellow patient?" → NO. Role-based access (RBAC)</li>
+      </ul>
+      <div class="callout callout-research">
+        <div class="callout-label">🔬 Research Addition — RBAC in ML Pipelines (2024)</div>
+        Role-Based Access Control (RBAC) is now extended to ML feature stores and model registries. In platforms like Databricks Unity Catalog, data scientists can access feature tables only if their role grants permission — preventing inadvertent PII leakage into training sets.<br><span style="color:var(--muted); font-size:12px">Source: Databricks Unity Catalog documentation, 2024</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <h2>The 7-Component DM Framework</h2>
+  <table>
+    <tr><th>Component</th><th>Description</th></tr>
+    <tr><td><strong>Data Governance</strong></td><td>Overarching support through stewardship, policies, standards</td></tr>
+    <tr><td><strong>Data Architecture</strong></td><td>Infrastructure for storage, integration, and use of data</td></tr>
+    <tr><td><strong>Metadata</strong></td><td>Data about data — critical for discoverability and collaboration</td></tr>
+    <tr><td><strong>Data Quality</strong></td><td>Ensures data fulfills business needs</td></tr>
+    <tr><td><strong>Data Lifecycle</strong></td><td>Tracks data from initial creation through final deletion</td></tr>
+    <tr><td><strong>Analytics</strong></td><td>Statistical & visualization techniques for business decisions</td></tr>
+    <tr><td><strong>Data Privacy</strong></td><td>Supports sharing data internally and externally per regulations</td></tr>
+  </table>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚡ Exam Tip — 7 Components Mnemonic</div>
+    <strong>G-A-M-Q-L-A-P</strong> — Governance, Architecture, Metadata, Quality, Lifecycle, Analytics, Privacy. Or: <em>"Great Architects Make Quality Lifecycles And Privacy."</em>
+  </div>
+
+  <h2>Data Platform</h2>
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    A <strong>Data Platform</strong> is a software suite that enables organizations to process and manage large amounts of data quickly and efficiently. It is a central repository and processing house — a collection of data pipelines that ingest, store, transform, and deliver data to various destinations.
+  </div>
+  <p><strong>Technical requirements include:</strong> Fast query processing · Large storage capacity · Elastic computing · In-memory caches · MPP (Massively Parallel Processing) · Columnar storage · Large in-memory data grids and computing clusters</p>
+</div>
+
+<!-- PAGE 6: ETL vs ELT -->
+<div class="page" id="p6">
+  <div class="page-header">
+    <div class="page-eyebrow">Data Management · Component 1</div>
+    <h1 class="page-title">ETL vs ELT</h1>
+    <p class="page-desc">Data integration, processing approaches, and when each applies</p>
+  </div>
+
+  <h2>What is ETL?</h2>
+  <div class="flow">
+    <div class="flow-box highlight">Extract</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box highlight">Transform</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box highlight">Load</div>
+  </div>
+
+  <table>
+    <tr><th>Step</th><th>What Happens</th><th>Simple Term</th></tr>
+    <tr><td><strong>Extract (E)</strong></td><td>Retrieve and verify data from multiple sources simultaneously</td><td>PULL</td></tr>
+    <tr><td><strong>Transform (T)</strong></td><td>Convert format, process, organize — 14–21 transformation types (filter, merge, aggregate, etc.)</td><td>PROCESS</td></tr>
+    <tr><td><strong>Load (L)</strong></td><td>Move transformed data into a data warehouse / repository</td><td>PUSH / ARRIVAL</td></tr>
+  </table>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Extraction vs Ingestion — Key Difference</div>
+    <ul>
+      <li><strong>Extraction (PULL):</strong> You go to the source and pull data manually (e.g., download CSV from Kaggle). Static, point-in-time.</li>
+      <li><strong>Ingestion (ARRIVAL):</strong> Data is continuously pushed or streamed into your system via API or pipeline. Dynamic, always up-to-date.</li>
+    </ul>
+    <em>Ingestion = end-to-end process. Extraction = part of ingestion.</em>
+  </div>
+
+  <h2>Why ETL Has Limitations</h2>
+  <table>
+    <tr><th>Question</th><th>ETL Answer</th></tr>
+    <tr><td>Is our data always structured?</td><td>❌ No — ETL struggles with semi/unstructured data</td></tr>
+    <tr><td>Can ETL cater to growing velocity?</td><td>❌ No — batch processing, not real-time</td></tr>
+    <tr><td>Can it work with real-time data flow?</td><td>❌ No — requires pre-defined schema, batch jobs</td></tr>
+  </table>
+
+  <h2>ELT — The Modern Solution</h2>
+  <div class="flow">
+    <div class="flow-box teal">Extract</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box teal">Load (raw)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box teal">Transform (later)</div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌐 Why ELT Emerged</div>
+    <p>The argument: "Why should I always transform data before loading? Let me load it in whatever form it comes in, and decide later what needs transforming."</p>
+    <p>Driven by the <strong>5 V's of Big Data</strong> (Volume, Velocity, Variety, Veracity, Value) — data was spread across clouds, IoT, and many devices, making pre-transformation impractical.</p>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚡ Exam — ETL vs ELT Comparison</div>
+    <table>
+      <tr><th>Dimension</th><th>ETL</th><th>ELT</th></tr>
+      <tr><td>Transform timing</td><td>Before loading</td><td>After loading</td></tr>
+      <tr><td>Storage destination</td><td>Data Warehouse</td><td>Data Lake</td></tr>
+      <tr><td>Data types handled</td><td>Structured only</td><td>Any (structured, semi, unstructured)</td></tr>
+      <tr><td>Real-time support</td><td>No</td><td>Yes</td></tr>
+      <tr><td>Schema requirement</td><td>Schema-on-write</td><td>Schema-on-read</td></tr>
+    </table>
+  </div>
+
+  <h2>Transformation Types — The 14–21 Steps</h2>
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Common Transformations</div>
+    The lecture mentions 14–21 transformations. Key ones to know:
+    <ul style="margin-top:8px; columns:2;">
+      <li>Filter</li><li>Merge / Join</li><li>Aggregate</li><li>Sort</li><li>Pivot</li><li>Deduplication</li><li>Normalization</li><li>Enrichment</li><li>Type casting</li><li>Bucketing</li>
+    </ul>
+  </div>
+
+  <h2>Can We Directly Use Extracted Data?</h2>
+  <div class="callout callout-warn">
+    <div class="callout-label">⚠️ No — Post-Extraction Steps Are Always Needed</div>
+    Even after extraction, the data must be filtered, merged, and aggregated before it can feed into a BI dashboard or ML algorithm. Raw extracted data is never directly consumable.
+  </div>
+</div>
+
+<!-- PAGE 7: STORAGE ARCHITECTURES -->
+<div class="page" id="p7">
+  <div class="page-header">
+    <div class="page-eyebrow">Data Management · Component 2</div>
+    <h1 class="page-title">Data Storage Architectures</h1>
+    <p class="page-desc">Warehouse vs Lake vs Lakehouse — when to use what</p>
+  </div>
+
+  <h2>The Core Analogy (Lecture)</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0;">
+    <div class="callout callout-def" style="margin:0;">
+      <div class="callout-label">🏭 Warehouse Analogy</div>
+      <p>A finished-goods warehouse (like Amazon fulfillment or Coca-Cola bottling plant) — everything is <strong>processed, organized, and ready to dispatch</strong>. Highly structured, specific places for everything.</p>
+    </div>
+    <div class="callout callout-insight" style="margin:0;">
+      <div class="callout-label">🌊 Lake Analogy</div>
+      <p>A natural lake — raw, unfiltered water collected from various sources. <strong>Unstructured or raw state</strong>. Massive scale. Useful when you want to store everything now and figure out what to analyze later.</p>
+    </div>
+  </div>
+
+  <p><strong>More examples from lecture:</strong></p>
+  <ul>
+    <li><em>Kitchen cupboard</em> = Data Warehouse (organized, know what's where)</li>
+    <li><em>Wholesale/cash & carry market</em> = Data Lake (enormous, unquantified items)</li>
+    <li><em>Ready-made chapati vs. making from scratch</em> = Warehouse vs Lake data</li>
+  </ul>
+
+  <h2>Full Comparison</h2>
+  <table>
+    <tr><th>Feature</th><th>Data Warehouse</th><th>Data Lake</th><th>Data Lakehouse</th></tr>
+    <tr><td><strong>Schema</strong></td><td>Required (schema-on-write)</td><td>None (schema-on-read)</td><td>Both</td></tr>
+    <tr><td><strong>Data Types</strong></td><td>Structured only</td><td>Semi + Unstructured</td><td>All types</td></tr>
+    <tr><td><strong>System Type</strong></td><td>RDBMS / Relational</td><td>Flexible, multi-source</td><td>Hybrid</td></tr>
+    <tr><td><strong>Optimization</strong></td><td>High-performance analytics</td><td>Cost, multi-type</td><td>Both</td></tr>
+    <tr><td><strong>Pipeline</strong></td><td>ETL (transform before load)</td><td>ELT (load then transform)</td><td>ELT</td></tr>
+    <tr><td><strong>Use Cases</strong></td><td>BI dashboards, Reporting, Visualization</td><td>AI/ML, Unstructured analytics, Sandbox</td><td>Enterprise ML + BI</td></tr>
+    <tr><td><strong>Examples</strong></td><td>Snowflake, Redshift, BigQuery (warehouse mode)</td><td>AWS S3, Azure Data Lake, Hadoop HDFS</td><td>Databricks Lakehouse, Delta Lake</td></tr>
+  </table>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Data Lakehouse</div>
+    <strong>Data Warehouse + Data Lake = Data Lakehouse.</strong> Combines the reliability and performance of a warehouse with the flexibility and scale of a data lake. Has schema AND schema-less data in the same system. Example: Delta Lake (Databricks), Apache Iceberg.
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition — Modern Industry Shift (2024–2025)</div>
+    The Data Lakehouse architecture has become the dominant paradigm in modern data engineering. Databricks reported that over 60% of their enterprise customers have migrated from separate warehouse+lake setups to a unified Lakehouse by 2024. Apache Iceberg and Delta Lake provide ACID transactions on top of object storage, solving the historic weakness of data lakes (no transactional guarantees).<br><span style="color:var(--muted); font-size:12px">Source: Databricks State of Data + AI Report, 2024</span>
+  </div>
+
+  <h2>Row-Oriented vs Column-Oriented Storage <span class="badge badge-new">Research</span></h2>
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition — Storage Layout (from BitsNotes / Lecture 2 extended content)</div>
+    <table>
+      <tr><th>Aspect</th><th>Row-Oriented</th><th>Column-Oriented</th></tr>
+      <tr><td>Optimized for</td><td>OLTP — insert, update, delete single records</td><td>OLAP — aggregate across many rows, few columns</td></div></tr>
+      <tr><td>Access pattern</td><td>Read full row efficiently</td><td>Read single column across millions of rows</td></tr>
+      <tr><td>Compression</td><td>Low (mixed data types per block)</td><td>High (same type per block)</td></tr>
+      <tr><td>Examples</td><td>PostgreSQL, MySQL (row store)</td><td>Apache Parquet, BigQuery, Redshift (columnar)</td></tr>
+      <tr><td>SQL workload fit</td><td>SELECT * WHERE id=X</td><td>SELECT SUM(revenue) WHERE year=2024</td></tr>
+    </table>
+    <span style="color:var(--muted); font-size:12px">Source: BitsNotes DMML Lecture 2 Notes, 2026</span>
+  </div>
+
+  <h2>Modern Data Formats <span class="badge badge-new">Research</span></h2>
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Common Data Formats in ML Pipelines (2024)</div>
+    <table>
+      <tr><th>Format</th><th>Type</th><th>Best For</th><th>Used In</th></tr>
+      <tr><td>CSV</td><td>Text/Row</td><td>Simple tabular data</td><td>Kaggle, basic pipelines</td></tr>
+      <tr><td>JSON</td><td>Text/Hierarchical</td><td>APIs, semi-structured</td><td>REST APIs, NoSQL</td></tr>
+      <tr><td>Parquet</td><td>Binary/Columnar</td><td>OLAP, ML feature stores</td><td>Spark, BigQuery, Hive</td></tr>
+      <tr><td>Avro</td><td>Binary/Row</td><td>Streaming, schema evolution</td><td>Kafka, data lakes</td></tr>
+      <tr><td>Protobuf</td><td>Binary</td><td>High-speed serialization</td><td>gRPC, ML serving</td></tr>
+    </table>
+    <span style="color:var(--muted); font-size:12px">Source: Apache documentation; BitsNotes Lecture 2, 2026</span>
+  </div>
+</div>
+
+<!-- PAGE 8: DATA LIFECYCLE PHASES -->
+<div class="page" id="p8">
+  <div class="page-header">
+    <div class="page-eyebrow">Phases of Data Lifecycle</div>
+    <h1 class="page-title">4 Phases of ML Data Lifecycle</h1>
+    <p class="page-desc">Creation → Ingestion → Processing → Post-Processing</p>
+  </div>
+
+  <div class="flow" style="flex-wrap:wrap;">
+    <div class="flow-box highlight">Phase 1<br><small>Creation</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box teal">Phase 2<br><small>Ingestion</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box amber">Phase 3<br><small>Processing</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box" style="border-color:var(--coral); color:var(--coral)">Phase 4<br><small>Post-Processing</small></div>
+  </div>
+
+  <!-- TABS for phases -->
+  <div class="tab-nav" style="margin-top:20px;">
+    <button class="tab-btn active" onclick="switchTab(this,'ph1')">Phase 1: Creation</button>
+    <button class="tab-btn" onclick="switchTab(this,'ph2')">Phase 2: Ingestion</button>
+    <button class="tab-btn" onclick="switchTab(this,'ph3')">Phase 3: Processing</button>
+    <button class="tab-btn" onclick="switchTab(this,'ph4')">Phase 4: Post-Processing</button>
+  </div>
+
+  <div class="tab-content active" id="ph1">
+    <h3>Generation / Creation</h3>
+    <div class="callout callout-def">
+      <div class="callout-label">📘 Definition</div>
+      Data generation or creation is the process of generating or capturing data into some data storage system — but not our own data storage system (it exists at source).
+    </div>
+    <p><strong>Sources:</strong> Devices, Audio messages, Text messages, Images, Videos, Web curation, Log files from servers, Diagnostic data from medical procedures</p>
+    <p><strong>Data types at this stage:</strong> Unstructured · Semi-structured · Structured (all three)</p>
+
+    <h3>Static vs Frequently Updated Datasets</h3>
+    <table>
+      <tr><th>Type</th><th>Example</th><th>Key Point</th></tr>
+      <tr><td><strong>Static</strong></td><td>Photo recognition dataset (months-stable)</td><td>Works as long as it's representative of current photo types</td></tr>
+      <tr><td><strong>Dynamic</strong></td><td>Seasonal weather photos (winter only → fails in summer)</td><td>Distribution shifts over time — needs updating</td></tr>
+    </table>
+    <p>If outdoor photos represent only winter environments from a temperate climate, the distribution will be significantly diversified when used for summer predictions.</p>
+  </div>
+
+  <div class="tab-content" id="ph2">
+    <h3>Ingestion — Receiving Data into the System</h3>
+    <div class="callout callout-def">
+      <div class="callout-label">📘 Key Point</div>
+      Can we take ALL data created at source? <strong>No.</strong> A <em>filtering and selection step necessarily occurs.</em> This is inbuilt in ingestion.
+    </div>
+
+    <h3>Sampling</h3>
+    <ul>
+      <li>If data volume is too large to process, sampling reduces the load</li>
+      <li>Saves money on intermediate processing and training costs</li>
+      <li>Risk: May occasionally lose detail for some events — unavoidable</li>
+      <li>In general, ML training systems perform better with more data — any reduction may impact quality</li>
+    </ul>
+
+    <h3>Batch vs Streaming Ingestion</h3>
+    <table>
+      <tr><th>Type</th><th>How</th><th>Use Case</th></tr>
+      <tr><td><strong>Batch</strong></td><td>Data arrives in scheduled groups at intervals</td><td>Monthly reports, warehouse loads</td></tr>
+      <tr><td><strong>Streaming</strong></td><td>Continuous real-time data flow</td><td>IoT sensors, financial tickers, social feeds</td></tr>
+    </table>
+
+    <div class="callout callout-exam">
+      <div class="callout-label">⚡ Exam — Extraction vs Ingestion</div>
+      <ul>
+        <li><strong>Extraction = PULL</strong> — you go and get static data (e.g., download CSV from Kaggle manually). One-time, point-in-time.</li>
+        <li><strong>Ingestion = ARRIVAL</strong> — data is forced to arrive via APIs/streaming continuously. Always up-to-date.</li>
+        <li>Ingestion is the end-to-end process; extraction is a part of ingestion.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-content" id="ph3">
+    <h3>Processing — Cleaning and Preparing Data</h3>
+    <table>
+      <tr><th>Problem</th><th>Solution</th><th>Method</th></tr>
+      <tr><td>Bad data in ML</td><td>Validate incoming data</td><td>Schema validation, compare against last known good feed</td></tr>
+      <tr><td>Missing fields, duplicates, misclassifications, encoding errors</td><td>Clean them</td><td>Deduplication, imputation, re-encoding</td></tr>
+      <tr><td>Inconsistent data</td><td>Normalize or Bucket</td><td>Map ranges to smaller representative groups</td></tr>
+      <tr><td>Data not rich enough</td><td>Enrich and Extend</td><td>Combine with other data sources; add labels</td></tr>
+    </table>
+
+    <div class="callout callout-def">
+      <div class="callout-label">📘 Bucketing</div>
+      Map a <em>range</em> of data values into a much smaller set of groups that represent the same range. Example: ages 0–17 → "Minor", 18–64 → "Adult", 65+ → "Senior". Reduces cardinality while preserving meaning.
+    </div>
+
+    <div class="callout callout-insight">
+      <div class="callout-label">🌐 Why This Matters for ML</div>
+      Garbage In, Garbage Out (GIGO) — even the most sophisticated model cannot overcome fundamentally bad training data. Validation and cleaning at the processing phase are the last line of defense before data enters the model training pipeline.
+    </div>
+  </div>
+
+  <div class="tab-content" id="ph4">
+    <h3>Post-Processing — Storage, Visualization, ML</h3>
+    <table>
+      <tr><th>Activity</th><th>Description</th><th>Key Decisions</th></tr>
+      <tr><td><strong>Storage</strong></td><td>Store processed data in appropriate system</td><td>Driven by access patterns, model structure, team structure, training process</td></tr>
+      <tr><td><strong>Metadata</strong></td><td>Data about stored features</td><td>When multiple people build models on same data — metadata provides huge value</td></tr>
+      <tr><td><strong>Visualization</strong></td><td>Transform large data into navigable representation</td><td>Not just pie charts — must explain what each record means, linkages, cleanliness</td></tr>
+      <tr><td><strong>Machine Learning</strong></td><td>Use data for future growth</td><td>Act cautiously — model outputs are decisions that affect real people</td></tr>
+    </table>
+
+    <div class="callout callout-exam">
+      <div class="callout-label">⚡ Exam — Visualization Beyond Charts</div>
+      Visualization in post-processing is NOT just showing a pie chart. It must: (1) explain what each record in the dataset means, (2) show how it links with other datasets, (3) confirm whether it is clean and safe for model training. This is the "data storyboard" concept.
+    </div>
+  </div>
+
+  <hr class="divider">
+  <h2>Practical Exercise (From Lecture)</h2>
+  <div class="callout callout-insight">
+    <div class="callout-label">🛠️ Hands-On Pipeline Activity</div>
+    <div class="flow" style="flex-direction:column; align-items:flex-start; gap:8px; margin-top:8px;">
+      <div><strong>1.</strong> Log in to Kaggle → Get API token → Install Kaggle library</div>
+      <div><strong>2.</strong> Write Python code to download dataset via API (ingestion)</div>
+      <div><strong>3.</strong> Explore data using pandas (processing)</div>
+      <div><strong>4.</strong> Load into local PostgreSQL database (storage)</div>
+      <div><strong>5.</strong> Load into AWS S3 bucket (cloud storage)</div>
+      <div><strong>6.</strong> Schedule the data flow periodically (orchestration)</div>
+    </div>
+    <p style="margin-top:10px; color:var(--muted); font-size:13px">Tool versions: Python + Kaggle API + PostgreSQL + AWS Free Tier + Pandas</p>
+  </div>
+</div>
+
+<!-- PAGE 9: DM ROLES & CONNECTING DOTS -->
+<div class="page" id="p9">
+  <div class="page-header">
+    <div class="page-eyebrow">Data Roles & Connecting Dots</div>
+    <h1 class="page-title">DM Roles & How It All Connects</h1>
+    <p class="page-desc">People, responsibilities, and the data engineering car analogy</p>
+  </div>
+
+  <h2>Key Roles in Data Management</h2>
+  <table>
+    <tr><th>Role</th><th>Primary Responsibilities</th><th>Tools Typically Used</th></tr>
+    <tr><td><strong>Data Analyst</strong></td><td>Collect & clean data; exploratory analysis; report preparation</td><td>Excel, SQL, Tableau, Power BI</td></tr>
+    <tr><td><strong>Data Engineer</strong></td><td>Manage DBMS; develop and maintain data pipelines</td><td>Spark, Kafka, Airflow, dbt</td></tr>
+    <tr><td><strong>Data Scientist</strong></td><td>Develop/maintain statistical & ML models; deep analysis</td><td>Python, R, scikit-learn, TensorFlow</td></tr>
+    <tr><td><strong>Data Architect</strong></td><td>Create & maintain organizational data blueprint and systems</td><td>ERD tools, cloud architecture (AWS/Azure)</td></tr>
+    <tr><td><strong>DB Admin (DBA)</strong></td><td>Install and manage DB systems on infrastructure</td><td>MySQL, PostgreSQL, Oracle DBA tools</td></tr>
+    <tr><td><strong>BI Analyst</strong></td><td>Focus on business insights and reporting</td><td>Tableau, Looker, Power BI, SQL</td></tr>
+  </table>
+
+  <hr class="divider">
+
+  <h2>The Car Analogy (Connecting Dots)</h2>
+  <div class="callout callout-insight">
+    <div class="callout-label">🚗 Data Engineering = Building a Car</div>
+  </div>
+  <table>
+    <tr><th>Engineering Activity</th><th>Car Analogy</th><th>Data Activity</th><th>Car Analogy</th><th>Output</th><th>Car Analogy</th></tr>
+    <tr><td>Design</td><td>Plan the car's structure</td><td>Collect</td><td>Fueling the car</td><td>Analytics</td><td>Monitor car status</td></tr>
+    <tr><td>Build</td><td>Assemble the parts</td><td>Transform</td><td>Burning fuel to power engine</td><td>Data Science</td><td>Study past data for decisions</td></tr>
+    <tr><td>Maintain</td><td>Fix issues, upgrade</td><td>Store</td><td>Parking in a garage</td><td>Machine Learning</td><td>Teach car to drive itself</td></tr>
+  </table>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🚘 Real Example — Driverless Cars</div>
+    In the US, driverless cars (Waymo, formerly Uber ATG) are trained to judge traffic signals, lane changes, and pedestrian behavior. This is real ML at the "teach the car to drive smarter on its own" stage. Waymo completed 1 million+ fully autonomous rides by 2024.
+  </div>
+
+  <hr class="divider">
+  <h2>The E-commerce Recommendation Engine Case Study</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)"><span>⚙️ Data Engineering Layer</span><span class="expand-icon">+</span></div>
+    <div class="expand-body">
+      <ul>
+        <li>Look into data sources and cleaning logic</li>
+        <li>Schedulers to collect data and feed the recommendation engine</li>
+        <li>Maintain the pipeline; raise alarms when something fails</li>
+        <li>Work on change requests (CRs)</li>
+      </ul>
+      <p>What's missing? → <strong>Data Architecture</strong></p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)"><span>🏗️ Data Architecture Layer</span><span class="expand-icon">+</span></div>
+    <div class="expand-body">
+      <ul>
+        <li>Business acumen — understanding what the business needs</li>
+        <li>Data models — how data entities relate</li>
+        <li>Holistic view — seeing the big picture</li>
+        <li>Design and orchestration — workflow management</li>
+        <li>Overall data platform selection</li>
+      </ul>
+      <p>What's missing? → <strong>Governance</strong></p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)"><span>🛡️ Governance Layer</span><span class="expand-icon">+</span></div>
+    <div class="expand-body">
+      <ul>
+        <li>Privacy (GDPR, HIPAA compliance)</li>
+        <li>Security (encryption, access control)</li>
+        <li>Monitoring and logging (audit trails)</li>
+        <li>Lifecycle management (retention, deletion)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Conceptual Venn — Data Architecture / Engineering / Governance</h2>
+  <svg viewBox="0 0 500 220" style="width:100%; max-width:500px; margin:16px 0; display:block;">
+    <circle cx="170" cy="110" r="90" fill="rgba(167,139,250,0.1)" stroke="var(--purple)" stroke-width="1.5"/>
+    <circle cx="330" cy="110" r="90" fill="rgba(45,212,191,0.1)" stroke="var(--teal)" stroke-width="1.5"/>
+    <ellipse cx="250" cy="190" rx="200" ry="28" fill="rgba(251,191,36,0.08)" stroke="var(--amber)" stroke-width="1.2"/>
+    <text x="110" y="90" fill="var(--purple)" font-size="11" font-weight="700" text-anchor="middle">Data</text>
+    <text x="110" y="104" fill="var(--purple)" font-size="11" font-weight="700" text-anchor="middle">Architecture</text>
+    <text x="110" y="120" fill="var(--muted)" font-size="9" text-anchor="middle">Blueprints</text>
+    <text x="110" y="132" fill="var(--muted)" font-size="9" text-anchor="middle">Data Models</text>
+    <text x="110" y="144" fill="var(--muted)" font-size="9" text-anchor="middle">Standards</text>
+    <text x="390" y="90" fill="var(--teal)" font-size="11" font-weight="700" text-anchor="middle">Data</text>
+    <text x="390" y="104" fill="var(--teal)" font-size="11" font-weight="700" text-anchor="middle">Engineering</text>
+    <text x="390" y="120" fill="var(--muted)" font-size="9" text-anchor="middle">Pipelines</text>
+    <text x="390" y="132" fill="var(--muted)" font-size="9" text-anchor="middle">ETL/ELT</text>
+    <text x="390" y="144" fill="var(--muted)" font-size="9" text-anchor="middle">Orchestration</text>
+    <text x="250" y="100" fill="var(--amber)" font-size="11" font-weight="700" text-anchor="middle">Big Data</text>
+    <text x="250" y="114" fill="var(--muted)" font-size="9" text-anchor="middle">Volume · Velocity · Variety</text>
+    <text x="250" y="188" fill="var(--amber)" font-size="11" font-weight="700" text-anchor="middle">Data Governance — Quality · Compliance · Metadata · Security</text>
+  </svg>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚡ Exam Tip — The 3-Layer Answer Framework</div>
+    For any scenario question about building a data system (ML pipeline, recommendation engine, analytics platform), structure your answer with: <strong>(1) Data Engineering</strong> (pipelines, collection, storage) → <strong>(2) Data Architecture</strong> (design, models, orchestration) → <strong>(3) Governance</strong> (privacy, security, lifecycle). This covers all marks.
+  </div>
+</div>
+
+<!-- ─── QUIZ PAGE ─── -->
+<div class="page" id="quiz-page">
+  <div class="page-header">
+    <div class="page-eyebrow">Quiz Mode</div>
+    <h1 class="page-title">Test Your Knowledge</h1>
+    <p class="page-desc">25 questions covering every concept from CS-2</p>
+  </div>
+  <div class="quiz-progress" id="quiz-dots"></div>
+  <div id="quiz-container"></div>
+  <div id="quiz-score">
+    <div class="score-pct" id="score-pct">0%</div>
+    <div class="score-msg" id="score-msg"></div>
+    <button class="btn btn-primary" style="margin-top:20px" onclick="restartQuiz()">Try Again</button>
+  </div>
+</div>
+
+<!-- ─── FLASHCARD PAGE ─── -->
+<div class="page" id="flashcard-page">
+  <div class="page-header">
+    <div class="page-eyebrow">Flashcard Mode</div>
+    <h1 class="page-title">Study Flashcards</h1>
+    <p class="page-desc">Click card to flip · Rate yourself to track mastery</p>
+  </div>
+  <div class="fc-counter" id="fc-counter">Card 1 of 30</div>
+  <div class="fc-tap-hint">Click the card to reveal the answer</div>
+  <div class="fc-wrap" id="fc-wrap" onclick="flipCard()">
+    <div class="fc-inner" id="fc-inner">
+      <div class="fc-front"><div class="fc-q" id="fc-q"></div></div>
+      <div class="fc-back"><div class="fc-a" id="fc-a"></div></div>
+    </div>
+  </div>
+  <div class="fc-rating">
+    <button class="fc-hard" onclick="rateCard('hard')">😓 Hard</button>
+    <button class="fc-good" onclick="rateCard('good')">🤔 Good</button>
+    <button class="fc-easy" onclick="rateCard('easy')">😊 Easy</button>
+  </div>
+  <div class="fc-nav">
+    <button class="btn btn-ghost" onclick="prevCard()">← Prev</button>
+    <div class="fc-stats">
+      <span class="fc-stat fc-stat-h" id="fc-hard-count">Hard: 0</span>
+      <span class="fc-stat fc-stat-g" id="fc-good-count">Good: 0</span>
+      <span class="fc-stat fc-stat-e" id="fc-easy-count">Easy: 0</span>
+    </div>
+    <button class="btn btn-ghost" onclick="nextCard()">Next →</button>
+  </div>
+</div>
+
+<!-- ─── GLOSSARY PAGE ─── -->
+<div class="page" id="pg">
+  <div class="page-header">
+    <div class="page-eyebrow">Reference</div>
+    <h1 class="page-title">Glossary</h1>
+    <p class="page-desc">All terms, abbreviations, and definitions from CS-2</p>
+  </div>
+  <input type="text" id="gloss-search" placeholder="Search terms, abbreviations..." oninput="filterGlossary(this.value)">
+  <table id="gloss-table">
+    <thead><tr><th>Term / Acronym</th><th>Full Form</th><th>Definition</th></tr></thead>
+    <tbody id="gloss-body"></tbody>
+  </table>
+</div>
+
+<!-- ─── CHECKLIST PAGE ─── -->
+<div class="page" id="pc">
+  <div class="page-header">
+    <div class="page-eyebrow">Revision Tool</div>
+    <h1 class="page-title">Revision Checklist</h1>
+    <p class="page-desc">Track every examinable concept</p>
+  </div>
+  <div class="checklist-header">
+    <div class="check-progress" id="check-progress">0 / 0 completed</div>
+    <button class="btn btn-ghost" onclick="resetChecklist()" style="font-size:12px">Reset All</button>
+  </div>
+  <div id="checklist-items"></div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ═══════════════════════════ DATA ═══════════════════════════
+
+const QUIZ_DATA = [
+  { q: "What does the blue line in the Model Error Rate vs Data Size graph represent?", opts: ["Likelihood of data problems increasing", "Model error rate decreasing as data grows", "Storage cost increasing", "Number of features in the model"], ans: 1, exp: "The blue line shows that Model Error Rate decreases sharply as data size increases — larger datasets generally improve model accuracy. After ~10⁸–10⁹ points, gains become negligible." },
+  { q: "What does the intersection point of the two curves in the Data Asset graph represent?", opts: ["The maximum error rate", "The minimum storage cost", "The optimal data volume where gains are outweighed by risks", "The point where data becomes unstructured"], ans: 2, exp: "The intersection (sweet spot) is where the cost/risk of maintaining data begins to outweigh the accuracy gains — the optimal data volume." },
+  { q: "Which of the following is the RECOMMENDED approach for handling PII in the Store phase?", opts: ["Access Restriction", "Anonymization / Pseudonymization", "Connection Removal", "Encryption only"], ans: 2, exp: "Connection Removal (Approach 3) is the recommended approach — it breaks the link between PII and model data entirely. While harder to implement, it provides the most protection." },
+  { q: "What is the key differentiator that makes ML pipelines MORE sensitive than regular data pipelines?", opts: ["Volume of data", "Correctness of data", "Changes to data distribution", "Speed of processing"], ans: 2, exp: "Both normal and ML pipelines care about volume and correctness. Only ML pipelines are additionally sensitive to DISTRIBUTION SHIFT — missing regional data can skew predictions even if the rest looks fine." },
+  { q: "Why is integrity NOT listed as a Data Reliability characteristic?", opts: ["It's covered under Data Security instead", "It's an optional property", "It is the net result of the other five characteristics working correctly", "It only applies to OLTP systems"], ans: 2, exp: "Integrity is emergent — if Durability, Consistency, Version Control, Performance, and Availability all work correctly, Integrity is automatically achieved. It doesn't need to be listed separately." },
+  { q: "In the Collect → Store → Delete lifecycle, which article of GDPR sets the legal cutoff for data deletion?", opts: ["Article 5.1(f) — data retention", "Article 17 — right to erasure", "Article 25 — data protection by design", "Article 32 — security measures"], ans: 1, exp: "GDPR Article 17 is the 'Right to Erasure' (right to be forgotten). The lecture also references Article 5.1(f) for general data security principles. The key point: governing policies like GDPR set legal cutoffs for deletion." },
+  { q: "ELT (Extract, Load, Transform) became popular primarily because of:", opts: ["Cheaper storage costs", "Growth of Big Data's 5 V's and need for real-time data", "Better SQL optimizers", "Security improvements in cloud platforms"], ans: 1, exp: "ELT emerged because ETL couldn't handle the Volume, Velocity, Variety, Veracity, and Value of Big Data, nor real-time data flows. Data lakes (ELT-based) allow loading raw data first, then transforming on demand." },
+  { q: "What is a Data Lakehouse?", opts: ["A warehouse with extra storage", "A lake with SQL support added", "A combination of Data Warehouse and Data Lake properties", "Another term for a distributed file system"], ans: 2, exp: "Data Warehouse + Data Lake = Data Lakehouse. It combines the reliability and schema enforcement of a warehouse with the flexibility and scale of a data lake. Examples: Delta Lake, Apache Iceberg." },
+  { q: "Which type of storage is optimized for OLAP workloads like SUM(revenue) across millions of rows?", opts: ["Row-oriented (e.g., PostgreSQL)", "Column-oriented (e.g., Parquet, BigQuery)", "Document store (e.g., MongoDB)", "Key-value store (e.g., Redis)"], ans: 1, exp: "Column-oriented storage reads only the relevant columns for aggregation queries — ideal for OLAP. Row-oriented storage is optimized for OLTP (read full record). Parquet and BigQuery use columnar layout." },
+  { q: "Netflix's data use case of predicting which original shows will be hits BEFORE production is an example of:", opts: ["Streaming quality optimization", "Content acquisition strategy powered by data", "Personalization engine", "Data as liability management"], ans: 1, exp: "Netflix analyzes global audience data and viewing patterns to predict which shows will succeed before they're even produced. This is content acquisition strategy — data as an asset driving multi-million dollar business decisions." },
+  { q: "What is the difference between Extraction and Ingestion?", opts: ["They are synonyms — the same process", "Extraction = PULL (static, point-in-time); Ingestion = ARRIVAL (continuous, API-driven)", "Extraction is for structured data; Ingestion is for unstructured", "Ingestion happens before Extraction in the pipeline"], ans: 1, exp: "Extraction (PULL) = manually going to get data, e.g., downloading a CSV from Kaggle. Ingestion (ARRIVAL) = forcing data to continuously arrive via APIs/streaming. Ingestion is the end-to-end process; extraction is a sub-step." },
+  { q: "What does 'Bucketing' mean in the Processing phase?", opts: ["Storing data in S3 buckets", "Partitioning data by date", "Mapping a range of values into a smaller set of representative groups", "Removing duplicate records"], ans: 2, exp: "Bucketing reduces cardinality by mapping ranges into groups. E.g., ages 0–17 → 'Minor', 18–64 → 'Adult'. This normalizes inconsistent data while preserving analytical meaning." },
+  { q: "The Target pregnancy prediction case study illustrates:", opts: ["How ML models can be biased", "How purchase history data can become a PII liability", "The importance of ETL pipelines", "Data warehouse architecture"], ans: 1, exp: "Target's model was so accurate it identified a teenage girl's pregnancy before she told her family. Public purchase data became a massive privacy liability — exactly the 'data as liability' concept." },
+  { q: "Which question leads to the 'Version Control' reliability characteristic?", opts: ["Is the data available when needed?", "Does every copy return the same data?", "In a team where data changes frequently, don't we want to time travel?", "How fast can we access accurate results?"], ans: 2, exp: "Version Control answers the time-travel question — the ability to access historical snapshots of data when it changes frequently in a team setting." },
+  { q: "What is Pseudonymization?", opts: ["Permanently deleting PII from the system", "Replacing real identifiers with fake ones in an IRREVERSIBLE way", "Replacing private identifiers with fake ones in a REVERSIBLE way", "Encrypting data at rest"], ans: 2, exp: "Pseudonymization replaces PII (like name, postcode) with a substitute identifier in a REVERSIBLE fashion — you can recover the original with an additional key. Example: replacing exact postcode with a zone-level code for weather prediction." },
+  { q: "According to IBM's CEO Study, what percentage of top-performing CEOs believe competitive advantage depends on advanced generative AI?", opts: ["52%", "62%", "72%", "82%"], ans: 2, exp: "IBM's CEO Study found 72% of top-performing CEOs agree competitive advantage depends on who has the most advanced generative AI capabilities — directly implying the need for organized data infrastructure." },
+  { q: "What are the two items that make visualization in Post-Processing more than just a pie chart?", opts: ["Explaining what each record means AND confirming data cleanliness for model training", "Adding color AND interactivity", "Using 3D charts AND geographic maps", "Normalizing data AND bucketing it"], ans: 0, exp: "Visualization must explain: (1) what each record in the dataset means, (2) how it links with other datasets, and (3) whether it is clean and safe for model training. The lecture calls this the 'data storyboard.'" },
+  { q: "Why is 'Shift+Delete' insufficient for true data deletion (the tape drive problem)?", opts: ["Shift+Delete only moves files to Recycle Bin", "Deleted data may still exist on backup tape drives, replications, and archival systems", "The file system doesn't support permanent deletion", "GDPR prohibits immediate deletion"], ans: 1, exp: "Even after primary system deletion, data written to tape drives for archival purposes cannot easily be deleted. It may also persist in cloud replications, backups, and CDN caches — making true erasure extremely difficult." },
+  { q: "In the 4 phases of ML data lifecycle, which phase includes Sampling and Filtering?", opts: ["Phase 1: Creation", "Phase 2: Ingestion", "Phase 3: Processing", "Phase 4: Post-Processing"], ans: 1, exp: "The Ingestion phase includes the filtering and selection step that necessarily occurs when you can't take all data from source. Sampling happens here to reduce costs while preserving data quality." },
+  { q: "What is the definition of Metadata?", opts: ["The most important data in a dataset", "Data generated by ML models", "Data about data — a repository tracking where and how data is stored", "The schema definition of a database"], ans: 2, exp: "Metadata is 'data about data.' Since data is spread across many systems, you need a separate repository that tracks WHERE data lives, its attributes, and provenance. Like a library index — the catalog IS the metadata." },
+  { q: "A data pipeline keeps running normally but the ML pipeline breaks. The most likely cause is:", opts: ["A bug in the Python code", "Missing data from one region causing a distribution shift", "A network connectivity issue", "A database schema change"], ans: 1, exp: "This is the lecture's e-commerce scenario. The data pipeline doesn't predict anything — it just moves data. The ML pipeline relies on the full distribution of data, so missing one region shifts the distribution and breaks predictions." },
+  { q: "The 7-component DM Framework does NOT include:", opts: ["Data Governance", "Data Visualization", "Data Architecture", "Metadata"], ans: 1, exp: "The 7 components are: Governance, Architecture, Metadata, Quality, Lifecycle, Analytics, Privacy. 'Data Visualization' is a sub-activity under Analytics, not a standalone framework component. The mnemonic is G-A-M-Q-L-A-P." },
+  { q: "Which Data Reliability characteristic answers 'Are we supposed to get the same data from all copies?'", opts: ["Durability", "Performance", "Consistency", "Availability"], ans: 2, exp: "Consistency — all replicas of data must return the same value. This is especially critical in distributed systems where data is replicated across multiple nodes or data centers." },
+  { q: "What is Training-Serving Skew?", opts: ["When training data is larger than serving data", "When features are computed differently at training vs serving time, causing live accuracy to fall", "When model accuracy is higher in production than in testing", "When training takes longer than serving"], ans: 1, exp: "Training-serving skew occurs when a feature is stale, missing, or computed differently at serving time than at training time. A model with 94% offline accuracy can fail catastrophically in production. Feature stores (Feast, Tecton) help solve this." },
+  { q: "In Data Storage, which approach is associated with ELT and 'schema-on-read'?", opts: ["Data Warehouse", "Relational Database (RDBMS)", "Data Lake", "In-memory cache"], ans: 2, exp: "Data Lakes use ELT — data is loaded raw first, then transformed when queried (schema-on-read). This contrasts with Data Warehouses which require a defined schema BEFORE loading (schema-on-write/ETL)." }
+];
+
+const FLASHCARDS = [
+  { q: "What is the 'intersection point' in the Model Error Rate vs Data Size graph?", a: "The Optimal Data Volume — the point where the cost and risk of maintaining more data begins to outweigh the tiny accuracy gains. Beyond this point, data is a net liability." },
+  { q: "Define Data as Liability with an example.", a: "Data that creates legal, financial, or reputational burden. Example: Target's pregnancy prediction model identified a teenage girl as pregnant from shopping data before she told her family — creating a massive privacy scandal." },
+  { q: "What are the 3 phases of the data lifecycle at risk?", a: "Collect (PII consent issues), Store (access control, pseudonymization), Delete (harder than it seems — tape drives, backups, GDPR)" },
+  { q: "What is PII?", a: "Personally Identifiable Information — any data that can uniquely identify a person (name, address, ID number, biometrics). Requires explicit consent to collect and a defined deletion policy by law (GDPR)." },
+  { q: "Name and order the 3 approaches to handling sensitive data in the Store phase.", a: "(1) Access Restriction — restrict external + internal access; (2) Anonymization / Pseudonymization — replace PII reversibly; (3) Connection Removal (RECOMMENDED) — break the link between PII and model data entirely." },
+  { q: "Why is deletion harder than it seems? Give the lecture example.", a: "Even after Shift+Delete, data may exist on tape drives used for archival. Deleting the primary system copy doesn't delete tape backups. Recovery software can restore data from most storage. True erasure requires deleting all replicas, backups, and archives." },
+  { q: "Define GDPR.", a: "General Data Protection Regulation — European Union law governing personal data collection, processing, and deletion. Article 17 = Right to Erasure. Sets legal deadlines for when data must be deleted (e.g., after 6 months for job portals)." },
+  { q: "What is the key extra sensitivity of ML pipelines vs. normal data pipelines?", a: "ML pipelines are additionally sensitive to CHANGES IN DATA DISTRIBUTION. Normal pipelines only care about volume and correctness. A missing region's data shifts distribution and breaks ML predictions even if total volume is similar." },
+  { q: "Explain Training-Serving Skew.", a: "When a feature is stale, missing, or computed DIFFERENTLY at serving time than at training time. A model with 94% offline accuracy can fail in production. Solution: Feature Stores (Feast, Tecton) guarantee identical feature computation in training and serving." },
+  { q: "What are the 5 Data Reliability characteristics? (Map to motivating questions)", a: "Durability (what if needed data is lost?), Consistency (same data from all copies?), Version Control (time travel when data changes?), Performance (how fast available?), Availability (always accessible?)" },
+  { q: "Why is Integrity NOT in the Reliability characteristics list?", a: "Integrity is the NET RESULT of the other 5 working correctly. If Durability + Consistency + Version Control + Performance + Availability all function properly, Integrity is automatically achieved — it's emergent, not separate." },
+  { q: "Define ETL and its three steps.", a: "Extract-Transform-Load. E = PULL data from multiple sources (verify); T = convert/organize data (14-21 transformation types); L = PUSH transformed data to data warehouse. Historically standard but limited by Big Data's 5 V's." },
+  { q: "What are ETL's 3 key limitations?", a: "(1) Cannot handle unstructured data — requires predefined schema; (2) Cannot cater to growing data velocity; (3) Cannot work with real-time data flows. Solution = ELT." },
+  { q: "Explain ELT and why it replaced ETL for Big Data.", a: "Extract-LOAD-Transform. Load raw data first, transform later on-demand (schema-on-read). Driven by Big Data's 5 V's (Volume, Velocity, Variety, Veracity, Value). Cloud infrastructure enables cheap storage of raw data. Used by Data Lakes." },
+  { q: "ETL → Data Warehouse. ELT → ?", a: "ELT → Data Lake. The key insight: ETL requires schema-on-write (structured first, then load). ELT uses schema-on-read (load anything, structure when queried). Data Lakehouses support both." },
+  { q: "Compare Data Warehouse vs Data Lake across 3 dimensions.", a: "Schema: Warehouse = required / Lake = none. Data types: Warehouse = structured only / Lake = semi+unstructured. Optimization: Warehouse = high-performance analytics / Lake = cost + multi-type. Use cases: Warehouse = BI dashboards / Lake = AI & ML." },
+  { q: "What is a Data Lakehouse?", a: "Warehouse + Lake hybrid. Has both defined schema AND schema-less flexibility. Combines reliability/performance of warehouse with scale/flexibility of lake. Examples: Databricks Delta Lake, Apache Iceberg." },
+  { q: "What is Bucketing in the Processing phase?", a: "Mapping a range of data values into a smaller set of representative groups. Example: Age 0–17 → 'Minor', 18–64 → 'Adult', 65+ → 'Senior'. Reduces cardinality while preserving analytical meaning." },
+  { q: "What is Metadata? Give a library analogy.", a: "Data about data — a repository tracking WHERE and HOW data is stored across multiple systems. Library analogy: the book INDEX (catalog) is metadata; the books are the actual data. Critical for discoverability when data spans 10+ systems." },
+  { q: "Name the 7 components of the DM Framework (mnemonic: G-A-M-Q-L-A-P).", a: "Governance, Architecture, Metadata, Quality, Lifecycle, Analytics, Privacy. Memory aid: 'Great Architects Make Quality Lifecycles And Privacy.'" },
+  { q: "What are the 4 phases of the ML Data Lifecycle?", a: "Phase 1: Creation/Generation (devices, audio, images, logs). Phase 2: Ingestion (sampling, filtering, selection). Phase 3: Processing (validate, clean, normalize/bucket, enrich). Phase 4: Post-Processing (storage, visualization, ML training)." },
+  { q: "Explain the Extraction vs Ingestion difference using PULL vs ARRIVAL.", a: "Extraction = PULL — you go to the source and pull data manually (download CSV from Kaggle). Static, point-in-time. Ingestion = ARRIVAL — data is continuously pushed/streamed via APIs. Always up-to-date. Ingestion is end-to-end; extraction is a part of it." },
+  { q: "What are the 6 Data Management roles?", a: "Data Analyst (clean + report), Data Engineer (pipelines + DBMS), Data Scientist (ML models + insights), Data Architect (blueprint + systems), DB Admin (install + manage DB), BI Analyst (business insights + reporting)" },
+  { q: "Explain the Data Engineering car analogy.", a: "Design=Plan car structure, Build=Assemble parts, Maintain=Fix+upgrade → Collect=Fuel car, Transform=Burn fuel for engine, Store=Park in garage → Analytics=Monitor status, Data Science=Study past data, ML=Teach car to drive itself (Waymo/driverless cars)" },
+  { q: "What is the 3-layer answer for a data system question?", a: "(1) Data Engineering layer: pipelines, collection, storage, maintenance; (2) Data Architecture layer: design, data models, orchestration, holistic view; (3) Governance layer: privacy, security, monitoring, lifecycle. Always answer exam scenarios with all 3 layers." },
+  { q: "Correlation between ACID and Data Reliability", a: "Atomicity→Durability (all-or-nothing commits persist), Consistency→Consistency (valid state to valid state), Isolation→Version Control (transactions don't interfere), Durability→Durability (persists after commit). BASE trades Consistency for Availability (eventual consistency = soft reliability)." },
+  { q: "What is the CAP Theorem and how does it relate to Data Reliability?", a: "A distributed system can guarantee at most 2 of 3: Consistency, Availability, Partition Tolerance. RDBMS/ACID chooses C+A. NoSQL/BASE chooses A+P (eventual consistency). This is why Data Lakes sacrifice strong Consistency for Availability and Partition Tolerance at scale." },
+  { q: "What are the 5 Big Data V's that drove the shift from ETL to ELT?", a: "Volume (massive scale), Velocity (real-time speed), Variety (structured+unstructured+semi), Veracity (trustworthiness/quality), Value (business worth). Some add 2 more: Variability and Visualization (7 V's)." },
+  { q: "What is Data Drift vs Concept Drift in ML?", a: "Data Drift = statistical distribution of INPUT FEATURES changes over time (e.g., consumer behavior shifts). Concept Drift = the RELATIONSHIP between features and TARGET LABEL changes (e.g., fraud patterns evolve). Concept Drift is more dangerous — data looks fine but ground truth has shifted." },
+  { q: "What is Column-Oriented storage and when is it used?", a: "Stores data column-by-column instead of row-by-row. Reading only the relevant column across millions of rows is much faster for OLAP aggregations (SUM, AVG, COUNT). High compression ratio because same data type per column block. Examples: Parquet, BigQuery, Redshift. Used in Data Warehouses and Lakehouses." }
+];
+
+const GLOSSARY_DATA = [
+  ["ACID", "Atomicity, Consistency, Isolation, Durability", "Properties of database transactions ensuring data integrity. Atomicity=all-or-nothing, Consistency=valid states, Isolation=separate concurrent transactions, Durability=persists after commit."],
+  ["BASE", "Basically Available, Soft state, Eventually consistent", "Alternative to ACID for distributed NoSQL systems. Prioritizes availability over strong consistency. Used in Big Data, social media platforms."],
+  ["CAP", "Consistency, Availability, Partition Tolerance", "CAP Theorem: a distributed system can guarantee at most 2 of these 3 properties simultaneously."],
+  ["DBMS", "Database Management System", "Software for creating, managing, and querying databases. Examples: PostgreSQL, MySQL, Oracle."],
+  ["ELT", "Extract, Load, Transform", "Modern data integration approach: load raw data first, transform later. Used with Data Lakes. Better for Big Data than ETL."],
+  ["ETL", "Extract, Transform, Load", "Traditional data integration: extract from sources, transform to required format, load into data warehouse. Limited by Big Data's velocity and variety."],
+  ["GDPR", "General Data Protection Regulation", "EU regulation governing personal data collection, processing, and deletion. Article 17 = right to erasure. Sets legal deletion timelines."],
+  ["GIGO", "Garbage In, Garbage Out", "If bad/corrupt data enters an ML model or system, the outputs will also be bad/incorrect."],
+  ["HIPAA", "Health Insurance Portability and Accountability Act", "US law protecting patient health information. Applies to medical records storage and sharing."],
+  ["IoT", "Internet of Things", "Network of physical devices (sensors, cameras, smart appliances) that collect and exchange data — a major data source."],
+  ["KV / MPP", "Key-Value / Massively Parallel Processing", "KV = simple key-value NoSQL storage (Redis). MPP = processing that distributes queries across many CPU cores simultaneously (BigQuery, Redshift) for fast analytics."],
+  ["ML", "Machine Learning", "A subset of AI where models learn patterns from data to make predictions or decisions without being explicitly programmed."],
+  ["MLOps", "Machine Learning Operations", "Practices for deploying, monitoring, and maintaining ML models in production. Includes drift monitoring, CI/CD for models, feature stores."],
+  ["OLAP", "Online Analytical Processing", "Database system designed for complex analytical queries across large datasets. Used in Data Warehouses. Optimized for read-heavy aggregations."],
+  ["OLTP", "Online Transaction Processing", "Database system designed for high-volume, short-duration transactions (inserts, updates, deletes). Used in day-to-day applications like banking."],
+  ["PII", "Personally Identifiable Information", "Any data that can uniquely identify a person — name, address, phone, email, SSN, biometrics. Requires explicit consent and deletion policy under GDPR."],
+  ["RBAC", "Role-Based Access Control", "Security model that restricts data access based on a user's organizational role. Used to prevent PII leakage into ML pipelines."],
+  ["ETL Warehouse", "ETL-based Data Warehouse", "Structured data store where data is transformed BEFORE loading. Schema-on-write. High-performance for BI and structured analytics."],
+  ["ELT Lake", "ELT-based Data Lake", "Flexible data store where data is loaded RAW and transformed on demand. Schema-on-read. Handles unstructured and semi-structured data."],
+  ["Lakehouse", "Data Lake + Data Warehouse hybrid", "Combines warehouse reliability/performance with lake flexibility/scale. Supports both structured BI and unstructured ML workloads. Examples: Delta Lake, Apache Iceberg."],
+  ["Metadata", "Data about Data", "A repository that tracks WHERE data is stored, its attributes, and provenance across multiple systems. Like a library catalog for data."],
+  ["Pseudonymization", "Reversible PII substitution", "Replacing private identifiers (name, postcode) with fake ones in a REVERSIBLE manner. Less secure than Connection Removal but useful for preserving data utility."],
+  ["Data Drift", "Statistical Distribution Change", "When the distribution of input features changes over time in production (e.g., consumer behavior shifts), causing model accuracy to degrade silently."],
+  ["Concept Drift", "Target Label Relationship Change", "When the relationship between features and the target variable changes (e.g., fraud patterns evolve). More dangerous than data drift because input data looks normal."],
+  ["Training-Serving Skew", "Feature Mismatch: Training vs Production", "When a feature is stale, missing, or computed differently at serving time than at training time, causing a high-accuracy offline model to fail in production."],
+  ["Bucketing", "Range-to-Group Mapping", "Mapping a range of data values into a smaller set of representative groups. E.g., ages → Minor/Adult/Senior. Reduces cardinality while preserving meaning."],
+  ["GAMP", "Governance-Architecture-Metadata-Quality", "First 4 letters of the 7-component DM framework mnemonic (G-A-M-Q-L-A-P)."],
+  ["Data Lineage", "Data Origin and Movement Tracking", "Tracking the origin, movement, and transformation history of data through pipelines. Critical for debugging data quality issues and regulatory compliance."],
+  ["GDPR Art.17", "Right to Erasure (GDPR)", "The GDPR provision giving individuals the right to request deletion of their personal data from an organization's systems."],
+  ["Data Storyboard", "Narrative data visualization", "A visualization approach that not only shows charts but explains what each record means, how datasets link, and whether data is clean for model use."]
+];
+
+const CHECKLIST_ITEMS = [
+  { section: "Principles of Data — Asset & Liability", items: [
+    "Explain why data is both an asset and a liability with an example",
+    "Describe the trade-off shown in the Model Error Rate vs Data Size graph",
+    "Identify the 'sweet spot' (intersection point) and what it represents",
+    "List the three phases of the basic data management lifecycle (Collect, Store, Delete)",
+    "Explain PII and why it requires explicit consent",
+    "Name and compare the 3 approaches to handling sensitive PII in the Store phase",
+    "State which Store phase approach is RECOMMENDED and why",
+    "Explain the challenge of truly deleting data (tape drive example)",
+    "Define GDPR and its Article 17",
+    "Explain the Target pregnancy prediction case as data liability"
+  ]},
+  { section: "Data Sensitivity & Reliability", items: [
+    "Explain why ML pipelines are more sensitive than regular data pipelines",
+    "Name the 3 sensitivities of ML pipelines (volume, correctness, DISTRIBUTION SHIFT)",
+    "List the 5 Data Reliability characteristics and map each to its motivating question",
+    "Explain why Integrity is NOT listed as a reliability characteristic",
+    "Define Training-Serving Skew and give an example",
+    "Distinguish Data Drift from Concept Drift",
+    "Connect ACID properties to Data Reliability characteristics"
+  ]},
+  { section: "Data Management & Integration", items: [
+    "Define Data Management (collect, process, use data securely and efficiently)",
+    "Name the 4 core components of a Data Management strategy",
+    "Define ETL and explain its 3 steps",
+    "List ETL's 3 key limitations for Big Data",
+    "Explain ELT and why it emerged from Big Data's 5 V's",
+    "Compare ETL vs ELT on: timing, schema, data types, destination",
+    "Distinguish Extraction (PULL) from Ingestion (ARRIVAL)",
+    "Explain why extracted data cannot be directly consumed"
+  ]},
+  { section: "Storage Architectures", items: [
+    "Compare Data Warehouse vs Data Lake across schema, data types, and use cases",
+    "Define Data Lakehouse and when you'd use it",
+    "Explain the warehouse-lake analogy (kitchen vs wholesale market)",
+    "Describe Column-Oriented vs Row-Oriented storage and OLAP vs OLTP fit",
+    "Name 2 modern data formats for ML pipelines (e.g., Parquet for analytics, Avro for streaming)"
+  ]},
+  { section: "Data Lifecycle Phases", items: [
+    "Draw and explain all 4 phases of the ML data management lifecycle",
+    "Explain why ALL data at source cannot be ingested (filtering is necessary)",
+    "Explain Sampling — benefits and risks",
+    "Describe what happens during Processing (Validate, Clean, Normalize/Bucket, Enrich)",
+    "Explain Bucketing with an example",
+    "Explain why visualization in Post-Processing goes beyond pie charts",
+    "Explain the role of Metadata in Post-Processing storage"
+  ]},
+  { section: "Governance, Roles & Framework", items: [
+    "Define Data Governance and what it ensures",
+    "Define Metadata and give a library analogy",
+    "List the 7 components of the DM Framework (G-A-M-Q-L-A-P mnemonic)",
+    "List the 6 key data roles and their primary responsibilities",
+    "Explain how Data Engineering, Architecture, and Governance complement each other",
+    "Draw the Conceptual Venn Diagram (Architecture + Engineering → Big Data, Governance underneath)",
+    "Define a Data Platform and list its technical requirements",
+    "Recall the IBM CEO Study finding (72% top CEOs, generative AI advantage)"
+  ]}
+];
+
+// ═══════════════════════════ STATE ═══════════════════════════
+let visitedPages = new Set();
+let currentMode = 'study';
+let quizIdx = 0, quizResults = [];
+let fcIdx = 0, fcFlipped = false;
+let fcRatings = { hard: 0, good: 0, easy: 0 };
+const TOTAL_STUDY = 10; // p0–p9
+
+// ═══════════════════════════ NAVIGATION ═══════════════════════════
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('study-nav').style.display = mode === 'study' ? 'block' : 'none';
+
+  if (mode === 'quiz') {
+    document.getElementById('quiz-page').classList.add('active');
+    initQuiz();
+  } else if (mode === 'flash') {
+    document.getElementById('flashcard-page').classList.add('active');
+    initFlash();
+  } else {
+    document.getElementById('p0').classList.add('active');
+    markVisited('p0');
+  }
+}
+
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const ni = document.querySelector(`[data-page="${id}"]`);
+  if (ni) ni.classList.add('active');
+  markVisited(id);
+  window.scrollTo(0,0);
+}
+
+function markVisited(id) {
+  if (['p0','p1','p2','p3','p4','p5','p6','p7','p8','p9'].includes(id)) {
+    visitedPages.add(id);
+    const ni = document.querySelector(`[data-page="${id}"]`);
+    if (ni) ni.classList.add('visited');
+    updateProgress();
+  }
+}
+
+function updateProgress() {
+  const count = visitedPages.size;
+  document.getElementById('prog-text').textContent = `${count} / ${TOTAL_STUDY}`;
+  document.getElementById('prog-bar').style.width = `${(count/TOTAL_STUDY)*100}%`;
+}
+
+// ═══════════════════════════ EXPANDABLES ═══════════════════════════
+function toggleExpand(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+
+// ═══════════════════════════ TABS ═══════════════════════════
+function switchTab(btn, tabId) {
+  const parent = btn.closest('.page') || btn.parentElement.parentElement;
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  const target = document.getElementById(tabId);
+  if (target) target.classList.add('active');
+}
+
+// ═══════════════════════════ QUIZ ═══════════════════════════
+function initQuiz() {
+  quizIdx = 0; quizResults = [];
+  renderQuizQuestion();
+  updateQuizDots();
+  document.getElementById('quiz-score').style.display = 'none';
+  document.getElementById('quiz-container').style.display = 'block';
+}
+
+function renderQuizQuestion() {
+  const container = document.getElementById('quiz-container');
+  if (quizIdx >= QUIZ_DATA.length) { showScore(); return; }
+  const q = QUIZ_DATA[quizIdx];
+  container.innerHTML = `
+    <div class="q-card">
+      <div class="q-num">Question ${quizIdx+1} of ${QUIZ_DATA.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-options">
+        ${q.opts.map((o,i) => `<div class="q-opt" onclick="answerQuiz(${i})">${String.fromCharCode(65+i)}. ${o}</div>`).join('')}
+      </div>
+      <div class="q-explain" id="q-explain">${q.exp}</div>
+      <div class="quiz-nav">
+        <button class="btn btn-ghost" onclick="prevQuestion()" ${quizIdx===0?'disabled':''}>← Back</button>
+        <button class="btn btn-primary" id="q-next" onclick="nextQuestion()" style="display:none">Next →</button>
+      </div>
+    </div>`;
+}
+
+function answerQuiz(chosen) {
+  const q = QUIZ_DATA[quizIdx];
+  const opts = document.querySelectorAll('.q-opt');
+  opts.forEach((o,i) => {
+    o.setAttribute('disabled', true);
+    o.style.cursor = 'default';
+    if (i === q.ans) o.classList.add('correct');
+    if (i === chosen && chosen !== q.ans) o.classList.add('wrong');
+  });
+  document.getElementById('q-explain').classList.add('show');
+  document.getElementById('q-next').style.display = 'block';
+  const correct = chosen === q.ans;
+  quizResults[quizIdx] = correct;
+  updateQuizDots();
+}
+
+function nextQuestion() { quizIdx++; renderQuizQuestion(); updateQuizDots(); }
+function prevQuestion() { if (quizIdx > 0) { quizIdx--; renderQuizQuestion(); updateQuizDots(); } }
+
+function updateQuizDots() {
+  const dots = document.getElementById('quiz-dots');
+  dots.innerHTML = QUIZ_DATA.map((_, i) => {
+    let cls = 'qp-dot';
+    if (quizResults[i] === true) cls += ' correct';
+    if (quizResults[i] === false) cls += ' wrong';
+    return `<div class="${cls}" title="Q${i+1}"></div>`;
+  }).join('');
+}
+
+function showScore() {
+  document.getElementById('quiz-container').style.display = 'none';
+  document.getElementById('quiz-score').style.display = 'block';
+  const correct = quizResults.filter(r => r === true).length;
+  const pct = Math.round((correct / QUIZ_DATA.length) * 100);
+  document.getElementById('score-pct').textContent = `${pct}%`;
+  const msgs = [
+    [0, 50, "Keep studying! Review the topic pages, especially Data Reliability and ETL vs ELT."],
+    [50, 70, "Good start! You're grasping the concepts. Review Data Sensitivity and the 7 DM Framework components."],
+    [70, 85, "Well done! Strong understanding. Brush up on the Lifecycle Phases and GDPR details."],
+    [85, 100, "Excellent! You've mastered CS-2. You're ready for the exam! 🎉"]
+  ];
+  const msg = msgs.find(([lo,hi]) => pct >= lo && pct < hi) || msgs[3];
+  document.getElementById('score-msg').textContent = `${correct}/${QUIZ_DATA.length} correct — ${msg[2]}`;
+}
+
+function restartQuiz() { initQuiz(); }
+
+// ═══════════════════════════ FLASHCARDS ═══════════════════════════
+function initFlash() {
+  fcIdx = 0; fcFlipped = false; fcRatings = { hard: 0, good: 0, easy: 0 };
+  renderFlash();
+}
+
+function renderFlash() {
+  const card = FLASHCARDS[fcIdx];
+  document.getElementById('fc-q').textContent = card.q;
+  document.getElementById('fc-a').textContent = card.a;
+  document.getElementById('fc-counter').textContent = `Card ${fcIdx+1} of ${FLASHCARDS.length}`;
+  const wrap = document.getElementById('fc-wrap');
+  wrap.classList.remove('flipped');
+  fcFlipped = false;
+}
+
+function flipCard() {
+  const wrap = document.getElementById('fc-wrap');
+  fcFlipped = !fcFlipped;
+  wrap.classList.toggle('flipped', fcFlipped);
+}
+
+function rateCard(rating) {
+  fcRatings[rating]++;
+  document.getElementById('fc-hard-count').textContent = `Hard: ${fcRatings.hard}`;
+  document.getElementById('fc-good-count').textContent = `Good: ${fcRatings.good}`;
+  document.getElementById('fc-easy-count').textContent = `Easy: ${fcRatings.easy}`;
+  if (fcIdx < FLASHCARDS.length - 1) { fcIdx++; renderFlash(); }
+}
+
+function nextCard() { if (fcIdx < FLASHCARDS.length - 1) { fcIdx++; renderFlash(); } }
+function prevCard() { if (fcIdx > 0) { fcIdx--; renderFlash(); } }
+
+// ═══════════════════════════ GLOSSARY ═══════════════════════════
+function buildGlossary() {
+  const tbody = document.getElementById('gloss-body');
+  tbody.innerHTML = GLOSSARY_DATA.map(([term, full, def]) =>
+    `<tr><td><strong>${term}</strong></td><td style="color:var(--teal)">${full}</td><td>${def}</td></tr>`
+  ).join('');
+}
+
+function filterGlossary(query) {
+  const q = query.toLowerCase();
+  const rows = document.querySelectorAll('#gloss-body tr');
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════ CHECKLIST ═══════════════════════════
+function buildChecklist() {
+  const container = document.getElementById('checklist-items');
+  let html = '';
+  CHECKLIST_ITEMS.forEach((section, si) => {
+    html += `<div class="check-section">${section.section}</div>`;
+    section.items.forEach((item, ii) => {
+      const key = `check_${si}_${ii}`;
+      const checked = localStorage.getItem(key) === '1';
+      html += `<div class="check-item ${checked?'done':''}" id="ci_${si}_${ii}">
+        <input type="checkbox" id="${key}" ${checked?'checked':''} onchange="toggleCheck('${key}','${si}','${ii}')">
+        <label for="${key}">${item}</label>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+  updateCheckProgress();
+}
+
+function toggleCheck(key, si, ii) {
+  const cb = document.getElementById(key);
+  const item = document.getElementById(`ci_${si}_${ii}`);
+  localStorage.setItem(key, cb.checked ? '1' : '0');
+  item.classList.toggle('done', cb.checked);
+  updateCheckProgress();
+}
+
+function updateCheckProgress() {
+  const total = CHECKLIST_ITEMS.reduce((a,s)=>a+s.items.length,0);
+  let done = 0;
+  CHECKLIST_ITEMS.forEach((sec, si) => sec.items.forEach((_, ii) => {
+    if (localStorage.getItem(`check_${si}_${ii}`) === '1') done++;
+  }));
+  document.getElementById('check-progress').textContent = `${done} / ${total} completed`;
+}
+
+function resetChecklist() {
+  CHECKLIST_ITEMS.forEach((sec, si) => sec.items.forEach((_, ii) => {
+    localStorage.removeItem(`check_${si}_${ii}`);
+  }));
+  buildChecklist();
+}
+
+// ═══════════════════════════ INIT ═══════════════════════════
+(function init() {
+  buildGlossary();
+  buildChecklist();
+  // Mark p0 as active
+  document.querySelector('[data-page="p0"]').classList.add('active');
+  markVisited('p0');
+})();
+</script>
+</body>
+</html>

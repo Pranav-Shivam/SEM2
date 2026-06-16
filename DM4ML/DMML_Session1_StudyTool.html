@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DMML Session 1 — Deep Study Tool</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #181c27;
+    --bg3: #1e2335;
+    --card: #1e2335;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8eaf6;
+    --text2: #9aa3c7;
+    --text3: #6b74a0;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --teal: #2dd4bf;
+    --amber: #fbbf24;
+    --coral: #f97316;
+    --green: #4ade80;
+    --red: #f87171;
+    --pink: #f472b6;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Fira Code', 'Consolas', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.7; min-height: 100vh; }
+
+  /* LAYOUT */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 260px; background: var(--bg2); border-right: 1px solid var(--border); position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0; display: flex; flex-direction: column; }
+  .main { flex: 1; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar-header { padding: 20px 18px 12px; border-bottom: 1px solid var(--border); }
+  .sidebar-header .course-tag { font-size: 10px; font-weight: 600; letter-spacing: .08em; color: var(--accent2); text-transform: uppercase; margin-bottom: 4px; }
+  .sidebar-header h1 { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+  .sidebar-header p { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .nav-section { padding: 10px 10px 0; }
+  .nav-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--text3); text-transform: uppercase; padding: 6px 8px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; color: var(--text2); transition: all .15s; margin-bottom: 1px; }
+  .nav-item:hover { background: rgba(108,99,255,.12); color: var(--text); }
+  .nav-item.active { background: rgba(108,99,255,.2); color: var(--accent2); font-weight: 600; }
+  .nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .nav-item.active .dot { background: var(--accent2); }
+  .progress-bar-wrap { padding: 14px 18px; border-top: 1px solid var(--border); margin-top: auto; }
+  .progress-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-track { height: 4px; background: var(--border2); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--teal)); border-radius: 4px; transition: width .5s; }
+  .mode-tabs { display: flex; padding: 10px; gap: 6px; border-bottom: 1px solid var(--border); }
+  .mode-tab { flex: 1; padding: 6px 4px; text-align: center; font-size: 11px; font-weight: 600; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); color: var(--text3); background: transparent; transition: all .15s; }
+  .mode-tab.active { background: rgba(108,99,255,.25); border-color: var(--accent); color: var(--accent2); }
+
+  /* MAIN CONTENT */
+  .content-area { padding: 36px 44px; max-width: 880px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* TYPOGRAPHY */
+  h2 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 24px 0 10px; }
+  h4 { font-size: 14px; font-weight: 600; color: var(--accent2); margin: 16px 0 6px; }
+  p { color: var(--text2); margin-bottom: 12px; }
+  .page-subtitle { font-size: 13px; color: var(--text3); margin-bottom: 28px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+
+  /* CALLOUT BOXES */
+  .callout { border-radius: var(--radius-sm); padding: 14px 16px; margin: 16px 0; border-left: 3px solid; }
+  .callout-def { background: rgba(108,99,255,.1); border-color: var(--accent2); }
+  .callout-exam { background: rgba(251,191,36,.08); border-color: var(--amber); }
+  .callout-insight { background: rgba(45,212,191,.08); border-color: var(--teal); }
+  .callout-warn { background: rgba(249,115,22,.08); border-color: var(--coral); }
+  .callout-research { background: rgba(56,189,248,.07); border-color: #38bdf8; }
+  .callout-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+  .callout-def .callout-label { color: var(--accent2); }
+  .callout-exam .callout-label { color: var(--amber); }
+  .callout-insight .callout-label { color: var(--teal); }
+  .callout-warn .callout-label { color: var(--coral); }
+  .callout-research .callout-label { color: #38bdf8; }
+  .callout p { margin: 0; font-size: 14px; color: var(--text); line-height: 1.6; }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; margin: 16px 0; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg3); color: var(--accent2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border2); }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.025); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-purple { background: rgba(108,99,255,.2); color: var(--accent2); }
+  .badge-teal { background: rgba(45,212,191,.15); color: var(--teal); }
+  .badge-amber { background: rgba(251,191,36,.15); color: var(--amber); }
+  .badge-green { background: rgba(74,222,128,.15); color: var(--green); }
+  .badge-red { background: rgba(248,113,113,.15); color: var(--red); }
+  .badge-pink { background: rgba(244,114,182,.15); color: var(--pink); }
+  .badge-coral { background: rgba(249,115,22,.15); color: var(--coral); }
+
+  /* PYRAMID */
+  .pyramid-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 24px 0; }
+  .pyramid-level { display: flex; align-items: center; justify-content: space-between; border-radius: 6px; padding: 12px 18px; cursor: pointer; transition: filter .15s; }
+  .pyramid-level:hover { filter: brightness(1.15); }
+  .pyramid-level .plabel { font-weight: 700; font-size: 14px; }
+  .pyramid-level .pdesc { font-size: 12px; opacity: .8; max-width: 360px; text-align: right; }
+  .pyramid-detail { display: none; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 14px; margin-top: 4px; width: 100%; }
+  .pyramid-detail.open { display: block; }
+
+  /* CODE */
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 13px; color: #c9d1d9; margin: 12px 0; }
+  code { font-family: var(--font-mono); font-size: 13px; background: rgba(255,255,255,.07); padding: 1px 6px; border-radius: 4px; color: var(--accent2); }
+
+  /* CARDS GRID */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px; margin: 18px 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: border-color .15s, transform .1s; }
+  .card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .card.expanded { border-color: var(--accent); }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .card-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .card h4 { margin: 0; font-size: 14px; color: var(--text); }
+  .card p { font-size: 13px; color: var(--text2); margin: 0; }
+  .card-body { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .card-body.open { display: block; }
+  .card-body p, .card-body li { font-size: 13px; color: var(--text2); }
+  .card-body ul { padding-left: 16px; }
+  .card-body li { margin-bottom: 4px; }
+
+  /* COMPARISON */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
+  .compare-side { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .compare-side h4 { margin-top: 0; }
+  .compare-side ul { padding-left: 16px; }
+  .compare-side li { font-size: 13px; color: var(--text2); margin-bottom: 5px; }
+
+  /* QUIZ */
+  .quiz-wrap { max-width: 680px; }
+  .quiz-progress { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .quiz-dots { display: flex; gap: 5px; }
+  .qdot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); }
+  .qdot.done { background: var(--green); }
+  .qdot.wrong { background: var(--red); }
+  .qdot.current { background: var(--accent2); }
+  .quiz-score { font-size: 12px; color: var(--text3); margin-left: auto; }
+  .question-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 16px; }
+  .question-card .qtag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); margin-bottom: 8px; }
+  .question-card .qtext { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 18px; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 9px; }
+  .option { padding: 11px 15px; border-radius: var(--radius-sm); border: 1px solid var(--border2); cursor: pointer; font-size: 14px; color: var(--text2); transition: all .15s; }
+  .option:hover:not(.disabled) { border-color: var(--accent); color: var(--text); background: rgba(108,99,255,.08); }
+  .option.correct { border-color: var(--green); background: rgba(74,222,128,.1); color: var(--green); }
+  .option.wrong { border-color: var(--red); background: rgba(248,113,113,.1); color: var(--red); }
+  .option.disabled { pointer-events: none; opacity: .6; }
+  .option.show-correct { border-color: var(--green); color: var(--green); opacity: 1 !important; }
+  .explanation { background: var(--bg2); border-left: 3px solid var(--teal); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 12px 16px; margin-top: 14px; font-size: 13px; color: var(--text2); display: none; }
+  .explanation.show { display: block; }
+  .quiz-nav { display: flex; gap: 10px; margin-top: 10px; }
+  .btn { padding: 9px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; border: 1px solid; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .btn-primary:hover { background: #7c73ff; }
+  .btn-outline { background: transparent; border-color: var(--border2); color: var(--text2); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--text); }
+  .quiz-result { text-align: center; padding: 40px 20px; }
+  .quiz-result .big-score { font-size: 64px; font-weight: 800; background: linear-gradient(135deg, var(--accent2), var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .quiz-result h3 { font-size: 20px; margin-bottom: 8px; }
+  .quiz-result p { color: var(--text2); margin-bottom: 24px; }
+
+  /* FLASHCARDS */
+  .flashcard-wrap { max-width: 560px; margin: 0 auto; }
+  .flashcard-counter { text-align: center; font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+  .flashcard { perspective: 1000px; height: 220px; cursor: pointer; margin-bottom: 20px; }
+  .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform .5s; transform-style: preserve-3d; }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); border: 1px solid var(--border2); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+  .flashcard-front { background: var(--bg3); }
+  .flashcard-back { background: rgba(108,99,255,.1); border-color: var(--accent); transform: rotateY(180deg); }
+  .flashcard-front .fc-hint { font-size: 11px; color: var(--text3); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .06em; }
+  .flashcard-front .fc-q { font-size: 16px; font-weight: 600; color: var(--text); }
+  .flashcard-back .fc-a { font-size: 15px; color: var(--text); line-height: 1.6; }
+  .fc-nav { display: flex; justify-content: center; gap: 12px; margin-top: 8px; }
+  .fc-rating { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
+  .fc-btn { padding: 7px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all .15s; }
+  .fc-btn-hard { border-color: var(--red); color: var(--red); background: transparent; }
+  .fc-btn-hard:hover { background: rgba(248,113,113,.15); }
+  .fc-btn-good { border-color: var(--green); color: var(--green); background: transparent; }
+  .fc-btn-good:hover { background: rgba(74,222,128,.15); }
+  .fc-btn-easy { border-color: var(--teal); color: var(--teal); background: transparent; }
+  .fc-btn-easy:hover { background: rgba(45,212,191,.15); }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text2); cursor: pointer; transition: color .12s; }
+  .checklist li:last-child { border: none; }
+  .checklist li.checked { color: var(--text3); text-decoration: line-through; }
+  .check-box { width: 18px; height: 18px; border: 1.5px solid var(--border2); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 2px; transition: all .15s; }
+  .checklist li.checked .check-box { background: var(--green); border-color: var(--green); }
+  .check-tick { display: none; font-size: 11px; color: #000; font-weight: 800; }
+  .checklist li.checked .check-tick { display: block; }
+
+  /* SECTION DIVIDER */
+  .section-divider { display: flex; align-items: center; gap: 12px; margin: 28px 0 18px; }
+  .section-divider span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); white-space: nowrap; }
+  .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* FLOW DIAGRAM */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 18px 0; }
+  .flow-node { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text); text-align: center; min-width: 100px; }
+  .flow-arrow { color: var(--accent2); font-size: 18px; padding: 0 6px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab { padding: 8px 18px; font-size: 13px; font-weight: 500; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SEARCH */
+  .search-bar { display: flex; align-items: center; gap: 10px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 14px; margin-bottom: 20px; }
+  .search-bar input { background: none; border: none; outline: none; color: var(--text); font-size: 14px; flex: 1; }
+  .search-bar input::placeholder { color: var(--text3); }
+  .search-icon { color: var(--text3); font-size: 16px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* HERO */
+  .hero-banner { background: linear-gradient(135deg, rgba(108,99,255,.15) 0%, rgba(45,212,191,.08) 100%); border: 1px solid rgba(108,99,255,.25); border-radius: var(--radius); padding: 24px; margin-bottom: 28px; }
+  .hero-banner h2 { font-size: 20px; margin-bottom: 4px; }
+  .hero-banner p { margin: 0; font-size: 14px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+  .stat-num { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, var(--accent2), var(--teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  .perf-bar-wrap { margin: 6px 0; }
+  .perf-label { font-size: 12px; color: var(--text3); margin-bottom: 3px; display: flex; justify-content: space-between; }
+  .perf-track { height: 8px; background: var(--border2); border-radius: 4px; overflow: hidden; }
+  .perf-fill { height: 100%; border-radius: 4px; transition: width 1s; }
+  .source-tag { font-size: 10px; color: var(--text3); background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; display: inline-block; margin-top: 6px; }
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .content-area { padding: 20px 18px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <div class="course-tag">BITS Pilani · DMML</div>
+      <h1>Data Representations</h1>
+      <p>Session 1 · Prof. Sunil Bhutada</p>
+    </div>
+    <div class="mode-tabs">
+      <div class="mode-tab active" onclick="setMode('study')">Study</div>
+      <div class="mode-tab" onclick="setMode('quiz')">Quiz</div>
+      <div class="mode-tab" onclick="setMode('flash')">Cards</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Topics</div>
+      <div class="nav-item active" onclick="showPage('overview')"><span class="dot"></span> Overview</div>
+      <div class="nav-item" onclick="showPage('dikw')"><span class="dot"></span> DIKW Hierarchy</div>
+      <div class="nav-item" onclick="showPage('formats')"><span class="dot"></span> Data Formats</div>
+      <div class="nav-item" onclick="showPage('models')"><span class="dot"></span> Data Models</div>
+      <div class="nav-item" onclick="showPage('normalization')"><span class="dot"></span> Normalization</div>
+      <div class="nav-item" onclick="showPage('query')"><span class="dot"></span> Query Languages</div>
+      <div class="nav-item" onclick="showPage('storage')"><span class="dot"></span> Storage Layouts</div>
+      <div class="nav-item" onclick="showPage('serial')"><span class="dot"></span> Serialization</div>
+      <div class="nav-item" onclick="showPage('oltp')"><span class="dot"></span> OLTP vs OLAP</div>
+      <div class="nav-item" onclick="showPage('glossary')"><span class="dot"></span> Glossary</div>
+      <div class="nav-item" onclick="showPage('checklist')"><span class="dot"></span> Revision Checklist</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-label"><span>Study progress</span><span id="progressPct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="content-area">
+
+      <!-- OVERVIEW -->
+      <div class="page active" id="page-overview">
+        <h2>Session 1 — Deep Study Tool</h2>
+        <p class="page-subtitle">Data Management for Machine Learning · BITS Pilani WILP · AIMLCZG529 / DSECLZG529</p>
+        <div class="hero-banner">
+          <h2>🎯 What you'll master today</h2>
+          <p>Everything from raw data to wisdom, all 5 data models, normalization, storage layouts, serialization formats, and OLTP vs OLAP — with your lecture notes, class recording, and research site synthesized into one tool.</p>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">Major topics</div></div>
+          <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">Data models</div></div>
+          <div class="stat-card"><div class="stat-num">25</div><div class="stat-label">Quiz questions</div></div>
+          <div class="stat-card"><div class="stat-num">32</div><div class="stat-label">Flashcards</div></div>
+        </div>
+
+        <div class="section-divider"><span>Course Info (from class recording)</span></div>
+        <div class="cards">
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(108,99,255,.15);">📋</div><h4>Assessment breakdown</h4></div>
+            <p>EC1 · EC2 · EC3 weightages</p>
+            <div class="card-body">
+              <ul>
+                <li><strong>EC1 (30 marks):</strong> 2 Quizzes × 5 marks = 10 marks + 1 Assignment = 20 marks</li>
+                <li><strong>EC2 (30 marks):</strong> Mid examination</li>
+                <li><strong>EC3 (40 marks):</strong> End examination (open book)</li>
+                <li>Quiz 1: ~24–28 May 2026 | Quiz 2: ~2–6 August 2026</li>
+                <li>Assignment: 5 July – 19 July 2026</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(45,212,191,.12);">📚</div><h4>Reference books</h4></div>
+            <p>Two O'Reilly books</p>
+            <div class="card-body">
+              <ul>
+                <li><em>Fundamentals of Data Engineering</em> — Joe Reis & Matt Housley</li>
+                <li><em>Reliable Machine Learning</em> — Cathy Chen et al.</li>
+                <li>Also referenced: Designing Data-Intensive Applications — Kleppmann</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(251,191,36,.1);">🗺️</div><h4>Course structure</h4></div>
+            <p>8 sessions theory + 8 sessions ML</p>
+            <div class="card-body">
+              <ul>
+                <li>First 8 sessions: Data Management foundations (theory)</li>
+                <li>Next 8 sessions: ML pipelines and applications</li>
+                <li>4 webinars with hands-on tools</li>
+                <li>Sessions: every Saturday, 1:50 PM – 3:50 PM IST</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>Key concept from TAVI framework (BitsNotes)</span></div>
+        <div class="callout callout-insight">
+          <div class="callout-label">💡 TAVI Framework</div>
+          <p>Modern data comes in 4 modalities: <strong>T</strong>ext · <strong>A</strong>udio · <strong>V</strong>ideo · <strong>I</strong>mage. Data management must handle all four. Historically only numbers were stored; deep learning (CNNs, Transformers) now makes all modalities processable.</p>
+        </div>
+
+        <div class="callout callout-exam">
+          <div class="callout-label">⭐ GIGO Principle (from BitsNotes)</div>
+          <p><strong>Garbage In, Garbage Out</strong> — No matter how advanced your ML model, poor-quality training data produces a permanently degraded model that makes wrong predictions on all future transactions. This is why Data Management is the foundation of ML success.</p>
+        </div>
+      </div>
+
+      <!-- DIKW -->
+      <div class="page" id="page-dikw">
+        <h2>DIKW Hierarchy</h2>
+        <p class="page-subtitle">Data → Information → Knowledge → Wisdom · Click each level to expand</p>
+
+        <div class="callout callout-def">
+          <div class="callout-label">📖 Definition — Prof. Bhutada</div>
+          <p>The pyramid represents increasing levels of refinement and abstraction. The y-axis is "more refined and abstract"; the x-axis represents correctness. Each level filters noise from the level below it.</p>
+        </div>
+
+        <div class="pyramid-wrap" id="pyramidWrap">
+          <div class="pyramid-level" style="background:rgba(108,99,255,.25);width:55%;justify-content:center;" onclick="togglePyramid('wisdom')">
+            <span class="plabel" style="color:#a78bfa;">🔮 Wisdom</span>
+          </div>
+          <div class="pyramid-detail" id="pyWisdom">
+            <h4>Wisdom — Distilled and integrated knowledge</h4>
+            <p style="font-size:14px;color:var(--text2);">Demonstrates high-level understanding. Goes beyond knowing facts to exercising judgment.</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>Lecture example:</strong> "If you don't feel well, see a doctor."</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>BitsNotes example:</strong> "If I want lowest running cost, choose Honda. If I want performance, choose Apache."</p>
+          </div>
+          <div class="pyramid-level" style="background:rgba(45,212,191,.2);width:68%;justify-content:center;" onclick="togglePyramid('knowledge')">
+            <span class="plabel" style="color:#2dd4bf;">🧠 Knowledge</span>
+          </div>
+          <div class="pyramid-detail" id="pyKnowledge">
+            <h4>Knowledge — Justified true belief</h4>
+            <p style="font-size:14px;color:var(--text2);">Information that can be acted upon. Reveals patterns, rules, and generalizations.</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>Lecture example:</strong> "If temperature above 100°F → you most likely have a fever."</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>BitsNotes example:</strong> "My bike gives 25 km/l mileage. Honda: 30 km/l. Apache: 20 km/l."</p>
+            <div class="callout callout-insight" style="margin-top:10px;">
+              <div class="callout-label">Explicit vs Tacit Knowledge (BitsNotes)</div>
+              <p><strong>Explicit:</strong> Textbooks, manuals, formulas — codified and transferable.<br><strong>Tacit:</strong> A doctor's diagnostic intuition, a DBA's instinct for query optimization — hard to document. Organizations lose tacit knowledge when employees leave (brain drain).</p>
+            </div>
+          </div>
+          <div class="pyramid-level" style="background:rgba(251,191,36,.2);width:82%;justify-content:center;" onclick="togglePyramid('information')">
+            <span class="plabel" style="color:#fbbf24;">📊 Information</span>
+          </div>
+          <div class="pyramid-detail" id="pyInformation">
+            <h4>Information — Data organized and presented in a particular manner</h4>
+            <p style="font-size:14px;color:var(--text2);">Answers <em>who, what, where, when</em>. Data is structured, categorized, and described.</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>Lecture example:</strong> "Hourly body temperature: 98.6°F, 99.5°F, 100.3°F, 101°F..."</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>BitsNotes example:</strong> "I traveled 50 km, spent 200 INR, used 2 liters of petrol."</p>
+          </div>
+          <div class="pyramid-level" style="background:rgba(249,115,22,.2);width:100%;" onclick="togglePyramid('data')">
+            <span class="plabel" style="color:#fb923c;">🔢 Data (raw material)</span>
+            <span class="pdesc" style="color:var(--text3);">Raw, unprocessed. No inherent meaning alone.</span>
+          </div>
+          <div class="pyramid-detail" id="pyData">
+            <h4>Data — The raw material of information</h4>
+            <p style="font-size:14px;color:var(--text2);">Raw, unprocessed facts, symbols, or observations. Data is <em>always mediated</em> — it represents something in the real world but has no meaning without context.</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>Lecture example:</strong> "98.6°F, 99.5°F, 100.3°F, 101°F, ..."</p>
+            <p style="font-size:13px;color:var(--text3);"><strong>BitsNotes example:</strong> The number 1995 alone — could be a year, a price, a temperature reading, a room number.</p>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>Full comparison table</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Definition</th><th>Example (body temp)</th><th>Example (bike)</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-coral">Data</span></td><td>Raw material, no inherent meaning</td><td>98.6°F, 99.5°F, 100.3°F, 101°F</td><td>50, 200, 2</td></tr>
+              <tr><td><span class="badge badge-amber">Information</span></td><td>Data organized and presented</td><td>Hourly body temperature increasing...</td><td>Traveled 50 km, spent 200 INR, 2 liters</td></tr>
+              <tr><td><span class="badge badge-teal">Knowledge</span></td><td>Justified true belief; actionable</td><td>Temperature above 100°F → likely fever</td><td>My bike: 25 km/l; Honda: 30; Apache: 20</td></tr>
+              <tr><td><span class="badge badge-purple">Wisdom</span></td><td>Distilled, integrated; sound judgment</td><td>If you don't feel well, see a doctor</td><td>Choose Honda for economy, Apache for performance</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-exam">
+          <div class="callout-label">⭐ Common exam question</div>
+          <p>Explain the DIKW pyramid with examples. Do not just list the four levels — demonstrate the <strong>transformations</strong> between them. The key insight: each step acts as a quality filter, making the output more correct and abstract.</p>
+        </div>
+      </div>
+
+      <!-- FORMATS -->
+      <div class="page" id="page-formats">
+        <h2>Formats of Data</h2>
+        <p class="page-subtitle">Structured · Unstructured · Semi-structured · (Quasi-structured homework)</p>
+
+        <div class="callout callout-def">
+          <div class="callout-label">📖 Schema</div>
+          <p>A blueprint or structure that defines how data is organized, stored, and related. It specifies the rules, format, and constraints of the data.</p>
+        </div>
+
+        <div class="cards">
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(74,222,128,.12);">📊</div><h4>Structured</h4></div>
+            <p>Follows a predefined schema. Rows and columns.</p>
+            <div class="card-body">
+              <p><strong>Uses schema-on-write:</strong> validates data structure before storage. Faster reads, but schema changes require careful migration.</p>
+              <p><strong>Example:</strong> Excel/CSV tables, RDBMS tables. RDBMS uses ER (Entity Relationship) model.</p>
+              <p><strong>Advantages:</strong> Easy for data analysis; faster to retrieve (binary yes/no answer); 100% accurate results.</p>
+              <p><strong>Disadvantages:</strong> Complex if schema changes; restricting to commit to predefined schema; definite storage format required.</p>
+              <p style="color:var(--teal);">Used for DBMS/RDBMS systems.</p>
+            </div>
+          </div>
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(249,115,22,.12);">📝</div><h4>Unstructured</h4></div>
+            <p>No schema. No fixed format.</p>
+            <div class="card-body">
+              <p><strong>Examples:</strong> News articles, audio/video files, plain text, images, handwritten notes.</p>
+              <p><strong>Advantages:</strong> Wide range of storage options; lots of data with many interpretations; adaptive to schema changes.</p>
+              <p><strong>Disadvantages:</strong> Difficult for analysis; slower to retrieve information.</p>
+              <p style="color:var(--teal);">Used for search engines — gives approximate results (precision/recall metrics).</p>
+            </div>
+          </div>
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(244,114,182,.12);">📧</div><h4>Semi-structured</h4></div>
+            <p>Combination of both. Evolving schema.</p>
+            <div class="card-body">
+              <p><strong>Example:</strong> Emails — From/To/Subject fields are structured; body is free-form unstructured.</p>
+              <p><strong>Advantages:</strong> Evolving schema (unlike fixed structured or non-existent unstructured); highly interoperable.</p>
+              <p><strong>Disadvantages:</strong> Tricky to have a routine for validation and analysis.</p>
+              <p style="color:var(--amber);">Homework: What is Quasi-structured and which category is it related to?</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>Full comparison</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Feature</th><th>Structured</th><th>Unstructured</th><th>Semi-structured</th></tr></thead>
+            <tbody>
+              <tr><td>Schema</td><td>Definite, fixed</td><td>None</td><td>Evolving, flexible</td></tr>
+              <tr><td>Examples</td><td>Excel, CSV, RDBMS tables</td><td>Handwritten notes, audio, images</td><td>Emails, JSON, XML</td></tr>
+              <tr><td>Analysis</td><td>Easy, accurate</td><td>Difficult</td><td>Tricky validation</td></tr>
+              <tr><td>Retrieval speed</td><td>Faster</td><td>Slower</td><td>Moderate</td></tr>
+              <tr><td>Schema change</td><td>Very complex</td><td>Adaptive</td><td>Highly interoperable</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DATA MODELS -->
+      <div class="page" id="page-models">
+        <h2>Data Models</h2>
+        <p class="page-subtitle">5 types &#8212; click each to deep dive. Research-enriched: ACID vs BASE, scaling, 2025 use cases.</p>
+        <div class="callout callout-research"><div class="callout-label">&#128302; Research &#8212; ACID vs BASE (integrate.io / AWS / Medium 2024)</div><p><strong>ACID (SQL):</strong> Atomicity &#8212; tx fully completes or rolls back. Consistency &#8212; DB stays valid. Isolation &#8212; concurrent txs don't interfere. Durability &#8212; committed data survives crashes. Required for banking, e-commerce.<br><strong>BASE (NoSQL):</strong> Basically Available, Soft state, Eventual consistency &#8212; relaxes strict consistency for performance and horizontal scale. NoSQL scales horizontally across commodity nodes; SQL scales vertically (one powerful server &#8212; expensive). This is why tech giants (Google, Amazon, Facebook) adopted NoSQL for web-scale applications.</p></div>
+
+        <div class="callout callout-def">
+          <div class="callout-label">📖 Definition</div>
+          <p>A <strong>Data Model</strong> is the way data is structured, stored, and organized. It determines how data is accessed and related.</p>
+        </div>
+
+        <div class="flow">
+          <div class="flow-node" style="background:rgba(108,99,255,.2);border-color:var(--accent);">Relational</div>
+          <div class="flow-arrow">·</div>
+          <div class="flow-node" style="background:rgba(45,212,191,.12);border-color:var(--teal);">Hierarchical</div>
+          <div class="flow-arrow">·</div>
+          <div class="flow-node" style="background:rgba(251,191,36,.12);border-color:var(--amber);">Graph</div>
+          <div class="flow-arrow">·</div>
+          <div class="flow-node" style="background:rgba(249,115,22,.12);border-color:var(--coral);">Document</div>
+          <div class="flow-arrow">·</div>
+          <div class="flow-node" style="background:rgba(244,114,182,.12);border-color:var(--pink);">Key-Value</div>
+        </div>
+        <p style="font-size:13px;color:var(--text3);margin-bottom:20px;">Relational → SQL &nbsp;|&nbsp; All others → NoSQL</p>
+
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab(this,'relational')">Relational</div>
+          <div class="tab" onclick="switchTab(this,'hierarchical')">Hierarchical</div>
+          <div class="tab" onclick="switchTab(this,'graph')">Graph</div>
+          <div class="tab" onclick="switchTab(this,'document')">Document</div>
+          <div class="tab" onclick="switchTab(this,'kv')">Key-Value</div>
+        </div>
+
+        <div class="tab-panel active" id="tab-relational">
+          <h3>Relational Data Model</h3>
+          <ul style="padding-left:18px;color:var(--text2);font-size:14px;">
+            <li>Data organized into <strong>relations</strong>; each relation is a set of <strong>tuples</strong></li>
+            <li>A <strong>table</strong> is the visual representation of a relation</li>
+            <li>Each row = one tuple</li>
+            <li>Relations are <strong>unordered</strong> — you can shuffle rows or columns</li>
+            <li>Uses <strong>SQL</strong> (Structured Query Language)</li>
+            <li>Connects tables via <strong>primary keys and foreign keys</strong> (ER model)</li>
+          </ul>
+          <div class="callout callout-insight">
+            <div class="callout-label">💡 Prof. Bhutada's note</div>
+            <p>RDBMS gives 100% accurate results — SELECT query either returns the correct data or says "no results." Unlike search engines which give approximate results.</p>
+          </div>
+          <div class="table-wrap" style="margin-top:14px;">
+            <table><thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+              <tbody>
+                <tr><td><code>Relation</code></td><td>A table — a set of tuples</td></tr>
+                <tr><td><code>Tuple</code></td><td>A single row in a table</td></tr>
+                <tr><td><code>Attribute</code></td><td>A column in the table</td></tr>
+                <tr><td><code>Primary Key</code></td><td>Unique identifier for each row</td></tr>
+                <tr><td><code>Foreign Key</code></td><td>References a primary key in another table</td></tr>
+                <tr><td><code>Schema</code></td><td>ER model — defines structure and relationships</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:13px;color:var(--text3);margin-top:8px;">Sample DBs: MySQL, PostgreSQL, Oracle, MS SQL Server</p>
+        </div>
+
+        <div class="tab-panel" id="tab-hierarchical">
+          <h3>Hierarchical Data Model</h3>
+          <ul style="padding-left:18px;color:var(--text2);font-size:14px;">
+            <li>Data organized in a <strong>tree-like parent-child</strong> structure</li>
+            <li>Each node has exactly one parent (except the root)</li>
+            <li>Navigation is top-down</li>
+          </ul>
+          <div class="callout callout-insight">
+            <div class="callout-label">💡 Real-world examples</div>
+            <p><strong>Windows Registry:</strong> Type <code>regedit</code> in command prompt — HKEY_CLASSES_ROOT → subkeys → values<br>
+            <strong>Org chart:</strong> CEO → Department Heads → Managers → Engineers<br>
+            <strong>DB Indexing:</strong> B-tree index (Root → Intermediate → Leaf nodes)</p>
+          </div>
+          <pre>&lt;?xml version="1.0"?&gt;
+&lt;birds&gt;
+  &lt;owl id="1201"&gt;
+    &lt;species&gt;Bubo bubo&lt;/species&gt;
+    &lt;name&gt;Eagle Owl&lt;/name&gt;
+    &lt;region&gt;Eurasia&lt;/region&gt;
+  &lt;/owl&gt;
+&lt;/birds&gt;</pre>
+          <p style="font-size:13px;color:var(--text3);">Sample DBs: IBM IMS · NoSQL</p>
+        </div>
+
+        <div class="tab-panel" id="tab-graph">
+          <h3>Graph Data Model</h3>
+          <div class="callout callout-research"><div class="callout-label">&#128302; Research &#8212; Neo4j 2025 (SiliconAngle / Neo4j.com)</div><p>Neo4j is used by 50%+ of Fortune 500 companies. In 2025, Neo4j launched <strong>Infinigraph</strong> &#8212; running operational + analytical workloads on one graph at 100TB+ scale. <strong>GraphRAG</strong> (Graph Retrieval-Augmented Generation) is a major 2025 trend: combining knowledge graphs with LLMs for better AI answers. Key use cases: fraud detection, drug discovery (millions of scientific documents), supply chain, customer 360. Gartner: "graph technologies will be used in 80% of data innovations by 2025." Cypher is now ISO GQL-compliant (2024).</p></div>
+          <ul style="padding-left:18px;color:var(--text2);font-size:14px;">
+            <li>Built around <strong>nodes</strong> (entities) and <strong>edges</strong> (relationships)</li>
+            <li>Relationships are the priority — not the document content</li>
+            <li>Faster retrieval because relationships are modeled structurally</li>
+            <li>Query language: <strong>Cypher</strong> (Neo4j), <strong>Gremlin</strong></li>
+          </ul>
+          <div class="callout callout-insight">
+            <div class="callout-label">💡 LinkedIn / Facebook</div>
+            <p>Person A <strong>IS_FRIEND_OF</strong> → Person B → <strong>LIKES</strong> → Restaurant → <strong>SERVES</strong> → Location<br>
+            This is why LinkedIn finds "mutual connections" so fast — the relationship graph is pre-stored.</p>
+          </div>
+          <div class="callout callout-exam">
+            <div class="callout-label">⭐ Org use case (from slides)</div>
+            <p>Mapping projects to business objectives · Detecting project dependencies · Finding redundancy across projects</p>
+          </div>
+          <p style="font-size:13px;color:var(--text3);">Sample DBs: Neo4j, Amazon Neptune, TigerGraph · NoSQL</p>
+        </div>
+
+        <div class="tab-panel" id="tab-document">
+          <h3>Document Data Model</h3>
+          <ul style="padding-left:18px;color:var(--text2);font-size:14px;">
+            <li>Built around the concept of a <strong>"document"</strong></li>
+            <li>A document = a single continuous string encoded as JSON or XML</li>
+            <li>Each document has a unique key</li>
+            <li>Collection of documents ≈ table in relational DB</li>
+            <li>A document ≈ a row (but far more flexible)</li>
+          </ul>
+          <pre>{
+  "Title": "Book1",
+  "Author": "Pravin",
+  "Publisher": "Press1",
+  "Sold as": [
+    { "format": "Paperback", "Price": "20" },
+    { "format": "E-books",   "Price": "10" }
+  ]
+}</pre>
+          <p style="font-size:14px;color:var(--text2);">Used for: storing unstructured/semi-structured data — emails as evidence, device logs, photos for reference.</p>
+          <p style="font-size:13px;color:var(--text3);">Sample DBs: Amazon DocumentDB, Apache CouchDB, Firebase Firestore · NoSQL</p>
+        </div>
+
+        <div class="tab-panel" id="tab-kv">
+          <h3>Key-Value Pair Model</h3>
+          <ul style="padding-left:18px;color:var(--text2);font-size:14px;">
+            <li>Simplest model — data stored as <strong>key → value</strong> pairs</li>
+            <li>Extremely fast for reads/writes</li>
+            <li>Query only <em>by key</em> — no complex querying</li>
+          </ul>
+          <div class="table-wrap">
+            <table><thead><tr><th>Key</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>Name</td><td>ABC</td></tr>
+                <tr><td>Subject</td><td>DM4ML</td></tr>
+                <tr><td>Marks</td><td>80</td></tr>
+                <tr><td>Current Status</td><td>In progress</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:14px;color:var(--text2);margin-top:10px;"><strong>Primary use case: Caching</strong> — storing copies of data in temporary storage for faster retrieval. JSON objects are internally key-value pairs.</p>
+          <p style="font-size:13px;color:var(--text3);">Sample DBs: Redis, Amazon DynamoDB, Riak · NoSQL</p>
+        </div>
+
+        <div class="section-divider"><span>Full model comparison</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Model</th><th>Structure</th><th>Query Language</th><th>Best for</th><th>Example DBs</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-purple">Relational</span></td><td>Tables, rows, columns</td><td>SQL</td><td>Business apps, ERP, CRM</td><td>MySQL, PostgreSQL, Oracle</td></tr>
+              <tr><td><span class="badge badge-teal">Hierarchical</span></td><td>Tree / parent-child</td><td>Navigational (DL/I)</td><td>Legacy systems, file systems, indexing</td><td>IBM IMS</td></tr>
+              <tr><td><span class="badge badge-amber">Graph</span></td><td>Nodes + edges</td><td>Cypher, Gremlin</td><td>Social networks, fraud detection</td><td>Neo4j, Neptune</td></tr>
+              <tr><td><span class="badge badge-coral">Document</span></td><td>JSON/XML documents</td><td>JSONPath, MongoDB QL</td><td>Content mgmt, catalogs, APIs</td><td>MongoDB, CouchDB</td></tr>
+              <tr><td><span class="badge badge-pink">Key-Value</span></td><td>Key → value pairs</td><td>By key only</td><td>Caching, session storage, config</td><td>Redis, DynamoDB</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- NORMALIZATION -->
+      <div class="page" id="page-normalization">
+        <h2>Normalization</h2>
+        <p class="page-subtitle">Why un-normalized tables are a problem &#8212; and how to fix them</p>
+        <div class="callout callout-research"><div class="callout-label">&#128302; Research &#8212; 3 anomaly types (DigitalOcean / freeCodeCamp 2024)</div><p>Un-normalized tables suffer from three anomalies:<br><strong>Insertion anomaly:</strong> Can't add a new Subject without assigning it to a Student first (they share the same table).<br><strong>Update anomaly:</strong> If a student's name changes, must update every row they appear in &#8212; miss one and data becomes inconsistent.<br><strong>Deletion anomaly:</strong> Deleting the last student enrolled in a course accidentally deletes the course information.<br>Normalization was invented by <strong>Edgar F. Codd</strong> (1970) &#8212; the father of the relational model. All modern RDBMS follow his rules.</p></div>
+
+        <h3>The problem with un-normalized data</h3>
+        <p>In the lecture, Prof. Bhutada showed a flat table with StudentID, StudentName, CourseName, and SubjectName all in one table. A student enrolled in multiple subjects appeared on multiple rows with their name and course repeated.</p>
+        <div class="callout callout-warn">
+          <div class="callout-label">⚠️ Problems with un-normalized tables</div>
+          <p>1. <strong>Data Integrity</strong> — "DataScience" vs "DataSciences" (inconsistent SubjectName in the lecture example)<br>
+          2. <strong>Highly redundant values</strong> — Same StudentName and CourseName repeated for every subject<br>
+          3. <strong>Difficult to interpret</strong> — Hard to see clean relationships<br>
+          4. <strong>Not expandable</strong> — Adding a new field means updating many rows</p>
+        </div>
+
+        <h3>Solution: Normalization</h3>
+        <div class="callout callout-def">
+          <div class="callout-label">📖 Normalization</div>
+          <p>The process of organizing a relational database to <strong>reduce data redundancy</strong> and <strong>improve data integrity</strong>. Split one flat table into multiple related tables.</p>
+        </div>
+
+        <p>After normalization, the un-normalized table becomes 4 clean tables:</p>
+        <div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+          <div class="card"><div class="card-head"><div class="card-icon" style="background:rgba(108,99,255,.15);">👤</div><h4>Student Table</h4></div><p>StudentID, StudentName</p></div>
+          <div class="card"><div class="card-head"><div class="card-icon" style="background:rgba(45,212,191,.12);">📚</div><h4>Course Table</h4></div><p>CourseID, CourseName, IsValid, Start/End Year</p></div>
+          <div class="card"><div class="card-head"><div class="card-icon" style="background:rgba(251,191,36,.1);">📖</div><h4>Subject Table</h4></div><p>SubjectID, SubjectName, Type (Core/Elective)</p></div>
+          <div class="card"><div class="card-head"><div class="card-icon" style="background:rgba(249,115,22,.1);">🔗</div><h4>Mapping Table</h4></div><p>StudentID, CourseID, SubjectID</p></div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>Normal Form</th><th>Rule (simplified)</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-teal">1NF</span></td><td>Each column contains atomic (indivisible) values; no repeating groups</td></tr>
+              <tr><td><span class="badge badge-purple">2NF</span></td><td>Must be in 1NF; every non-key attribute fully depends on the <em>whole</em> primary key</td></tr>
+              <tr><td><span class="badge badge-amber">3NF</span></td><td>Must be in 2NF; no transitive dependencies (non-key attributes not dependent on other non-key attributes)</td></tr>
+              <tr><td><span class="badge badge-coral">BCNF</span></td><td>Boyce-Codd Normal Form — stronger version of 3NF; every determinant is a candidate key</td></tr>
+              <tr><td><span class="badge badge-pink">5NF</span></td><td>Must be in 4NF; every join dependency is implied by the candidate keys</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-exam">
+          <div class="callout-label">⭐ What normalization achieves</div>
+          <p>✅ Reduced data redundancy &nbsp; ✅ Improved data integrity &nbsp; ✅ Flexible for expansion</p>
+        </div>
+      </div>
+
+      <!-- QUERY LANGUAGES -->
+      <div class="page" id="page-query">
+        <h2>Query Languages</h2>
+        <p class="page-subtitle">Declarative vs Imperative — the fundamental dichotomy</p>
+
+        <div class="compare-grid">
+          <div class="compare-side">
+            <h4 style="color:var(--coral);">⚙️ Imperative (Procedural)</h4>
+            <p style="font-size:13px;color:var(--text3);">Focuses on <strong>HOW</strong> to do it</p>
+            <ul>
+              <li>Step-by-step instructions</li>
+              <li>Developer must define the optimal path</li>
+              <li>System cannot optimize execution</li>
+              <li>Parallel execution is complex</li>
+              <li>More complex to write</li>
+              <li>Output ordering is assured</li>
+            </ul>
+          </div>
+          <div class="compare-side">
+            <h4 style="color:var(--teal);">💬 Declarative</h4>
+            <p style="font-size:13px;color:var(--text3);">Focuses on <strong>WHAT</strong> you want</p>
+            <ul>
+              <li>State the desired outcome</li>
+              <li>DB query optimizer decides HOW</li>
+              <li>DB can introduce performance improvements without code changes</li>
+              <li>Often enables parallel execution</li>
+              <li>Easier to write; hides implementation details</li>
+              <li>Output order not guaranteed unless specified</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>Real-world analogy (from lecture)</span></div>
+        <div class="compare-grid">
+          <div class="compare-side">
+            <h4 style="color:var(--coral);">Imperative version</h4>
+            <p style="font-size:13px;color:var(--text2);">1. Open the door<br>2. Go to car parking<br>3. Open the car<br>4. Check if bag is not empty<br>5. If so, take the bag<br>6. Close the car, come inside<br>7. Close the door<br>8. Give the bag to me</p>
+          </div>
+          <div class="compare-side">
+            <h4 style="color:var(--teal);">Declarative version</h4>
+            <p style="font-size:13px;color:var(--text2);">"Bring the bag from the car to me if bag is not empty."</p>
+            <br>
+            <p style="font-size:12px;color:var(--text3);">Don't care HOW — just tell me WHAT you want done.</p>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>Technical code example — retrieving sharks</span></div>
+        <div class="compare-grid">
+          <div class="compare-side">
+            <h4 style="color:var(--coral);">Imperative (JavaScript)</h4>
+            <pre style="margin:0;font-size:12px;">function getSharks() {
+  var sharks = [];
+  for (var i = 0; i &lt; animals.length; i++) {
+    if (animals[i].family === "Sharks") {
+      sharks.push(animals[i]);
+    }
+  }
+  return sharks;
+}</pre>
+          </div>
+          <div class="compare-side">
+            <h4 style="color:var(--teal);">Declarative (SQL)</h4>
+            <pre style="margin:0;font-size:12px;">SELECT * FROM animals
+WHERE family = 'Sharks';</pre>
+            <br>
+            <p style="font-size:12px;color:var(--text3);">Same result. The DB optimizer decides which index to use, join order, and parallel execution strategy.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-exam">
+          <div class="callout-label">⭐ Key exam insight</div>
+          <p>SQL is declarative. Procedural/scripted code (JavaScript loops, Python for-loops) is imperative. In SQL you say WHAT; the query optimizer handles HOW — which is why DBs can improve performance invisibly without code changes.</p>
+        </div>
+      </div>
+
+      <!-- STORAGE LAYOUTS -->
+      <div class="page" id="page-storage">
+        <h2>Data Storage Layouts</h2>
+        <p class="page-subtitle">Row-major vs Column-major &#8212; why it profoundly matters for ML workloads</p>
+        <div class="callout callout-research"><div class="callout-label">&#128302; Research &#8212; Parquet internals (MotherDuck / Starburst 2025&#8211;2026)</div><p>Parquet was created in 2013 (Twitter + Cloudera, inspired by Google's Dremel). Structure: <strong>row groups &#x2192; column chunks &#x2192; pages</strong>. Each column chunk stores <strong>min/max statistics</strong> &#8212; enabling <strong>predicate pushdown</strong>: query engines skip chunks where values can't match a WHERE clause without reading them. For 1TB / 1000 columns, querying 3 = ~3GB read instead of 1TB (<strong>333&times; I/O reduction</strong>). All cloud warehouses (BigQuery, Snowflake, Redshift, Databricks) use columnar storage internally. 2025 challenge: GDPR deletion is expensive for columnar storage since each deleted row's data is spread across separate column chunks.</p></div>
+
+        <div class="compare-grid">
+          <div class="compare-side" style="border-color:rgba(108,99,255,.3);">
+            <h4 style="color:var(--accent2);">📄 Row-major (Row format)</h4>
+            <ul>
+              <li>All columns of a row stored <strong>sequentially</strong> in memory</li>
+              <li>Data retrieved <strong>row by row</strong></li>
+              <li>Good for accessing <strong>complete records / samples</strong></li>
+              <li><strong>Faster data writes</strong></li>
+              <li>Suited for <strong>OLTP</strong> (Online Transaction Processing)</li>
+              <li>Format example: <code>CSV</code></li>
+              <li>DB example: <code>MS SQL Server</code></li>
+            </ul>
+          </div>
+          <div class="compare-side" style="border-color:rgba(45,212,191,.3);">
+            <h4 style="color:var(--teal);">📊 Column-major (Column format)</h4>
+            <ul>
+              <li>All values of a particular column stored <strong>sequentially</strong></li>
+              <li>Data retrieved <strong>column by column</strong></li>
+              <li>Good for accessing <strong>features</strong> (e.g. all values of one attribute)</li>
+              <li><strong>Faster data reads</strong></li>
+              <li>Suited for <strong>OLAP</strong> (Online Analytical Processing)</li>
+              <li>Format example: <code>Parquet</code></li>
+              <li>DB example: <code>Amazon Redshift</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-insight">
+          <div class="callout-label">💡 Why columns matter for ML</div>
+          <p>In ML feature engineering, you often select specific columns (features) from a dataset with millions of rows. Column-major format lets you read only the columns you need without scanning every row — this is a huge performance win. Prof. Bhutada: "A feature is a column. Column-major stores each column separately — perfect for reading one feature across all records."</p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Property</th><th>Row Format</th><th>Column Format</th></tr></thead>
+            <tbody>
+              <tr><td>Storage order</td><td>All columns of one row together</td><td>All values of one column together</td></tr>
+              <tr><td>Fast for</td><td>Writing complete records</td><td>Reading specific attributes</td></tr>
+              <tr><td>Use case</td><td>OLTP — transactional, operational</td><td>OLAP — analytical, historical</td></tr>
+              <tr><td>File format</td><td>CSV</td><td>Parquet</td></tr>
+              <tr><td>Database</td><td>MS SQL Server, MySQL</td><td>Amazon Redshift, Snowflake</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SERIALIZATION -->
+      <div class="page" id="page-serial">
+        <h2>Data Serialization</h2>
+        <p class="page-subtitle">Converting data from one form to another &#8212; with real performance benchmarks</p>
+        <div class="callout callout-research"><div class="callout-label">&#128302; Research &#8212; Serialization tax (Medium / AutoMQ 2024&#8211;2026)</div><p>In microservices, services spend <strong>30&#8211;50% of CPU time</strong> marshaling/unmarshaling data. Format choice has direct infrastructure cost impact. <strong>Protobuf:</strong> Google services, gRPC, TensorFlow TFRecord, IoT, financial high-frequency trading &#8212; maximum performance. <strong>Avro:</strong> Kafka (industry standard with Schema Registry), Hadoop, Spark &#8212; best for big data pipelines with evolving schemas. <strong>JSON:</strong> APIs, configs, human-readable exchange &#8212; for &lt;100K events/sec, performance difference is negligible. <strong>Pickle:</strong> Python-only + security risk (arbitrary code execution on deserialization) &#8212; never use for cross-system exchange.</p></div>
+
+        <div class="callout callout-def">
+          <div class="callout-label">📖 Serialization</div>
+          <p>Converting data from one form to another (e.g., text → binary) to <strong>store</strong> it (size constraints) or <strong>transfer</strong> it (bandwidth constraints). Like encryption: serialization and deserialization must use the <strong>same algorithm</strong>.</p>
+        </div>
+
+        <h3>The serialization process</h3>
+        <div class="flow" style="flex-wrap:nowrap;overflow-x:auto;padding:10px 0;">
+          <div class="flow-node" style="min-width:110px;">Data Producer</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" style="min-width:100px;background:rgba(108,99,255,.2);">Serializer</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" style="min-width:130px;background:rgba(251,191,36,.1);">Serialized data (e.g. binary)</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node" style="min-width:110px;background:rgba(45,212,191,.12);">De-serializer</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Data Consumer</div>
+        </div>
+        <p style="font-size:13px;color:var(--text3);">Analogy: Like forward engineering (requirements → code) and reverse engineering (code → requirements). Same "algorithm" must be used both ways.</p>
+
+                <h3>Performance comparison (research-backed)</h3>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px;">
+          <div class="perf-bar-wrap"><div class="perf-label"><span>Protobuf &#8212; speed</span><span style="color:var(--green);">Fastest (5&#8211;10&times; vs JSON)</span></div><div class="perf-track"><div class="perf-fill" style="width:95%;background:var(--green);"></div></div></div>
+          <div class="perf-bar-wrap"><div class="perf-label"><span>Avro &#8212; speed</span><span style="color:var(--teal);">Fast (3&#8211;6&times; vs JSON)</span></div><div class="perf-track"><div class="perf-fill" style="width:72%;background:var(--teal);"></div></div></div>
+          <div class="perf-bar-wrap"><div class="perf-label"><span>JSON &#8212; speed (baseline)</span><span style="color:var(--amber);">Slowest</span></div><div class="perf-track"><div class="perf-fill" style="width:32%;background:var(--amber);"></div></div></div>
+          <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;">
+            <div class="perf-bar-wrap"><div class="perf-label"><span>Avro &#8212; message size</span><span style="color:var(--green);">Smallest</span></div><div class="perf-track"><div class="perf-fill" style="width:28%;background:var(--green);"></div></div></div>
+            <div class="perf-bar-wrap"><div class="perf-label"><span>Protobuf &#8212; message size</span><span style="color:var(--teal);">~40&#8211;50% of JSON</span></div><div class="perf-track"><div class="perf-fill" style="width:42%;background:var(--teal);"></div></div></div>
+            <div class="perf-bar-wrap"><div class="perf-label"><span>JSON &#8212; message size (baseline)</span><span style="color:var(--coral);">Largest</span></div><div class="perf-track"><div class="perf-fill" style="width:100%;background:var(--coral);"></div></div></div>
+          </div>
+          <span class="source-tag">Source: AutoMQ / SoftwareMill benchmarks 2024&#8211;2026</span>
+        </div>
+        <div class="section-divider"><span>Serialization formats</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Format</th><th>Type</th><th>Human Readable</th><th>Notes / Use Cases</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-green">JSON</span></td><td>Text</td><td>✅ Yes</td><td>Everywhere. Programming language agnostic. Key-value pairs internally.</td></tr>
+              <tr><td><span class="badge badge-teal">CSV</span></td><td>Text</td><td>✅ Yes</td><td>Simple table format, no nesting. The most common ML dataset format.</td></tr>
+              <tr><td><span class="badge badge-amber">XML</span></td><td>Text</td><td>✅ Yes</td><td>Hierarchical format. Used in legacy systems.</td></tr>
+              <tr><td><span class="badge badge-purple">Parquet</span></td><td>Binary</td><td>❌ No</td><td>Column-oriented. Hadoop, Amazon Redshift. Very compact.</td></tr>
+              <tr><td><span class="badge badge-coral">Avro</span></td><td>Binary</td><td>❌ No</td><td>Apache. Compatible with Hadoop and Spark. Schema bundled with data.</td></tr>
+              <tr><td><span class="badge badge-pink">Protobuf</span></td><td>Binary</td><td>❌ No</td><td>Protocol Buffer — Google. Used in TensorFlow (TFRecord).</td></tr>
+              <tr><td><span class="badge badge-red">BSON</span></td><td>Binary</td><td>❌ No</td><td>Binary JSON — used by MongoDB.</td></tr>
+              <tr><td><span class="badge badge-teal">JSONB</span></td><td>Binary</td><td>❌ No</td><td>JSON Binary — used by PostgreSQL for semi-structured data.</td></tr>
+              <tr><td><span class="badge badge-amber">Pickle</span></td><td>Binary</td><td>❌ No</td><td>Python / PyTorch model serialization.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>BSON — 2-step serialization (from lecture)</h3>
+        <div class="flow" style="flex-direction:column;align-items:flex-start;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="flow-node" style="background:rgba(74,222,128,.1);">JSON</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node" style="background:rgba(108,99,255,.2);">JSON → BSON Serializer<br><span style="font-size:11px;color:var(--text3);">(C# / Java / Python)</span></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node" style="background:rgba(251,191,36,.12);">BSON format</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">BSON → Binary → DB</div>
+          </div>
+        </div>
+        <div class="callout callout-warn" style="margin-top:14px;">
+          <div class="callout-label">⚠️ Critical rule</div>
+          <p>The same programming language, JSON structure, and algorithm must be used for deserialization. You cannot change the algorithm midway — it's like changing the encryption key.</p>
+        </div>
+      </div>
+
+      <!-- OLTP vs OLAP -->
+      <div class="page" id="page-oltp">
+        <h2>OLTP vs OLAP</h2>
+        <p class="page-subtitle">Online Transaction Processing vs Online Analytical Processing</p>
+
+        <div class="compare-grid">
+          <div class="compare-side" style="border-color:rgba(108,99,255,.3);">
+            <h4 style="color:var(--accent2);">⚡ OLTP — Online Transaction Processing</h4>
+            <ul>
+              <li>Purpose: <strong>Save transactions immediately</strong></li>
+              <li>Data type: Current, <strong>operational</strong> data</li>
+              <li>Volume: Many <strong>small</strong> transactions</li>
+              <li>Optimization: <strong>Faster writes</strong></li>
+              <li>Storage: <strong>Row format</strong></li>
+              <li>Model: <strong>RDBMS</strong> / DBMS</li>
+              <li>Example: GPay transactions; office swipe records</li>
+            </ul>
+          </div>
+          <div class="compare-side" style="border-color:rgba(45,212,191,.3);">
+            <h4 style="color:var(--teal);">📈 OLAP — Online Analytical Processing</h4>
+            <ul>
+              <li>Purpose: <strong>Analytical insights</strong> from OLTP data</li>
+              <li>Data type: <strong>Historical</strong>, consolidated data</li>
+              <li>Volume: Fewer but <strong>large</strong> datasets</li>
+              <li>Optimization: <strong>Faster reads</strong></li>
+              <li>Storage: <strong>Column format</strong></li>
+              <li>Model: <strong>Data Warehouse</strong> (dimensional modeling)</li>
+              <li>Example: GPay spending analysis; attendance calculation</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-insight">
+          <div class="callout-label">💡 Prof. Bhutada's analogy</div>
+          <p>OLTP is like a bank completing transactions every day (opening balance → closing balance). OLAP takes that accumulated data and answers "What was our profitability in EU last 3 months?" — the CRED app is a good example: it uses your transaction history (OLTP) to give you spending analysis (OLAP).</p>
+        </div>
+
+        <h3>OLAP Operations</h3>
+        <div class="cards">
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(45,212,191,.12);">⬆️</div><h4>Roll-up</h4></div>
+            <p>Summarize and aggregate upward</p>
+            <div class="card-body"><p>Collapse detail into higher-level summaries. Like rolling up your sleeves — everything gets grouped. E.g., Monthly sales → Quarterly sales → Annual sales.</p></div>
+          </div>
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(249,115,22,.1);">⬇️</div><h4>Drill-down</h4></div>
+            <p>Go from summary to detail</p>
+            <div class="card-body"><p>Navigate from high-level to the lowest granularity. E.g., Annual → Quarterly → Monthly → Daily. The profitability investigation example in the lecture: Enterprise → Region → Country → Product → Cost type.</p></div>
+          </div>
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(108,99,255,.15);">🔄</div><h4>Pivot / Rotate</h4></div>
+            <p>Swap rows and columns</p>
+            <div class="card-body"><p>Change the axis orientation. E.g., Rows = Product Lines, Columns = Years → Rotate → Rows = Years, Columns = Product Lines. Same data, different perspective.</p></div>
+          </div>
+          <div class="card" onclick="toggleCard(this)">
+            <div class="card-head"><div class="card-icon" style="background:rgba(251,191,36,.1);">🔪</div><h4>Slice & Dice</h4></div>
+            <p>Filter one or multiple dimensions</p>
+            <div class="card-body"><p><strong>Slice:</strong> Select a single value for one dimension (like one slice of bread). <strong>Dice:</strong> Filter on multiple dimensions simultaneously. Prof. Bhutada: "Like slicing a bread loaf — each slice has its own data."</p></div>
+          </div>
+        </div>
+
+        <h3>Drill-down investigation example (from slides)</h3>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:13px;color:var(--text2);line-height:2;">
+          Sharp enterprise-wide profitability dip ↑<br>
+          <span style="padding-left:20px;">→ Sales OK, but profitability down last 3 months</span><br>
+          <span style="padding-left:40px;">→ Sharp reduction in European region</span><br>
+          <span style="padding-left:60px;">→ Increase in few countries, flat in others, sharp decline in some</span><br>
+          <span style="padding-left:80px;">→ Sharp decline in EU countries, last 2 months</span><br>
+          <span style="padding-left:80px;">→ Direct costs OK, indirect costs UP → <strong style="color:var(--amber);">Additional tax on some EU products</strong></span>
+        </div>
+
+        <div class="callout callout-exam">
+          <div class="callout-label">⭐ Data Warehouse definition (from lecture)</div>
+          <p>A <strong>subject-oriented, integrated, time-variant, non-volatile, historic</strong> collection of data for decision-making. Uses <strong>dimensional modeling</strong> (not ER model like RDBMS). Prof. Bhutada: "Data warehouse is centralized; data fabric is decentralized architecture."</p>
+        </div>
+      </div>
+
+      <!-- GLOSSARY -->
+      <div class="page" id="page-glossary">
+        <h2>Glossary of Abbreviations</h2>
+        <p class="page-subtitle">All key abbreviations from the course</p>
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="glossarySearch" placeholder="Search abbreviation or full form..." oninput="filterGlossary()" />
+        </div>
+        <div class="table-wrap" id="glossaryTable">
+          <table>
+            <thead><tr><th>Abbreviation</th><th>Full Form</th><th>Notes</th></tr></thead>
+            <tbody id="glossaryBody">
+              <tr><td><code>NF</code></td><td>Normal Forms</td><td>1NF, 2NF, 3NF, BCNF, 5NF</td></tr>
+              <tr><td><code>BCNF</code></td><td>Boyce-Codd Normal Form</td><td>Stronger version of 3NF</td></tr>
+              <tr><td><code>DB</code></td><td>DataBase</td><td></td></tr>
+              <tr><td><code>DBMS</code></td><td>DataBase Management System</td><td>Uses ER model</td></tr>
+              <tr><td><code>RDBMS</code></td><td>Relational Database Management System</td><td>SQL-based</td></tr>
+              <tr><td><code>OLTP</code></td><td>OnLine Transaction Processing</td><td>Row format, fast writes, operational data</td></tr>
+              <tr><td><code>OLAP</code></td><td>OnLine Analytical Processing</td><td>Column format, fast reads, historical data</td></tr>
+              <tr><td><code>JSON</code></td><td>JavaScript Object Notation</td><td>Text, human-readable, key-value pairs</td></tr>
+              <tr><td><code>BSON</code></td><td>Binary JavaScript Object Notation</td><td>MongoDB's binary format</td></tr>
+              <tr><td><code>JSONB</code></td><td>JSON Binary</td><td>PostgreSQL's binary JSON format</td></tr>
+              <tr><td><code>XML</code></td><td>eXtensible Markup Language</td><td>Hierarchical, text format</td></tr>
+              <tr><td><code>CSV</code></td><td>Comma Separated Values</td><td>Row format, text, human-readable</td></tr>
+              <tr><td><code>SQL</code></td><td>Structured Query Language</td><td>Declarative; for relational DBs</td></tr>
+              <tr><td><code>NoSQL</code></td><td>Not Only SQL</td><td>Hierarchical, Graph, Document, KV models</td></tr>
+              <tr><td><code>DIKW</code></td><td>Data-Information-Knowledge-Wisdom</td><td>Information hierarchy pyramid</td></tr>
+              <tr><td><code>TAVI</code></td><td>Text-Audio-Video-Image</td><td>4 data modalities (BitsNotes framework)</td></tr>
+              <tr><td><code>GIGO</code></td><td>Garbage In, Garbage Out</td><td>Quality of ML output depends on input data quality</td></tr>
+              <tr><td><code>ETL</code></td><td>Extract, Transform, Load</td><td>Traditional data pipeline pattern</td></tr>
+              <tr><td><code>ELT</code></td><td>Extract, Load, Transform</td><td>Modern/cloud data pipeline pattern</td></tr>
+              <tr><td><code>ER</code></td><td>Entity-Relationship</td><td>Data model used by RDBMS/DBMS</td></tr>
+              <tr><td><code>KVP</code></td><td>Key-Value Pair</td><td>Simplest data model; used in caching</td></tr>
+              <tr><td><code>DMML</code></td><td>Data Management for Machine Learning</td><td>This course!</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CHECKLIST -->
+      <div class="page" id="page-checklist">
+        <h2>Revision Checklist</h2>
+        <p class="page-subtitle">Click each item to mark it done · Track your exam prep</p>
+
+        <div style="display:flex;gap:12px;margin-bottom:20px;align-items:center;">
+          <div style="font-size:13px;color:var(--text3);" id="checkProgress">0 / 27 completed</div>
+          <button class="btn btn-outline" style="font-size:12px;padding:5px 14px;" onclick="resetChecklist()">Reset</button>
+        </div>
+
+        <ul class="checklist" id="checklistEl">
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can explain the DIKW pyramid with an original example showing all 4 levels</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can explain the TAVI framework (Text, Audio, Video, Image) and why all 4 modalities matter</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand GIGO principle and why data quality is the #1 determinant of ML success</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can define schema and give an example</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can distinguish Structured, Unstructured, and Semi-Structured with examples</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Know at least 2 advantages and disadvantages for each data format type</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can explain what a Data Model is and list all 5 types</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand the Relational Model: relation, tuple, unordered property, SQL</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Know what Normalization is, why it's needed, and name at least 3 normal forms</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand the Hierarchical Model (tree structure, XML, Windows Registry example)</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can describe the Graph Model with a real-world example (LinkedIn/Facebook)</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Know what a Document Model is and how it differs from Relational</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand Key-Value pairs and their primary use case (caching)</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Know which data models are SQL vs NoSQL</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can compare all 5 data models (structure, query language, use case, sample DBs)</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand Declarative vs Imperative querying with the sharks/SQL example</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can explain Row-major vs Column-major storage with correct use cases</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Know which format suits OLTP (row / CSV) and which suits OLAP (column / Parquet)</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand Data Serialization: what, why, and the process diagram</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can list all serialization formats and classify them (text vs binary, human-readable or not)</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand the BSON 2-step serialization process</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can fully compare OLTP vs OLAP across all 6 dimensions</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can trace through the OLAP profitability drill-down investigation scenario</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Know all 5 OLAP operations: Roll-up, Drill-down, Pivot/Rotate, Slice, Dice</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Can give OLAP calculation types (roll-up, margins, KPIs, moving averages, trend analysis)</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Know Data Management definition: ingesting, processing, securing, storing</li>
+          <li onclick="checkItem(this)"><div class="check-box"><span class="check-tick">✓</span></div>Understand why DM matters for ML: GIGO, pipeline success, detection of failures, reliability</li>
+        </ul>
+      </div>
+
+    </div><!-- end content-area -->
+  </div><!-- end main -->
+</div><!-- end app -->
+
+<!-- QUIZ OVERLAY -->
+<div id="quizOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:100;padding:40px 24px;">
+  <div style="max-width:680px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <h2 style="font-size:20px;">Session 1 Quiz</h2>
+      <button class="btn btn-outline" onclick="closeOverlay('quizOverlay')">✕ Close</button>
+    </div>
+    <div class="quiz-wrap" id="quizContent"></div>
+  </div>
+</div>
+
+<!-- FLASHCARD OVERLAY -->
+<div id="flashOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);overflow-y:auto;z-index:100;padding:40px 24px;">
+  <div style="max-width:560px;margin:0 auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <h2 style="font-size:20px;">Flashcards</h2>
+      <button class="btn btn-outline" onclick="closeOverlay('flashOverlay')">✕ Close</button>
+    </div>
+    <div class="flashcard-wrap" id="flashContent"></div>
+  </div>
+</div>
+
+<script>
+// ===================== STATE =====================
+let visitedPages = new Set(['overview']);
+const totalPages = 11;
+
+// ===================== NAVIGATION =====================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  items.forEach(item => {
+    if (item.getAttribute('onclick') && item.getAttribute('onclick').includes("'" + id + "'")) item.classList.add('active');
+  });
+  visitedPages.add(id);
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = Math.round((visitedPages.size / totalPages) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// ===================== TOGGLES =====================
+function toggleCard(el) {
+  const body = el.querySelector('.card-body');
+  el.classList.toggle('expanded');
+  body.classList.toggle('open');
+}
+
+function togglePyramid(id) {
+  const el = document.getElementById('py' + id.charAt(0).toUpperCase() + id.slice(1));
+  if (el) el.classList.toggle('open');
+}
+
+// ===================== TABS =====================
+function switchTab(tabEl, id) {
+  const parent = tabEl.closest('.page, [id]');
+  const allTabs = tabEl.parentElement.querySelectorAll('.tab');
+  allTabs.forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  const pageEl = tabEl.closest('.page') || document.body;
+  pageEl.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('tab-' + id);
+  if (target) target.classList.add('active');
+}
+
+// ===================== GLOSSARY SEARCH =====================
+function filterGlossary() {
+  const q = document.getElementById('glossarySearch').value.toLowerCase();
+  const rows = document.querySelectorAll('#glossaryBody tr');
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ===================== CHECKLIST =====================
+function checkItem(li) {
+  li.classList.toggle('checked');
+  updateCheckProgress();
+  saveChecklist();
+}
+function updateCheckProgress() {
+  const all = document.querySelectorAll('#checklistEl li');
+  const done = document.querySelectorAll('#checklistEl li.checked');
+  document.getElementById('checkProgress').textContent = done.length + ' / ' + all.length + ' completed';
+}
+function resetChecklist() {
+  document.querySelectorAll('#checklistEl li').forEach(li => li.classList.remove('checked'));
+  updateCheckProgress();
+  saveChecklist();
+}
+function saveChecklist() {
+  try {
+    const state = Array.from(document.querySelectorAll('#checklistEl li')).map(li => li.classList.contains('checked'));
+    localStorage.setItem('dmml_checklist', JSON.stringify(state));
+  } catch(e) {}
+}
+function loadChecklist() {
+  try {
+    const state = JSON.parse(localStorage.getItem('dmml_checklist') || '[]');
+    const items = document.querySelectorAll('#checklistEl li');
+    state.forEach((checked, i) => { if (items[i] && checked) items[i].classList.add('checked'); });
+    updateCheckProgress();
+  } catch(e) {}
+}
+
+// ===================== MODE SWITCHING =====================
+function setMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  if (mode === 'quiz') openQuiz();
+  if (mode === 'flash') openFlash();
+}
+
+// ===================== OVERLAY =====================
+function closeOverlay(id) {
+  document.getElementById(id).style.display = 'none';
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.mode-tab').classList.add('active');
+}
+
+// ===================== QUIZ DATA =====================
+const quizData = [
+  { q: "Which of the following best defines 'Data' in the DIKW hierarchy?", opts: ["Organized and presented facts that answer 'who, what, when'", "Justified true belief that can be acted upon", "The raw material of information — unprocessed facts", "Distilled knowledge with high-level understanding"], ans: 2, exp: "Data is the raw material of information — raw, unprocessed facts with no inherent meaning until context is added." },
+  { q: "In the DIKW pyramid, which level answers 'how' and reveals patterns and rules?", opts: ["Data", "Information", "Knowledge", "Wisdom"], ans: 2, exp: "Knowledge answers 'how' — it synthesizes information to reveal patterns, rules, and generalizations that can be acted upon." },
+  { q: "What is the correct ascending order of the DIKW pyramid from base to apex?", opts: ["Information → Data → Knowledge → Wisdom", "Data → Information → Knowledge → Wisdom", "Knowledge → Information → Data → Wisdom", "Wisdom → Knowledge → Data → Information"], ans: 1, exp: "Data (base) → Information → Knowledge → Wisdom (apex). Each level is more refined, abstract, and correct than the one below it." },
+  { q: "Which of the following is an example of UNSTRUCTURED data?", opts: ["An Excel spreadsheet of sales figures", "A relational database table", "A news audio clip", "An email's From/To/Subject fields"], ans: 2, exp: "Unstructured data has no schema — audio clips, videos, images, and handwritten notes are all unstructured. Email body is also unstructured, but From/To/Subject are structured fields." },
+  { q: "Semi-structured data is best described as:", opts: ["Follows a strictly fixed schema", "Has no schema at all", "Combines structured and unstructured elements; evolving schema", "Binary format that is not human-readable"], ans: 2, exp: "Semi-structured data (like emails or JSON) has some structured fields and some free-form content. Its schema is evolving — not fixed like structured, not absent like unstructured." },
+  { q: "Which data model is used by LinkedIn and Facebook to quickly find mutual connections?", opts: ["Relational", "Hierarchical", "Graph", "Document"], ans: 2, exp: "Graph databases (like Neo4j) store data as nodes and edges, making relationship traversal very fast. LinkedIn/Facebook store social connections as graphs." },
+  { q: "In the Relational Data Model, what is a 'tuple'?", opts: ["A column in the table", "An index on the table", "A single row in a table / relation", "A foreign key constraint"], ans: 2, exp: "A tuple is a single row in a table. A table is the visual representation of a relation, and each row makes up one tuple." },
+  { q: "What is the PRIMARY purpose of Normalization?", opts: ["To increase data redundancy for faster reads", "To reduce data redundancy and improve data integrity", "To convert data from row format to column format", "To add more tables to the database"], ans: 1, exp: "Normalization reduces redundancy (same data stored multiple times) and improves integrity (e.g., 'DataScience' vs 'DataSciences' inconsistency)." },
+  { q: "Which SQL vs NoSQL mapping is CORRECT?", opts: ["Relational → NoSQL; Graph → SQL", "Relational → SQL; Hierarchical, Graph, Document, Key-Value → NoSQL", "All 5 models → SQL", "Key-Value → SQL; Document → NoSQL"], ans: 1, exp: "Only the Relational model maps to SQL. All four others (Hierarchical, Graph, Document, Key-Value) fall under NoSQL." },
+  { q: "Which storage format is suited for OLAP and is column-oriented?", opts: ["CSV", "MS SQL Server row format", "Parquet", "JSON"], ans: 2, exp: "Parquet is a binary, column-major format. Column-major storage is suited for OLAP because it allows fast reads of specific features (columns) across large datasets." },
+  { q: "SQL is an example of which type of query language?", opts: ["Imperative", "Procedural", "Declarative", "Navigational"], ans: 2, exp: "SQL is declarative — you state WHAT you want (SELECT * FROM animals WHERE family='Sharks') without specifying HOW the database should find it. The query optimizer decides that." },
+  { q: "Serialization is defined as:", opts: ["Converting data from structured to unstructured format", "Converting data from one form to another for storage or transfer", "Normalizing a database table", "Pivoting rows and columns in OLAP"], ans: 1, exp: "Serialization is converting data from one form to another (e.g., text to binary) to store it (size constraints) or transfer it (bandwidth constraints)." },
+  { q: "Which serialization format is used by MongoDB?", opts: ["Parquet", "Avro", "Protobuf", "BSON"], ans: 3, exp: "BSON (Binary JavaScript Object Notation) is MongoDB's binary format. BSON serialization is a 2-step process: JSON → BSON → binary." },
+  { q: "Which serialization format was introduced by Google and is used in TensorFlow?", opts: ["Avro", "BSON", "Protobuf", "Pickle"], ans: 2, exp: "Protobuf (Protocol Buffer) was introduced by Google and is used in TensorFlow (TFRecord format)." },
+  { q: "What does OLTP stand for and what is its primary purpose?", opts: ["Online Learning Transaction Protocol; for ML training", "Online Transaction Processing; to save transactions immediately", "Online Transfer Processing; to transfer data between warehouses", "Optimized Large Table Processing; for big data analytics"], ans: 1, exp: "OLTP = Online Transaction Processing. Its purpose is to save transactions immediately and handle many small, operational transactions efficiently." },
+  { q: "In OLAP, what does 'Roll-up' mean?", opts: ["Going from summary to the lowest level of detail", "Swapping the row and column axes", "Providing summaries and aggregations along dimension hierarchies", "Filtering to a single dimension value"], ans: 2, exp: "Roll-up aggregates data upward in a hierarchy — e.g., monthly sales → quarterly → annual. The opposite is drill-down (going from summary to detail)." },
+  { q: "Which of the following is TRUE about Key-Value pair data model?", opts: ["Supports complex SQL queries across multiple keys", "Stores data as nodes and edges", "Provides extremely fast reads/writes but only queries by key", "Is used for social network analysis"], ans: 2, exp: "Key-Value is the simplest model — extremely fast for simple reads/writes but can only query by key. No complex querying. Primary use case: caching." },
+  { q: "In the context of data storage, a 'Feature' refers to:", opts: ["A row in the dataset", "A table in the database", "A column (attribute) in the dataset", "A tuple in a relation"], ans: 2, exp: "In ML, a 'feature' is a column. Column-major storage reads all values of a specific feature efficiently — crucial for ML where you often select specific features from millions of rows." },
+  { q: "What is the GIGO principle and why does it matter especially for ML?", opts: ["Good Input Gets Output — means valid data produces valid results", "Garbage In, Garbage Out — bad training data permanently degrades a model", "Graph In, Graph Out — graph models produce graph outputs", "Guaranteed Input Gets Output — systems always produce results"], ans: 1, exp: "Garbage In, Garbage Out: poor-quality training data permanently degrades an ML model. Unlike traditional software where a bad input only affects one transaction, bad ML training data affects ALL future predictions." },
+  { q: "The data warehouse definition is: subject-oriented, integrated, time-variant, non-volatile, and what else?", opts: ["Real-time", "Historic", "Schema-free", "Row-major"], ans: 1, exp: "A data warehouse is a subject-oriented, integrated, time-variant, non-volatile, HISTORIC collection of data for decision-making. It stores historical (not current operational) data." },
+,
+  { q: "What are the 3 normalization anomaly types?", opts: ["Syntax, Semantic, Structural", "Insertion, Update, Deletion anomalies", "Read, Write, Execute anomalies", "Primary, Foreign, Composite key anomalies"], ans: 1, exp: "Insertion: can't add data without filling unrelated columns. Update: changing one fact requires updating many rows — miss one = inconsistency. Deletion: removing one record accidentally deletes related data. Normalization (Codd, 1970) eliminates all three." },
+  { q: "Parquet predicate pushdown: what does it achieve?", opts: ["Pushes SQL predicates to application layer", "Skips column chunks using min/max stats — without reading them — enabling 333x I/O reduction", "Converts WHERE clauses to binary", "Distributes queries to worker nodes"], ans: 1, exp: "Parquet stores min/max statistics per column chunk. Engines skip chunks where values can't match a WHERE filter — without reading them. For 1TB table / 1000 columns, querying 3 = read ~3GB not 1TB (333x I/O reduction). Critical for ML feature selection." },
+  { q: "Which serialization format is the Kafka streaming standard?", opts: ["JSON", "Protobuf", "Avro with Schema Registry", "CSV"], ans: 2, exp: "Avro with Confluent Schema Registry is the Kafka industry standard. Reasons: compact binary (smallest size), dynamic schema evolution without recompilation, schema bundled with data, native Schema Registry support for enforcement across producers and consumers." },
+  { q: "Why is Pickle dangerous for cross-system data exchange?", opts: ["Too slow", "Python-only + malicious pickle files can execute arbitrary code on deserialization", "No compression support", "Requires schema registry"], ans: 1, exp: "Pickle is Python-only (not language-independent). Critical security risk: a malicious pickle file can execute arbitrary code when deserialized. Use only for saving trained ML models within trusted Python pipelines. Never for cross-system exchange." },
+  { q: "ACID vs BASE: which do SQL vs NoSQL use?", opts: ["Both use ACID", "SQL uses ACID (strict tx guarantees); NoSQL uses BASE (eventual consistency for scale)", "Both use BASE", "SQL uses BASE; NoSQL uses ACID"], ans: 1, exp: "SQL/ACID: Atomicity, Consistency, Isolation, Durability — strict guarantees, required for banking/e-commerce. NoSQL/BASE: Basically Available, Soft state, Eventual consistency — relaxed for horizontal scale across commodity hardware. Trade: strict consistency vs scale/performance." }];
+
+let quizState = { current: 0, score: 0, answered: [], mode: 'active' };
+
+function openQuiz() {
+  quizState = { current: 0, score: 0, answered: new Array(quizData.length).fill(null), mode: 'active' };
+  document.getElementById('quizOverlay').style.display = 'block';
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const container = document.getElementById('quizContent');
+  if (quizState.current >= quizData.length) {
+    const pct = Math.round((quizState.score / quizData.length) * 100);
+    const msg = pct >= 80 ? '🎉 Excellent! Exam-ready.' : pct >= 60 ? '👍 Good progress — review missed topics.' : '📚 Keep studying — focus on weak areas.';
+    container.innerHTML = `<div class="quiz-result">
+      <div class="big-score">${pct}%</div>
+      <h3>${quizState.score} / ${quizData.length} correct</h3>
+      <p>${msg}</p>
+      <button class="btn btn-primary" onclick="openQuiz()">Retake quiz</button>
+    </div>`;
+    return;
+  }
+  const q = quizData[quizState.current];
+  const dots = quizData.map((_, i) => {
+    let cls = 'qdot';
+    if (i === quizState.current) cls += ' current';
+    else if (quizState.answered[i] === true) cls += ' done';
+    else if (quizState.answered[i] === false) cls += ' wrong';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+  container.innerHTML = `
+    <div class="quiz-progress">
+      <div class="quiz-dots">${dots}</div>
+      <div class="quiz-score">Q${quizState.current+1} of ${quizData.length} · Score: ${quizState.score}</div>
+    </div>
+    <div class="question-card">
+      <div class="qtag">Question ${quizState.current+1}</div>
+      <div class="qtext">${q.q}</div>
+      <div class="options" id="optionsEl">
+        ${q.opts.map((o,i) => `<div class="option" onclick="selectAnswer(${i})">${o}</div>`).join('')}
+      </div>
+      <div class="explanation" id="expEl">💡 ${q.exp}</div>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" style="display:none;">Next →</button>
+    </div>`;
+}
+
+function selectAnswer(idx) {
+  const q = quizData[quizState.current];
+  const opts = document.querySelectorAll('.option');
+  opts.forEach(o => o.classList.add('disabled'));
+  if (idx === q.ans) {
+    opts[idx].classList.add('correct');
+    quizState.score++;
+    quizState.answered[quizState.current] = true;
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[q.ans].classList.add('show-correct');
+    quizState.answered[quizState.current] = false;
+  }
+  document.getElementById('expEl').classList.add('show');
+  document.getElementById('nextBtn').style.display = 'block';
+}
+
+function nextQuestion() {
+  quizState.current++;
+  renderQuiz();
+}
+
+// ===================== FLASHCARD DATA =====================
+const cards = [
+  { q: "What is Data?", a: "The raw material of information — unprocessed facts, symbols, or observations with no inherent meaning without context." },
+  { q: "What is the DIKW pyramid?", a: "Data → Information → Knowledge → Wisdom. Each level is more refined and abstract. Each step acts as a quality filter." },
+  { q: "Define Wisdom in the DIKW hierarchy.", a: "Distilled and integrated knowledge. Demonstrates high-level understanding. Goes beyond facts to sound judgment." },
+  { q: "What is the TAVI framework?", a: "Text, Audio, Video, Image — the four fundamental data modalities that modern data management must handle." },
+  { q: "What is the GIGO principle?", a: "Garbage In, Garbage Out — the quality of ML output is determined by the quality of input data. Bad training data permanently degrades the model." },
+  { q: "What is a Schema?", a: "A blueprint or structure defining how data is organized, stored, and related. It specifies rules, format, and constraints." },
+  { q: "Name the 3 types of data formats.", a: "1. Structured (fixed schema, e.g. CSV, RDBMS)\n2. Unstructured (no schema, e.g. audio, images)\n3. Semi-structured (evolving schema, e.g. email, JSON)" },
+  { q: "Name all 5 data models.", a: "1. Relational\n2. Hierarchical\n3. Graph\n4. Document\n5. Key-Value Pair" },
+  { q: "Which data models are SQL vs NoSQL?", a: "SQL: Relational only.\nNoSQL: Hierarchical, Graph, Document, Key-Value." },
+  { q: "What is a Tuple in the Relational model?", a: "A single row in a table (relation). Relations are unordered — you can shuffle rows or columns." },
+  { q: "Why is Normalization needed?", a: "To reduce data redundancy, improve data integrity, and make the database flexible for expansion. Un-normalized tables have redundant values and integrity issues." },
+  { q: "Name 3+ types of Normal Forms.", a: "1NF, 2NF, 3NF, BCNF (Boyce-Codd Normal Form), 5NF" },
+  { q: "What makes the Graph data model unique?", a: "It stores relationships as first-class citizens (nodes + edges). Faster for connected data queries. Used by LinkedIn/Facebook for social connections." },
+  { q: "What is a Document in the Document data model?", a: "A single continuous string encoded as JSON or XML. A collection of documents ≈ a table. A document ≈ a row, but far more flexible." },
+  { q: "What is the primary use case of Key-Value pairs?", a: "Caching — storing copies of data in temporary storage for faster retrieval. JSON objects are internally key-value pairs." },
+  { q: "Declarative vs Imperative query: what's the key difference?", a: "Declarative (SQL): say WHAT you want. DB optimizer decides HOW.\nImperative (Python/JS): specify HOW step by step. Developer must define the optimal path." },
+  { q: "Row-major storage: what is it good for?", a: "Faster writes. Good for complete record access. Suited for OLTP. Example formats: CSV. Example DB: MS SQL Server." },
+  { q: "Column-major storage: what is it good for?", a: "Faster reads. Good for feature/attribute access. Suited for OLAP. Example formats: Parquet. Example DB: Amazon Redshift." },
+  { q: "What is Data Serialization?", a: "Converting data from one form to another (e.g., text to binary) to store it (size) or transfer it (bandwidth). Deserializer must use the same algorithm." },
+  { q: "What is the BSON serialization process?", a: "2-step: JSON → BSON format (via C#/Java/Python program) → Binary format → Database. Same algorithm must be used for deserialization." },
+  { q: "Name all serialization formats from the course.", a: "Text: CSV, XML, JSON\nBinary: Parquet, Avro, Protobuf (Google), BSON (MongoDB), JSONB (Postgres), Pickle (Python)" },
+  { q: "What does OLTP stand for and what does it do?", a: "Online Transaction Processing. Saves transactions immediately. Handles many small transactions. Current/operational data. Row format, faster writes." },
+  { q: "What does OLAP stand for and what does it do?", a: "Online Analytical Processing. Derived from OLTP for analysis. Historical/consolidated data. Fewer but larger datasets. Column format, faster reads." },
+  { q: "Name all 5 OLAP operations.", a: "1. Roll-up (aggregate upward)\n2. Drill-down (go into detail)\n3. Pivot/Rotate (swap row/column axes)\n4. Slice (filter one dimension)\n5. Dice (filter multiple dimensions)" },
+  { q: "What is the Data Warehouse definition?", a: "Subject-oriented, integrated, time-variant, non-volatile, historic collection of data for decision-making. Uses dimensional modeling (not ER model)." },
+  { q: "Protobuf — who made it and where is it used?", a: "Introduced by Google. Used in TensorFlow (TFRecord). Binary format, not human-readable." },
+  { q: "Avro — who made it and where is it used?", a: "Introduced by Apache. Compatible with Hadoop and Spark. Binary format with schema bundled with data." },
+  { q: "What is the difference between RDBMS and Data Warehouse models?", a: "RDBMS uses Entity-Relationship (ER) model.\nData Warehouse uses Dimensional Modeling (facts + dimensions, star/snowflake schema)." },
+  { q: "In SQL, what is Declarative? Give an example.", a: "You specify WHAT you want, not HOW.\nExample: SELECT * FROM animals WHERE family = 'Sharks';\nThe DB optimizer chooses which index, join order, and execution plan to use." },
+  { q: "What are the keywords in the Data Management definition?", a: "Ingesting (bringing data in) · Processing (transforming) · Securing (protecting) · Storing (persisting) — for strategic decision-making to improve business outcomes." },
+];
+
+let flashState = { current: 0, ratings: {} };
+
+function openFlash() {
+  flashState = { current: 0, ratings: {} };
+  document.getElementById('flashOverlay').style.display = 'block';
+  renderFlash();
+}
+
+function renderFlash() {
+  const c = cards[flashState.current];
+  const container = document.getElementById('flashContent');
+  const ratedClass = flashState.ratings[flashState.current];
+  container.innerHTML = `
+    <div class="flashcard-counter">Card ${flashState.current + 1} of ${cards.length}</div>
+    <div class="flashcard" id="fc" onclick="flipCard()">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div class="fc-hint">Click to reveal answer</div>
+          <div class="fc-q">${c.q}</div>
+        </div>
+        <div class="flashcard-back">
+          <div class="fc-a">${c.a.replace(/\n/g, '<br>')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-rating">
+      <button class="fc-btn fc-btn-hard" onclick="rateCard('hard')">😓 Hard</button>
+      <button class="fc-btn fc-btn-good" onclick="rateCard('good')">👍 Good</button>
+      <button class="fc-btn fc-btn-easy" onclick="rateCard('easy')">⚡ Easy</button>
+    </div>
+    <div class="fc-nav" style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="prevCard()" ${flashState.current === 0 ? 'disabled' : ''}>← Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()" ${flashState.current === cards.length-1 ? 'disabled' : ''}>Next →</button>
+    </div>
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--text3);">
+      Hard: ${Object.values(flashState.ratings).filter(r=>r==='hard').length} · 
+      Good: ${Object.values(flashState.ratings).filter(r=>r==='good').length} · 
+      Easy: ${Object.values(flashState.ratings).filter(r=>r==='easy').length}
+    </div>`;
+}
+
+function flipCard() {
+  document.getElementById('fc').classList.toggle('flipped');
+}
+function rateCard(rating) {
+  flashState.ratings[flashState.current] = rating;
+  if (flashState.current < cards.length - 1) { flashState.current++; renderFlash(); }
+  else { renderFlash(); }
+}
+function nextCard() { if (flashState.current < cards.length-1) { flashState.current++; renderFlash(); } }
+function prevCard() { if (flashState.current > 0) { flashState.current--; renderFlash(); } }
+
+// ===================== INIT =====================
+window.onload = function() {
+  loadChecklist();
+  updateProgress();
+};
+</script>
+</body>
+</html>
