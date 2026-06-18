@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monte Carlo Methods — BITS Pilani DRL</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0A0E1A;--bg2:#0F1525;--card:#141929;--card2:#1A2035;
+  --border:#1E2640;--text:#E8ECF4;--text2:#8892B0;--text3:#4A5480;
+  --green:#4FCF8E;--orange:#F7944F;--purple:#A78BFA;--red:#F76F6F;--gold:#F7D94F;--blue:#4F8EF7;
+  --font-d:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;
+  --r:12px;--rs:8px;--tr:0.22s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"]{--bg:#F0F4FF;--bg2:#E8EDF8;--card:#FFF;--card2:#F0F4FF;--border:#D0D8F0;--text:#0A1028;--text2:#4A5480;--text3:#8892B0;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background var(--tr),color var(--tr);}
+/* NAV */
+.topnav{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:stretch;position:sticky;top:0;z-index:200;height:50px;}
+.nav-brand{display:flex;align-items:center;gap:10px;padding:0 18px;border-right:1px solid var(--border);flex-shrink:0;}
+.nav-brand-text{font-family:var(--font-d);font-size:14px;font-weight:700;}
+.nav-tabs{display:flex;flex:1;overflow-x:auto;}
+.nav-tabs::-webkit-scrollbar{height:0;}
+.nav-tab{display:flex;align-items:center;gap:6px;padding:0 16px;font-size:12px;font-weight:500;color:var(--text3);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all var(--tr);white-space:nowrap;font-family:var(--font-b);}
+.nav-tab:hover{color:var(--text);background:var(--card);}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--tab-color,var(--green));}
+.tab-dot{width:7px;height:7px;border-radius:50%;background:var(--tab-color);flex-shrink:0;}
+.nav-right{display:flex;align-items:center;gap:8px;padding:0 14px;border-left:1px solid var(--border);flex-shrink:0;}
+.btn-icon{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:4px 9px;cursor:pointer;font-size:13px;color:var(--text2);transition:all var(--tr);}
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+.pg-content{max-width:960px;margin:0 auto;padding:18px 16px;}
+/* HERO */
+.pg-hero{border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;}
+.pg-hero-badge{display:inline-flex;align-items:center;font-family:var(--font-m);font-size:10px;padding:2px 10px;border-radius:20px;border:1px solid;letter-spacing:.5px;margin-bottom:8px;}
+.pg-hero-title{font-family:var(--font-d);font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px;}
+.pg-hero-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+/* SHARED */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.mb16{margin-bottom:16px;}
+.mb8{margin-bottom:8px;}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.sec-title{font-family:var(--font-d);font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;}
+.hot-badge{background:#FF4444;color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap;}
+.formula-box{background:var(--bg2);border-left:3px solid var(--accent,#00E5FF);border-radius:var(--rs);padding:10px 14px;font-family:var(--font-m);font-size:13px;color:var(--text);line-height:1.7;}
+.btn{font-family:var(--font-b);font-size:12px;font-weight:500;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;transition:all var(--tr);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.btn:hover{background:var(--card2);border-color:var(--accent,#00E5FF);color:var(--accent,#00E5FF);}
+.btn.primary{background:var(--accent,#00E5FF);border-color:var(--accent,#00E5FF);color:#0A0E1A;}
+.btn.primary:hover{opacity:.9;color:#0A0E1A;}
+.btn.sm{font-size:11px;padding:5px 9px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.active-btn{border-color:var(--accent,#69FF47)!important;color:var(--accent,#69FF47)!important;}
+.ctrl{display:flex;flex-direction:column;gap:5px;}
+input[type=range]{-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none;width:100%;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent,#00E5FF);cursor:pointer;}
+.exam-alert-box{background:linear-gradient(135deg,#FF444408,transparent);border:1px solid #FF444433;border-radius:var(--r);padding:16px;margin-bottom:16px;}
+.ea-title{font-family:var(--font-d);font-size:13px;font-weight:700;color:#FF4444;margin-bottom:12px;}
+.ea-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+.ea-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:10px;}
+.ea-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.ea-val{font-size:12px;color:var(--text2);}
+/* P1 STYLES */
+.model-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:10px;}
+.mc-side{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.mcs-title{font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:8px;}
+.mcs-icon{font-size:28px;text-align:center;margin-bottom:8px;}
+.mcs-note{font-size:11px;margin-top:8px;line-height:1.5;}
+.mcs-arrow{font-size:20px;color:var(--text3);text-align:center;}
+.sd-track{display:flex;gap:12px;flex-wrap:wrap;}
+.sd-box{flex:1;min-width:200px;background:var(--bg2);border:1px solid;border-radius:var(--r);padding:14px;}
+.sd-method{font-size:13px;font-weight:600;margin-bottom:8px;}
+.sd-body{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+.sd-result{font-size:11px;font-weight:600;}
+.sd-vs{display:flex;align-items:center;font-size:16px;font-weight:700;color:var(--text3);}
+.sample-bars{display:flex;gap:4px;align-items:flex-end;height:60px;background:var(--bg2);border-radius:var(--rs);padding:6px;border:1px solid var(--border);}
+.sb-bar{flex:1;background:var(--accent,#00E5FF);border-radius:2px 2px 0 0;transition:height .3s ease;min-width:3px;}
+.cmp-table{display:flex;flex-direction:column;gap:4px;}
+.cmp-row{display:grid;grid-template-columns:140px 1fr 1fr;gap:8px;padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all var(--tr);}
+.cmp-row:hover{border-color:var(--accent,#00E5FF)44;}
+.cmp-row.expanded{border-color:var(--accent,#00E5FF);background:var(--card2);}
+.cmp-hdr{grid-template-columns:140px 1fr 1fr;background:var(--card2);cursor:default;}
+.cmp-hdr:hover{border-color:var(--border)!important;}
+.cmp-prop{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;}
+.cmp-dp{font-size:12px;color:#7B61FF;}
+.cmp-mc{font-size:12px;color:#00E5FF;}
+.cmp-expand{grid-column:1/-1;font-size:12px;color:var(--text2);line-height:1.6;padding-top:6px;border-top:1px solid var(--border);margin-top:4px;display:none;}
+.cmp-row.expanded .cmp-expand{display:block;}
+.backup-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.bkp-side{}
+.bkp-title{font-family:var(--font-d);font-size:13px;font-weight:600;margin-bottom:8px;text-align:center;}
+.bkp-note{font-size:11px;color:var(--text2);line-height:1.5;margin-top:8px;}
+.pepi-flow{display:flex;flex-direction:column;align-items:flex-start;gap:0;max-width:500px;}
+.pepi-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;width:100%;transition:all var(--tr);}
+.pepi-title{font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:4px;}
+.pepi-body{font-size:12px;color:var(--text2);line-height:1.5;}
+.pepi-arrow{color:var(--text3);padding:2px 18px;font-size:16px;}
+/* P2 STYLES */
+.fml-two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;}
+.fml-col{}
+.fv-episode{display:flex;gap:4px;padding:10px;background:var(--bg2);border-radius:var(--r);border:1px solid var(--border);overflow-x:auto;min-height:56px;align-items:center;flex-wrap:wrap;}
+.fv-cell{padding:6px 10px;border-radius:var(--rs);font-family:var(--font-m);font-size:12px;border:1px solid var(--border);background:var(--card);transition:all var(--tr);white-space:nowrap;text-align:center;}
+.fv-cell.s-type{background:#7B61FF22;border-color:#7B61FF44;color:#7B61FF;}
+.fv-cell.a-type{background:#69FF4722;border-color:#69FF4744;color:#69FF47;}
+.fv-cell.r-type{background:#FF658422;border-color:#FF658444;color:#FF6584;}
+.fv-cell.t-type{background:#FFD16622;border-color:#FFD16644;color:#FFD166;}
+.fv-cell.highlight{border-color:var(--accent,#69FF47);box-shadow:0 0 12px rgba(105,255,71,.2);}
+.fv-cell.first-visit{border-color:#69FF47;background:#69FF4722;}
+.fv-cell.second-visit{border-color:#FF6584;background:#FF658422;}
+.fv-returns-panel{background:var(--bg2);border-radius:var(--rs);padding:12px;border:1px solid var(--border);font-size:12px;color:var(--text2);min-height:40px;line-height:1.7;}
+.fv-result{background:var(--bg2);border-radius:var(--rs);padding:12px;border:1px solid var(--border);}
+.we-steps{display:flex;flex-direction:column;gap:8px;}
+.we-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;opacity:.35;transition:all var(--tr);}
+.we-row.active{opacity:1;border-color:var(--accent,#69FF47);}
+.we-row.done{opacity:.7;}
+.we-step-n{font-family:var(--font-m);font-size:11px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;}
+.we-step-body{font-size:12px;color:var(--text2);line-height:1.6;}
+.acc-returns-list{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;}
+.acc-chip{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-family:var(--font-m);font-size:12px;color:var(--text2);transition:all var(--tr);}
+.acc-chip.new{border-color:var(--accent,#69FF47);color:var(--accent,#69FF47);}
+.acc-v-display{font-family:var(--font-m);font-size:18px;font-weight:700;color:var(--accent,#69FF47);}
+.ae-quiz{display:flex;flex-direction:column;gap:8px;}
+.ae-q-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;}
+.ae-q-state{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.ae-q-returns{font-size:12px;color:var(--text2);font-family:var(--font-m);margin-bottom:8px;}
+.ae-q-input{display:flex;align-items:center;gap:8px;}
+.ae-q-input input{width:80px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font-m);font-size:13px;padding:5px 8px;outline:none;}
+.ae-q-input input:focus{border-color:var(--accent,#69FF47);}
+.ae-feedback{font-size:12px;margin-top:6px;font-family:var(--font-m);}
+/* P3 STYLES */
+.vfail-demo{display:flex;flex-direction:column;gap:12px;}
+.vf-state{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;}
+.vf-box{background:var(--bg2);border:1px solid;border-radius:var(--r);padding:14px;}
+.vf-title{font-size:13px;font-weight:600;margin-bottom:8px;}
+.vf-body{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:8px;}
+.vf-q{font-size:12px;font-weight:600;}
+.vf-arrow{font-size:20px;color:var(--text3);text-align:center;}
+.pipeline-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:12px;}
+.pc-col{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px;}
+.pc-hdr{font-size:13px;font-weight:700;margin-bottom:8px;}
+.pc-step{font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);line-height:1.5;}
+.pc-step:last-child{border-bottom:none;}
+.pc-arrow{font-size:20px;color:var(--text3);text-align:center;}
+.qtb-wrap{display:flex;flex-direction:column;gap:6px;}
+.qtb-row{display:grid;grid-template-columns:80px 1fr 80px 80px;gap:8px;align-items:center;padding:7px 10px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--border);}
+.qtb-row.header{background:var(--card2);font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;}
+.qtb-action{font-size:13px;font-weight:600;font-family:var(--font-m);}
+.qtb-returns{font-size:11px;color:var(--text2);font-family:var(--font-m);}
+.qtb-q{font-size:13px;font-weight:600;font-family:var(--font-m);}
+.qtb-row.best-action{border-color:#69FF47;background:#69FF4711;}
+.qtb-result{background:var(--bg2);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--text2);border:1px solid var(--border);}
+.trap-grid{display:grid;grid-template-columns:200px 1fr;gap:16px;align-items:start;}
+.trap-map{background:var(--bg2);border-radius:var(--r);padding:14px;border:1px solid var(--border);}
+.tm-cells{display:grid;grid-template-columns:repeat(5,36px);gap:3px;margin-bottom:10px;}
+.tm-cell{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--font-m);border:1px solid var(--border);background:var(--card);}
+.tm-cell.state-u{background:#69FF4722;border-color:#69FF4744;color:#69FF47;}
+.tm-cell.state-w{background:#7B61FF22;border-color:#7B61FF44;color:#7B61FF;}
+.tm-cell.state-x{background:#00E5FF22;border-color:#00E5FF44;color:#00E5FF;}
+.tm-cell.state-y{background:#FFD16622;border-color:#FFD16644;color:#FFD166;}
+.tm-cell.state-z{background:#FF658422;border-color:#FF658444;color:#FF6584;}
+.trap-q-table{background:var(--bg2);border-radius:var(--rs);padding:10px;border:1px solid var(--border);font-size:11px;font-family:var(--font-m);}
+.tq-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);}
+.tq-row:last-child{border-bottom:none;}
+.tq-frozen{color:var(--red);text-decoration:line-through;}
+.tq-best{color:#69FF47;font-weight:600;}
+.trap-explain{font-size:12px;color:var(--text2);line-height:1.6;padding:8px 12px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--border);}
+.gpi-mc-loop{display:flex;flex-direction:column;align-items:flex-start;gap:0;max-width:500px;}
+.gml-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;width:100%;}
+.gml-arrow{color:var(--text3);padding:2px 18px;font-size:14px;}
+/* P4 STYLES */
+.esoft-def{display:flex;flex-direction:column;gap:10px;}
+.esoft-eq-block{}
+.eps-calc{display:flex;flex-direction:column;gap:10px;}
+.eps-sliders{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.eps-results{background:var(--bg2);border-radius:var(--r);padding:14px;border:1px solid var(--border);}
+.eps-prob-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.eps-prob-lbl{font-size:12px;color:var(--text2);width:120px;flex-shrink:0;}
+.eps-prob-bar-inner{flex:1;background:var(--border);border-radius:4px;height:20px;overflow:hidden;position:relative;}
+.eps-prob-fill{height:100%;border-radius:4px;transition:width .3s ease;}
+.eps-prob-val{font-family:var(--font-m);font-size:11px;color:var(--text);position:absolute;right:5px;top:50%;transform:translateY(-50%);}
+.eps-sanity{}
+.alg-steps-track{display:flex;flex-direction:column;gap:8px;}
+.alg-step-row{display:flex;gap:10px;opacity:.3;transition:all var(--tr);}
+.alg-step-row.active{opacity:1;}
+.alg-step-row.done{opacity:.65;}
+.alg-sn{width:22px;height:22px;border-radius:50%;background:var(--border);color:var(--text3);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-m);transition:all var(--tr);}
+.alg-step-row.active .alg-sn{background:#FFD16622;color:#FFD166;border:1px solid #FFD16644;}
+.alg-step-row.done .alg-sn{background:var(--green-dim,#4FCF8E22);color:var(--green);border:1px solid var(--green);}
+.alg-step-title{font-size:12px;font-weight:600;margin-bottom:2px;}
+.alg-step-body{font-size:12px;color:var(--text2);line-height:1.5;}
+.alg-step-fml{font-family:var(--font-m);font-size:11px;background:var(--bg2);padding:5px 9px;border-radius:5px;margin-top:4px;border-left:2px solid var(--accent,#FFD166);color:var(--text);line-height:1.6;}
+.alg-state-display{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;font-size:12px;color:var(--text2);line-height:1.8;min-height:40px;}
+.glie-chart-wrap{}
+.glie-explain{}
+.exam-ep-setup{background:var(--bg2);border-radius:var(--rs);padding:12px;border:1px solid var(--border);margin-bottom:12px;}
+.ee-params{display:flex;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
+.ee-param{font-size:12px;color:var(--text2);}
+.ee-episode{font-size:12px;color:var(--text);line-height:1.6;}
+.exam-trace-steps{display:flex;flex-direction:column;gap:8px;}
+.et-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;opacity:.3;transition:all var(--tr);}
+.et-row.active{opacity:1;border-color:var(--accent,#FFD166);}
+.et-row.done{opacity:.7;}
+.et-title{font-size:12px;font-weight:600;margin-bottom:3px;}
+.et-body{font-size:12px;color:var(--text2);line-height:1.6;font-family:var(--font-m);}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@media(max-width:700px){
+  .model-compare,.backup-compare,.fml-two-col,.vf-state,.pipeline-compare,.trap-grid,.eps-sliders{grid-template-columns:1fr;}
+  .mcs-arrow,.vf-arrow,.pc-arrow{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="nav-brand">
+    <span style="font-size:18px;">🎲</span>
+    <span class="nav-brand-text">Monte Carlo Methods</span>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="mc1" onclick="switchTab('mc1')" style="--tab-color:#00E5FF"><div class="tab-dot"></div>DP → MC</button>
+    <button class="nav-tab" data-tab="mc2" onclick="switchTab('mc2')" style="--tab-color:#69FF47"><div class="tab-dot"></div>MC Prediction</button>
+    <button class="nav-tab" data-tab="mc3" onclick="switchTab('mc3')" style="--tab-color:#FF6584"><div class="tab-dot"></div>Q(s,a) & Control</button>
+    <button class="nav-tab" data-tab="mc4" onclick="switchTab('mc4')" style="--tab-color:#FFD166"><div class="tab-dot"></div>ε-Soft Control</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn-icon" onclick="toggleTheme()">🌓</button>
+  </div>
+</nav>
+
+<!-- PAGE 1: Model-Free RL — From DP to MC -->
+<div class="page active" id="page-mc1" style="--accent:#00E5FF;--accent-rgb:0,229,255;">
+<div class="pg-content">
+
+<div class="pg-hero" style="border-color:#00E5FF33;background:linear-gradient(135deg,#00E5FF08,transparent)">
+  <div class="pg-hero-badge" style="background:#00E5FF22;color:#00E5FF;border-color:#00E5FF44">Section 1</div>
+  <h2 class="pg-hero-title">Model-Free RL — From DP to MC</h2>
+  <p class="pg-hero-sub">DP needed the full model p(s′,r|s,a). MC throws that away and learns from episodes instead.</p>
+  <span class="hot-badge">🔥 endsem hot</span>
+</div>
+
+<!-- THE CORE PROBLEM -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">The Problem — DP Needs a Model You Don't Have</div></div>
+  <div class="model-compare">
+    <div class="mc-side dp-side">
+      <div class="mcs-title" style="color:#7B61FF">Dynamic Programming</div>
+      <div class="mcs-icon">📐</div>
+      <div class="formula-box" style="border-left-color:#7B61FF;font-size:12px;">V(s) = Σ<sub>a</sub>π(a|s) Σ<sub>s',r</sub> <strong style="color:#FF6B9D">p(s',r|s,a)</strong> [r + γV(s')]</div>
+      <div class="mcs-note" style="color:var(--red)">⚠️ Requires p(s',r|s,a) — the full model. Real environments don't give you this.</div>
+    </div>
+    <div class="mcs-arrow">⟹</div>
+    <div class="mc-side mc-side-right">
+      <div class="mcs-title" style="color:#00E5FF">Monte Carlo</div>
+      <div class="mcs-icon">🎲</div>
+      <div class="formula-box" style="border-left-color:#00E5FF;font-size:12px;">V(s) ≈ <strong style="color:#00E5FF">average(G<sub>t</sub>)</strong> over episodes where S<sub>t</sub>=s</div>
+      <div class="mcs-note" style="color:#69FF47">✅ No model needed. Just run episodes, observe rewards, average.</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;padding:10px 14px;background:#00E5FF11;border-radius:8px;font-size:12px;color:#00E5FF;border:1px solid #00E5FF33;line-height:1.6;">
+    Prof: <em>"You will not get the complete model dynamics in real world always."</em> — warehouse AMR robot example. Objects may or may not be where you expect, people come and go.
+  </div>
+</div>
+
+<!-- SAMPLING ANALOGY -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">The Sampling Analogy — Heights of 10,000 Students</div></div>
+  <div class="sampling-demo">
+    <div class="sd-track">
+      <div class="sd-box" id="sd-model" style="border-color:#7B61FF44;">
+        <div class="sd-method" style="color:#7B61FF">Model-Based (like DP)</div>
+        <div class="sd-body">Compute exact average:<br>μ = Σ height<sub>i</sub> × P(height<sub>i</sub>)<br><em>Need to know ALL 10,000 heights in advance</em></div>
+        <div class="sd-result" style="color:#7B61FF">Result: exact, instant, requires full model</div>
+      </div>
+      <div class="sd-vs">vs</div>
+      <div class="sd-box" id="sd-mc" style="border-color:#00E5FF44;">
+        <div class="sd-method" style="color:#00E5FF">Sampling (like MC)</div>
+        <div class="sd-body">Measure a sample of N students, average them.<br>N=10 → rough estimate. N=100 → better. N→∞ → converges to true mean.</div>
+        <div class="sd-result" style="color:#00E5FF">Result: approximate, improves with N, needs NO prior model</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <div class="ctrl mb8">
+        <label style="font-size:12px;color:var(--text2);">Sample size N = <span id="sampleNVal" style="color:#00E5FF;font-family:var(--font-m)">20</span></label>
+        <input type="range" id="sampleN" min="1" max="200" value="20" oninput="updateSampling(this.value)">
+      </div>
+      <div class="sample-bars" id="sampleBars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DP vs MC COMPARISON TABLE — FLIP CARDS -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">DP vs MC — Full Comparison</div><span class="hot-badge">🔥 likely exam table</span></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:14px;">Click any row to see why the difference exists.</p>
+  <div class="cmp-table" id="dpMcTable"></div>
+</div>
+
+<!-- BFS vs DFS BACKUP DIAGRAMS -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">Backup Diagrams — BFS (DP) vs DFS (MC)</div></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">
+    Prof: <em>"DP = one level of breadth-first search. MC = depth-first search — go deeper and deeper until terminal."</em>
+  </p>
+  <div class="backup-compare">
+    <div class="bkp-side">
+      <div class="bkp-title" style="color:#7B61FF">DP — Shallow/Wide (BFS)</div>
+      <svg id="dpBackupSVG" viewBox="0 0 180 200" xmlns="http://www.w3.org/2000/svg" style="width:180px;display:block;margin:0 auto;"></svg>
+      <div class="bkp-note">From s, fan out ALL actions × ALL (s',r) weighted by p(s',r|s,a). Uses V(s') estimates at leaves — <strong style="color:#7B61FF">bootstrapping</strong>.</div>
+    </div>
+    <div class="bkp-side">
+      <div class="bkp-title" style="color:#00E5FF">MC — Single Deep Path (DFS)</div>
+      <svg id="mcBackupSVG" viewBox="0 0 180 200" xmlns="http://www.w3.org/2000/svg" style="width:180px;display:block;margin:0 auto;"></svg>
+      <div class="bkp-note">Follow ONE trajectory all the way to terminal T. Compute G<sub>t</sub> = actual sum of rewards. <strong style="color:#00E5FF">No branching, no bootstrapping.</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- PE-PI CYCLE BRIDGE -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">PE-PI Cycle Carries Over — But Starts from Nothing</div></div>
+  <div class="pepi-flow">
+    <div class="pepi-box" style="border-color:#00E5FF44;">
+      <div class="pepi-title" style="color:#00E5FF">Start</div>
+      <div class="pepi-body">Arbitrary/random policy π<br><em style="color:var(--text3)">No model → start randomly</em></div>
+    </div>
+    <div class="pepi-arrow">↓</div>
+    <div class="pepi-box" style="border-color:#69FF47aa;">
+      <div class="pepi-title" style="color:#69FF47">Policy Evaluation (MC)</div>
+      <div class="pepi-body">Run episodes under π<br>Average G<sub>t</sub> → estimate V(s) or Q(s,a)<br><em style="color:var(--text3)">Same goal as DP's PE, different source</em></div>
+    </div>
+    <div class="pepi-arrow">↓</div>
+    <div class="pepi-box" style="border-color:#FFD16644;">
+      <div class="pepi-title" style="color:#FFD166">Policy Improvement</div>
+      <div class="pepi-body">π ← greedy/ε-greedy w.r.t. Q(s,a)<br><em style="color:var(--text3)">argmax Q — no model needed</em></div>
+    </div>
+    <div class="pepi-arrow">↓</div>
+    <div class="pepi-box" style="border-color:#FF6B9D44;">
+      <div class="pepi-title" style="color:#FF6B9D">Converge toward π*</div>
+      <div class="pepi-body">With exploration (ε-soft / GLIE)<br><em style="color:var(--text3)">Same arc as Policy Iteration — no model</em></div>
+    </div>
+  </div>
+  <div style="margin-top:12px;padding:8px 12px;background:#00E5FF11;border-radius:6px;font-size:12px;color:var(--text2);border:1px solid #00E5FF22;line-height:1.6;">
+    ⚠️ Common exam mistake: <strong style="color:var(--red)">"Model-free" ≠ "Policy-free"</strong>. MC absolutely has a policy π(a|s). What it lacks is the transition model p(s',r|s,a). The policy starts random and is refined — it is never absent.
+  </div>
+</div>
+
+<!-- EXAM ALERT -->
+<div class="exam-alert-box">
+  <div class="ea-title">⚡ Exam Alert — Model-Free vs Model-Based</div>
+  <div class="ea-grid">
+    <div class="ea-item"><div class="ea-lbl">Model-based (DP)</div><div class="ea-val" style="font-size:12px;color:var(--text2);">Has p(s',r|s,a). Computes vπ via Bellman. Full backups. Bootstraps.</div></div>
+    <div class="ea-item"><div class="ea-lbl">Model-free (MC)</div><div class="ea-val" style="font-size:12px;color:var(--text2);">No p(s',r|s,a). Estimates vπ by averaging Gt from sampled episodes. Sample backups. No bootstrapping.</div></div>
+    <div class="ea-item"><div class="ea-lbl">Bias / Variance</div><div class="ea-val" style="font-size:12px;color:var(--text2);">MC is <strong style="color:#69FF47">unbiased</strong> (E[Gt]=vπ exactly) but <strong style="color:var(--red)">high variance</strong> (Gt depends on full stochastic trajectory). Error ∝ σ/√M.</div></div>
+    <div class="ea-item"><div class="ea-lbl">Episodes required</div><div class="ea-val" style="font-size:12px;color:var(--text2);">DP: never. MC: <strong style="color:#00E5FF">always</strong> — must complete episode before any update.</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+<!-- PAGE 2: MC Prediction -->
+<div class="page" id="page-mc2" style="--accent:#69FF47;--accent-rgb:105,255,71;">
+<div class="pg-content">
+
+<div class="pg-hero" style="border-color:#69FF4733;background:linear-gradient(135deg,#69FF4708,transparent)">
+  <div class="pg-hero-badge" style="background:#69FF4722;color:#69FF47;border-color:#69FF4744">Section 2</div>
+  <h2 class="pg-hero-title">MC Prediction — First-Visit & Every-Visit</h2>
+  <p class="pg-hero-sub">No model. No Bellman. Just run episodes, average what you see.</p>
+  <span class="hot-badge">🔥 endsem hot</span>
+</div>
+
+<!-- FORMULAS -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">The Formulas</div><span class="hot-badge">write from memory</span></div>
+  <div class="fml-two-col">
+    <div class="fml-col">
+      <div style="font-size:12px;font-weight:600;color:#69FF47;margin-bottom:6px;">Return G<sub>t</sub></div>
+      <div class="formula-box" style="border-left-color:#69FF47;font-size:13px;">G<sub>t</sub> = R<sub>t+1</sub> + γR<sub>t+2</sub> + γ²R<sub>t+3</sub> + ···</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Sum of all discounted future rewards from t to terminal T.</div>
+    </div>
+    <div class="fml-col">
+      <div style="font-size:12px;font-weight:600;color:#00E5FF;margin-bottom:6px;">First-Visit MC Estimate</div>
+      <div class="formula-box" style="border-left-color:#00E5FF;font-size:13px;">V(s) ← average( G<sub>t</sub> : first visit to s, per episode )</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic;">One sample per episode. Samples are i.i.d. → clean LLN convergence.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FIRST-VISIT vs EVERY-VISIT INTERACTIVE -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">First-Visit vs Every-Visit — Step Through an Episode</div></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    Episode: S→A→<strong style="color:#69FF47">S</strong>→B→<strong style="color:#69FF47">S</strong>→C→Terminal. State <strong style="color:#69FF47">S</strong> appears at steps 1 and 3. γ=1 for simplicity (rewards: A=+1, B=+2, C=+3).
+  </p>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <button class="btn sm active-btn" id="fv-tab" onclick="setFVMode('first')" style="border-color:#69FF47;color:#69FF47;">First-Visit MC</button>
+    <button class="btn sm" id="ev-tab" onclick="setFVMode('every')">Every-Visit MC</button>
+  </div>
+  <div class="fv-episode" id="fvEpisode"></div>
+  <div style="display:flex;gap:8px;margin-top:10px;">
+    <button class="btn sm primary" onclick="fvStep()" id="fvStepBtn">▶ Next Step</button>
+    <button class="btn sm" onclick="fvReset()">↺ Reset</button>
+  </div>
+  <div class="fv-returns-panel" id="fvReturnsPanel" style="margin-top:12px;"></div>
+  <div class="fv-result" id="fvResult" style="margin-top:10px;display:none;"></div>
+</div>
+
+<!-- RETURNS ACCUMULATOR — LIVE DEMO -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">Returns Accumulator — Watch Returns(s) Grow</div></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    Each episode contributes one first-visit return for state s. Click "New Episode" to add more. Watch V(s) converge.
+  </p>
+  <div class="acc-track">
+    <div class="acc-controls">
+      <button class="btn sm primary" onclick="accNewEpisode()">+ New Episode</button>
+      <button class="btn sm" onclick="accReset()">↺ Reset</button>
+      <span style="font-size:12px;color:var(--text2);">True mean ≈ <span id="accTrueMean" style="color:#69FF47;font-family:var(--font-m)">2.50</span></span>
+    </div>
+    <div class="acc-returns-list" id="accReturnsList" style="margin-top:10px;"></div>
+    <div class="acc-v-display" id="accVDisplay" style="margin-top:10px;"></div>
+    <div class="acc-chart-wrap" style="margin-top:12px;position:relative;height:120px;">
+      <canvas id="accChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- WORKED EXAMPLE V=0.5 -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">🔥 Worked Example — V(s) = 0.5</div><span class="hot-badge">exact exam problem</span></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    6 episodes total. State s appears in only 4 of them. First-visit returns: +2, +1, −5, +4. Click through each step.
+  </p>
+  <div class="we-steps" id="weSteps"></div>
+  <button class="btn sm primary" onclick="weNext()" id="weBtnNext" style="margin-top:10px;">▶ Next Step</button>
+</div>
+
+<!-- A-E GRIDWORLD QUIZ -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">A–E Gridworld — Prediction Quiz</div><span style="font-size:11px;color:var(--text3)">Slide 10 exam values</span></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    5 states A–E. Three episode returns for each state. Can you compute V(A) through V(E)?
+  </p>
+  <div class="ae-quiz" id="aeQuiz"></div>
+</div>
+
+<!-- EXAM ALERT -->
+<div class="exam-alert-box">
+  <div class="ea-title">⚡ Exam Alert — MC Prediction</div>
+  <div class="ea-grid">
+    <div class="ea-item"><div class="ea-lbl">Algorithm (write from memory)</div><div class="ea-val" style="font-size:11px;color:var(--text2);line-height:1.6;">Init Returns(s)=[] for all s.<br>Repeat: generate episode under π.<br>For each state s: first occurrence only → G<sub>t</sub> → append to Returns(s).<br>V(s) ← average(Returns(s)).</div></div>
+    <div class="ea-item"><div class="ea-lbl">Mistake 1 — double counting</div><div class="ea-val" style="font-size:12px;color:var(--red)">Counting s's 2nd visit in same episode as another first-visit sample. Breaks i.i.d. assumption.</div></div>
+    <div class="ea-item"><div class="ea-lbl">Mistake 2 — Gt direction</div><div class="ea-val" style="font-size:12px;color:var(--red)">Gt = FUTURE rewards from t onward. Never past rewards. Use G<sub>t</sub> = R<sub>t+1</sub> + γG<sub>t+1</sub>.</div></div>
+    <div class="ea-item"><div class="ea-lbl">Scope (Prof's words)</div><div class="ea-val" style="font-size:12px;color:#69FF47">"For your syllabus, we are going to deal with only first visit... from the algorithm perspective, we are going to see only first visit."</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+<!-- PAGE 3: Q(s,a) & Local Optimum Trap -->
+<div class="page" id="page-mc3" style="--accent:#FF6584;--accent-rgb:255,101,132;">
+<div class="pg-content">
+
+<div class="pg-hero" style="border-color:#FF658433;background:linear-gradient(135deg,#FF658408,transparent)">
+  <div class="pg-hero-badge" style="background:#FF658422;color:#FF6584;border-color:#FF658444">Section 3</div>
+  <h2 class="pg-hero-title">MC Action Values — Q(s,a) & Why V(s) Fails</h2>
+  <p class="pg-hero-sub">V(s) tells you how good a state is. Q(s,a) tells you which action is best — without a model.</p>
+  <span class="hot-badge">🔥 endsem hot</span>
+</div>
+
+<!-- WHY V(s) FAILS -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">Why V(s) Alone Can't Drive Control</div><span class="hot-badge">exact exam Q</span></div>
+  <div class="vfail-demo">
+    <div class="vf-state">
+      <div class="vf-box" style="border-color:#69FF4744;">
+        <div class="vf-title" style="color:#69FF47">You have V(s) perfectly estimated</div>
+        <div class="vf-body">You know V(north neighbour) = 8.0<br>V(east neighbour) = 3.0<br>V(south neighbour) = 1.0</div>
+        <div class="vf-q">Which action do you take?</div>
+      </div>
+      <div class="vf-arrow">→</div>
+      <div class="vf-box" style="border-color:#FF658444;">
+        <div class="vf-title" style="color:#FF6584">Problem: you need the model!</div>
+        <div class="vf-body">"Move north" leads to V=8.0 requires knowing p(north|s,action). That IS the transition model p(s',r|s,a) — exactly what MC threw away.</div>
+        <div class="vf-q" style="color:var(--red)">❌ V(s) alone is insufficient for model-free control.</div>
+      </div>
+    </div>
+    <div class="formula-box" style="border-left-color:#FF6584;margin-top:12px;font-size:13px;">
+      To act greedily on V(s): π*(s) = argmax<sub>a</sub> Σ<sub>s',r</sub> <strong style="color:var(--red)">p(s',r|s,a)</strong>[r + γV(s')] ← needs model!<br><br>
+      To act greedily on Q(s,a): π*(s) = argmax<sub>a</sub> <strong style="color:#FF6584">Q(s,a)</strong> ← no model needed ✅
+    </div>
+  </div>
+  <div style="margin-top:10px;padding:8px 12px;background:#FF658411;border-radius:6px;font-size:12px;color:#FF6584;border:1px solid #FF658433;">
+    Prof (exact): <em>"Your control talks about which actions are good in a state. Your value of the state is not giving you that information... Your policies' correctness is measured only by Q rather than V."</em>
+  </div>
+</div>
+
+<!-- Q(s,a) ESTIMATION PIPELINE -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">From V(s) to Q(s,a) — Same Idea, Different Index</div></div>
+  <div class="pipeline-compare">
+    <div class="pc-col">
+      <div class="pc-hdr" style="color:#69FF47">Section 2 — V(s)</div>
+      <div class="pc-step">Track Returns(s) — list per state</div>
+      <div class="pc-step">First visit to state s in episode</div>
+      <div class="pc-step">Append G<sub>t</sub> to Returns(s)</div>
+      <div class="pc-step">V(s) ← average(Returns(s))</div>
+    </div>
+    <div class="pc-arrow">⟹</div>
+    <div class="pc-col">
+      <div class="pc-hdr" style="color:#FF6584">Section 3 — Q(s,a)</div>
+      <div class="pc-step">Track Returns(s,a) — list per <strong style="color:#FF6584">(state, action) pair</strong></div>
+      <div class="pc-step">First visit to <strong style="color:#FF6584">(s,a) pair</strong> in episode</div>
+      <div class="pc-step">Append G<sub>t</sub> to Returns(s,a)</div>
+      <div class="pc-step">Q(s,a) ← average(Returns(s,a))</div>
+    </div>
+  </div>
+  <div class="formula-box" style="border-left-color:#FF6584;margin-top:12px;font-size:13px;">
+    Q(s,a) ≈ average( G<sub>t</sub> : first visit to (s,a) pair across episodes )
+  </div>
+</div>
+
+<!-- Q TABLE BUILDER -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">Q(s,a) Table Builder</div></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">State s with 3 actions. Add episode returns manually, watch Q(s,a) update and greedy action change.</p>
+  <div class="qtb-wrap" id="qtbWrap"></div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn sm primary" onclick="qtbAddEpisode()">+ Add Random Episode</button>
+    <button class="btn sm" onclick="qtbReset()">↺ Reset</button>
+  </div>
+  <div class="qtb-result" id="qtbResult" style="margin-top:10px;"></div>
+</div>
+
+<!-- LOCAL OPTIMUM TRAP — u-w-x-y-z GRID -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">🔥 Local Optimum Trap — The u,w,x,y,z Gridworld</div><span class="hot-badge">likely essay Q</span></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    States: u(coin+1), w, x, y(treasure+10, far), z(poison−1). Step through 3 builds to see how greedy MC converges to a local optimum and <strong style="color:var(--red)">never finds the +10 treasure</strong>.
+  </p>
+  <div class="trap-grid">
+    <div class="trap-map" id="trapMap"></div>
+    <div class="trap-right">
+      <div class="trap-q-table" id="trapQTable"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn sm primary" onclick="trapStep()" id="trapStepBtn">▶ Build 1</button>
+        <button class="btn sm" onclick="trapReset()">↺ Reset</button>
+      </div>
+      <div class="trap-explain" id="trapExplain" style="margin-top:10px;"></div>
+    </div>
+  </div>
+  <div class="trap-verdict" id="trapVerdict" style="display:none;margin-top:12px;padding:10px 14px;background:var(--red)22;border:1px solid var(--red)44;border-radius:8px;font-size:12px;color:var(--red);line-height:1.6;">
+    ⚠️ <strong>Local Optimum Trap:</strong> Greedy policy never re-tries Q(w,E) or the path toward y(+10). Once an action looks bad, its Q-value is frozen forever — no more samples collected. The agent misses the globally optimal path. This is exactly why ε-soft policies (Section 4) are needed.
+  </div>
+</div>
+
+<!-- GPI LOOP -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">GPI Loop for MC Control</div></div>
+  <div class="gpi-mc-loop">
+    <div class="gml-box" style="border-color:#00E5FF44;">
+      <div style="font-size:12px;font-weight:600;color:#00E5FF;margin-bottom:4px;">Generate Episode under π</div>
+      <div style="font-size:11px;color:var(--text2);">Record (S<sub>t</sub>, A<sub>t</sub>, R<sub>t+1</sub>) for each step.</div>
+    </div>
+    <div class="gml-arrow">↓</div>
+    <div class="gml-box" style="border-color:#69FF4744;">
+      <div style="font-size:12px;font-weight:600;color:#69FF47;margin-bottom:4px;">Evaluate — Update Q(s,a)</div>
+      <div style="font-size:11px;color:var(--text2);">First-visit returns → Q(S<sub>t</sub>,A<sub>t</sub>) ← average(Returns).</div>
+    </div>
+    <div class="gml-arrow">↓</div>
+    <div class="gml-box" style="border-color:#FF658444;">
+      <div style="font-size:12px;font-weight:600;color:#FF6584;margin-bottom:4px;">Improve — Greedy Update</div>
+      <div style="font-size:11px;color:var(--text2);">π(s) ← argmax<sub>a</sub> Q(s,a). No model needed!</div>
+    </div>
+    <div class="gml-arrow">↓ (repeat)</div>
+  </div>
+  <div style="margin-top:10px;padding:8px 12px;background:#FF658411;border-radius:6px;font-size:12px;color:#FF6584;border:1px solid #FF658433;">
+    ❗ But purely greedy improvement → local optimum trap (above). Fix: make π ε-soft (Section 4).
+  </div>
+</div>
+
+<!-- EXAM ALERT -->
+<div class="exam-alert-box">
+  <div class="ea-title">⚡ Exam Alert — Q(s,a) and Local Optimum</div>
+  <div class="ea-grid">
+    <div class="ea-item"><div class="ea-lbl">Exam Q (exact from transcript)</div><div class="ea-val" style="font-size:12px;color:var(--text2);">"Why is Vπ insufficient for control, even if estimated perfectly?" → V(s) needs p(s',r|s,a) to pick the best action. Q(s,a) gives it directly via argmax. No model needed.</div></div>
+    <div class="ea-item"><div class="ea-lbl">Deterministic policy failure</div><div class="ea-val" style="font-size:12px;color:var(--text2);">"Starting with a deterministic policy, you will never reach an optimal policy because you're not giving chance for other actions." — Prof exact quote.</div></div>
+    <div class="ea-item"><div class="ea-lbl">u,w,x,y,z trap</div><div class="ea-val" style="font-size:12px;color:var(--text2);">Once Q(w,E)=−1 < Q(w,W)=+1, greedy policy never selects E from w again. Q(w,E) is frozen. The path to y(+10) is permanently missed.</div></div>
+    <div class="ea-item"><div class="ea-lbl">Common mistake</div><div class="ea-val" style="font-size:12px;color:var(--red)">"Just act greedily on V(s)" — silently assumes you know the model. This contradicts the model-free premise.</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+<!-- PAGE 4: ε-Soft MC Control -->
+<div class="page" id="page-mc4" style="--accent:#FFD166;--accent-rgb:255,209,102;">
+<div class="pg-content">
+
+<div class="pg-hero" style="border-color:#FFD16633;background:linear-gradient(135deg,#FFD16608,transparent)">
+  <div class="pg-hero-badge" style="background:#FFD16622;color:#FFD166;border-color:#FFD16644">Section 4</div>
+  <h2 class="pg-hero-title">On-Policy ε-Soft MC Control</h2>
+  <p class="pg-hero-sub">The fix for the local optimum trap — ensure every action always has a chance.</p>
+  <span class="hot-badge">🔥 endsem hot</span>
+</div>
+
+<!-- ε-SOFT DEFINITION -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">The Fix: ε-Soft Policies</div></div>
+  <div class="esoft-def">
+    <div class="formula-box" style="border-left-color:#FFD166;font-size:14px;margin-bottom:12px;">
+      π(a|s) ≥ <strong style="color:#FFD166">ε / |A(s)|</strong> &nbsp; for ALL a ∈ A(s)
+    </div>
+    <div class="esoft-eq-block">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">ε-Greedy (most common ε-soft policy):</div>
+      <div class="formula-box" style="border-left-color:#FFD166;font-size:13px;line-height:2;">
+        π(a|s) = <span style="color:#FFD166">1 − ε + ε/|A(s)|</span> &nbsp; if a = A* (greedy action)<br>
+        π(a|s) = <span style="color:#00E5FF">ε/|A(s)|</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if a ≠ A* (non-greedy)
+      </div>
+      <div style="margin-top:8px;padding:8px 12px;background:var(--red)22;border-radius:6px;font-size:12px;color:var(--red);border:1px solid var(--red)44;">
+        ⚠️ #1 exam mistake: greedy action gets <strong>1−ε + ε/|A(s)|</strong> NOT just 1−ε. The greedy action ALSO gets its share of the ε pot.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ε-GREEDY PROBABILITY CALCULATOR -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">ε-Greedy Probability Calculator</div><span class="hot-badge">exam calculation</span></div>
+  <div class="eps-calc">
+    <div class="eps-sliders">
+      <div class="ctrl mb8">
+        <label>ε = <span id="epsVal" style="color:#FFD166;font-family:var(--font-m);">0.20</span></label>
+        <input type="range" id="epsSlider" min="0.01" max="1" step="0.01" value="0.2" oninput="updateEpsCalc()">
+      </div>
+      <div class="ctrl mb8">
+        <label>|A(s)| = <span id="actVal" style="color:#00E5FF;font-family:var(--font-m);">4</span> actions</label>
+        <input type="range" id="actSlider" min="2" max="8" step="1" value="4" oninput="updateEpsCalc()">
+      </div>
+    </div>
+    <div class="eps-results" id="epsResults"></div>
+    <div class="eps-prob-bar" id="epsProbBar" style="margin-top:12px;"></div>
+    <div class="eps-sanity" id="epsSanity" style="margin-top:8px;font-size:12px;"></div>
+  </div>
+</div>
+
+<!-- ALGORITHM STEP TRACER -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">Algorithm — Full Step Tracer</div><span class="hot-badge">write from memory</span></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    Episode: S₀=w, A₀=E, R₁=−1 → S₁=x, A₁=N, R₂=0 → S₂=y, A₂=exit, R₃=+10 → Terminal. γ=0.9.<br>
+    Step through: backward G computation → first-visit check → Q update → π update.
+  </p>
+  <div class="alg-steps-track" id="algStepsTrack"></div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn sm primary" onclick="algStep()" id="algStepBtn">▶ Next Step</button>
+    <button class="btn sm" onclick="algReset()">↺ Reset</button>
+  </div>
+  <div class="alg-state-display" id="algStateDisplay" style="margin-top:12px;"></div>
+</div>
+
+<!-- GLIE VISUALIZER -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">GLIE — Greedy in the Limit with Infinite Exploration</div></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    Fixed ε > 0 → always slightly random → never truly optimal. GLIE: let ε<sub>t</sub> → 0 as t → ∞, but slowly enough that every (s,a) is sampled infinitely often.
+  </p>
+  <div class="ctrl mb8">
+    <label>Decay schedule: ε<sub>t</sub> = <span id="glieLabel" style="color:#FFD166;font-family:var(--font-m);">1/t</span></label>
+    <select id="glieSchedule" onchange="updateGLIE()" style="width:160px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;outline:none;">
+      <option value="inv">εt = 1/t</option>
+      <option value="invlog">εt = 1/log(t)</option>
+      <option value="fixed">εt = 0.1 (fixed, NOT GLIE)</option>
+    </select>
+  </div>
+  <div class="glie-chart-wrap" style="position:relative;height:140px;"><canvas id="glieChart"></canvas></div>
+  <div class="glie-explain" id="glieExplain" style="margin-top:8px;font-size:12px;color:var(--text2);padding:8px 12px;background:var(--bg2);border-radius:6px;"></div>
+</div>
+
+<!-- FULL WORKED EPISODE TRACE — EXAM STYLE -->
+<div class="card mb16">
+  <div class="sec-hdr"><div class="sec-title">🔥 Full Exam-Style Episode Trace</div><span class="hot-badge">exam Q5 template</span></div>
+  <p style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">
+    Prof's sample paper Q5: compute discounted returns, first-visit Q updates, and updated policy table for one episode. This is the exact exam pattern.
+  </p>
+  <div class="exam-ep-setup">
+    <div class="ee-params">
+      <span class="ee-param">γ = <strong style="color:#FFD166;font-family:var(--font-m);">0.9</strong></span>
+      <span class="ee-param">ε = <strong style="color:#00E5FF;font-family:var(--font-m);">0.1</strong></span>
+      <span class="ee-param">|A| = <strong style="color:#FF6584;font-family:var(--font-m);">3</strong></span>
+    </div>
+    <div class="ee-episode">
+      Episode τ: <strong style="color:#69FF47">S₀</strong>=w, A₀=right, R₁=0 → <strong style="color:#69FF47">S₁</strong>=x, A₁=exit, R₂=+10 → Terminal
+    </div>
+  </div>
+  <div class="exam-trace-steps" id="examTraceSteps"></div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+    <button class="btn sm primary" onclick="examTraceStep()" id="examTraceBtnNext">▶ Step 1: Set G=0</button>
+    <button class="btn sm" onclick="examTraceReset()">↺ Reset</button>
+  </div>
+</div>
+
+<!-- EXAM ALERT -->
+<div class="exam-alert-box">
+  <div class="ea-title">⚡ Exam Alert — ε-Soft MC Control</div>
+  <div class="ea-grid">
+    <div class="ea-item"><div class="ea-lbl">Greedy prob (CRITICAL)</div><div class="ea-val formula-box" style="border-left-color:#FFD166;font-size:12px;">π(A*|s) = <strong>1 − ε + ε/|A(s)|</strong><br>π(a|s) = ε/|A(s)| for a ≠ A*</div></div>
+    <div class="ea-item"><div class="ea-lbl">Backward G accumulation</div><div class="ea-val formula-box" style="border-left-color:#00E5FF;font-size:12px;">G ← γG + R<sub>t+1</sub><br>Process t = T−1 down to 0, starting G=0</div></div>
+    <div class="ea-item"><div class="ea-lbl">First-visit check (control)</div><div class="ea-val" style="font-size:12px;color:var(--text2);">First visit = first occurrence of (S<sub>t</sub>, A<sub>t</sub>) PAIR, not just state.</div></div>
+    <div class="ea-item"><div class="ea-lbl">On-policy meaning</div><div class="ea-val" style="font-size:12px;color:var(--text2);">Same ε-soft policy both generates episodes AND gets improved. "Learning to drive by driving yourself."</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+<script>
+/* ====================================================
+   NAV + THEME
+   ==================================================== */
+function switchTab(t){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+t).classList.add('active');
+  document.querySelector('[data-tab="'+t+'"]').classList.add('active');
+}
+function toggleTheme(){
+  document.documentElement.setAttribute('data-theme',
+    document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+}
+
+/* ====================================================
+   P1: SAMPLING ANALOGY
+   ==================================================== */
+function updateSampling(n){
+  n=parseInt(n);
+  document.getElementById('sampleNVal').textContent=n;
+  const trueMean=165; const bars=document.getElementById('sampleBars');
+  const samples=Array.from({length:n},()=>trueMean+(Math.random()-0.5)*40);
+  const est=samples.reduce((a,b)=>a+b,0)/n;
+  const maxH=50;
+  // show only last 30 bars
+  const disp=samples.slice(-30);
+  const minH=2;
+  bars.innerHTML=disp.map(h=>{
+    const pct=(h-130)/(200-130);
+    const ph=Math.max(minH,Math.round(pct*maxH));
+    const col=Math.abs(h-trueMean)<5?'#69FF47':Math.abs(h-trueMean)<15?'#FFD166':'#00E5FF';
+    return `<div class="sb-bar" style="height:${ph}px;background:${col};"></div>`;
+  }).join('');
+  const err=Math.abs(est-trueMean).toFixed(1);
+  bars.title=`Estimate: ${est.toFixed(1)}cm | True mean: ${trueMean}cm | Error: ${err}cm`;
+}
+
+/* ====================================================
+   P1: DP vs MC COMPARISON TABLE
+   ==================================================== */
+const CMP_DATA=[
+  {prop:'Model required?',dp:'Yes — needs full p(s\',r|s,a)',mc:'No — model-free, learns from sampled episodes',why:'DP\'s Bellman update literally contains Σ p(s\',r|s,a) [...]. Without p, you can\'t evaluate the sum. MC replaces this sum with "average what actually happened."'},
+  {prop:'Update source',dp:'Expectation over ALL successors (full backup)',mc:'Actual return Gt from ONE complete trajectory (sample backup)',why:'DP sweeps the entire probability-weighted tree of outcomes. MC follows one path to the terminal and uses the real rewards along that path.'},
+  {prop:'Bootstrapping?',dp:'Yes — uses current V(s\') estimates',mc:'No — uses complete actual returns only',why:'Bootstrapping = using your own imperfect estimates in the update. DP updates V(s) using V(s\'). MC waits for the real Gt — no estimates used in the update itself.'},
+  {prop:'Bias',dp:'No sampling bias (exact model); some from unconverged V(s\')',mc:'Unbiased: E[Gt | St=s] = vπ(s) exactly',why:'MC is unbiased because it averages the true return, not an estimate. DP\'s V(s\') might be off early on — but with an exact model, the only error is from convergence.'},
+  {prop:'Variance',dp:'Essentially none (deterministic sweeps)',mc:'High — Gt depends on full stochastic trajectory',why:'Each full episode Gt is a noisy sample of the true expected return. Standard error ~ σ/√M, so you need 4× episodes to halve the error.'},
+  {prop:'Episodes needed?',dp:'Never — works from the model directly',mc:'Always — must complete episode before any update',why:'MC cannot compute Gt until the terminal state is reached (G needs all future rewards). DP doesn\'t need episodes at all — it uses the model to simulate everything.'},
+];
+function buildCmpTable(){
+  const wrap=document.getElementById('dpMcTable');
+  if(!wrap)return;
+  wrap.innerHTML=`<div class="cmp-row cmp-hdr"><div class="cmp-prop">Property</div><div class="cmp-dp">Dynamic Programming</div><div class="cmp-mc">Monte Carlo</div></div>`+
+  CMP_DATA.map((d,i)=>`<div class="cmp-row" id="cmprow${i}" onclick="toggleCmpRow(${i})">
+    <div class="cmp-prop">${d.prop}</div>
+    <div class="cmp-dp">${d.dp}</div>
+    <div class="cmp-mc">${d.mc}</div>
+    <div class="cmp-expand">💡 <strong>Why the difference:</strong> ${d.why}</div>
+  </div>`).join('');
+}
+function toggleCmpRow(i){
+  const row=document.getElementById('cmprow'+i);
+  row.classList.toggle('expanded');
+}
+
+/* ====================================================
+   P1: BACKUP DIAGRAMS
+   ==================================================== */
+function drawDPBackup(){
+  const svg=document.getElementById('dpBackupSVG');
+  if(!svg)return;
+  svg.innerHTML=`
+    <circle cx="90" cy="18" r="12" fill="none" stroke="#E8ECF4" stroke-width="1.5"/>
+    <text x="90" y="22" text-anchor="middle" font-size="10" fill="#E8ECF4">s</text>
+    <line x1="90" y1="30" x2="40" y2="65" stroke="#7B61FF" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <line x1="90" y1="30" x2="90" y2="65" stroke="#7B61FF" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <line x1="90" y1="30" x2="140" y2="65" stroke="#7B61FF" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="57" y="52" font-size="9" fill="#7B61FF">π(a|s)</text>
+    <circle cx="40" cy="73" r="6" fill="#7B61FF" opacity=".8"/>
+    <circle cx="90" cy="73" r="6" fill="#7B61FF" opacity=".8"/>
+    <circle cx="140" cy="73" r="6" fill="#7B61FF" opacity=".8"/>
+    <line x1="40" y1="79" x2="20" y2="115" stroke="#FF6B9D" stroke-width="1.2"/>
+    <line x1="40" y1="79" x2="40" y2="115" stroke="#FF6B9D" stroke-width="1.2"/>
+    <line x1="40" y1="79" x2="60" y2="115" stroke="#FF6B9D" stroke-width="1.2"/>
+    <line x1="90" y1="79" x2="90" y2="115" stroke="#FF6B9D" stroke-width="1.2"/>
+    <line x1="140" y1="79" x2="120" y2="115" stroke="#FF6B9D" stroke-width="1.2"/>
+    <line x1="140" y1="79" x2="160" y2="115" stroke="#FF6B9D" stroke-width="1.2"/>
+    <text x="18" y="108" font-size="8" fill="#FF6B9D">p(s'|s,a)</text>
+    <circle cx="20" cy="123" r="9" fill="none" stroke="#8892B0" stroke-width="1.2"/>
+    <circle cx="40" cy="123" r="9" fill="none" stroke="#8892B0" stroke-width="1.2"/>
+    <circle cx="60" cy="123" r="9" fill="none" stroke="#8892B0" stroke-width="1.2"/>
+    <circle cx="90" cy="123" r="9" fill="none" stroke="#8892B0" stroke-width="1.2"/>
+    <circle cx="120" cy="123" r="9" fill="none" stroke="#8892B0" stroke-width="1.2"/>
+    <circle cx="160" cy="123" r="9" fill="none" stroke="#8892B0" stroke-width="1.2"/>
+    <text x="90" y="158" text-anchor="middle" font-size="9" fill="#7B61FF">V(s') used → bootstrapping</text>
+    <text x="90" y="172" text-anchor="middle" font-size="8" fill="#4A5480">ALL branches, ALL outcomes</text>`;
+}
+function drawMCBackup(){
+  const svg=document.getElementById('mcBackupSVG');
+  if(!svg)return;
+  svg.innerHTML=`
+    <circle cx="90" cy="18" r="12" fill="none" stroke="#E8ECF4" stroke-width="1.5"/>
+    <text x="90" y="22" text-anchor="middle" font-size="10" fill="#E8ECF4">s</text>
+    <line x1="90" y1="30" x2="90" y2="52" stroke="#00E5FF" stroke-width="2"/>
+    <circle cx="90" cy="60" r="6" fill="#00E5FF" opacity=".8"/>
+    <text x="105" y="63" font-size="9" fill="#00E5FF">a taken</text>
+    <line x1="90" y1="66" x2="90" y2="88" stroke="#00E5FF" stroke-width="2"/>
+    <circle cx="90" cy="95" r="10" fill="none" stroke="#69FF47" stroke-width="1.5"/>
+    <text x="90" y="99" text-anchor="middle" font-size="9" fill="#69FF47">s'</text>
+    <line x1="90" y1="105" x2="90" y2="115" stroke="#00E5FF" stroke-width="2"/>
+    <circle cx="90" cy="122" r="6" fill="#00E5FF" opacity=".6"/>
+    <line x1="90" y1="128" x2="90" y2="135" stroke="#00E5FF" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="90" y="148" text-anchor="middle" font-size="10" fill="#4A5480">⋮</text>
+    <rect x="70" y="158" width="40" height="20" rx="5" fill="#FFD16622" stroke="#FFD166" stroke-width="1.5"/>
+    <text x="90" y="172" text-anchor="middle" font-size="9" fill="#FFD166" font-weight="bold">T</text>
+    <text x="90" y="192" text-anchor="middle" font-size="9" fill="#00E5FF">Gt = actual reward sum</text>`;
+}
+
+/* ====================================================
+   P2: FIRST-VISIT vs EVERY-VISIT
+   ==================================================== */
+// Episode: S(step0) A(step1) S(step2) A(step3) S(step4) C(step5) Terminal
+// Rewards: step1=+1(after A), step3=+2(after B), step5=+3(after C)
+// Actually track: S0, A0, R1, S1, A1, R2, S2, A2, R3, Terminal
+// Episode: w, right, 0, S, A, +1, S, B, +2, S, C, +3, T
+// Simplified: positions of S in episode at indices 0, 4, 8 (0-indexed steps)
+// Let's do: S(t=0) → take action → t=1: S again → take action → t=2: terminal
+// States visited: S at t=0, t=1. Rewards R1=2 (after t=0→t=1), R2=3 (after t=1→T)
+// G at t=0 (first visit FV): 2 + 1×3 = 5
+// G at t=1 (second visit): 3
+// FV: use only G(t=0) = 5 → V(S)=5
+// EV: use G(t=0)=5 and G(t=1)=3 → V(S) = (5+3)/2 = 4
+
+const FV_EPISODE=[
+  {type:'S',label:'S (t=0)',visit:'first',note:'First visit to S in this episode'},
+  {type:'A',label:'take action',visit:'',note:''},
+  {type:'R',label:'R₁ = +2',visit:'',note:'Reward received'},
+  {type:'S',label:'S (t=1)',visit:'second',note:'Second visit to S — FV ignores this'},
+  {type:'A',label:'take action',visit:'',note:''},
+  {type:'R',label:'R₂ = +3',visit:'',note:'Reward received'},
+  {type:'t',label:'Terminal',visit:'',note:'Episode ends'},
+];
+let fvMode='first', fvStep=0;
+function setFVMode(m){
+  fvMode=m;
+  document.getElementById('fv-tab').classList.toggle('active-btn',m==='first');
+  document.getElementById('ev-tab').classList.toggle('active-btn',m==='every');
+  document.getElementById('fv-tab').style.borderColor=m==='first'?'#69FF47':'var(--border)';
+  document.getElementById('fv-tab').style.color=m==='first'?'#69FF47':'var(--text2)';
+  document.getElementById('ev-tab').style.borderColor=m==='every'?'#FF6584':'var(--border)';
+  document.getElementById('ev-tab').style.color=m==='every'?'#FF6584':'var(--text2)';
+  fvReset();
+}
+function fvReset(){
+  fvStep=0;
+  const ep=document.getElementById('fvEpisode');
+  ep.innerHTML=FV_EPISODE.map((c,i)=>`<div class="fv-cell ${c.type==='S'?(c.visit==='first'?'s-type':(c.visit==='second'?'fv-cell s-type':' s-type')):(c.type==='A'?'a-type':c.type==='R'?'r-type':'t-type')}" id="fvc${i}" style="opacity:.3;">${c.label}</div>`).join('');
+  document.getElementById('fvReturnsPanel').innerHTML='<span style="color:var(--text3)">Click "Next Step" to walk through the episode.</span>';
+  document.getElementById('fvResult').style.display='none';
+  document.getElementById('fvStepBtn').textContent='▶ Next Step';
+  document.getElementById('fvStepBtn').disabled=false;
+}
+function fvStep2(){
+  if(fvStep>=FV_EPISODE.length){fvReset();return;}
+  const cell=document.getElementById('fvc'+fvStep);
+  cell.style.opacity='1';
+  cell.classList.add('highlight');
+  const item=FV_EPISODE[fvStep];
+  let html='';
+  if(fvStep===0) html=`<strong style="color:#69FF47">Step t=0:</strong> State S visited for the FIRST time. Both FV and EV will record this visit.`;
+  else if(fvStep===1) html=`Agent takes action, observes next state.`;
+  else if(fvStep===2) html=`Reward R₁ = +2 received. G at t=0 so far: +2 (will add discounted future rewards).`;
+  else if(fvStep===3){
+    if(fvMode==='first') html=`<strong style="color:var(--red)">Step t=1:</strong> State S visited AGAIN. <strong style="color:#69FF47">First-Visit MC: SKIP this</strong> — only the first occurrence counts.`;
+    else html=`<strong style="color:#FF6584">Step t=1:</strong> State S visited AGAIN. <strong style="color:#FF6584">Every-Visit MC: RECORD this</strong> — G at t=1 = R₂ = +3.`;
+    if(fvMode==='first') cell.classList.add('second-visit');
+    else cell.classList.add('first-visit');
+  }
+  else if(fvStep===4) html=`Agent takes another action.`;
+  else if(fvStep===5) html=`Reward R₂ = +3 received. Episode ends.`;
+  else if(fvStep===6){
+    html=`<strong>Terminal reached.</strong> Now compute returns:<br>`;
+    if(fvMode==='first'){
+      html+=`<strong style="color:#69FF47">First-Visit:</strong> G(t=0) = R₁ + γ×R₂ = 2 + 1×3 = <strong>5</strong><br>Returns(S) = [5] → <strong style="color:#69FF47">V(S) = 5</strong>`;
+    } else {
+      html+=`<strong style="color:#FF6584">Every-Visit:</strong> G(t=0) = 2 + 3 = 5, G(t=1) = 3<br>Returns(S) = [5, 3] → <strong style="color:#FF6584">V(S) = (5+3)/2 = 4</strong>`;
+    }
+    const res=document.getElementById('fvResult');
+    res.style.display='block';
+    res.style.borderLeft=`3px solid ${fvMode==='first'?'#69FF47':'#FF6584'}`;
+    res.style.background=fvMode==='first'?'#69FF4711':'#FF658411';
+    res.style.padding='10px 12px';
+    res.style.borderRadius='6px';
+    res.innerHTML=fvMode==='first'?
+      `<strong style="color:#69FF47">First-Visit MC:</strong> V(S) = 5<br><em style="font-size:11px;color:var(--text3)">Same episode, first occurrence only. Clean i.i.d. samples.</em>`:
+      `<strong style="color:#FF6584">Every-Visit MC:</strong> V(S) = 4<br><em style="font-size:11px;color:var(--text3)">Both occurrences used. More data per episode but returns are correlated.</em>`;
+    document.getElementById('fvStepBtn').textContent='↺ Reset';
+  }
+  document.getElementById('fvReturnsPanel').innerHTML=html;
+  fvStep++;
+}
+
+/* ====================================================
+   P2: RETURNS ACCUMULATOR
+   ==================================================== */
+let accReturns=[], accChart=null;
+const ACC_TRUE_MEAN=2.5;
+function accNewEpisode(){
+  // Sample from distribution centered around true mean
+  const r=parseFloat((ACC_TRUE_MEAN+(Math.random()-0.5)*4).toFixed(2));
+  accReturns.push(r);
+  const avg=(accReturns.reduce((a,b)=>a+b,0)/accReturns.length).toFixed(3);
+  const list=document.getElementById('accReturnsList');
+  // Mark all old chips
+  list.querySelectorAll('.acc-chip').forEach(c=>c.classList.remove('new'));
+  list.innerHTML=accReturns.map((v,i)=>`<div class="acc-chip${i===accReturns.length-1?' new':''}">${v>0?'+':''}${v}</div>`).join('');
+  document.getElementById('accVDisplay').innerHTML=`V(s) = <span style="font-family:var(--font-m);color:#69FF47">${avg}</span> <span style="font-size:11px;color:var(--text3)">(from ${accReturns.length} episodes)</span>`;
+  if(accChart){
+    accChart.data.labels=accReturns.map((_,i)=>i+1);
+    accChart.data.datasets[0].data=accReturns.map((_,i)=>(accReturns.slice(0,i+1).reduce((a,b)=>a+b,0)/(i+1)));
+    accChart.data.datasets[1].data=accReturns.map(()=>ACC_TRUE_MEAN);
+    accChart.update('none');
+  }
+}
+function accReset(){
+  accReturns=[];
+  document.getElementById('accReturnsList').innerHTML='';
+  document.getElementById('accVDisplay').innerHTML='';
+  if(accChart){accChart.data.labels=[];accChart.data.datasets.forEach(d=>d.data=[]);accChart.update();}
+}
+function initAccChart(){
+  const ctx=document.getElementById('accChart');
+  if(!ctx)return;
+  accChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:[],datasets:[
+      {label:'V(s) estimate',data:[],borderColor:'#69FF47',backgroundColor:'rgba(105,255,71,0.1)',borderWidth:2,pointRadius:0,fill:true,tension:0.3},
+      {label:'True mean',data:[],borderColor:'#FFD166',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:{legend:{labels:{font:{family:"'Inter'"},color:'#8892B0',boxWidth:10,padding:8}}},scales:{x:{ticks:{color:'#5A5F7A',font:{size:9}},grid:{color:'rgba(30,38,64,0.8)'}},y:{ticks:{color:'#5A5F7A',font:{size:9}},grid:{color:'rgba(30,38,64,0.8)'}}}}
+  });
+}
+
+/* ====================================================
+   P2: WORKED EXAMPLE V=0.5
+   ==================================================== */
+const WE_STEPS=[
+  {n:'Setup',body:'6 episodes total. State s appears in only 4 of them. The other 2 episodes never visit s → contribute nothing to Returns(s).'},
+  {n:'Returns(s) list',body:'First-visit returns from the 4 episodes: <span style="color:#69FF47;font-family:var(--font-m);">[+2, +1, −5, +4]</span> — one per episode. Each return is the sum of discounted rewards from the first occurrence of s to the terminal.'},
+  {n:'Sum',body:'2 + 1 + (−5) + 4 = <strong style="color:#FFD166">2</strong>'},
+  {n:'Divide by N = 4 (not 6!)',body:'Divide by the number of EPISODES THAT VISITED s (4), NOT the total number of episodes. <br>2 / 4 = <strong style="color:#69FF47;font-size:14px;">0.5</strong>'},
+  {n:'Result',body:'<strong style="color:#69FF47;font-size:16px;">V(s) = 0.5</strong> — No Bellman equation, no transition probabilities, no max operator. Just averages.'},
+];
+let weIdx=0;
+function weNext(){
+  if(weIdx===0) document.getElementById('weSteps').innerHTML=WE_STEPS.map((_,i)=>`<div class="we-row" id="we${i}"><div class="we-step-n">Step ${i+1}: ${WE_STEPS[i].n}</div><div class="we-step-body">${WE_STEPS[i].body}</div></div>`).join('');
+  if(weIdx>=WE_STEPS.length){weIdx=0;document.querySelectorAll('.we-row').forEach(r=>{r.classList.remove('active','done');});document.getElementById('weBtnNext').textContent='▶ Next Step';return;}
+  if(weIdx>0){const prev=document.getElementById('we'+(weIdx-1));if(prev){prev.classList.remove('active');prev.classList.add('done');}}
+  const cur=document.getElementById('we'+weIdx);if(cur){cur.classList.add('active');}
+  weIdx++;
+  if(weIdx>=WE_STEPS.length) document.getElementById('weBtnNext').textContent='↺ Restart';
+}
+
+/* ====================================================
+   P2: A-E QUIZ
+   ==================================================== */
+const AE_STATES=[
+  {name:'A',returns:[-10,-10,-10],ans:-10},
+  {name:'B',returns:[8,8,8],ans:8},
+  {name:'C',returns:[4,4,4],ans:4},
+  {name:'D',returns:[10,10,10],ans:10},
+  {name:'E',returns:[-2,-2,-2],ans:-2},
+];
+function buildAEQuiz(){
+  const wrap=document.getElementById('aeQuiz');
+  if(!wrap)return;
+  wrap.innerHTML=AE_STATES.map((s,i)=>`<div class="ae-q-row">
+    <div class="ae-q-state">State ${s.name}</div>
+    <div class="ae-q-returns">Returns(${s.name}) = [${s.returns.join(', ')}]</div>
+    <div class="ae-q-input">
+      <span style="font-size:12px;color:var(--text2);">V(${s.name}) = </span>
+      <input type="number" id="aeq${i}" placeholder="?" step="0.5" onkeydown="if(event.key==='Enter')checkAE(${i})">
+      <button class="btn sm" onclick="checkAE(${i})">Check</button>
+    </div>
+    <div class="ae-feedback" id="aefb${i}"></div>
+  </div>`).join('');
+}
+function checkAE(i){
+  const inp=document.getElementById('aeq'+i);
+  const val=parseFloat(inp.value);
+  const fb=document.getElementById('aefb'+i);
+  const correct=Math.abs(val-AE_STATES[i].ans)<0.01;
+  fb.innerHTML=correct?
+    `<span style="color:#69FF47">✅ Correct! V(${AE_STATES[i].name}) = ${AE_STATES[i].ans} — average of ${AE_STATES[i].returns.join(', ')} = ${AE_STATES[i].ans}</span>`:
+    `<span style="color:var(--red)">❌ Wrong. Try again. Hint: V = sum / count = ${AE_STATES[i].returns.reduce((a,b)=>a+b,0)} / ${AE_STATES[i].returns.length}</span>`;
+}
+
+/* ====================================================
+   P3: Q TABLE BUILDER
+   ==================================================== */
+const QTB_ACTIONS=['a₁','a₂','a₃'];
+let qtbReturns=[[],[],[]];
+function qtbReset(){qtbReturns=[[],[],[]];renderQTB();}
+function qtbAddEpisode(){
+  const idx=Math.floor(Math.random()*3);
+  const r=parseFloat(((Math.random()*10-2).toFixed(1)));
+  qtbReturns[idx].push(r);
+  renderQTB();
+}
+function renderQTB(){
+  const wrap=document.getElementById('qtb-wrap')||document.getElementById('qtbWrap');
+  if(!wrap)return;
+  const qs=qtbReturns.map(ret=>ret.length>0?ret.reduce((a,b)=>a+b,0)/ret.length:null);
+  const maxQ=qs.reduce((best,q,i)=>q!==null&&(best===-1||q>qs[best])?i:best,-1);
+  wrap.innerHTML=`<div class="qtb-row header"><div>Action</div><div>Returns list</div><div>Q(s,a)</div><div>Greedy?</div></div>`+
+  QTB_ACTIONS.map((a,i)=>{
+    const q=qs[i];
+    const isBest=i===maxQ&&q!==null;
+    return `<div class="qtb-row${isBest?' best-action':''}">
+      <div class="qtb-action" style="color:${isBest?'#69FF47':'var(--text2)'}">${a}</div>
+      <div class="qtb-returns">[${qtbReturns[i].map(v=>`${v>0?'+':''}${v}`).join(', ')||'—'}]</div>
+      <div class="qtb-q" style="color:${isBest?'#69FF47':'var(--text)'}">${q!==null?q.toFixed(2):'—'}</div>
+      <div style="font-size:12px;color:${isBest?'#69FF47':'var(--text3)'}">${isBest?'← A*':''}</div>
+    </div>`;
+  }).join('');
+  const res=document.getElementById('qtbResult');
+  if(maxQ>=0&&qs[maxQ]!==null){
+    res.innerHTML=`Greedy action: <strong style="color:#69FF47">${QTB_ACTIONS[maxQ]}</strong> (Q = ${qs[maxQ].toFixed(2)}) — argmax Q(s,a). No model needed.`;
+  } else {
+    res.innerHTML='<span style="color:var(--text3)">Add episodes to build the Q-table.</span>';
+  }
+}
+
+/* ====================================================
+   P3: LOCAL OPTIMUM TRAP
+   ==================================================== */
+const TRAP_BUILDS=[
+  {title:'Initial — Q(w,E) first visited = −1',
+   q:{wE:-1,wW:0,wN:0,xN:-1,xE:0,xS:0},
+   policy:{w:'?',x:'?'},
+   explain:'First episode: agent goes w→E, reward=−1. Q(w,E)=−1 is now the only estimate. Greedy policy avoids E. Other actions still at 0 (untried).'},
+  {title:'Build 2 — Q(w,W) updated = +1',
+   q:{wE:-1,wW:1,wN:0,xN:-1,xE:0,xS:0},
+   policy:{w:'W',x:'N or E (tied)'},
+   explain:'New episodes reach u(+1) via w→W. Q(w,W)=+1 > Q(w,E)=−1. Greedy policy now always picks W from w. But Q(w,E) is FROZEN — no new samples collected for it.'},
+  {title:'Build 3 — Converged (LOCAL OPTIMUM)',
+   q:{wE:-1,wW:1,wN:0,xN:-1,xE:0,xS:0},
+   policy:{w:'W (frozen)',x:'E (frozen)'},
+   frozen:['wE','xN'],
+   explain:'Policy converged: w→W, x→E. The path toward y(+10 treasure) via w→E was tried once early (got −1) and NEVER RE-EXPLORED. Q(w,E) = −1 forever. The globally optimal policy is locked out.'},
+];
+let trapBuild=0;
+function trapReset(){
+  trapBuild=0;
+  renderTrapMap(TRAP_BUILDS[0]);
+  renderTrapQ(TRAP_BUILDS[0]);
+  document.getElementById('trapExplain').innerHTML='<span style="color:var(--text3)">Click "Build 1" to start the local optimum trap demonstration.</span>';
+  document.getElementById('trapVerdict').style.display='none';
+  document.getElementById('trapStepBtn').textContent='▶ Build 1';
+}
+function trapStep(){
+  if(trapBuild>=TRAP_BUILDS.length){trapReset();return;}
+  const b=TRAP_BUILDS[trapBuild];
+  renderTrapMap(b);
+  renderTrapQ(b);
+  document.getElementById('trapExplain').innerHTML=`<strong style="color:#FFD166">${b.title}</strong><br><br>${b.explain}`;
+  if(trapBuild===2){
+    document.getElementById('trapVerdict').style.display='block';
+    document.getElementById('trapStepBtn').textContent='↺ Reset';
+  } else {
+    document.getElementById('trapStepBtn').textContent=`▶ Build ${trapBuild+2}`;
+  }
+  trapBuild++;
+}
+function renderTrapMap(b){
+  const wrap=document.getElementById('trapMap');
+  if(!wrap)return;
+  wrap.innerHTML=`<div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Grid (simplified linear):</div>
+    <div class="tm-cells">
+      <div class="tm-cell state-z">z<br><span style="font-size:9px;color:var(--red)">−1</span></div>
+      <div class="tm-cell state-u">u<br><span style="font-size:9px;color:#69FF47">+1</span></div>
+      <div class="tm-cell state-w">w<br><span style="font-size:9px;color:#7B61FF">${b.policy.w||'?'}</span></div>
+      <div class="tm-cell state-x">x<br><span style="font-size:9px;color:#00E5FF">${b.policy.x||'?'}</span></div>
+      <div class="tm-cell state-y">y<br><span style="font-size:9px;color:#FFD166">+10</span></div>
+    </div>
+    <div style="font-size:10px;color:var(--text3)">← left &nbsp;|&nbsp; right →</div>`;
+}
+function renderTrapQ(b){
+  const wrap=document.getElementById('trapQTable');
+  if(!wrap)return;
+  const frozen=b.frozen||[];
+  const rows=[
+    {k:'wE',lbl:'Q(w, East)',v:b.q.wE},
+    {k:'wW',lbl:'Q(w, West)',v:b.q.wW},
+    {k:'xN',lbl:'Q(x, North)',v:b.q.xN},
+    {k:'xE',lbl:'Q(x, East)',v:b.q.xE},
+  ];
+  wrap.innerHTML=`<div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;">Q Table</div>`+
+  rows.map(r=>{
+    const isFrozen=frozen.includes(r.k);
+    const isBest=(r.k==='wW'&&b.policy.w==='W')||(r.k==='xE'&&b.policy.x&&b.policy.x.includes('E'));
+    return `<div class="tq-row"><span class="${isFrozen?'tq-frozen':isBest?'tq-best':''}${isFrozen?' tq-frozen':''}">${r.lbl}</span><span class="${isFrozen?'tq-frozen':isBest?'tq-best':''}" style="font-weight:500">${r.v>=0?'+':''}${r.v}</span></div>`;
+  }).join('');
+}
+
+/* ====================================================
+   P4: ε-GREEDY CALCULATOR
+   ==================================================== */
+function updateEpsCalc(){
+  const eps=parseFloat(document.getElementById('epsSlider').value);
+  const nA=parseInt(document.getElementById('actSlider').value);
+  document.getElementById('epsVal').textContent=eps.toFixed(2);
+  document.getElementById('actVal').textContent=nA;
+  const pGreedy=1-eps+eps/nA;
+  const pNonGreedy=eps/nA;
+  const res=document.getElementById('epsResults');
+  res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;">Greedy action A*</div>
+    <div style="font-family:var(--font-m);font-size:18px;font-weight:700;color:#FFD166">${(pGreedy*100).toFixed(1)}%</div>
+    <div style="font-size:11px;color:var(--text3);">= 1−ε + ε/|A| = ${(1-eps).toFixed(2)} + ${(eps/nA).toFixed(4)}</div></div>
+    <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px;">Each non-greedy (${nA-1} others)</div>
+    <div style="font-family:var(--font-m);font-size:18px;font-weight:700;color:#00E5FF">${(pNonGreedy*100).toFixed(1)}%</div>
+    <div style="font-size:11px;color:var(--text3);">= ε/|A| = ${eps.toFixed(2)}/${nA}</div></div>
+  </div>`;
+  // Prob bar
+  const bar=document.getElementById('epsProbBar');
+  const total=pGreedy+(nA-1)*pNonGreedy;
+  bar.innerHTML=`<div style="font-size:11px;color:var(--text3);margin-bottom:5px;">Probability distribution across ${nA} actions:</div>`+
+  [pGreedy,...Array(nA-1).fill(pNonGreedy)].map((p,i)=>`<div class="eps-prob-row">
+    <div class="eps-prob-lbl">${i===0?'A* (greedy)':`a${i+1} (non-greedy)`}</div>
+    <div class="eps-prob-bar-inner"><div class="eps-prob-fill" style="width:${(p/1)*100}%;background:${i===0?'#FFD166':'#00E5FF'};"><span class="eps-prob-val">${(p*100).toFixed(1)}%</span></div></div>
+  </div>`).join('');
+  const sum=pGreedy+(nA-1)*pNonGreedy;
+  document.getElementById('epsSanity').innerHTML=`<span style="color:${Math.abs(sum-1)<0.001?'#69FF47':'var(--red)'}">Sum check: ${sum.toFixed(4)} ${Math.abs(sum-1)<0.001?'✅ Sums to 1':'❌ Error!'}</span>`;
+}
+
+/* ====================================================
+   P4: ALGORITHM STEP TRACER
+   ==================================================== */
+// Episode: S0=w, A0=E, R1=−1 → S1=x, A1=N, R2=0 → S2=y, A2=exit, R3=+10 → T
+// Backward: t=2,1,0. γ=0.9.
+// t=2: G = 0.9×0 + 10 = 10. First visit (y,exit)? Yes. Q(y,exit)←10. Update π(y).
+// t=1: G = 0.9×10 + 0 = 9.  First visit (x,N)? Yes. Q(x,N)←9. Update π(x).
+// t=0: G = 0.9×9 + (−1) = 7.1. First visit (w,E)? Yes. Q(w,E)←7.1. Update π(w).
+const ALG_STEPS_DATA=[
+  {title:'Initialize',body:'G = 0. Process episode backward from t = T−1 = 2 down to t = 0.',fml:'G ← 0'},
+  {title:'t=2: G ← γG + R₃',body:'G = 0.9 × 0 + 10 = 10. (S₂=y, A₂=exit, R₃=+10). First visit to (y, exit)? Yes → append G=10 to Returns(y,exit). Q(y,exit) ← 10.',fml:'G = 0.9×0 + 10 = 10 → Q(y,exit) = 10'},
+  {title:'t=2: Update π(y)',body:'A* = argmax Q(y,·). After update: π(exit|y) = 1−ε+ε/|A|. π is now ε-greedy toward exit from y.',fml:'π(exit|y) = 1−0.1+0.1/3 = 0.933'},
+  {title:'t=1: G ← γG + R₂',body:'G = 0.9 × 10 + 0 = 9. (S₁=x, A₁=N, R₂=0). First visit to (x, N)? Yes → append G=9. Q(x,N) ← 9.',fml:'G = 0.9×10 + 0 = 9 → Q(x,N) = 9'},
+  {title:'t=1: Update π(x)',body:'A* = argmax Q(x,·) = N (best we\'ve seen). π(N|x) = 0.933, others = 0.033.',fml:'π(N|x) = 0.933 (greedy toward treasure path)'},
+  {title:'t=0: G ← γG + R₁',body:'G = 0.9 × 9 + (−1) = 7.1. (S₀=w, A₀=E, R₁=−1). First visit to (w,E)? Yes → append G=7.1. Q(w,E) ← 7.1.',fml:'G = 0.9×9 − 1 = 7.1 → Q(w,E) = 7.1'},
+  {title:'t=0: Update π(w)',body:'A* = argmax Q(w,·) = E (Q=7.1 beats all others). Despite the −1 immediate reward, the path leads to +10 treasure! Policy now favors going East. This fixes the local optimum trap!',fml:'π(E|w) = 0.933 ← greedy toward treasure now!'},
+];
+let algIdx=0;
+function algReset(){
+  algIdx=0;
+  document.getElementById('algStepsTrack').innerHTML=ALG_STEPS_DATA.map((s,i)=>`<div class="alg-step-row" id="algs${i}">
+    <div class="alg-sn">${i+1}</div>
+    <div><div class="alg-step-title">${s.title}</div><div class="alg-step-body">${s.body}</div>${s.fml?`<div class="alg-step-fml">${s.fml}</div>`:''}</div>
+  </div>`).join('');
+  document.getElementById('algStateDisplay').innerHTML='<span style="color:var(--text3)">Step through the algorithm. Watch G accumulate backward and Q values update.</span>';
+  document.getElementById('algStepBtn').textContent='▶ Next Step';
+  document.getElementById('algStepBtn').disabled=false;
+}
+function algStep(){
+  if(algIdx>=ALG_STEPS_DATA.length){algReset();return;}
+  if(algIdx>0){const prev=document.getElementById('algs'+(algIdx-1));if(prev){prev.classList.remove('active');prev.classList.add('done');}}
+  const cur=document.getElementById('algs'+algIdx);if(cur) cur.classList.add('active');
+  if(algIdx===ALG_STEPS_DATA.length-1) document.getElementById('algStepBtn').textContent='↺ Restart';
+  algIdx++;
+}
+
+/* ====================================================
+   P4: GLIE
+   ==================================================== */
+let glieChart=null;
+function updateGLIE(){
+  const sch=document.getElementById('glieSchedule').value;
+  const labels=Array.from({length:100},(_,i)=>i+1);
+  let data,color,explain;
+  if(sch==='inv'){data=labels.map(t=>1/t);color='#69FF47';explain='εt = 1/t: GLIE ✅ — decays to 0 (greedy in limit) and Σεt = ∞ (infinite exploration). Every (s,a) visited infinitely often.';document.getElementById('glieLabel').textContent='1/t';}
+  else if(sch==='invlog'){data=labels.map(t=>1/Math.log(t+1));color='#00E5FF';explain='εt = 1/log(t): Also GLIE ✅ — decays slower, more exploration in early steps. Still → 0 as t → ∞.';document.getElementById('glieLabel').textContent='1/log(t)';}
+  else{data=labels.map(()=>0.1);color='#F76F6F';explain='εt = 0.1 (fixed): NOT GLIE ❌ — never decays to 0. Policy remains permanently slightly random, never converges to truly optimal π*.';document.getElementById('glieLabel').textContent='0.1 (fixed)';}
+  if(glieChart){glieChart.data.labels=labels;glieChart.data.datasets[0].data=data;glieChart.data.datasets[0].borderColor=color;glieChart.data.datasets[0].backgroundColor=color+'20';glieChart.update();}
+  document.getElementById('glieExplain').innerHTML=explain;
+}
+function initGLIEChart(){
+  const ctx=document.getElementById('glieChart');
+  if(!ctx)return;
+  glieChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:[],datasets:[{label:'ε_t',data:[],borderColor:'#69FF47',backgroundColor:'rgba(105,255,71,0.1)',borderWidth:2,pointRadius:0,fill:true,tension:0.3}]},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:200},plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Episode t',color:'#4A5480',font:{size:10}},ticks:{color:'#4A5480',font:{size:9},maxTicksLimit:10},grid:{color:'rgba(30,38,64,0.8)'}},y:{title:{display:true,text:'ε value',color:'#4A5480',font:{size:10}},ticks:{color:'#4A5480',font:{size:9}},grid:{color:'rgba(30,38,64,0.8)'}}}}
+  });
+  updateGLIE();
+}
+
+/* ====================================================
+   P4: EXAM TRACE
+   ==================================================== */
+// Episode: S0=w,A0=right,R1=0 → S1=x,A1=exit,R2=+10 → Terminal. γ=0.9,ε=0.1,|A|=3
+// t=1: G=0.9×0+10=10. Q(x,exit)←10. A*=exit. π(exit|x)=1-0.1+0.1/3=0.933
+// t=0: G=0.9×10+0=9. Q(w,right)←9. A*=right. π(right|w)=0.933
+const ET_STEPS=[
+  {title:'Set G = 0',body:'Starting from terminal. G = 0. Process t = T−1 = 1 down to 0.'},
+  {title:'t = 1: G ← γG + R₂ = 0.9×0 + 10 = 10',body:'(S₁=x, A₁=exit, R₂=+10). First visit to (x, exit)? Yes. Append 10 to Returns(x,exit). Q(x,exit) ← 10.'},
+  {title:'t = 1: Update π(x) — ε-greedy improvement',body:'A* = argmax_a Q(x,a) = exit (Q=10). π(exit|x) = 1−0.1+0.1/3 = 0.933. π(others|x) = 0.1/3 = 0.033.'},
+  {title:'t = 0: G ← γG + R₁ = 0.9×10 + 0 = 9',body:'(S₀=w, A₀=right, R₁=0). First visit to (w, right)? Yes. Append 9 to Returns(w,right). Q(w,right) ← 9.'},
+  {title:'t = 0: Update π(w) — ε-greedy improvement',body:'A* = argmax_a Q(w,a) = right (Q=9). π(right|w) = 0.933. π(others|w) = 0.033.'},
+  {title:'Episode complete — Final Q & π',body:'Q(x,exit)=10, Q(w,right)=9. Policy now strongly favors right→exit path. This is one episode of on-policy first-visit ε-soft MC control.'},
+];
+let etIdx=0;
+function examTraceReset(){
+  etIdx=0;
+  document.getElementById('examTraceSteps').innerHTML=ET_STEPS.map((s,i)=>`<div class="et-row" id="et${i}"><div class="et-title">${s.title}</div><div class="et-body">${s.body}</div></div>`).join('');
+  document.getElementById('examTraceBtnNext').textContent='▶ Step 1: Set G=0';
+  document.getElementById('examTraceBtnNext').disabled=false;
+}
+function examTraceStep(){
+  if(etIdx>=ET_STEPS.length){examTraceReset();return;}
+  if(etIdx>0){const p=document.getElementById('et'+(etIdx-1));if(p){p.classList.remove('active');p.classList.add('done');}}
+  const c=document.getElementById('et'+etIdx);if(c)c.classList.add('active');
+  etIdx++;
+  if(etIdx<ET_STEPS.length) document.getElementById('examTraceBtnNext').textContent=`▶ Step ${etIdx+1}: ${ET_STEPS[etIdx].title.split(' ')[0]}...`;
+  else document.getElementById('examTraceBtnNext').textContent='↺ Restart';
+}
+
+/* ====================================================
+   BOOT
+   ==================================================== */
+document.addEventListener('DOMContentLoaded',()=>{
+  updateSampling(20);
+  buildCmpTable();
+  drawDPBackup();
+  drawMCBackup();
+  fvReset();
+  initAccChart();
+  buildAEQuiz();
+  renderQTB();
+  trapReset();
+  updateEpsCalc();
+  algReset();
+  initGLIEChart();
+  examTraceReset();
+});
+</script>
+</body>
+</html>
