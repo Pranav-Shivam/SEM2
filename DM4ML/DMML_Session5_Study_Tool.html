@@ -1,0 +1,3132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMML Session 5 — Modern Data Infrastructure & DataOps</title>
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-main: #0f1117;
+  --bg-card: #1a1d27;
+  --bg-sidebar: #13151f;
+  --bg-hover: #1e2235;
+  --border: #2a2d3e;
+  --text-primary: #e8eaf0;
+  --text-secondary: #9ba3c0;
+  --text-muted: #5a6078;
+  --purple: #9b59b6;
+  --purple-light: #c39bd3;
+  --purple-dim: #2d1f38;
+  --teal: #1abc9c;
+  --teal-light: #76d7c4;
+  --teal-dim: #0d2b24;
+  --amber: #f39c12;
+  --amber-light: #f8c471;
+  --amber-dim: #2d1f00;
+  --sky: #3498db;
+  --sky-light: #85c1e9;
+  --sky-dim: #0d1f2b;
+  --orange: #e67e22;
+  --orange-light: #f0b27a;
+  --orange-dim: #2d1500;
+  --red: #e74c3c;
+  --green: #2ecc71;
+  --coral: #ff6b6b;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.65;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+#sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 260px;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s;
+}
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-track { background: var(--bg-sidebar); }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.sidebar-header {
+  padding: 18px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-main);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.sidebar-header h2 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--purple-light);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+.sidebar-header p {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Progress bar */
+.progress-wrap {
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.progress-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+.progress-bar-bg {
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--teal));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* Mode tabs */
+.mode-tabs {
+  display: flex;
+  padding: 8px 10px;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.mode-tab {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  user-select: none;
+}
+.mode-tab.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+.mode-tab:hover:not(.active) { background: var(--bg-hover); color: var(--text-primary); }
+
+/* Nav items */
+.nav-section-label {
+  padding: 10px 16px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+}
+.nav-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13px;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+.nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-item.active { border-left-color: var(--purple); background: var(--purple-dim); color: var(--purple-light); }
+.nav-item.visited .nav-dot { background: var(--teal); }
+.nav-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+/* ===== MAIN CONTENT ===== */
+#main {
+  margin-left: 260px;
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mode-panel { display: none; }
+.mode-panel.active { display: block; }
+
+/* ===== STUDY MODE ===== */
+#study-mode { padding: 0; }
+
+.topic-section {
+  display: none;
+  padding: 32px 40px 60px;
+  max-width: 900px;
+}
+.topic-section.active { display: block; }
+
+.topic-section h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.topic-section .subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.topic-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 28px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topic-section h2::before {
+  content: '';
+  display: inline-block;
+  width: 4px; height: 18px;
+  background: var(--purple);
+  border-radius: 2px;
+}
+.topic-section h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--purple-light);
+  margin: 20px 0 8px;
+}
+.topic-section p {
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.topic-section ul, .topic-section ol {
+  padding-left: 20px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.topic-section li { margin-bottom: 6px; }
+.topic-section strong { color: var(--text-primary); }
+.topic-section code {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 13px;
+  color: var(--teal-light);
+}
+pre {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 16px 0;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--teal-light);
+}
+
+/* ===== CALLOUT BOXES ===== */
+.callout {
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 16px 0;
+  border-left: 4px solid;
+  position: relative;
+}
+.callout-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.callout p, .callout li { margin-bottom: 6px; }
+.callout p:last-child, .callout li:last-child { margin-bottom: 0; }
+
+.callout-def { background: var(--purple-dim); border-color: var(--purple); }
+.callout-def .callout-label { color: var(--purple-light); }
+.callout-def p, .callout-def li { color: #c0a8d8; }
+
+.callout-insight { background: var(--teal-dim); border-color: var(--teal); }
+.callout-insight .callout-label { color: var(--teal-light); }
+.callout-insight p, .callout-insight li { color: #8bd5c8; }
+
+.callout-exam { background: var(--amber-dim); border-color: var(--amber); }
+.callout-exam .callout-label { color: var(--amber-light); }
+.callout-exam p, .callout-exam li { color: #e8c77a; }
+
+.callout-research { background: var(--sky-dim); border-color: var(--sky); }
+.callout-research .callout-label { color: var(--sky-light); }
+.callout-research p, .callout-research li { color: #7bbde0; }
+
+.callout-warn { background: var(--orange-dim); border-color: var(--orange); }
+.callout-warn .callout-label { color: var(--orange-light); }
+.callout-warn p, .callout-warn li { color: #e8a87c; }
+
+/* ===== COMPARISON TABLE ===== */
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+}
+.comp-table th {
+  background: var(--bg-card);
+  color: var(--purple-light);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--purple);
+  font-weight: 600;
+}
+.comp-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+.comp-table tr:hover td { background: var(--bg-hover); }
+.comp-table tr:last-child td { border-bottom: none; }
+
+/* ===== EXPANDABLE CARDS ===== */
+.expand-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+.expand-header {
+  padding: 12px 16px;
+  background: var(--bg-card);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+  user-select: none;
+  transition: background 0.15s;
+}
+.expand-header:hover { background: var(--bg-hover); }
+.expand-arrow {
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.expand-header.open .expand-arrow { transform: rotate(180deg); }
+.expand-body {
+  display: none;
+  padding: 14px 18px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.expand-body.open { display: block; }
+.expand-body p { margin-bottom: 8px; }
+.expand-body ul { padding-left: 18px; }
+.expand-body li { margin-bottom: 5px; }
+
+/* ===== FLOW DIAGRAM ===== */
+.flow-diagram {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.flow-box {
+  background: var(--purple-dim);
+  border: 1px solid var(--purple);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--purple-light);
+  text-align: center;
+}
+.flow-box.teal {
+  background: var(--teal-dim);
+  border-color: var(--teal);
+  color: var(--teal-light);
+}
+.flow-box.amber {
+  background: var(--amber-dim);
+  border-color: var(--amber);
+  color: var(--amber-light);
+}
+.flow-box.sky {
+  background: var(--sky-dim);
+  border-color: var(--sky);
+  color: var(--sky-light);
+}
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* ===== TABS ===== */
+.tab-container { margin: 16px 0; }
+.tab-buttons {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+}
+.tab-btn {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+  user-select: none;
+}
+.tab-btn.active { color: var(--purple-light); border-bottom-color: var(--purple); }
+.tab-btn:hover:not(.active) { color: var(--text-secondary); }
+.tab-content { display: none; padding: 16px 0; }
+.tab-content.active { display: block; }
+
+/* ===== PERF BARS ===== */
+.perf-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 7px 0;
+}
+.perf-bar-label {
+  width: 120px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  text-align: right;
+}
+.perf-bar-bg {
+  flex: 1;
+  height: 18px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.perf-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bg-main);
+  transition: width 1.2s ease;
+}
+
+/* ===== QUIZ MODE ===== */
+#quiz-mode { padding: 32px 40px; max-width: 820px; }
+.quiz-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.quiz-header h1 { font-size: 22px; }
+#quiz-dots { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 20px; }
+.qdot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.qdot.correct { background: var(--green); }
+.qdot.wrong { background: var(--red); }
+
+.quiz-progress {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.quiz-q {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.quiz-opt {
+  padding: 13px 18px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: all 0.15s;
+  user-select: none;
+}
+.quiz-opt:hover:not(.answered) { border-color: var(--purple); color: var(--text-primary); background: var(--bg-hover); }
+.quiz-opt.correct { border-color: var(--green); background: rgba(46,204,113,0.1); color: #7ddf9b; }
+.quiz-opt.wrong { border-color: var(--red); background: rgba(231,76,60,0.1); color: #f08080; }
+.quiz-opt.answered { cursor: default; }
+
+.quiz-explanation {
+  display: none;
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.quiz-explanation.show { display: block; }
+.quiz-explanation strong { color: var(--text-primary); }
+
+.quiz-btn {
+  padding: 10px 24px;
+  border-radius: 7px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.quiz-btn-primary { background: var(--purple); color: #fff; }
+.quiz-btn-primary:hover { background: #8e44ad; }
+.quiz-btn-secondary {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  margin-right: 10px;
+}
+.quiz-btn-secondary:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+#quiz-score-screen {
+  display: none;
+  text-align: center;
+  padding: 40px 0;
+}
+.score-circle {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 6px solid var(--purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--purple-light);
+  margin: 0 auto 20px;
+}
+#score-msg { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+#score-sub { color: var(--text-secondary); margin-bottom: 30px; }
+
+/* ===== FLASHCARD MODE ===== */
+#flashcard-mode { padding: 32px 40px; max-width: 780px; }
+.flashcard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.flashcard-header h1 { font-size: 22px; }
+.fc-counter { font-size: 13px; color: var(--text-muted); }
+.fc-rating-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+.fc-rating-summary span { color: var(--text-muted); }
+.fc-rating-summary .easy-c { color: var(--green); font-weight: 600; }
+.fc-rating-summary .good-c { color: var(--amber); font-weight: 600; }
+.fc-rating-summary .hard-c { color: var(--red); font-weight: 600; }
+
+.flashcard-wrap {
+  perspective: 1200px;
+  margin: 0 auto 24px;
+  height: 260px;
+  cursor: pointer;
+}
+.flashcard {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  width: 100%; height: 100%;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-front {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+}
+.card-front .card-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+.card-front .card-q {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+.card-back {
+  background: var(--purple-dim);
+  border: 2px solid var(--purple);
+  transform: rotateY(180deg);
+}
+.card-back .card-a-label {
+  font-size: 11px;
+  color: var(--purple-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.card-back .card-a {
+  font-size: 14px;
+  color: #c8aad8;
+  line-height: 1.6;
+}
+
+.fc-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.fc-btn {
+  padding: 9px 20px;
+  border-radius: 7px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fc-btn-hard { background: rgba(231,76,60,0.15); color: #ff8080; border: 1px solid rgba(231,76,60,0.4); }
+.fc-btn-good { background: rgba(243,156,18,0.15); color: var(--amber-light); border: 1px solid rgba(243,156,18,0.4); }
+.fc-btn-easy { background: rgba(46,204,113,0.15); color: #7ddf9b; border: 1px solid rgba(46,204,113,0.4); }
+.fc-btn-nav { background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border); }
+.fc-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.fc-nav { display: flex; align-items: center; gap: 12px; justify-content: center; }
+.fc-nav-counter { font-size: 13px; color: var(--text-muted); }
+.fc-complete-msg {
+  display: none;
+  text-align: center;
+  padding: 30px;
+  color: var(--teal);
+  font-size: 18px;
+}
+
+/* ===== GLOSSARY PAGE ===== */
+#glossary-mode { padding: 32px 40px; max-width: 900px; }
+#glossary-mode h1 { font-size: 22px; margin-bottom: 8px; }
+#glossary-mode p { color: var(--text-secondary); margin-bottom: 20px; }
+#glossary-search {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-primary);
+  font-size: 14px;
+  margin-bottom: 18px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+#glossary-search:focus { border-color: var(--purple); }
+.glossary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.glossary-table th {
+  background: var(--bg-card);
+  color: var(--purple-light);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--purple);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+.glossary-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+.glossary-table tr:hover td { background: var(--bg-hover); }
+.glossary-table .abbr-col { color: var(--teal-light); font-weight: 600; font-family: monospace; }
+.glossary-table .full-col { color: var(--text-primary); font-weight: 500; }
+.glossary-row.hidden { display: none; }
+
+/* ===== CHECKLIST PAGE ===== */
+#checklist-mode { padding: 32px 40px; max-width: 820px; }
+#checklist-mode h1 { font-size: 22px; margin-bottom: 8px; }
+.checklist-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.checklist-stat { text-align: center; }
+.checklist-stat-val { font-size: 22px; font-weight: 700; color: var(--purple-light); }
+.checklist-stat-lbl { font-size: 11px; color: var(--text-muted); }
+.checklist-reset {
+  padding: 8px 16px;
+  background: var(--orange-dim);
+  color: var(--orange-light);
+  border: 1px solid var(--orange);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.checklist-reset:hover { background: rgba(230,126,34,0.3); }
+.checklist-group { margin-bottom: 24px; }
+.checklist-group-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 0 0 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.checklist-item:hover { background: var(--bg-hover); padding-left: 6px; border-radius: 6px; }
+.checklist-item input[type="checkbox"] {
+  margin-top: 2px;
+  width: 16px; height: 16px;
+  accent-color: var(--purple);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.checklist-item label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1.5;
+}
+.checklist-item.checked label {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+.checklist-item.checked { opacity: 0.7; }
+
+/* ===== MOBILE MENU ===== */
+#menu-toggle {
+  display: none;
+  position: fixed;
+  top: 12px; left: 12px;
+  z-index: 200;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  #sidebar { transform: translateX(-100%); }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-overlay.open { display: block; }
+  #main { margin-left: 0; }
+  #menu-toggle { display: block; }
+  .topic-section, #quiz-mode, #flashcard-mode, #glossary-mode, #checklist-mode { padding: 60px 16px 40px; }
+}
+
+/* Utilities */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.badge-new { background: var(--teal-dim); color: var(--teal-light); }
+.highlight { background: rgba(155,89,182,0.2); padding: 0 4px; border-radius: 3px; }
+.divider { height: 1px; background: var(--border); margin: 24px 0; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+@media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <h2>DMML · Session 5</h2>
+    <p>Modern Data Infrastructure &amp; DataOps</p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Study Progress</span>
+      <span id="progress-text">0 / 16</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <div class="mode-tabs">
+    <div class="mode-tab active" onclick="switchMode('study')">📚 Study</div>
+    <div class="mode-tab" onclick="switchMode('quiz')">🧠 Quiz</div>
+    <div class="mode-tab" onclick="switchMode('flashcard')">🃏 Cards</div>
+  </div>
+
+  <div id="study-nav">
+    <div class="nav-section-label">Introduction</div>
+    <div class="nav-item active" onclick="showTopic('overview')" data-topic="overview">
+      <span class="nav-dot"></span> Overview &amp; Pipeline Intro
+    </div>
+
+    <div class="nav-section-label">Data Ingestion</div>
+    <div class="nav-item" onclick="showTopic('ingestion')" data-topic="ingestion">
+      <span class="nav-dot"></span> Data Ingestion &amp; ETL/ELT
+    </div>
+    <div class="nav-item" onclick="showTopic('reversetl')" data-topic="reversetl">
+      <span class="nav-dot"></span> Reverse ETL
+    </div>
+    <div class="nav-item" onclick="showTopic('transformation')" data-topic="transformation">
+      <span class="nav-dot"></span> Transformation &amp; Modeling
+    </div>
+
+    <div class="nav-section-label">Storage</div>
+    <div class="nav-item" onclick="showTopic('storage-types')" data-topic="storage-types">
+      <span class="nav-dot"></span> Storage Types
+    </div>
+    <div class="nav-item" onclick="showTopic('storage-systems')" data-topic="storage-systems">
+      <span class="nav-dot"></span> Storage Systems &amp; HDFS
+    </div>
+    <div class="nav-item" onclick="showTopic('cache')" data-topic="cache">
+      <span class="nav-dot"></span> Caching &amp; Redis
+    </div>
+
+    <div class="nav-section-label">Architecture</div>
+    <div class="nav-item" onclick="showTopic('orchestration')" data-topic="orchestration">
+      <span class="nav-dot"></span> Orchestration
+    </div>
+    <div class="nav-item" onclick="showTopic('dataops')" data-topic="dataops">
+      <span class="nav-dot"></span> DataOps &amp; DevOps
+    </div>
+
+    <div class="nav-section-label">Tools &amp; Extras</div>
+    <div class="nav-item" onclick="showTopic('modern-stack')" data-topic="modern-stack">
+      <span class="nav-dot"></span> Modern Data Stack
+    </div>
+
+    <div class="nav-section-label">Serving &amp; ML</div>
+    <div class="nav-item" onclick="showTopic('serving')" data-topic="serving">
+      <span class="nav-dot"></span> Data Serving &amp; Analytics
+    </div>
+    <div class="nav-item" onclick="showTopic('ml-stack')" data-topic="ml-stack">
+      <span class="nav-dot"></span> ML Infrastructure Stack
+    </div>
+
+    <div class="nav-section-label">Infrastructure &amp; Ops</div>
+    <div class="nav-item" onclick="showTopic('automation')" data-topic="automation">
+      <span class="nav-dot"></span> Automation &amp; IaC
+    </div>
+    <div class="nav-item" onclick="showTopic('cloud-security')" data-topic="cloud-security">
+      <span class="nav-dot"></span> Cloud &amp; Security Foundation
+    </div>
+    <div class="nav-item" onclick="showTopic('ctcd')" data-topic="ctcd">
+      <span class="nav-dot"></span> CT/CD Pipelines
+    </div>
+    <div class="nav-item" onclick="showTopic('casestudy')" data-topic="casestudy">
+      <span class="nav-dot"></span> 🏢 Case Study: DoorDash
+    </div>
+
+    <div class="nav-section-label" style="margin-top:8px;">Pages</div>
+    <div class="nav-item" onclick="switchMode('glossary')">
+      <span class="nav-dot" style="background:var(--teal)"></span> 📖 Glossary
+    </div>
+    <div class="nav-item" onclick="switchMode('checklist')">
+      <span class="nav-dot" style="background:var(--amber)"></span> ✅ Revision Checklist
+    </div>
+  </div>
+
+  <div id="quiz-nav" style="display:none;padding:12px 16px;">
+    <p style="font-size:13px;color:var(--text-muted);">30 questions covering all topics. Complete your session to see your score.</p>
+  </div>
+  <div id="fc-nav" style="display:none;padding:12px 16px;">
+    <p style="font-size:13px;color:var(--text-muted);">38 flashcards. Flip to reveal the answer, then self-rate each card.</p>
+  </div>
+</nav>
+<!-- MAIN CONTENT AREA -->
+<div id="main">
+
+<!-- ===== STUDY MODE ===== -->
+<div id="study-mode" class="mode-panel active">
+
+<!-- TOPIC: OVERVIEW -->
+<div id="topic-overview" class="topic-section active">
+  <h1>Modern Data Infrastructure — Overview</h1>
+  <p class="subtitle">Session 5 · Prof. Sunil Bhutada · The foundational pipeline: Source → Ingest → Transform → Serve</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Core Definition</div>
+    <p><strong>Modern Data Infrastructure</strong> is a layered, interoperable stack of specialised tools that automates the movement, transformation, and serving of data — from raw source systems to analytics, ML models, and downstream applications. It replaces brittle, hand-coded scripts with managed, observable, reproducible pipelines.</p>
+  </div>
+
+  <h2>The Data Pipeline Architecture</h2>
+  <p>Every data system can be reduced to three primitives: <strong>input → process → output</strong>. In data engineering this expands to a five-layer stack:</p>
+
+  <div class="flow-diagram">
+    <div class="flow-box">📡 Sources<br><small>DBs, APIs, Files</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box teal">⬇ Ingestion<br><small>ETL / ELT</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box amber">🔄 Transform<br><small>SQL, dbt, Spark</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box sky">💾 Storage<br><small>Lake / Warehouse</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box">📊 Serving<br><small>ML / BI / Apps</small></div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Real-World Connection</div>
+    <p>A modern e-commerce company like Flipkart has hundreds of such pipelines running simultaneously: clickstream → Kafka → Spark → Redshift → recommendation engine. Each pipeline runs on a schedule orchestrated by Apache Airflow.</p>
+  </div>
+
+  <h2>Three Axes of Categorisation</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">
+      1 · By Centralisation <span class="expand-arrow">▼</span>
+    </div>
+    <div class="expand-body">
+      <p><strong>Centralised</strong> — Single repository (data warehouse). Easy governance, single source of truth. Risk: bottleneck at scale.</p>
+      <p><strong>Decentralised</strong> — Each business unit owns its data. Agile but risks silos and inconsistent definitions.</p>
+      <p><strong>Hybrid</strong> — Shared master data centrally, domain-specific data locally. Most common in large enterprises.</p>
+      <p><strong>Federated</strong> — Multi-party data sharing with each party retaining sovereignty. Common in research consortia and healthcare networks.</p>
+    </div>
+  </div>
+
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">
+      2 · By Storage Paradigm <span class="expand-arrow">▼</span>
+    </div>
+    <div class="expand-body">
+      <ul>
+        <li><strong>Data Warehouse</strong> — Structured, cleaned OLAP; Star/Snowflake schema; schema-on-write</li>
+        <li><strong>Data Lake</strong> — Raw, all formats; schema-on-read; ELT pattern; cheap object storage</li>
+        <li><strong>Data Lakehouse</strong> — Lake + ACID transactions + governance (Delta Lake, Iceberg, Hudi)</li>
+        <li><strong>Data Mart</strong> — Filtered subset of a warehouse for one department</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">
+      3 · By Governance Model <span class="expand-arrow">▼</span>
+    </div>
+    <div class="expand-body">
+      <p><strong>Data Mesh</strong> — Domain ownership + data as product + self-serve platform + federated governance. Introduced by Zhamak Dehghani (2019).</p>
+      <p><strong>Data Fabric</strong> — Unified virtualisation layer across heterogeneous sources. Integrates lakes, warehouses, SaaS via CDC and APIs without moving data.</p>
+    </div>
+  </div>
+
+  <h2>Key Drivers of Modernisation</h2>
+  <p>The professor highlighted three major forces in the past two decades:</p>
+  <ul>
+    <li><strong>Rise of major public cloud providers</strong> — AWS, GCP, Azure made it easy to deploy and scale without owning hardware</li>
+    <li><strong>Columnar databases at scale</strong> — Redshift (2013), BigQuery (2010), Snowflake (2012) enabled cheap analytical queries on petabytes</li>
+    <li><strong>Drop in storage costs</strong> — S3 costs ~$0.023/GB/month; archival tiers as low as $0.004/GB/month (Glacier Deep Archive)</li>
+  </ul>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor explicitly said the pipeline architecture is: Sources → Ingestion → Transformation → Serving → (Data Analytics / ML). Know this flow and be able to label <strong>Reverse ETL</strong> as the backward direction from Warehouse → Apps.</p>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Gartner 2024</div>
+    <p>According to Gartner's 2024 Data Management survey, 72% of enterprises now run a hybrid data architecture (both a cloud data warehouse AND a data lake). The trend toward Data Lakehouses is accelerating — Databricks reported 9,000+ organisations using Delta Lake by end of 2024.</p>
+  </div>
+</div>
+
+<!-- TOPIC: INGESTION -->
+<div id="topic-ingestion" class="topic-section">
+  <h1>Data Ingestion &amp; ETL/ELT</h1>
+  <p class="subtitle">Getting data in — the interface, format, and tooling choices that matter most</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <p><strong>Data Ingestion</strong> is the process of obtaining and importing data into a system for immediate use or storage. The data engineer's first question is always <em>how</em> to get the data — not who owns it. The interface and format matter more than the source.</p>
+  </div>
+
+  <h2>Interface Options</h2>
+  <p>The professor covered six types of interfaces through which data can be obtained:</p>
+
+  <div class="two-col">
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">Database Connection <span class="expand-arrow">▼</span></div>
+      <div class="expand-body"><p>Direct JDBC/ODBC connection to PostgreSQL, MySQL, Oracle. Read with SQL queries. Suitable for relational, well-structured data. Requires network access and credentials.</p></div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">REST API <span class="expand-arrow">▼</span></div>
+      <div class="expand-body"><p>HTTP calls returning JSON or XML. Common for SaaS tools (Salesforce, HubSpot, Google Analytics). Requires handling pagination, rate limits, and auth tokens.</p></div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">Streaming Platform <span class="expand-arrow">▼</span></div>
+      <div class="expand-body"><p>Apache Kafka, AWS Kinesis, Google Pub/Sub. Continuous data flow. Requires a consumer group and offset management. Real-time use cases.</p></div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">File / Object Storage <span class="expand-arrow">▼</span></div>
+      <div class="expand-body"><p>CSV, JSON, Parquet files in S3 buckets, SFTP servers, or network shares. Batch processing. Very common for third-party data dumps.</p></div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">HDFS / HBase <span class="expand-arrow">▼</span></div>
+      <div class="expand-body"><p>Hadoop distributed file system or HBase NoSQL. Used when data already lives in an on-premise big data cluster.</p></div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">Data Warehouse / Lake <span class="expand-arrow">▼</span></div>
+      <div class="expand-body"><p>Reading from an existing Snowflake, Redshift, or BigQuery table — common when building a secondary pipeline or cross-team data sharing.</p></div>
+    </div>
+  </div>
+
+  <h2>Data Formats</h2>
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab(this, 'fmt-structured')">Structured</button>
+      <button class="tab-btn" onclick="switchTab(this, 'fmt-semi')">Semi-Structured</button>
+      <button class="tab-btn" onclick="switchTab(this, 'fmt-unstructured')">Unstructured</button>
+      <button class="tab-btn" onclick="switchTab(this, 'fmt-stream')">Streaming</button>
+    </div>
+    <div id="fmt-structured" class="tab-content active">
+      <p>SQL table rows with defined columns — <code>MySQL</code>, <code>PostgreSQL</code>, <code>Oracle</code>. Fixed schema. Easy to query with SQL. High veracity.</p>
+      <p>Also includes <strong>Fixed-Width Format (FWF)</strong> — older mainframe data with columns at fixed character positions. Common in banking and government.</p>
+    </div>
+    <div id="fmt-semi" class="tab-content">
+      <p><strong>JSON</strong> — default format from REST APIs. Nested, flexible, but verbose. Requires parsing.</p>
+      <p><strong>XML</strong> — older format used in SOAP services and enterprise systems (SAP, banking). More verbose than JSON.</p>
+      <p><strong>CSV</strong> — comma-separated values. Simple, widely supported. No schema enforcement — type inference required.</p>
+      <p><strong>Log files</strong> — structured text output from applications. Often require regex parsing.</p>
+    </div>
+    <div id="fmt-unstructured" class="tab-content">
+      <p>Images, audio, video, free text — no predefined schema. Require specialised tools (computer vision, NLP, ASR).</p>
+      <p>Memory aid: <strong>TAVI</strong> — Text, Audio, Video, Image — the four types of unstructured data.</p>
+    </div>
+    <div id="fmt-stream" class="tab-content">
+      <p>Apache Kafka stream output — records with key, value, topic, partition, offset, timestamp. Consumed by stream processors (Flink, Spark Streaming).</p>
+      <p>The professor noted Kafka supports <strong>long data retention</strong>, enabling historical replay — the foundation of Kappa architecture.</p>
+    </div>
+  </div>
+
+  <h2>ETL vs. ELT — The Pattern Shift</h2>
+  <table class="comp-table">
+    <thead><tr><th>Aspect</th><th>ETL (Classic)</th><th>ELT (Modern)</th></tr></thead>
+    <tbody>
+      <tr><td>Full form</td><td>Extract → Transform → Load</td><td>Extract → Load → Transform</td></tr>
+      <tr><td>Where transform?</td><td>Separate ETL server / staging area</td><td>Inside the data warehouse</td></tr>
+      <tr><td>Raw data preserved?</td><td>No — only transformed data loaded</td><td>Yes — raw data always available</td></tr>
+      <tr><td>Best for</td><td>Legacy row-based warehouses</td><td>Cloud columnar warehouses (Snowflake, BigQuery)</td></tr>
+      <tr><td>Tools</td><td>Informatica, Talend, SSIS</td><td>Fivetran, Airbyte + dbt</td></tr>
+      <tr><td>Pattern</td><td>Schema-on-write</td><td>Schema-on-read then enforce</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Real-World Connection</div>
+    <p>The professor's example: An e-commerce company stores shopping cart data in PostgreSQL (their web app DB) and also uses Google Analytics for website tracking. Combining both sources requires ingestion from two different interfaces — direct DB connection (PostgreSQL) and API call (GA4 API) — which is a typical day-1 challenge for a data engineer joining an e-commerce company.</p>
+  </div>
+
+  <h2>Commercial vs. Open-Source Ingestion Tools</h2>
+  <div class="two-col">
+    <div>
+      <h3>Commercial</h3>
+      <ul>
+        <li><strong>Fivetran</strong> — fully managed, 500+ connectors, no-code</li>
+        <li><strong>Stitch</strong> — developer-first, acquired by Talend</li>
+        <li><strong>Informatica</strong> — enterprise ETL market leader for 30 years</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Open Source</h3>
+      <ul>
+        <li><strong>Singer</strong> — lightweight tap/target framework</li>
+        <li><strong>Airbyte</strong> — 300+ connectors, self-hosted option</li>
+        <li><strong>Apache Sqoop</strong> — RDBMS ↔ Hadoop bulk transfer</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor said the data engineer is NOT concerned about <em>who owns</em> the source data. The priority is: (1) What interface? (2) What format? These are the two key parameters for any new ingestion pipeline.</p>
+  </div>
+</div>
+
+<!-- TOPIC: REVERSE ETL -->
+<div id="topic-reversetl" class="topic-section">
+  <h1>Reverse ETL</h1>
+  <p class="subtitle">When the warehouse talks back — pushing clean data back into business tools</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <p><strong>Reverse ETL</strong> is the process of moving cleaned, modelled data OUT of a data warehouse (Snowflake, BigQuery) BACK INTO operational business tools — Salesforce, HubSpot, Zendesk, Slack — so that sales, marketing, and support teams can act on warehouse-quality data inside the tools they already use.</p>
+  </div>
+
+  <h2>ETL vs. Reverse ETL — Direction</h2>
+  <div class="flow-diagram">
+    <div class="flow-box teal">Apps / Sources</div>
+    <div class="flow-arrow">→ ETL →</div>
+    <div class="flow-box">Warehouse</div>
+    <div class="flow-arrow">← Reverse ETL ←</div>
+    <div class="flow-box teal">Business Tools</div>
+  </div>
+
+  <p style="margin-top:12px;">The professor used a software engineering analogy: <strong>Forward Engineering</strong> goes from requirements → code. <strong>Reverse Engineering</strong> goes from code → back to requirements. Similarly, ETL = apps → warehouse; Reverse ETL = warehouse → back to apps.</p>
+
+  <h2>Who Uses Each?</h2>
+  <table class="comp-table">
+    <thead><tr><th>Direction</th><th>Primary Users</th><th>Purpose</th><th>Example Tool</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ETL</strong> (forward)</td><td>Data Analysts, Data Scientists</td><td>Build analytical datasets and ML models</td><td>Fivetran, Airbyte</td></tr>
+      <tr><td><strong>Reverse ETL</strong> (backward)</td><td>Sales, Marketing, Support</td><td>Activate warehouse data in tools they use daily</td><td>Census, Hightouch</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Use Case Examples</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Sales Team: Lead Scoring in Salesforce <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>A data engineer pulls customer data from a CRM, trains a lead-scoring ML model, and stores the scores in Snowflake. Without Reverse ETL, the sales team must use a separate dashboard. With Reverse ETL, the lead scores are pushed back into Salesforce — the SDR sees "Score: 87 / 100" directly on the contact record without ever opening Snowflake.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Marketing: Audience Segmentation in HubSpot <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Warehouse query identifies "users who purchased in the last 30 days, age 25–35, mobile users." This segment is pushed to HubSpot as a contact list → email campaign is triggered automatically. No CSV export required.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Ad Tech: Cost-Per-Click Optimisation <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>The professor's example: data from an ad-tech platform is ingested into the warehouse. Statistical models compute optimal cost-per-click (CPC) bids. These optimised bids are fed BACK to the ad-tech platform via Reverse ETL — closing the loop.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Census.io State of Reverse ETL 2024</div>
+    <p>Reverse ETL adoption grew 3× from 2022–2024. Top use cases: (1) CRM enrichment — 68% of teams, (2) Marketing personalisation — 54%, (3) Customer success alerting — 41%. Top tools in 2024: Census, Hightouch, and Polytomic.</p>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor taught this at the START of the session as a conceptual framing. It will appear in exams as: "What is Reverse ETL and how does it differ from ETL?" Answer: ETL = apps → warehouse; Reverse ETL = warehouse → apps. Users: ETL = analysts/engineers; Reverse ETL = sales/marketing/support.</p>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">⚠️ Common Mistake</div>
+    <p>Students often confuse Reverse ETL with data replication or backup. It is specifically about pushing <em>processed, modelled</em> data (not raw data) back into <em>operational tools</em> (not into another data store). The key word is "activation."</p>
+  </div>
+</div>
+
+<!-- TOPIC: TRANSFORMATION -->
+<div id="topic-transformation" class="topic-section">
+  <h1>Data Transformation &amp; Modeling</h1>
+  <p class="subtitle">Converting raw ingested data into analytics-ready and ML-ready formats</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <p><strong>Transformation</strong> is the "T" in ETL or ELT — the broad set of operations that convert raw source data into a target format optimised for analysis or ML. It ranges from simple time-zone conversion to complex multi-table aggregations with business logic filters.</p>
+    <p style="margin-top:8px;"><strong>Data Modeling</strong> is a more specific type of transformation that structures data into formats (like Star Schema) optimised for analytical queries. Data models are usually represented as tables in a data warehouse.</p>
+  </div>
+
+  <h2>Transformation: Simple vs. Complex</h2>
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab(this,'tx-simple')">Simple Transforms</button>
+      <button class="tab-btn" onclick="switchTab(this,'tx-complex')">Complex Transforms</button>
+      <button class="tab-btn" onclick="switchTab(this,'tx-pii')">PII Handling</button>
+    </div>
+    <div id="tx-simple" class="tab-content active">
+      <p><strong>Timezone conversion:</strong> Converting a timestamp stored as IST (Indian Standard Time) to CST (US Central Standard Time) for a global analytics report.</p>
+      <p><strong>Column renaming:</strong> <code>cust_id</code> → <code>customer_id</code> to match warehouse naming conventions.</p>
+      <p><strong>Type casting:</strong> Converting string <code>"2024-01-15"</code> to a proper <code>DATE</code> type.</p>
+      <p><strong>Null handling:</strong> Replacing NULLs with 0 or 'Unknown' based on business rules.</p>
+    </div>
+    <div id="tx-complex" class="tab-content">
+      <p><strong>Multi-table aggregation:</strong> JOINing five tables, applying CASE logic, GROUP BY with HAVING filters, and computing derived metrics.</p>
+      <p>Example: Computing "Customer Lifetime Value" requires joining orders, returns, discounts, and customer tables, then applying business-defined LTV formula.</p>
+      <p><strong>Sessionisation:</strong> Grouping raw clickstream events into "sessions" based on 30-minute inactivity windows — requires window functions and lag/lead operations.</p>
+    </div>
+    <div id="tx-pii" class="tab-content">
+      <p><strong>PII (Personally Identifiable Information)</strong> protection is a key concern. Transformations can include:</p>
+      <ul>
+        <li><strong>Hashing:</strong> <code>email@domain.com</code> → <code>SHA256 hash</code> — no one can reverse it</li>
+        <li><strong>Masking:</strong> <code>4532-xxxx-xxxx-7890</code> — show only last 4 digits</li>
+        <li><strong>Tokenisation:</strong> Replace with a random token that maps back only in a secure vault</li>
+      </ul>
+      <p>The professor noted basic ingestion tools provide SOME transformation capability, but for complex PII handling and business logic, dedicated tools like <strong>dbt</strong> are needed.</p>
+    </div>
+  </div>
+
+  <h2>dbt — The Transformation Tool</h2>
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Industry Tool: dbt (data build tool)</div>
+    <p>The professor mentioned <strong>dbt</strong> as "a wonderful tool" for transformations. In modern data stacks, dbt has become the standard for ELT transformations — you write SQL models, dbt compiles them into the right dialect, runs them in your warehouse, and manages dependencies between models. It also runs tests, generates documentation, and tracks data lineage.</p>
+    <p style="margin-top:8px;">2024 stat: dbt has 40,000+ active users and is used by Spotify, Airbnb, JetBlue, and most Fortune 500 data teams.</p>
+  </div>
+
+  <h2>Data Modeling — Star vs. Snowflake Schema</h2>
+  <table class="comp-table">
+    <thead><tr><th>Aspect</th><th>Star Schema</th><th>Snowflake Schema</th></tr></thead>
+    <tbody>
+      <tr><td>Structure</td><td>Fact table + denormalised dimension tables</td><td>Fact table + normalised (multi-level) dimensions</td></tr>
+      <tr><td>Joins needed</td><td>Simple — 1 level from fact to dimension</td><td>Complex — multiple levels through sub-dimensions</td></tr>
+      <tr><td>Storage</td><td>Higher (redundant data in dimensions)</td><td>Lower (normalised, no repetition)</td></tr>
+      <tr><td>Query speed</td><td>Faster (fewer joins)</td><td>Slower (more joins)</td></tr>
+      <tr><td>Maintenance</td><td>Simpler</td><td>More complex (cascading updates)</td></tr>
+      <tr><td>Best for</td><td>Most analytical / ML use cases</td><td>Huge dimension tables with deep hierarchies</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Snowflake Data Cloud Report 2024</div>
+    <p>88% of organisations using cloud data warehouses in 2024 report using Star Schema as their primary modeling pattern. Snowflake Schema is predominantly used in financial services where product hierarchies have 5+ levels (e.g., Fund → Asset Class → Sub-class → Geography → Security).</p>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>SQL and Python are the two standard languages for transformations. The professor also mentioned <strong>stored procedures</strong> and that data modeling specifically uses SQL "via a point-and-click user interface OR written SQL directly."</p>
+  </div>
+</div>
+
+<!-- TOPIC: STORAGE TYPES -->
+<div id="topic-storage-types" class="topic-section">
+  <h1>Storage Types: Block, Object &amp; File</h1>
+  <p class="subtitle">Three fundamental paradigms — how data sits on disk and how it's accessed</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Three Storage Paradigms</div>
+    <ul>
+      <li><strong>Block Storage</strong> — Splits data into fixed-size blocks with unique IDs; retrieved via specific protocols. No hierarchy.</li>
+      <li><strong>Object Storage</strong> — Stores data as self-contained objects with metadata and a unique key. No hierarchy. Immutable once written.</li>
+      <li><strong>File Storage</strong> — Saves data as files in hierarchical folders. Accessed via path. Traditional, most familiar.</li>
+    </ul>
+  </div>
+
+  <h2>Raw Ingredients of Storage</h2>
+  <p>The professor described a three-tier model of storage abstraction:</p>
+
+  <div class="flow-diagram">
+    <div class="flow-box sky">Tier 1: Storage Abstractions<br><small>Data Lake, Warehouse, Lakehouse</small></div>
+    <div class="flow-arrow" style="transform:rotate(90deg);margin:0 0 0 0;">↓</div>
+  </div>
+  <div class="flow-diagram" style="margin-top:0;">
+    <div class="flow-box teal">Tier 2: Storage Systems<br><small>HDFS, File Systems, Object Stores, Streaming</small></div>
+    <div class="flow-arrow" style="transform:rotate(90deg);">↓</div>
+  </div>
+  <div class="flow-diagram" style="margin-top:0;">
+    <div class="flow-box amber">Tier 3: Raw Ingredients<br><small>HDD, SSD, RAM, CPU, Networking, Serialisation, Compression</small></div>
+  </div>
+
+  <h2>HDD vs. SSD vs. RAM</h2>
+  <p><strong>Performance comparison (relative):</strong></p>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">HDD (Magnetic)</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:15%;background:var(--orange);">~120MB/s</div></div>
+  </div>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">SSD (NVMe)</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:55%;background:var(--teal);">~3,500MB/s</div></div>
+  </div>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">RAM (DDR5)</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:95%;background:var(--purple);">~50,000MB/s</div></div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Professor's Insight</div>
+    <p>The professor said: "People are not increasing RAMs anymore — instead, they purchase SSDs." The key reason: SSDs have no moving parts (no seek time), so data retrieval is faster AND quieter. The "faster and more beautiful" quote referred to the near-silence of SSD-based systems vs. the spinning noise of HDD arrays.</p>
+  </div>
+
+  <h2>Block Storage Deep Dive</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">RAID — Redundant Array of Independent Disks <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>An array of multiple disks that together appear as one block device to the OS. Provides redundancy (RAID 1/5/6) and/or performance (RAID 0/10) by distributing and replicating data across drives.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">SAN — Storage Area Network <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Virtualised block storage devices served over a dedicated high-speed network. Creates a pool of storage that can be assigned to servers as virtual disks. Common in on-premise enterprise data centres.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">AWS EBS — Elastic Block Store <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Cloud SAN equivalent for EC2. Stores data separate from the VM but in the same availability zone for low latency. Data persists when the EC2 instance stops. Automatically replicates to at least 2 host machines. Suitable for databases requiring high durability.</p>
+    </div>
+  </div>
+
+  <h2>Object Storage Deep Dive</h2>
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Key Properties of Object Storage</div>
+    <ul>
+      <li>Key-value store — each object has a unique key (like a URL)</li>
+      <li><strong>Immutable</strong> — cannot append or update in place; must rewrite the full object</li>
+      <li>Stores metadata alongside data (content-type, size, custom attributes)</li>
+      <li>No hierarchical directory structure (the "/" in S3 keys is just a naming convention)</li>
+      <li>Supports random reads via byte-range requests</li>
+      <li>Serverless — no cluster to manage; virtually unlimited scale</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: AWS S3 Documentation 2024</div>
+    <p>Amazon S3 stores more than <strong>300 trillion objects</strong> and regularly peaks at more than <strong>100 million requests per second</strong>. S3 Standard offers 99.999999999% (11 nines) durability. Data is stored across at least 3 Availability Zones. Cost: ~$0.023/GB/month for standard; $0.004/GB/month for Glacier Deep Archive.</p>
+  </div>
+
+  <h2>File Storage Deep Dive</h2>
+  <p>File storage uses a hierarchical tree of directories. Characteristics of a file:</p>
+  <ul>
+    <li>Finite length (stream of bytes)</li>
+    <li>Supports append operations</li>
+    <li>Supports random access reads/writes</li>
+    <li>Organised in a directory hierarchy (path-based access)</li>
+  </ul>
+  <p><strong>Types:</strong> Local Disk (NTFS on Windows, EXT4 on Linux), NAS (Network Attached Storage over LAN), Cloud File Systems (AWS EFS — Elastic File System for multi-VM shared access).</p>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor specifically asked the class this: "Which is faster — seeking two blocks on the same track vs. two blocks on separate tracks?" Answer: <strong>Same track = no seek time</strong>. Different tracks = requires a seek (head movement). This is why HDFS uses 128MB blocks — to maximise sequential reads and minimise seeks.</p>
+  </div>
+</div>
+
+<!-- TOPIC: STORAGE SYSTEMS & HDFS -->
+<div id="topic-storage-systems" class="topic-section">
+  <h1>Storage Systems &amp; HDFS</h1>
+  <p class="subtitle">Distributed vs. single machine, consistency models, and the Hadoop filesystem</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Key Concepts</div>
+    <p><strong>Distributed Storage</strong> — Data spread across multiple servers for redundancy, scalability, and fault tolerance. Examples: HDFS, S3, Apache Spark storage.</p>
+    <p style="margin-top:8px;"><strong>Consistency Models:</strong> <em>Strong consistency</em> — every read sees the latest write (guaranteed, but slower). <em>Eventual consistency</em> — reads will EVENTUALLY see the latest write (faster, but risk of stale reads).</p>
+  </div>
+
+  <h2>Single Machine vs. Distributed Storage</h2>
+  <p>The professor used a family analogy: "When you're single, a one-room house is enough. When your family grows, you need more space." Similarly, as data grows beyond one server's capacity, distributed storage is necessary.</p>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Why Distributed Storage?</div>
+    <ul>
+      <li><strong>Scale:</strong> Single servers max out (typically 256TB with NVMe). Petabyte-scale data requires dozens of nodes.</li>
+      <li><strong>Redundancy:</strong> If one server fails, data on other servers remains available.</li>
+      <li><strong>Performance:</strong> Parallel reads/writes across multiple nodes = higher throughput.</li>
+    </ul>
+  </div>
+
+  <h2>Strong vs. Eventual Consistency (Visualised)</h2>
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab(this,'cons-eventual')">Eventual Consistency</button>
+      <button class="tab-btn" onclick="switchTab(this,'cons-strong')">Strong Consistency</button>
+    </div>
+    <div id="cons-eventual" class="tab-content active">
+      <div class="flow-diagram">
+        <div class="flow-box sky">1. Client writes to Node 1</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box teal">2. Node 1 acknowledges</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box amber">3. Eventually replicates to Node 2</div>
+      </div>
+      <div class="callout callout-warn" style="margin-top:12px;">
+        <div class="callout-label">Risk</div>
+        <p>If Node 1 fails between step 2 and 3, the data is LOST. A read from Node 2 before step 3 returns stale data. This is the tradeoff: speed over correctness.</p>
+      </div>
+    </div>
+    <div id="cons-strong" class="tab-content">
+      <div class="flow-diagram">
+        <div class="flow-box sky">1. Client writes to Node 1</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box amber">2. Node 1 immediately replicates to Node 2</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box teal">3. Node 2 acknowledges to Node 1</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">4. Node 1 acknowledges to client</div>
+      </div>
+      <div class="callout callout-insight" style="margin-top:12px;">
+        <div class="callout-label">Guarantee</div>
+        <p>Every read always sees the latest write. Slower (extra round trips) but guaranteed data resilience. Used in banking transactions and ACID databases.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>HDFS Architecture</h2>
+  <div class="callout callout-def">
+    <div class="callout-label">📘 HDFS Core Components</div>
+    <ul>
+      <li><strong>NameNode (Master)</strong> — Stores metadata only: file-to-block mappings, directory tree, permissions. Lives in RAM for fast access. Does NOT store actual data. The "card catalogue."</li>
+      <li><strong>DataNodes (Slaves/Workers)</strong> — Store actual data blocks on local disk. Send heartbeats every 3 seconds. Send full block reports every hour.</li>
+      <li><strong>Secondary NameNode</strong> — NOT a backup/failover! Periodically merges the edit log with the FS image to prevent the edit log from growing too large. A "helper" node.</li>
+    </ul>
+  </div>
+
+  <div class="flow-diagram">
+    <div class="flow-box">Client requests file</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box teal">NameNode<br><small>Where are the blocks?</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box amber">DataNode 1, 3, 5<br><small>Actual data blocks</small></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-box sky">Client streams data</div>
+  </div>
+
+  <h2>HDFS Block Design</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Block Size: 128MB default — Why so large? <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Traditional filesystem blocks are 4KB. HDFS uses 128MB (configurable to 256MB) because:</p>
+      <ul>
+        <li>Big data workloads do sequential reads of huge files — large blocks reduce the number of seek operations</li>
+        <li>Fewer blocks = less metadata in the NameNode's RAM</li>
+        <li>Reduces overhead of establishing many small TCP connections to DataNodes</li>
+      </ul>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Replication Factor: 3 — How does failure recovery work? <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Each block is stored on 3 different DataNodes (ideally on different racks for rack-level fault tolerance).</p>
+      <p>When a DataNode goes silent (no heartbeat for ~10 minutes), the NameNode detects it and automatically triggers re-replication — finding nodes with only 2 copies and asking them to copy to a healthy 3rd node. This is transparent to the user.</p>
+      <p>Result: You can lose ~33% of your cluster and not lose any data. At 1,000 nodes with 3% annual failure rate (~30 failures/year), you'd have a node fail roughly every 12 days — HDFS handles all of them automatically.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Data Locality — The most important HDFS optimisation <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>When a MapReduce or Spark job processes a file, the scheduler TRIES to run the compute task on the SAME node that holds the data block. Moving computation to data is vastly cheaper than moving terabytes of data across the network to computation.</p>
+      <p>This is why Hadoop was designed as a "shared-nothing" architecture — each node has its own storage and compute, and they rarely need to talk to each other.</p>
+    </div>
+  </div>
+
+  <h2>Is Hadoop Dead?</h2>
+  <div class="callout callout-warn">
+    <div class="callout-label">⚠️ Common Misconception</div>
+    <p>The professor addressed this directly: "Claims that Hadoop is dead — this is partially true." The nuance:</p>
+    <ul>
+      <li><strong>Mostly dead:</strong> Apache Pig, pure MapReduce programming model — mostly legacy now</li>
+      <li><strong>Still widely used:</strong> HDFS is still the storage layer for many Spark clusters. Apache Spark is STILL commonly run on HDFS clusters.</li>
+      <li><strong>Also alive:</strong> Amazon EMR continues to run Hadoop/Hive/Spark workloads at massive scale</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Databricks State of Data + AI 2024</div>
+    <p>60% of cloud data workloads in 2024 still use HDFS-compatible APIs (e.g., S3 with HDFS interface via S3A connector). Apache Spark usage grew 30% YoY in 2024. Pure MapReduce is used by &lt;10% of new workloads but persists in 40% of legacy enterprise jobs.</p>
+  </div>
+</div>
+
+<!-- TOPIC: CACHE / REDIS -->
+<div id="topic-cache" class="topic-section">
+  <h1>Caching: RAM-Based Storage &amp; Redis</h1>
+  <p class="subtitle">Ultra-fast data access patterns — Memcached, Redis, and the cache hit/miss cycle</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <p><strong>Cache / Memory-Based Storage</strong> — Storage that uses RAM instead of disk for ultra-low-latency data access. RAM offers ~50,000 MB/s bandwidth vs. ~3,500 MB/s for SSD. The tradeoff: RAM is volatile (data lost on power-off) and expensive. Used to serve hot data quickly and reduce load on backend databases.</p>
+  </div>
+
+  <h2>Memcached vs. Redis</h2>
+  <table class="comp-table">
+    <thead><tr><th>Feature</th><th>Memcached</th><th>Redis</th></tr></thead>
+    <tbody>
+      <tr><td>Data structures</td><td>Strings and integers only</td><td>Strings, lists, sets, hashes, sorted sets, bitmaps</td></tr>
+      <tr><td>Persistence</td><td>None (pure RAM)</td><td>Optional (writes to disk ~every 2 seconds)</td></tr>
+      <tr><td>Data loss tolerance</td><td>Yes (cache only)</td><td>Small amount (2-second window)</td></tr>
+      <tr><td>Use case</td><td>Simple database query caching</td><td>Session stores, leaderboards, pub/sub, caching</td></tr>
+      <tr><td>Performance</td><td>Sub-millisecond reads/writes</td><td>Sub-millisecond reads/writes</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Redis Cache Hit / Miss Cycle</h2>
+  <p>The professor walked through this exact 3-step logic:</p>
+
+  <div class="flow-diagram" style="flex-direction:column;align-items:flex-start;gap:4px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="flow-box sky" style="min-width:150px;">Step 1: Check Redis Cache</div>
+      <span style="color:var(--text-secondary);font-size:13px;">→ Cache HIT? Return data immediately (sub-millisecond)</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+      <div class="flow-box amber" style="min-width:150px;">Step 2: Cache MISS?</div>
+      <span style="color:var(--text-secondary);font-size:13px;">→ Query the SQL/PostgreSQL persistent database</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+      <div class="flow-box teal" style="min-width:150px;">Step 3: Prime the Cache</div>
+      <span style="color:var(--text-secondary);font-size:13px;">→ Store the fetched data in Redis for next time</span>
+    </div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Real-World Example</div>
+    <p>Twitter uses Redis to cache the timelines of users with &lt;20,000 followers. When you open Twitter, your timeline is served from Redis in &lt;1ms. For users with millions of followers (celebrities), timelines are computed differently. This pattern of "cache for common cases" is universal in high-traffic web services.</p>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Redis Labs 2024 Survey</div>
+    <p>Redis is used by 60% of the Fortune 100 companies. Typical cache hit rates in production: 80–95% for well-configured caches. A 90% cache hit rate means 90% of requests never touch the database — reducing DB load by 10×. Average Redis read latency: 0.1–0.3ms vs. 10–100ms for a PostgreSQL query.</p>
+  </div>
+
+  <h2>CPU Cache Hierarchy (Context)</h2>
+  <p>The professor also briefly described the compute-level cache hierarchy:</p>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">L1 CPU Cache</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:98%;background:var(--purple);">~0.5ns</div></div>
+  </div>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">L2 CPU Cache</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:85%;background:var(--teal);">~5ns</div></div>
+  </div>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">RAM</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:60%;background:var(--sky);">~100ns</div></div>
+  </div>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">SSD</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:30%;background:var(--amber);">~100μs</div></div>
+  </div>
+  <div class="perf-bar-row">
+    <div class="perf-bar-label">HDD</div>
+    <div class="perf-bar-bg"><div class="perf-bar-fill" style="width:10%;background:var(--orange);">~10ms</div></div>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>RAM loses data when the computer is powered off (volatile). For retention, data MUST be written to durable storage (SSD/HDD). Redis is "volatile by default, optionally persistent." Know this distinction — Memcached is pure volatile; Redis can persist to disk.</p>
+  </div>
+</div>
+
+<!-- TOPIC: ORCHESTRATION -->
+<div id="topic-orchestration" class="topic-section">
+  <h1>Workflow Orchestration</h1>
+  <p class="subtitle">Managing N × N pipelines — why you can't just use Python scripts and cron jobs</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <p><strong>Workflow Orchestration</strong> is the automated management, scheduling, monitoring, and error-handling of a data pipeline's tasks and their dependencies. An orchestrator runs each task when its upstream dependencies are complete, retries on failure, backfills missed runs, and sends alerts. It treats a pipeline as a <strong>DAG (Directed Acyclic Graph)</strong> of tasks.</p>
+  </div>
+
+  <h2>The Problem Without Orchestration</h2>
+  <p>The professor asked: "What if this has to run multiple times? How long can you manage all of this with Python and stored procedures?"</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">⚠️ The Fragile Script Problem</div>
+    <p>As the number of data sources grows from 1 to N, and each source requires its own ingestion script + transformation logic, maintaining interconnected hard-coded Python scripts + complex SQL procedures becomes:</p>
+    <ul>
+      <li>❌ <strong>Fragile</strong> — one script failing silently breaks downstream scripts</li>
+      <li>❌ <strong>Error-prone</strong> — no retry logic, no alerting</li>
+      <li>❌ <strong>Hard to schedule</strong> — cron jobs can't handle inter-task dependencies</li>
+      <li>❌ <strong>Unobservable</strong> — no centralised view of what ran, what failed, what's pending</li>
+    </ul>
+  </div>
+
+  <h2>Orchestration Tools Comparison</h2>
+  <table class="comp-table">
+    <thead><tr><th>Tool</th><th>Type</th><th>Best For</th><th>Key Feature</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Apache Airflow</strong></td><td>General-purpose</td><td>All data pipelines</td><td>Python-defined DAGs, massive ecosystem</td></tr>
+      <tr><td><strong>Luigi</strong></td><td>General-purpose</td><td>Data pipelines</td><td>Dependency tracking, simpler than Airflow</td></tr>
+      <tr><td><strong>AWS Glue</strong></td><td>Managed/Cloud</td><td>AWS-native ETL</td><td>Serverless Spark, auto-scaling</td></tr>
+      <tr><td><strong>Prefect</strong></td><td>Modern Python</td><td>ML/data workflows</td><td>Dynamic workflows, better error UI</td></tr>
+      <tr><td><strong>Dagster</strong></td><td>Asset-oriented</td><td>Data engineering</td><td>Software-defined assets, lineage</td></tr>
+      <tr><td><strong>Kubeflow Pipelines</strong></td><td>ML-specific</td><td>ML workflows on K8s</td><td>Docker-containerised ML steps</td></tr>
+    </tbody>
+  </table>
+
+  <h2>What is a DAG?</h2>
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Directed Acyclic Graph (DAG)</div>
+    <p>A DAG is a set of nodes (tasks) connected by directed edges (dependencies) with no cycles (a task cannot depend on itself or create a circular dependency).</p>
+    <p style="margin-top:8px;">In Apache Airflow, you define a DAG in Python: each task is an operator (BashOperator, PythonOperator, SparkSubmitOperator), and you wire them with <code>>></code> to declare order.</p>
+  </div>
+
+  <pre>
+# Example Airflow DAG
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime
+
+with DAG('daily_etl', schedule='@daily', start_date=datetime(2024,1,1)) as dag:
+    extract_task = PythonOperator(task_id='extract', python_callable=extract_fn)
+    transform_task = PythonOperator(task_id='transform', python_callable=transform_fn)
+    load_task = PythonOperator(task_id='load', python_callable=load_fn)
+
+    # Declare dependency chain
+    extract_task >> transform_task >> load_task</pre>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Analogy from the Lecture</div>
+    <p>The professor described the orchestrator as a "project manager for data." It knows the task dependencies, kicks each off at the right time, chases failures with retries, and alerts you — so the pipeline runs itself daily without manual babysitting.</p>
+  </div>
+
+  <h2>Orchestration vs. Scheduling</h2>
+  <table class="comp-table">
+    <thead><tr><th>Feature</th><th>Cron/Scheduling</th><th>Orchestration (Airflow)</th></tr></thead>
+    <tbody>
+      <tr><td>Dependency management</td><td>❌ None — tasks run at times</td><td>✅ Task A runs only after Task B succeeds</td></tr>
+      <tr><td>Retry logic</td><td>❌ None</td><td>✅ Configurable retry count + backoff</td></tr>
+      <tr><td>Failure alerting</td><td>❌ Manual</td><td>✅ Email/Slack on failure</td></tr>
+      <tr><td>Backfill</td><td>❌ Hard to do</td><td>✅ Re-run past intervals automatically</td></tr>
+      <tr><td>Visibility</td><td>❌ No UI</td><td>✅ Web UI with Gantt charts, task logs</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor explicitly categorised orchestration tools as: (a) General use — Airflow, Luigi, AWS Glue; (b) ML-specific — Kubeflow Pipelines (built on Docker containers). Know which category each tool belongs to.</p>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Stack Overflow Developer Survey 2024</div>
+    <p>Apache Airflow is used by 62% of data engineering teams as their primary orchestrator (2024). Prefect and Dagster are the fastest-growing alternatives, each with ~40% YoY growth. Kubeflow is dominant in ML platform teams at FAANG-scale companies.</p>
+  </div>
+</div>
+
+<!-- TOPIC: DATAOPS -->
+<div id="topic-dataops" class="topic-section">
+  <h1>DataOps &amp; the CTCD Pipeline</h1>
+  <p class="subtitle">DevOps thinking for data — automate, version, test, monitor the full data lifecycle</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Definition</div>
+    <p><strong>DataOps</strong> is an agile, process-oriented methodology that applies DevOps and Agile principles to data analytics and ML workflows. It automates the entire data lifecycle: ingestion, transformation, testing, deployment, and monitoring — so changes ship quickly AND safely.</p>
+    <p style="margin-top:8px;"><strong>CTCD</strong> (the professor's emphasis) stands for <strong>Continuous Training and Continuous Deployment</strong> — the ML-specific extension of CI/CD. Not just deploying code but continuously retraining models and deploying updated model artifacts.</p>
+  </div>
+
+  <h2>DevOps vs. DataOps — Key Differences</h2>
+  <table class="comp-table">
+    <thead><tr><th>Aspect</th><th>DevOps</th><th>DataOps</th></tr></thead>
+    <tbody>
+      <tr><td>What's versioned</td><td>Code only</td><td>Code + Data + Schemas + Models</td></tr>
+      <tr><td>What's tested</td><td>Logic (unit/integration tests)</td><td>Logic + Data values + Statistical distributions</td></tr>
+      <tr><td>Main risk</td><td>Broken code</td><td>Broken data (silent, hard to detect)</td></tr>
+      <tr><td>Deployment artifact</td><td>Docker image / binary</td><td>Docker image + trained model + feature store snapshot</td></tr>
+      <tr><td>Drift concern</td><td>Rarely (code is deterministic)</td><td>Always (data distributions change over time)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The Four Pillars of DataOps</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">1 · Automation / CI-CD (Continuous Integration & Delivery) <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Every code change to a data pipeline triggers an automated build → test → deploy cycle. Tools: GitHub Actions, Jenkins, GitLab CI. For ML: MLflow, Kubeflow Pipelines, SageMaker Pipelines.</p>
+      <p>Benefit: No manual deployments. A dbt model change by a junior engineer is automatically tested and deployed to production — safely.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">2 · Version Control (Code + Data + Schemas) <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p><strong>Code versioning</strong> (Git) — standard. <strong>Data versioning</strong> — newer challenge. Tools: DVC (Data Version Control), Delta Lake time travel, Iceberg snapshots.</p>
+      <p><strong>Schema versioning</strong> — Confluent Schema Registry (Kafka), AWS Glue Schema Registry. Ensures producers and consumers agree on the data contract.</p>
+      <p>The professor's point: DevOps only versions code. DataOps must also version data and schemas because "data outlives code."</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">3 · Automated Testing (on Values, not just Logic) <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Unit tests check logic: "does this function return the right value for this input?" Data tests check values: "is the number of rows in today's pipeline between 100,000 and 200,000? Are nulls in 'customer_id' column &lt;0.1%? Is 'age' always between 0 and 120?"</p>
+      <p>Tools: Great Expectations, dbt tests, Soda Core. These are data quality guardrails that run after every pipeline execution.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">4 · Monitoring &amp; Observability <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Four core signals to monitor in every data pipeline:</p>
+      <ul>
+        <li><strong>Freshness</strong> — Is data up to date? "Last updated: 2 hours ago" when it should update every 15 min = problem.</li>
+        <li><strong>Volume</strong> — Right number of rows? Today's table has 0 rows when it normally has 1 million = upstream failure.</li>
+        <li><strong>Schema</strong> — Have column names or types changed unexpectedly? A column renamed upstream without notice breaks all downstream queries.</li>
+        <li><strong>Quality</strong> — Are values in expected ranges? Null rates within tolerance? Referential integrity maintained?</li>
+      </ul>
+      <p>Tools: Monte Carlo, Bigeye, Anomalo (dedicated data observability), or Datadog + custom monitors.</p>
+    </div>
+  </div>
+
+  <h2>Cloud Foundation &amp; Security</h2>
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Cloud Foundation in DataOps</div>
+    <p>The professor mentioned cloud foundation and security foundation as underpinning DataOps. Key principles:</p>
+    <ul>
+      <li><strong>IAM (Identity and Access Management)</strong> — Who can access which data? Principle of least privilege.</li>
+      <li><strong>Encryption</strong> — At rest (S3-SSE, Snowflake encryption) and in transit (TLS 1.3).</li>
+      <li><strong>VPC / Network Security</strong> — Data pipelines run inside private subnets. Data never travels over public internet.</li>
+      <li><strong>Audit Logging</strong> — Every data access is logged for compliance (GDPR, HIPAA, SOC 2).</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Gartner Data &amp; Analytics Summit 2024</div>
+    <p>By 2025, 80% of organisations that invest in DataOps will achieve a 3× improvement in data delivery cycle times. The #1 DataOps failure mode: treating it as a tooling problem rather than a cultural/process change. Tools without process = shelfware.</p>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip — CTCD vs. CICD</div>
+    <p>The professor EXPLICITLY said: "It's not CI/CD, it is <strong>CT/CD</strong> — Continuous Training and Continuous Deployment." This will be in the exam. CT/CD adds model retraining to the deployment loop. A standard CI/CD pipeline deploys code; a CT/CD pipeline also retrains models on new data and deploys updated artifacts.</p>
+  </div>
+</div>
+
+<!-- TOPIC: MODERN STACK -->
+<div id="topic-modern-stack" class="topic-section">
+  <h1>The Modern Data Stack</h1>
+  <p class="subtitle">A complete reference: from raw ingestion to ML deployment</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Modern Data Stack</div>
+    <p>Not one monolith but a collection of interoperable, specialised cloud-native tools that collectively handle the full data lifecycle. Data flows UP the stack from sources to serving. Each layer is replaceable independently.</p>
+  </div>
+
+  <h2>Full Stack Reference</h2>
+  <div class="flow-diagram" style="flex-direction:column;width:100%;gap:8px;">
+    <div class="flow-box sky" style="width:100%;text-align:left;padding:10px 16px;">
+      📊 <strong>Serving Layer</strong> — Feature Stores (Feast, Tecton), BI Tools (Looker, Tableau, PowerBI), ML Endpoints (Sagemaker, Vertex AI), Embedded Analytics
+    </div>
+    <div class="flow-arrow" style="text-align:center;width:100%;">↑</div>
+    <div class="flow-box amber" style="width:100%;text-align:left;padding:10px 16px;">
+      🔄 <strong>Transformation Layer</strong> — dbt, Apache Spark, Python (pandas, PySpark), SQL stored procedures
+    </div>
+    <div class="flow-arrow" style="text-align:center;width:100%;">↑</div>
+    <div class="flow-box teal" style="width:100%;text-align:left;padding:10px 16px;">
+      💾 <strong>Storage Layer</strong> — S3/ADLS/GCS (data lake), Snowflake/BigQuery/Redshift (warehouse), Delta Lake/Iceberg (lakehouse), Redis (cache), Kafka (streaming)
+    </div>
+    <div class="flow-arrow" style="text-align:center;width:100%;">↑</div>
+    <div class="flow-box" style="width:100%;text-align:left;padding:10px 16px;">
+      ⬇ <strong>Ingestion Layer</strong> — Fivetran, Airbyte, Kafka (streaming), AWS Kinesis, Sqoop, custom Python
+    </div>
+    <div class="flow-arrow" style="text-align:center;width:100%;">↑</div>
+    <div class="flow-box sky" style="width:100%;text-align:left;padding:10px 16px;">
+      📡 <strong>Source Layer</strong> — PostgreSQL, MySQL, Salesforce, Google Analytics, IoT sensors, Logs, REST APIs
+    </div>
+  </div>
+  <div style="margin-top:8px;text-align:center;color:var(--text-muted);font-size:12px;">
+    Cross-cutting: <strong>Apache Airflow</strong> (orchestration) · <strong>dbt tests / Great Expectations</strong> (quality) · <strong>Datadog / Monte Carlo</strong> (observability) · <strong>IAM / VPC</strong> (security)
+  </div>
+
+  <h2>Data Analytics Types</h2>
+  <table class="comp-table">
+    <thead><tr><th>Type</th><th>Focus</th><th>Time Horizon</th><th>Example Tools</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Business Analytics</strong></td><td>Historic and current trends</td><td>Past → Present</td><td>Tableau, Power BI, Looker</td></tr>
+      <tr><td><strong>Operational Analytics</strong></td><td>Immediate action signals</td><td>Real-time</td><td>Grafana, Datadog dashboards</td></tr>
+      <tr><td><strong>Embedded Analytics</strong></td><td>Data-powered end-user applications</td><td>Real-time</td><td>Looker (embedded), Metabase, Sisense</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Professor's Note on Looker</div>
+    <p>The professor mentioned Looker and Click (Qlik) as modern BI tools. Looker was acquired by Google (now part of Google Cloud) and is widely used for embedded analytics — where BI charts are embedded inside a product's own UI. Example: your bank's app showing spending analytics is likely powered by an embedded analytics platform.</p>
+  </div>
+
+  <h2>Complete Technology Map: Hadoop → Cloud</h2>
+  <table class="comp-table">
+    <thead><tr><th>Function</th><th>On-Premise (Hadoop)</th><th>AWS</th><th>GCP</th><th>Azure</th></tr></thead>
+    <tbody>
+      <tr><td>Distributed Storage</td><td>HDFS</td><td>S3</td><td>Cloud Storage</td><td>ADLS Gen2</td></tr>
+      <tr><td>MapReduce / Spark</td><td>YARN + MapReduce</td><td>EMR</td><td>Dataproc</td><td>HDInsight</td></tr>
+      <tr><td>Data Warehouse</td><td>Hive</td><td>Redshift</td><td>BigQuery</td><td>Synapse Analytics</td></tr>
+      <tr><td>NoSQL (wide-column)</td><td>HBase</td><td>DynamoDB</td><td>Cloud Bigtable</td><td>Cosmos DB</td></tr>
+      <tr><td>Streaming</td><td>Kafka</td><td>Kinesis</td><td>Pub/Sub</td><td>Event Hubs</td></tr>
+      <tr><td>Workflow Orchestration</td><td>Oozie</td><td>AWS Glue / MWAA</td><td>Cloud Composer</td><td>Azure Data Factory</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: ThoughtWorks Technology Radar 2024</div>
+    <p>The modern data stack has consolidated around a "dbt-centric" pattern: Fivetran/Airbyte (ingestion) + cloud warehouse (Snowflake/BigQuery) + dbt (transformation) + Airflow (orchestration) + Looker/Tableau (serving). This "MDS" pattern is now so dominant that startups receive explicit VC guidance to adopt it from day 1.</p>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip — Streaming Storage</div>
+    <p>Streaming data has different requirements from batch. Key points: (1) Message queues store data <em>temporally</em> — they disappear after consumption. (2) Kafka, by contrast, supports <strong>long-duration retention</strong> and <strong>replay</strong> — allowing a streaming system to return large ranges of historic stored data. This is the basis of Kappa Architecture.</p>
+  </div>
+</div>
+
+
+</div>
+<!-- END STUDY MODE -->
+
+<!-- NEW TOPIC SECTIONS APPENDED -->
+<div id="topic-serving" class="topic-section">
+  <h1>Data Serving Infrastructure</h1>
+  <p class="subtitle">How processed data reaches end consumers — analytics, ML models, and operational apps</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Three Output Channels</div>
+    <p>After storage, data is served via three main routes: <strong>Reverse ETL</strong> (back to operational tools), <strong>Data Analytics</strong> (dashboards, reports, BI), and <strong>Data Science &amp; ML</strong> (models, notebooks, feature stores).</p>
+  </div>
+
+  <h2>Ways to Serve Data</h2>
+  <div class="flow-diagram" style="flex-direction:column;width:100%;gap:8px;">
+    <div class="flow-box sky" style="width:100%;text-align:left;padding:10px 16px;">📁 <strong>File Exchange</strong> — CSV, Parquet, JSON files via S3, SFTP, or email. Ubiquitous but no real-time freshness.</div>
+    <div class="flow-box teal" style="width:100%;text-align:left;padding:10px 16px;">🗄️ <strong>Databases (OLAP)</strong> — SQL queries against data warehouse/lake. Fine-grained permissions, schema enforcement, high concurrency.</div>
+    <div class="flow-box amber" style="width:100%;text-align:left;padding:10px 16px;">📡 <strong>Streaming Systems</strong> — Operational analytics databases combining OLAP queries with up-to-the-second real-time data.</div>
+    <div class="flow-box" style="width:100%;text-align:left;padding:10px 16px;">🔗 <strong>Query Federation</strong> — Trino/Presto pull data from multiple sources (lakes, RDBMSs, warehouses) without centralising it. Great for compliance-sensitive environments.</div>
+    <div class="flow-box sky" style="width:100%;text-align:left;padding:10px 16px;">📓 <strong>Jupyter Notebooks</strong> — Data scientists programmatically connect to APIs, databases, warehouses, or data lakes. JupyterLab supports Julia, Python, and R.</div>
+  </div>
+
+  <h2>Data Analytics Types</h2>
+  <table class="comp-table">
+    <thead><tr><th>Type</th><th>Focus</th><th>Key Difference</th><th>Example Tools</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Business Analytics</strong></td><td>Historical + current trends → strategic decisions</td><td>Longer time horizon; dashboards, reports, ad hoc</td><td>Tableau, Power BI, Qlik</td></tr>
+      <tr><td><strong>Operational Analytics</strong></td><td>Immediate action</td><td><em>Time</em> is the big differentiator — real-time triggers</td><td>Grafana, Datadog dashboards</td></tr>
+      <tr><td><strong>Embedded Analytics</strong></td><td>External-facing; within a product's own UI</td><td>Companies expose analytics to end users inside their own apps</td><td>Looker embedded, Qlik Embedded, Sisense</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Professor's Note</div>
+    <p>The professor explicitly said: <em>"The line between business and operational analytics has begun to blur."</em> Real-time updates in dashboards now bridge what used to be separate analytical tracks. Embedded analytics is highlighted as <strong>snowballing</strong> — expect it to become increasingly pervasive.</p>
+  </div>
+
+  <h2>Query Federation</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">What is Query Federation? <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Query federation pulls data from multiple sources (data lakes, RDBMSs, data warehouses) via a distributed query engine — without centralising data in an OLAP system first. Tools: <strong>Trino</strong>, <strong>Presto</strong>, <strong>Starburst</strong> (managed).</p>
+      <ul>
+        <li>Enables ad hoc exploratory analysis across heterogeneous sources</li>
+        <li>Provides read-only access — no risk of modifying production source systems</li>
+        <li>Best for compliance-critical situations (GDPR, HIPAA)</li>
+        <li>Watch out: federated queries touching live OLTP systems can over-load them — always validate resource impact</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>Know all 5 ways to serve data: File Exchange, Databases, Streaming Systems, Query Federation, Jupyter Notebooks. The professor described analytics classification as: Business → Operational → Embedded. Embedded analytics is specifically <em>external-facing</em>.</p>
+  </div>
+</div>
+
+<!-- TOPIC: ML INFRASTRUCTURE STACK -->
+<div id="topic-ml-stack" class="topic-section">
+  <h1>ML Infrastructure Stack</h1>
+  <p class="subtitle">The layered stack that every data science &amp; ML project needs — from data warehouse to model development</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 The Eight-Layer ML Stack</div>
+    <p>Regardless of domain, all data science/ML projects share a common infrastructure pattern. The layers (bottom = most generic, top = most ML-specific):</p>
+  </div>
+
+  <div class="flow-diagram" style="flex-direction:column;width:100%;gap:6px;">
+    <div class="flow-box sky" style="width:100%;text-align:left;padding:10px 16px;"><strong>8. Model Development</strong> — Finding a mathematical model that transforms features into outputs. The core ML expertise layer.</div>
+    <div class="flow-box sky" style="width:100%;text-align:left;padding:10px 16px;"><strong>7. Feature Engineering</strong> — Raw input → sequence of data transformations → model-ready features. Designed by data scientists.</div>
+    <div class="flow-box amber" style="width:100%;text-align:left;padding:10px 16px;"><strong>6. Model Operations</strong> — Deploy, monitor, and validate all model versions from prototype to production. Tracks metadata about every execution.</div>
+    <div class="flow-box amber" style="width:100%;text-align:left;padding:10px 16px;"><strong>5. Versioning</strong> — Multiple model versions run side by side for A/B testing. Must isolate algorithms, input data, output data, and pipelines.</div>
+    <div class="flow-box teal" style="width:100%;text-align:left;padding:10px 16px;"><strong>4. Architecture</strong> — Defines what is computed and how — algorithms, data pipelines, deployment strategy. This is software engineering.</div>
+    <div class="flow-box teal" style="width:100%;text-align:left;padding:10px 16px;"><strong>3. Job Scheduler</strong> — Keeps data flowing and machines running uninterruptedly. Challenge: stay up 24/7, manage concurrent machines.</div>
+    <div class="flow-box" style="width:100%;text-align:left;padding:10px 16px;"><strong>2. Compute Resources</strong> — On-demand CPU/GPU that blindly executes algorithms. Does not dictate what is computed.</div>
+    <div class="flow-box" style="width:100%;text-align:left;padding:10px 16px;"><strong>1. Data Warehouse</strong> — Bottommost layer. Stores data. Key challenge: discoverability + efficient access + high durability.</div>
+  </div>
+
+  <h2>The Three Zones of the Stack</h2>
+  <table class="comp-table">
+    <thead><tr><th>Zone</th><th>Layers</th><th>Concern</th><th>Who Cares Most</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Foundational Infrastructure</strong></td><td>Data Warehouse, Compute, Job Scheduler</td><td>Generic — any workload can run here. Data &amp; Compute.</td><td>Platform / Infra team</td></tr>
+      <tr><td><strong>Software Architecture</strong></td><td>Architecture, Versioning, Model Operations</td><td>What runs and how — pipeline design &amp; integration.</td><td>ML Engineers</td></tr>
+      <tr><td><strong>Data Science &amp; ML</strong></td><td>Feature Engineering, Model Development</td><td>Mathematical modelling and transformation design.</td><td>Data Scientists</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Key Insight — Inverted Triangles</div>
+    <p>The professor showed two inverted triangles: <em>"How much a data scientist cares"</em> decreases as you go DOWN the stack (they care most about Model Development). <em>"How much infrastructure is needed"</em> increases as you go DOWN. Infrastructure <strong>complements</strong> the interests of a data scientist or ML engineer — the stack is designed so ML practitioners can focus on the top layers.</p>
+  </div>
+
+  <h2>Layer Details</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Feature Engineering — Why it matters <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Raw input data is rarely fed directly into a model. It goes through a sequence of transformations (normalisation, encoding, window aggregations, imputation). Designing this sequence is a major part of the data scientist's work. Infrastructure challenge: make feature computation efficient and reusable (→ Feature Stores like Feast, Tecton).</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Model Operations — What it tracks <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Model Operations tracks metadata about every model execution from prototype to production. Imagine 4 versions of an application running simultaneously, each built by a separate data scientist. Model Ops prevents chaos by: deploying models consistently, monitoring their performance metrics over time, and validating that production models haven't drifted. Tools: MLflow, Weights &amp; Biases, SageMaker Model Monitor.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Versioning — Why models need it too <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Unlike software (where version B simply replaces A), ML model versions often need to run <em>simultaneously</em> (A/B test: 10% traffic to new model, 90% to old). Evaluating which version is better is non-trivial — it requires statistical tests, not just syntactic correctness. Must isolate: the algorithm code, the training data snapshot, the feature transformation pipeline, and the serving endpoint.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor said "Model Development occupies only a tiny part of the end-to-end machinery." This is a common exam point: data scientists often underestimate how much infrastructure effort surrounds the model itself. The stack is designed so model development CAN be quick — because infrastructure handles everything else.</p>
+  </div>
+</div>
+
+<!-- TOPIC: AUTOMATION & IaC -->
+<div id="topic-automation" class="topic-section">
+  <h1>Automation in Data Infrastructure Management</h1>
+  <p class="subtitle">From manual provisioning to Infrastructure-as-Code and self-healing pipelines</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Why Automation Matters</div>
+    <p>As data infrastructure grows, manual provisioning and management becomes a bottleneck. Automation scripts replace human effort in provisioning servers, running pipelines, and recovering from failures — enabling consistent, repeatable infrastructure at scale.</p>
+  </div>
+
+  <h2>Infrastructure Provisioning (IaC)</h2>
+  <p>The professor asked: <em>"Have you ever requested a virtual machine? How quickly do you get it?"</em> The answer in modern orgs: <strong>within minutes</strong> — because of Infrastructure as Code.</p>
+
+  <table class="comp-table">
+    <thead><tr><th>Category</th><th>Tools</th><th>What It Does</th></tr></thead>
+    <tbody>
+      <tr><td><strong>IaC</strong></td><td>Terraform, Pulumi, AWS CDK, Azure Bicep</td><td>Define cloud infrastructure (VMs, databases, networks) in code. Repeatable, version-controlled deployments.</td></tr>
+      <tr><td><strong>GitOps</strong></td><td>ArgoCD, Flux</td><td>Git repository as single source of truth. Infrastructure changes are applied by syncing git commits.</td></tr>
+      <tr><td><strong>Cloud-native Templates</strong></td><td>AWS CloudFormation, Azure ARM</td><td>Cloud-vendor-specific templates for automated resource provisioning.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Real-World Connection</div>
+    <p>The professor noted: <em>"You will see how your lab environment gets set up quickly in your webinar."</em> This rapid provisioning is CloudFormation at work — a 40-resource AWS environment that would take a sysadmin a week to configure manually is deployed in ~8 minutes via a CloudFormation template.</p>
+  </div>
+
+  <h2>Pipeline Automation</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">What pipeline automation covers <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <ul>
+        <li>ETL/ELT workflow execution on schedule or trigger</li>
+        <li>Streaming jobs running continuously on Kafka Streams / Flink</li>
+        <li>Trigger-based transfers (e.g., file lands in S3 → Lambda triggers ingestion)</li>
+        <li><strong>Self-healing workflows</strong>: automatically rerun failed tasks with backoff strategy (e.g., retry after 5 min, then 15 min, then 60 min)</li>
+        <li><strong>Schema-change detection</strong>: upstream schema change triggers automated update of downstream dbt models + re-run of dbt tests + deployment</li>
+      </ul>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Event-driven pipelines vs. scheduled pipelines <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p><strong>Scheduled</strong>: runs at a fixed time (daily 2AM). Simple. Works when data arrival time is predictable.</p>
+      <p><strong>Event-driven</strong>: runs when something happens (a file arrives, a message hits a queue, a metric threshold is breached). Tools: AWS EventBridge, Azure Event Grid, Kafka Streams. More complex but more responsive.</p>
+    </div>
+  </div>
+
+  <h2>Data Infrastructure Components Summary</h2>
+  <p>The professor's explicit list of what constitutes modern data infrastructure:</p>
+  <ul>
+    <li><strong>Storage systems</strong> — data lakes, warehouses, lakehouses</li>
+    <li><strong>Databases</strong> — RDBMS, NoSQL, time-series</li>
+    <li><strong>Compute</strong> — ETL/ELT engines, clusters, serverless functions</li>
+    <li><strong>Orchestration engines</strong> — Airflow, Dagster, Prefect</li>
+    <li><strong>Integration components</strong> — APIs, messaging (Kafka, SQS, Event Grid)</li>
+  </ul>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor drew a clear distinction between Infrastructure Provisioning (IaC — Terraform/CDK) and Pipeline Automation (Airflow/Dagster). Both are automation but at different levels. IaC = "spin up the servers." Pipeline automation = "run the data jobs on those servers."</p>
+  </div>
+</div>
+
+<!-- TOPIC: CLOUD & SECURITY FOUNDATION -->
+<div id="topic-cloud-security" class="topic-section">
+  <h1>Cloud &amp; Security Foundation</h1>
+  <p class="subtitle">Cloud computing models, on-prem vs. cloud trade-offs, and the three axes of data security</p>
+
+  <h2>On-Premises vs. Cloud</h2>
+  <p>On-premise infrastructure has five layers a team must manage: <strong>Facilities → Network → Storage → Servers → Infrastructure Management Tools → Applications</strong>. Cloud shifts responsibility:</p>
+
+  <table class="comp-table">
+    <thead><tr><th>Model</th><th>You Manage</th><th>Provider Manages</th><th>Examples</th></tr></thead>
+    <tbody>
+      <tr><td><strong>On-Premises</strong></td><td>Everything (hardware to apps)</td><td>Nothing</td><td>Your own data centre</td></tr>
+      <tr><td><strong>IaaS</strong></td><td>OS, Runtime, Middleware, App, Data</td><td>Networking, Storage, Servers, Virtualisation</td><td>AWS EC2, Azure VMs, GCP Compute</td></tr>
+      <tr><td><strong>PaaS</strong></td><td>App, Data</td><td>Everything below the app</td><td>AWS Elastic Beanstalk, Google App Engine</td></tr>
+      <tr><td><strong>SaaS</strong></td><td>Data only</td><td>Everything else</td><td>Salesforce, Snowflake, Fivetran</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Cloud Infrastructure for Data</div>
+    <p>The professor emphasised: <em>"Databases and related services — pipeline builders, streaming platforms, API gateways, data stores — are readily available as a service."</em> This is the core reason modern data infrastructure moved to the cloud: zero hardware management, pay-as-you-go, and instant access to managed services like Redshift, Kinesis, Glue, and Lambda.</p>
+  </div>
+
+  <h2>Data Security — The Three States</h2>
+  <div class="two-col">
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">🔒 Data At Rest <span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Data stored in a medium (S3, HDFS, database). Protection: <strong>full-disk or object-level encryption</strong>. Examples: AWS S3 SSE (Server-Side Encryption), Snowflake AES-256 encryption at rest, LUKS full-disk encryption on Linux.</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">🔄 Data In Transit <span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Data actively moving between systems (database → pipeline → warehouse). Protection: <strong>message encryption</strong> — TLS 1.3 for HTTPS endpoints, mTLS for service-to-service communication, Kafka with SSL/TLS for streaming data in flight.</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleExpand(this)">👤 Data In Use <span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Data being actively read/processed by an application or user. Protection: <strong>Role-Based Access Control (RBAC)</strong> — each user/role can only access the data they need. Principle of least privilege. Examples: Snowflake column-level security, AWS IAM policies, Databricks Unity Catalog row-level filters.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Security Practices in Data Engineering</h2>
+  <ul>
+    <li><strong>IAM (Identity &amp; Access Management)</strong> — Who can access which data? Least privilege principle.</li>
+    <li><strong>VPC / Network Security</strong> — Data pipelines run inside private subnets. Data never travels over public internet.</li>
+    <li><strong>Audit Logging</strong> — Every data access logged for compliance (GDPR, HIPAA, SOC 2).</li>
+    <li><strong>PII Masking</strong> — Personally Identifiable Information hashed/masked during transformation.</li>
+    <li><strong>Secrets Management</strong> — API keys, DB passwords stored in AWS Secrets Manager, HashiCorp Vault — never hardcoded.</li>
+  </ul>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>The professor described data security through three states: <strong>Data at Rest</strong> (encryption of storage medium), <strong>Data in Transit</strong> (message/TLS encryption), <strong>Data in Use</strong> (Role-Based Access Control). Know this framework and one protection mechanism for each state.</p>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: IBM Cost of a Data Breach Report 2024</div>
+    <p>Average cost of a data breach in 2024: $4.88M (up 10% from 2023). 82% of breaches involve data stored in cloud environments. Organisations with zero-trust security architectures saved an average of $1.76M per breach compared to those without. RBAC alone reduces breach blast radius by 63%.</p>
+  </div>
+</div>
+
+<!-- TOPIC: CT/CD PIPELINES -->
+<div id="topic-ctcd" class="topic-section">
+  <h1>CT/CD — Continuous Training &amp; Continuous Deployment</h1>
+  <p class="subtitle">The ML-specific extension of DevOps — automating the full loop from code change to model serving</p>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Critical Exam Point — CTCD ≠ CI/CD</div>
+    <p>The professor <strong>explicitly</strong> stated: "It is not CI/CD — it is <strong>CT/CD: Continuous Training and Continuous Deployment</strong>." This distinction is important. CI/CD deploys code. CT/CD also continuously <em>retrains models on new data</em> and deploys updated model artifacts.</p>
+  </div>
+
+  <h2>The Four Phases</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Phase 1 · Experimental Development <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>The ML engineer tests a new idea (e.g., a new feature transformation). They modify the code base, train a model locally or in a sandbox, and validate that the new approach yields higher performance. Output: a new version of the codebase that needs to enter the master repo.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Phase 2 · Continuous Integration (CI) <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>The engineer creates a Pull Request (PR). This automatically triggers:</p>
+      <ul>
+        <li>Unit tests (standard CI)</li>
+        <li>Instantiation of the automated <strong>training pipeline</strong> → retrains the model with the new code</li>
+        <li>Integration tests or test cases on the trained model</li>
+        <li>Push of the model artifact to the <strong>Model Registry</strong></li>
+      </ul>
+      <p>A second engineer manually reviews the PR, validates performance metrics, and approves the merge.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Phase 3 · Continuous Deployment (CD) <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Activating deployment triggers a <strong>canary deployment</strong>: route 5–10% of traffic to the new model. Run an A/B test to compare the new model against the production model. After satisfactory results (statistically significant improvement), promote the new model to replace the old production model.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Phase 4 · Continuous Training (CT) <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>As soon as a model enters the model registry, it starts <strong>deteriorating</strong> — data distribution shifts over time (data drift / concept drift). CT activates recurring training: e.g., each day the model is fine-tuned with new training data of that day, re-deployed, and the serving pipeline is rerouted to the updated model. Fully automated.</p>
+    </div>
+  </div>
+
+  <h2>DataOps &amp; Observability</h2>
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Observability for Data Teams</div>
+    <p>Observability refers to the monitoring, tracking, and triaging of incidents to prevent downtime. It is <strong>no longer just for software engineering</strong> — data teams need it too because of data downtime and increasing data stack complexity.</p>
+  </div>
+
+  <p>The professor connected DataOps to observability through the DevOps analogy:</p>
+  <ul>
+    <li><strong>DevOps</strong> removes silos between software developers and IT — enabling seamless software release to production</li>
+    <li><strong>DataOps</strong> does the same for data: removes silos between data engineers, analysts, and ops — enabling reliable data delivery</li>
+    <li>As organisations grow and tech stacks become complex, maintaining a <em>constant pulse on the health of systems</em> requires observability tooling</li>
+  </ul>
+
+  <table class="comp-table">
+    <thead><tr><th>Aspect</th><th>DevOps / CI-CD</th><th>DataOps / CT-CD</th></tr></thead>
+    <tbody>
+      <tr><td>Primary artifact</td><td>Application code / Docker image</td><td>Data pipelines + trained ML models</td></tr>
+      <tr><td>What's versioned</td><td>Code only</td><td>Code + Data + Schemas + Model weights</td></tr>
+      <tr><td>What's tested</td><td>Logic (unit tests, integration tests)</td><td>Logic + Data values + Statistical distributions</td></tr>
+      <tr><td>Drift concern</td><td>Rare (code is deterministic)</td><td>Always (data distributions shift over time)</td></tr>
+      <tr><td>Retraining needed?</td><td>No</td><td>Yes — CT pipeline handles automatic retraining</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-research">
+    <div class="callout-label">🔬 Research Addition · Source: Neptune.ai MLOps Survey 2024</div>
+    <p>64% of ML teams in production face model performance degradation within 3 months of deployment. Of those with CT/CD pipelines, 89% detect and address drift within 24 hours vs. only 23% of teams relying on manual monitoring. Average time to recover from a data quality issue: 9 hours with observability tools vs. 42 hours without.</p>
+  </div>
+</div>
+
+<!-- TOPIC: CASE STUDY: DOORDASH -->
+<div id="topic-casestudy" class="topic-section">
+  <h1>Case Study: DoorDash ML Platform</h1>
+  <p class="subtitle">A real-world example of the full modern data infrastructure stack — from fragmented pipelines to unified ML platform</p>
+
+  <div class="callout callout-def">
+    <div class="callout-label">📘 Company Background</div>
+    <p><strong>DoorDash</strong> is the largest food delivery service in the US, connecting consumers with merchants via independent contractors called "Dashers." It processes millions of delivery decisions per day — each requiring real-time ML predictions (ETA, surge pricing, restaurant wait times).</p>
+  </div>
+
+  <h2>The Problem</h2>
+  <p>DoorDash's earlier ML workflows were:</p>
+  <ul>
+    <li>❌ <strong>Fragmented</strong> — analytics, batch ML, and real-time ML ran on completely separate stacks</li>
+    <li>❌ <strong>Low observability</strong> — data quality issues went undetected, causing incorrect ETAs</li>
+    <li>❌ <strong>Slow deployment</strong> — weeks to deploy a new model</li>
+    <li>❌ <strong>Frequent data drift</strong> — models degraded without automatic retraining triggers</li>
+    <li>❌ <strong>Manual pipeline debugging</strong> — no self-service tooling for data scientists</li>
+  </ul>
+  <p><strong>Goal:</strong> A unified, reliable, production-grade ML data platform.</p>
+
+  <h2>Architecture Components</h2>
+  <table class="comp-table">
+    <thead><tr><th>Component</th><th>Role</th><th>Technology</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Feature Store</strong></td><td>Low-latency store for common model features. Supports numerical, categorical, and embedding features.</td><td>Custom (Redis-backed)</td></tr>
+      <tr><td><strong>Realtime Feature Aggregator</strong></td><td>Listens to Kafka event stream, aggregates features in real-time (e.g., store wait time past 30 mins, recent driving speeds).</td><td>Kafka + streaming engine</td></tr>
+      <tr><td><strong>Historical Aggregator (ETL)</strong></td><td>Computes longer-term aggregations (1 week, 3 months). Runs offline. Results stored in Feature Warehouse AND Feature Store.</td><td>Batch ETL jobs</td></tr>
+      <tr><td><strong>Feature Warehouse</strong></td><td>Stores historical feature snapshots used for model training.</td><td>Snowflake</td></tr>
+      <tr><td><strong>Prediction Logs</strong></td><td>Stores every prediction made — features used, model ID, request context. Used for debugging AND as training data for next model refresh.</td><td>Snowflake</td></tr>
+      <tr><td><strong>Model Training Pipeline</strong></td><td>ALL production models built through this pipeline. Only authorized to write to Model Store (security + audit trail). Equivalent to the CI/CD system for ML models.</td><td>Custom + GitHub</td></tr>
+      <tr><td><strong>Model Store</strong></td><td>Stores model files and metadata. Identifies which model is active, which are in shadow traffic (A/B test).</td><td>Custom registry</td></tr>
+      <tr><td><strong>Prediction Service</strong></td><td>Serves real-time predictions. Takes request features + context (store ID, consumer ID) + prediction name → generates prediction. Supports A/B testing via model ID override.</td><td>Microservice</td></tr>
+    </tbody>
+  </table>
+
+  <h2>How It Maps to the Session's Concepts</h2>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Data Pipeline Architecture at DoorDash <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p><strong>Source:</strong> Kafka Event Stream (live delivery events) + Historical databases</p>
+      <p><strong>Ingestion:</strong> Realtime Feature Aggregator (streaming) + Historical Aggregator (batch ETL)</p>
+      <p><strong>Storage:</strong> Feature Store (Redis, low-latency) + Feature Warehouse (Snowflake, batch analytics) + Prediction Logs (Snowflake)</p>
+      <p><strong>Transformation:</strong> Historical aggregations compute complex window features (e.g., 3-month store rating trends)</p>
+      <p><strong>Serving:</strong> Prediction Service serves real-time ML predictions to the DoorDash app. Model Training Pipeline handles CT/CD.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">CT/CD in Action at DoorDash <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>The Model Training Pipeline is the CT/CD system. The pipeline: (1) reads training data from Feature Warehouse + Prediction Logs, (2) trains new model, (3) validates against quality thresholds, (4) pushes to Model Store. Production models are refreshed automatically as new data accumulates. A/B testing is baked in via model ID overrides in Prediction Service.</p>
+    </div>
+  </div>
+  <div class="expand-card">
+    <div class="expand-header" onclick="toggleExpand(this)">Security &amp; Audit at DoorDash <span class="expand-arrow">▼</span></div>
+    <div class="expand-body">
+      <p>Only the Model Training Pipeline has write access to the Model Store — generating a complete audit trail of every model change. This is a direct application of the "principle of least privilege" in data security. No engineer can directly push a model to production; it must go through the pipeline.</p>
+    </div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-label">🌍 Key Takeaway</div>
+    <p>DoorDash's platform is a textbook implementation of everything covered in Session 5: data pipeline architecture (Source → Ingest → Store → Serve), the ML Infrastructure Stack (Feature Store = Storage Layer, Model Store = Versioning Layer, Prediction Service = Serving Layer), CT/CD pipelines, and the security principle of only authorised pipelines writing to production stores.</p>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-label">⚠️ Exam Tip</div>
+    <p>In a case-study question about DoorDash, be able to: (1) name at least 4 components and their roles, (2) explain how the Realtime Feature Aggregator differs from the Historical Aggregator, (3) explain why Prediction Logs are stored and how they feed the CT pipeline, (4) explain what makes the Model Training Pipeline a CT/CD system.</p>
+  </div>
+</div>
+
+</div>
+<!-- END STUDY MODE -->
+<!-- ===== QUIZ MODE ===== -->
+<div id="quiz-mode" class="mode-panel">
+  <div class="quiz-header">
+    <h1>🧠 Quiz — Session 5</h1>
+    <button class="quiz-btn quiz-btn-secondary" onclick="restartQuiz()">↺ Restart</button>
+  </div>
+  <div id="quiz-dots"></div>
+  <div id="quiz-main">
+    <div class="quiz-progress" id="quiz-progress">Question 1 of 30</div>
+    <div class="quiz-q" id="quiz-question"></div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="quiz-explanation" id="quiz-explanation"></div>
+    <div id="quiz-actions">
+      <button class="quiz-btn quiz-btn-primary" id="quiz-next-btn" style="display:none;" onclick="nextQuestion()">Next Question →</button>
+    </div>
+  </div>
+  <div id="quiz-score-screen">
+    <div class="score-circle" id="score-circle"></div>
+    <div id="score-msg"></div>
+    <div id="score-sub"></div>
+    <button class="quiz-btn quiz-btn-primary" onclick="restartQuiz()">Retake Quiz</button>
+    <button class="quiz-btn quiz-btn-secondary" style="margin-left:10px;" onclick="switchMode('study')">Back to Study</button>
+  </div>
+</div>
+
+<!-- ===== FLASHCARD MODE ===== -->
+<div id="flashcard-mode" class="mode-panel">
+  <div class="flashcard-header">
+    <h1>🃏 Flashcards — Session 5</h1>
+    <button class="quiz-btn quiz-btn-secondary" onclick="restartFlashcards()">↺ Restart</button>
+  </div>
+  <div class="fc-rating-summary">
+    <span>Ratings: </span>
+    <span class="easy-c">Easy: <span id="fc-easy-count">0</span></span>
+    <span class="good-c">Good: <span id="fc-good-count">0</span></span>
+    <span class="hard-c">Hard: <span id="fc-hard-count">0</span></span>
+  </div>
+  <div class="fc-counter" id="fc-counter">Card 1 of 38</div>
+  <div style="height:12px;"></div>
+
+  <div class="flashcard-wrap" onclick="flipCard()">
+    <div class="flashcard" id="flashcard">
+      <div class="card-face card-front">
+        <div class="card-hint">Click to flip</div>
+        <div class="card-q" id="fc-question">Loading...</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-a-label">Answer</div>
+        <div class="card-a" id="fc-answer">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fc-controls" id="fc-rating-btns" style="display:none;">
+    <button class="fc-btn fc-btn-hard" onclick="rateCard('hard')">😰 Hard</button>
+    <button class="fc-btn fc-btn-good" onclick="rateCard('good')">🙂 Good</button>
+    <button class="fc-btn fc-btn-easy" onclick="rateCard('easy')">😄 Easy</button>
+  </div>
+
+  <div class="fc-nav">
+    <button class="fc-btn fc-btn-nav" onclick="prevCard()">← Prev</button>
+    <span class="fc-nav-counter" id="fc-nav-counter">1 / 38</span>
+    <button class="fc-btn fc-btn-nav" onclick="nextCard()">Next →</button>
+  </div>
+
+  <div class="fc-complete-msg" id="fc-complete-msg">
+    🎉 You've rated all 38 cards! Great session — check your revision checklist.
+  </div>
+</div>
+
+<!-- ===== GLOSSARY MODE ===== -->
+<div id="glossary-mode" class="mode-panel">
+  <h1>📖 Glossary</h1>
+  <p>All abbreviations, technical terms, and tools from Session 5. Search to filter.</p>
+  <input type="text" id="glossary-search" placeholder="Search term or acronym…" oninput="filterGlossary(this.value)">
+  <table class="glossary-table">
+    <thead><tr><th>Abbreviation</th><th>Full Form</th><th>Definition &amp; Usage</th></tr></thead>
+    <tbody id="glossary-body"></tbody>
+  </table>
+</div>
+
+<!-- ===== CHECKLIST MODE ===== -->
+<div id="checklist-mode" class="mode-panel">
+  <h1>✅ Revision Checklist</h1>
+  <div class="checklist-stats">
+    <div class="checklist-stat">
+      <div class="checklist-stat-val" id="check-done">0</div>
+      <div class="checklist-stat-lbl">Completed</div>
+    </div>
+    <div class="checklist-stat">
+      <div class="checklist-stat-val" id="check-total">0</div>
+      <div class="checklist-stat-lbl">Total Items</div>
+    </div>
+    <div class="checklist-stat">
+      <div class="checklist-stat-val" id="check-pct">0%</div>
+      <div class="checklist-stat-lbl">Progress</div>
+    </div>
+    <button class="checklist-reset" onclick="resetChecklist()">↺ Reset All</button>
+  </div>
+  <div id="checklist-container"></div>
+</div>
+
+</div><!-- end #main -->
+<script>
+// ===== QUIZ DATA (25 Questions) =====
+const quizData = [
+  {
+    q: "What is the professor's term for the process of moving cleaned warehouse data BACK into business tools like Salesforce?",
+    opts: ["ETL", "Reverse ETL", "ELT", "Data Replication"],
+    correct: 1,
+    exp: "<strong>Reverse ETL</strong> pushes cleaned, modelled data from a data warehouse back into operational business tools (Salesforce, HubSpot, Zendesk). ETL moves data FROM sources INTO a warehouse. ELT is a variant of ETL. Data Replication typically refers to copying raw data between databases, not pushing processed data into business tools. The professor used it as the opening conceptual framing of the lecture."
+  },
+  {
+    q: "The professor explicitly said: 'It's not CI/CD, it is ___'. What is this term?",
+    opts: ["CDCT — Continuous Delivery and Continuous Training", "CTCD — Continuous Training and Continuous Deployment", "CICI — Continuous Integration and Continuous Innovation", "MLOPS — Machine Learning Operations"],
+    correct: 1,
+    exp: "<strong>CTCD — Continuous Training and Continuous Deployment</strong> is the ML-specific extension of CI/CD. The professor explicitly emphasised this distinction. Unlike standard CI/CD which deploys code artifacts, CTCD also continuously retrains models on new data and deploys updated model artifacts — making it specific to ML systems."
+  },
+  {
+    q: "In HDFS architecture, which component stores only METADATA and NOT actual data?",
+    opts: ["DataNode", "NameNode", "Secondary NameNode", "ZooKeeper"],
+    correct: 1,
+    exp: "<strong>NameNode</strong> is the master component that stores metadata — the mapping of files to blocks, directory structure, and permissions. It does NOT store actual data blocks. DataNodes are the workers that store actual data blocks on their local disks. The Secondary NameNode is a helper that periodically merges the edit log, NOT a backup. The professor called the NameNode the 'card catalogue' — it tells you where books are, but doesn't hold the books themselves."
+  },
+  {
+    q: "According to the lecture, which storage type is immutable once written — meaning you CANNOT append or update in place?",
+    opts: ["Block Storage (SAN)", "File Storage (NAS)", "Object Storage (S3)", "HDFS"],
+    correct: 2,
+    exp: "<strong>Object Storage (e.g., AWS S3)</strong> is immutable once written. To change or append data, you must rewrite the entire object as a new stream of bytes. This is unlike file storage which supports append and random-write operations, or block storage which supports in-place updates. Object storage's immutability is what makes it safe to store across massive clusters without needing locks."
+  },
+  {
+    q: "What does 'Eventual Consistency' mean in distributed storage systems?",
+    opts: [
+      "All reads always return the most recent write immediately",
+      "The system will EVENTUALLY return the latest write, but reads may return stale data temporarily",
+      "Data is written to all nodes before acknowledging success",
+      "Each node maintains its own independent data with no replication"
+    ],
+    correct: 1,
+    exp: "<strong>Eventual Consistency</strong> means the system will eventually return the latest written value, but at any given moment a read might return a slightly stale value. The professor showed this through the two-node diagram: in eventual consistency, the write is acknowledged to the client BEFORE being replicated to Node 2. If Node 1 fails in between, data could be lost. This is a trade-off: faster responses in exchange for temporary inconsistency. Contrast with Strong Consistency where writes go to all nodes before acknowledging."
+  },
+  {
+    q: "The secondary NameNode in HDFS is often misunderstood. What is its PRIMARY purpose?",
+    opts: [
+      "Acts as a hot standby/failover backup for the primary NameNode",
+      "Stores backup copies of data blocks for redundancy",
+      "Periodically merges the edit log with the FS image to prevent the log from growing too large",
+      "Coordinates read requests from DataNodes to reduce NameNode load"
+    ],
+    correct: 2,
+    exp: "The <strong>Secondary NameNode</strong> is explicitly NOT a backup or failover standby for the primary NameNode (this is a very common misconception). Its primary job is to periodically download the current FS image + edit log from the NameNode, merge them together, and send the checkpoint back. This prevents the edit log from growing indefinitely and reduces the primary NameNode's boot time. The professor called it a 'helper' node and emphasised it is NOT a backup."
+  },
+  {
+    q: "What is the default block size in HDFS and why is it much larger than traditional filesystem blocks (4KB)?",
+    opts: [
+      "4 KB — same as traditional filesystems for compatibility",
+      "64 MB — small enough to minimise network overhead",
+      "128 MB — to minimise seek operations and metadata overhead for sequential big data reads",
+      "1 GB — to maximise throughput for video streaming workloads"
+    ],
+    correct: 2,
+    exp: "<strong>128 MB</strong> is the default HDFS block size. It is large because: (1) Big data workloads involve sequential reads of huge files — large blocks minimise the number of seek operations; (2) Fewer total blocks means less metadata stored in the NameNode's RAM; (3) Reduces TCP connection overhead between DataNode and client. Traditional 4KB blocks are designed for random-access patterns (OLTP). HDFS optimises for sequential batch reads (MapReduce, Spark) — hence the 32,000× larger block size."
+  },
+  {
+    q: "Redis writes data to disk approximately every 2 seconds. This means Redis can tolerate…",
+    opts: [
+      "No data loss whatsoever — it is fully ACID compliant",
+      "A small amount of data loss (up to 2 seconds of writes) in case of failure",
+      "Complete data loss on restart — it is purely volatile",
+      "Data loss only if more than 3 nodes fail simultaneously"
+    ],
+    correct: 1,
+    exp: "<strong>A small amount of data loss</strong> is possible with Redis. Because Redis writes to disk periodically (every ~2 seconds by default), if the Redis process crashes in between persistence intervals, up to ~2 seconds of writes can be lost. This is different from Memcached which is entirely volatile (no persistence at all) and databases like PostgreSQL which write every transaction to the WAL before acknowledging. Redis is designed for applications that can tolerate this small loss in exchange for extremely high throughput."
+  },
+  {
+    q: "What is the key difference between ETL (Extract-Transform-Load) and ELT (Extract-Load-Transform)?",
+    opts: [
+      "ETL processes structured data; ELT processes unstructured data",
+      "In ETL, transformation happens BEFORE loading into the warehouse; in ELT, transformation happens INSIDE the warehouse after loading raw data",
+      "ETL is used for batch processing; ELT is used for real-time streaming",
+      "ETL requires more storage; ELT requires more compute"
+    ],
+    correct: 1,
+    exp: "The key distinction is <strong>where transformation happens</strong>. In <strong>ETL</strong>, raw data is extracted from sources, transformed on a separate staging server (with specialised ETL tools), and THEN loaded as clean data into the warehouse. In <strong>ELT</strong>, raw data is loaded directly into the warehouse first, and SQL/Spark transformations run inside the warehouse. ELT became practical with cloud columnar warehouses (Snowflake, BigQuery) that can efficiently run complex SQL transformations on raw data. ELT also preserves the raw data for future re-transformations."
+  },
+  {
+    q: "According to the professor, what are the TWO key parameters a data engineer cares about when building a new data ingestion pipeline?",
+    opts: [
+      "Cost and compliance requirements",
+      "Interface (how to get the data) and Format (structure of the data)",
+      "Data volume and data velocity",
+      "Source system ownership and SLA requirements"
+    ],
+    correct: 1,
+    exp: "The professor explicitly stated: when building a new injection pipeline, the data engineer is NOT concerned about WHO owns the data. The two priorities are: (1) <strong>Interface</strong> — How will I get the data? (DB connection, REST API, Kafka, file/S3, HDFS?) (2) <strong>Format / Structure</strong> — Is it a structured SQL table, semi-structured JSON from an API, flat CSV, streaming Kafka output, or fixed-width format? These two questions determine the technical approach."
+  },
+  {
+    q: "Which storage type uses rotating magnetic disks coated with magnetic material to store data?",
+    opts: ["SSD (Solid State Drive)", "HDD (Hard Disk Drive)", "NVMe Cache", "RAM (Random Access Memory)"],
+    correct: 1,
+    exp: "<strong>HDD (Hard Disk Drive)</strong> uses mechanical rotating disks coated with magnetic material. The read/write head moves across the spinning platters to access data — this physical movement causes 'seek time' latency. SSDs use flash memory chips with NO moving parts, making them faster and quieter. The professor contrasted these explicitly. RAM is volatile memory. NVMe is a high-speed interface for SSDs."
+  },
+  {
+    q: "What does the professor describe as the purpose of 'Orchestration' in data pipelines?",
+    opts: [
+      "Compressing data before storing it in S3",
+      "Managing the scheduling and flow of tasks in a pipeline — replacing fragile, interconnected Python scripts",
+      "Encrypting data at rest and in transit",
+      "Load balancing queries across multiple warehouse nodes"
+    ],
+    correct: 1,
+    exp: "The professor described <strong>orchestration</strong> as the solution to the 'fragile script' problem: as N data sources grow, managing interconnected hard-coded Python scripts and complex SQL procedures becomes fragile and error-prone. An orchestration platform (like Apache Airflow) provides managed scheduling, dependency tracking, retry logic, alerting, and backfill — turning a brittle collection of scripts into a reliable, observable pipeline system."
+  },
+  {
+    q: "What is a 'Data Mart' in relation to a Data Warehouse?",
+    opts: [
+      "A data warehouse optimised for real-time streaming data",
+      "A subset of a data warehouse focused on a specific department or business domain",
+      "An alternative to a data warehouse that stores unstructured data",
+      "A marketplace for buying and selling data assets"
+    ],
+    correct: 1,
+    exp: "A <strong>Data Mart</strong> is a filtered subset of a data warehouse focused on a specific business line (e.g., finance data mart, marketing data mart). The schema (Star/Snowflake) remains the same as the parent warehouse — only the data is filtered. The professor gave the example: a warehouse holds data for 10,000 mutual funds, but a data mart for Scottish Widows or Ontario Teachers' Pension holds only the 100 funds relevant to that specific client. Same schema, different data."
+  },
+  {
+    q: "The professor introduced 'Reverse ETL' using an analogy from software engineering. What analogy did they use?",
+    opts: [
+      "Object-Oriented vs. Functional Programming",
+      "Forward Engineering (requirements→code) vs. Reverse Engineering (code→requirements)",
+      "Waterfall vs. Agile development methodologies",
+      "Compiled vs. Interpreted programming languages"
+    ],
+    correct: 1,
+    exp: "The professor used the <strong>forward engineering vs. reverse engineering</strong> analogy from software engineering. In SDLC, forward engineering goes from requirements → design → code. Reverse engineering goes from code → back to requirements. Similarly: ETL = apps → warehouse (forward). Reverse ETL = warehouse → back to apps (reverse). This made the lecture example clear: like extracting requirements from code, Reverse ETL 'sends clean data back to where business users operate.'"
+  },
+  {
+    q: "RAM loses its data when the computer is powered off. What does this property mean?",
+    opts: [
+      "RAM is non-volatile storage",
+      "RAM is volatile memory",
+      "RAM is persistent storage",
+      "RAM has strong consistency"
+    ],
+    correct: 1,
+    exp: "<strong>RAM is volatile memory</strong> — it loses all stored data when power is removed. This contrasts with non-volatile storage (SSDs, HDDs) which retains data without power. The professor explicitly mentioned this: 'Unlike storage drives, RAM loses its data when the computer is powered off.' This is why cache systems like Memcached (pure RAM) cannot serve as a primary data store — they are ephemeral, designed for speed not durability."
+  },
+  {
+    q: "Which orchestration tool was mentioned by the professor as being designed specifically for ML workflows built on Docker containers?",
+    opts: ["Apache Airflow", "Luigi", "AWS Glue", "Kubeflow Pipelines"],
+    correct: 3,
+    exp: "<strong>Kubeflow Pipelines</strong> is the ML-specific orchestration platform that runs on Kubernetes using Docker containers for each pipeline step. The professor explicitly categorised tools as: (a) General-purpose — Airflow, Luigi, AWS Glue; (b) ML-specific — Kubeflow Pipelines. This distinction matters: Airflow can run ANY task via operators; Kubeflow is specifically optimised for training jobs, hyperparameter tuning, model evaluation, and deployment steps in ML workflows."
+  },
+  {
+    q: "What happens to data stored on AWS EC2 'Local Instance Volumes' when a VM shuts down or is deleted?",
+    opts: [
+      "Data is automatically backed up to S3",
+      "Data persists for 30 days before being deleted",
+      "Data is lost permanently — local instance storage is ephemeral",
+      "Data is migrated to EBS automatically"
+    ],
+    correct: 2,
+    exp: "<strong>Data is lost permanently</strong> when a VM using local instance storage shuts down or is deleted. Local instance volumes are physically attached to the host server running the VM. When the VM terminates, the storage terminates with it. This contrasts with EBS (Elastic Block Store) which persists data even when the EC2 instance stops. The professor noted this is 'generally very low cost — included with the price of the VM' — because you're paying for ephemeral storage. Use EBS or S3 for durable data."
+  },
+  {
+    q: "The professor described a 3-tier storage model. Which tier contains the 'raw ingredients' like HDD, SSD, RAM?",
+    opts: ["Tier 1 — Storage Abstractions", "Tier 2 — Storage Systems", "Tier 3 — Raw Ingredients", "Tier 0 — Physical Foundation"],
+    correct: 2,
+    exp: "The professor described a three-tier storage model. <strong>Tier 3</strong> (the bottom) contains the raw physical hardware ingredients: HDD, SSD, RAM, Networking, CPU, Serialisation, and Compression. Tier 2 (middle) contains storage systems: HDFS, file systems, object stores, streaming storage, indexing, partitioning. Tier 1 (top) contains storage abstractions: Data Lake, Data Lakehouse, Cloud Data Warehouses. Data engineering primarily works at Tier 1 and Tier 2, built on top of Tier 3."
+  },
+  {
+    q: "In the Redis cache hit/miss cycle described in lecture, what happens during a 'cache miss'?",
+    opts: [
+      "The request is rejected and an error returned to the client",
+      "The data is fetched from the persistent SQL database, then stored in Redis for future requests",
+      "A new Redis node is automatically provisioned to handle the load",
+      "The client is redirected to a different data centre"
+    ],
+    correct: 1,
+    exp: "On a <strong>cache miss</strong> (requested data not in Redis): Step 1 — the system queries the persistent SQL/PostgreSQL database (the 'longer route'). Step 2 — once data is retrieved from the database, a copy is stored in Redis to 'prime the cache.' Step 3 — next time the same data is requested, it will be a cache HIT and served from Redis in sub-millisecond time. The professor described this as a 3-step logic: look in cache → miss → query database → prime cache."
+  },
+  {
+    q: "AWS EBS (Elastic Block Store) replicates all data to at least how many separate host machines?",
+    opts: ["1 (no replication)", "2 separate host machines", "3 separate host machines", "5 separate host machines (like HDFS)"],
+    correct: 1,
+    exp: "<strong>AWS EBS replicates to at least 2 separate host machines</strong> within the same availability zone. This protects against single disk failure. The professor mentioned this as a key durability feature: 'It replicates all data to at least two separate host machines, protecting data if a disk fails.' Note: EBS provides intra-AZ redundancy; for cross-AZ redundancy, you need EBS snapshots to S3 or multi-AZ database deployments."
+  },
+  {
+    q: "What does 'Serialisation' accomplish in the context of data storage (per the lecture)?",
+    opts: [
+      "Converts data to serial (sequential) processing instead of parallel",
+      "Packs data in a standard format for storage, transformation, or transmission",
+      "Removes duplicate records from a dataset",
+      "Orders rows in a database table alphabetically"
+    ],
+    correct: 1,
+    exp: "<strong>Serialisation</strong> packs data into a standard format for the purpose of storage, transmission, or transformation between systems. The professor described it as 'essentially for database design and network efficiency.' Common formats: XML, JSON, CSV (text-based), and binary formats like Apache Parquet, Apache Avro, Protocol Buffers. Serialisation enables data exchange between systems with different internal representations — a Python dict → JSON → parsed by a Java service."
+  },
+  {
+    q: "DataOps is to data engineering as _____ is to software engineering.",
+    opts: ["Agile", "DevOps", "Waterfall", "Scrum"],
+    correct: 1,
+    exp: "<strong>DevOps</strong> is the correct analogy. DataOps applies <em>DevOps principles</em> (automate, test, monitor, version control, continuous delivery) to the data engineering and analytics lifecycle. The key additions DataOps makes beyond standard DevOps: (1) data AND schema versioning (not just code), (2) testing data VALUES (not just logic), (3) monitoring for data drift. The professor noted 'DevOps doesn't transfer unchanged' — hence DataOps is its own discipline."
+  },
+  {
+    q: "The professor described 'Strong Consistency' in distributed systems. What is the key operational difference vs. eventual consistency?",
+    opts: [
+      "Strong consistency uses more servers; eventual consistency uses fewer",
+      "In strong consistency, writes are distributed to all replicas AND acknowledged before the client receives confirmation",
+      "Strong consistency only applies to read operations; eventual consistency only applies to writes",
+      "Strong consistency requires Kafka; eventual consistency uses SQL databases"
+    ],
+    correct: 1,
+    exp: "In <strong>Strong Consistency</strong>, the sequence is: (1) Client writes to Node 1, (2) Node 1 IMMEDIATELY replicates to Node 2, (3) Node 2 acknowledges to Node 1, (4) ONLY THEN does Node 1 acknowledge success to the client. This guarantees every subsequent read sees the latest write — 'guaranteed data resiliency.' The cost: extra round-trip latency. Used in banking, ACID databases, and any scenario where reading stale data is unacceptable."
+  },
+  {
+    q: "Which of the following is TRUE about the Secondary NameNode in HDFS? (TRICK QUESTION — prof specifically warned about this)",
+    opts: [
+      "It is a hot standby that automatically takes over if the primary NameNode fails",
+      "It stores a second copy of all data blocks for redundancy",
+      "It is NOT a backup — it helps by periodically checkpointing the NameNode's edit log",
+      "It replaces the NameNode during maintenance windows"
+    ],
+    correct: 2,
+    exp: "This is the most commonly tested HDFS misconception. The <strong>Secondary NameNode is NOT a backup or failover standby</strong> — despite its name suggesting otherwise. The professor explicitly said: 'Contrary to what the name suggests, it is not a backup.' Its job: periodically merge the FS image with the edit log to create a checkpoint, then send it back to the primary NameNode. This prevents the edit log from growing indefinitely. For true NameNode HA (high availability), Hadoop uses ZKFC (ZooKeeper Failover Controller) with a standby NameNode — a separate configuration."
+  },
+  {
+    q: "The professor said 'Hadoop is dead' is 'partially true.' Which component is STILL widely used in production?",
+    opts: [
+      "Apache Pig — still widely used for new analytics workloads",
+      "Pure MapReduce programming model — still dominant for new jobs",
+      "HDFS — still used as the storage layer for many Apache Spark clusters",
+      "Hadoop YARN v1 — still the dominant resource scheduler"
+    ],
+    correct: 2,
+    exp: "<strong>HDFS remains widely used</strong> as the storage layer for Spark clusters. The professor said: 'Apache Spark is still commonly run on HDFS clusters.' What IS mostly dead: Apache Pig (on life support, legacy only) and pure MapReduce programming model (replaced by Spark's RDD/DataFrame API). HDFS itself — as a distributed filesystem — remains a 'key ingredient for many current big data engines' including Amazon EMR, which runs Hadoop/Spark at massive scale."
+  },
+  {
+    q: "Which of the following is NOT one of the three types of data analytics the professor described?",
+    opts: ["Business Analytics", "Predictive Analytics", "Operational Analytics", "Embedded Analytics"],
+    correct: 1,
+    exp: "The professor described <strong>Business Analytics</strong> (strategic decisions, longer time horizon), <strong>Operational Analytics</strong> (immediate action, real-time), and <strong>Embedded Analytics</strong> (external-facing, inside product UIs). 'Predictive Analytics' was not part of this specific classification in the lecture — though it overlaps with ML serving."
+  },
+  {
+    q: "In the DoorDash ML platform case study, what is the role of Prediction Logs?",
+    opts: [
+      "Store real-time features from Kafka events",
+      "Record every prediction made — features used, model ID, context — for debugging and as future training data",
+      "Serve low-latency features to the Prediction Service",
+      "Archive raw event data from delivery operations"
+    ],
+    correct: 1,
+    exp: "<strong>Prediction Logs</strong> (stored in Snowflake) record every prediction — including the features used and the model ID. This serves two purposes: (1) <em>debugging</em> — can trace back exactly what the model saw when it made a prediction; (2) <em>training data for the next model refresh</em> — closing the CT/CD feedback loop. This is a key insight: the model's past outputs become input data for its future retraining."
+  },
+  {
+    q: "The professor said CT/CD stands for…",
+    opts: [
+      "Continuous Testing and Continuous Delivery",
+      "Continuous Training and Continuous Deployment",
+      "Continuous Transformation and Continuous Data",
+      "Continuous Testing and Continuous Deployment"
+    ],
+    correct: 1,
+    exp: "The professor <strong>explicitly</strong> said 'It is NOT CI/CD — it is CT/CD: <em>Continuous Training and Continuous Deployment.</em>' CT adds model retraining on new data to the deployment loop. Standard CI/CD only automates code testing and deployment; CT/CD also continuously retrains ML model artifacts. This is a key exam point."
+  },
+  {
+    q: "In the ML Infrastructure Stack, which layer sits at the BOTTOM (most foundational)?",
+    opts: ["Feature Engineering", "Model Operations", "Data Warehouse", "Job Scheduler"],
+    correct: 2,
+    exp: "The bottom of the ML stack is the <strong>Data Warehouse</strong> — the place where data is stored. The professor's eight-layer ordering (bottom to top): (1) Data Warehouse → (2) Compute Resources → (3) Job Scheduler → (4) Architecture → (5) Versioning → (6) Model Operations → (7) Feature Engineering → (8) Model Development. Layers 1-3 are generic foundational infrastructure; layers 6-8 are specific to data science and ML."
+  },
+  {
+    q: "What are the three states of data that security must address?",
+    opts: [
+      "Data at Source, Data in Pipeline, Data at Destination",
+      "Data at Rest, Data in Transit, Data in Use",
+      "Structured Data, Semi-Structured Data, Unstructured Data",
+      "Raw Data, Processed Data, Served Data"
+    ],
+    correct: 1,
+    exp: "The three security states the professor described: (1) <strong>Data at Rest</strong> — stored in a medium; protection via encryption of the storage medium (e.g., S3-SSE, Snowflake AES-256); (2) <strong>Data in Transit</strong> — actively moving between systems; protection via message/TLS encryption; (3) <strong>Data in Use</strong> — being accessed by someone; protection via Role-Based Access Control (RBAC). Each state requires different security controls."
+  }
+];
+
+// ===== FLASHCARD DATA (32 Cards) =====
+const flashcards = [
+  { q: "What is Reverse ETL? Who are its primary users?", a: "Reverse ETL pushes cleaned, modelled data OUT of a data warehouse (Snowflake, BigQuery) BACK INTO operational business tools (Salesforce, HubSpot). Primary users: Sales, Marketing, and Support teams — not analysts. ETL = apps → warehouse; Reverse ETL = warehouse → apps." },
+  { q: "What does CTCD stand for, and how does it differ from CICD?", a: "CTCD = Continuous Training and Continuous Deployment. The professor explicitly said 'it is NOT CI/CD.' CTCD adds continuous model retraining to the loop — not just deploying code but also automatically retraining ML models on new data and deploying updated model artifacts." },
+  { q: "What is the default HDFS block size and WHY is it that large?", a: "128 MB (configurable to 256 MB). Reason: Big data workloads do sequential reads of huge files — large blocks minimise disk seek operations, reduce NameNode metadata overhead, and reduce TCP connection count to DataNodes. Traditional filesystems use 4 KB blocks for random-access OLTP patterns." },
+  { q: "What is the HDFS NameNode? What does it store vs. NOT store?", a: "The NameNode is the MASTER of the HDFS cluster. It stores: file-to-block mappings, directory tree, permissions, replication factors. It does NOT store actual data blocks. Think of it as the 'card catalogue' — it tells you where things are, but doesn't hold the actual books." },
+  { q: "What is the Secondary NameNode? Is it a backup?", a: "NO — the Secondary NameNode is NOT a backup or failover standby (common misconception!). Its job: periodically checkpoint the NameNode by merging the edit log with the FS image and sending the merged snapshot back. This prevents the edit log from growing too large." },
+  { q: "Strong Consistency vs. Eventual Consistency — what's the difference?", a: "Strong Consistency: writes are distributed to ALL replicas before acknowledging to client. Every read always returns the latest write. Eventual Consistency: the system acknowledges the write to the client BEFORE replicating to other nodes. Reads may return stale data temporarily. Speed trade-off vs. correctness guarantee." },
+  { q: "What are the three types of storage covered in the lecture?", a: "1. Block Storage — splits data into fixed-size blocks with unique IDs; no hierarchy; examples: RAID, SAN, AWS EBS. 2. Object Storage — self-contained objects with metadata and unique key; immutable; no hierarchy; examples: S3, Azure Blob, GCS. 3. File Storage — hierarchical folder/file structure; accessed by path; examples: NTFS, EXT4, NFS, AWS EFS." },
+  { q: "What makes Object Storage 'immutable'? How do you update an object?", a: "Object storage is a key-value store for immutable data. Once written, you CANNOT append bytes or update in place. To modify data, you must rewrite the ENTIRE object as a new stream of bytes. This design enables massive scalability (no locking needed) and extreme durability (11 nines for S3)." },
+  { q: "What is AWS EBS? How is it different from AWS Local Instance Volumes?", a: "EBS (Elastic Block Store): virtual block storage that persists independently of the EC2 instance. Stores data separate from the VM. Replicates to 2+ host machines. Survives VM stop/start. Use for databases. Local Instance Volumes: physically attached to the host server. Data is LOST when the VM terminates. Very low cost but ephemeral." },
+  { q: "What is the Redis cache hit/miss cycle?", a: "Step 1: Application checks Redis cache. Cache HIT → return data immediately (sub-millisecond). Cache MISS → go to Step 2. Step 2: Query the persistent SQL database (slower). Step 3: Store the result in Redis to 'prime the cache.' Next request for same data will be a cache HIT." },
+  { q: "Memcached vs. Redis — key differences?", a: "Memcached: supports only strings/integers, NO persistence (pure volatile RAM), simple caching only. Redis: supports strings, lists, sets, hashes, sorted sets; OPTIONAL persistence (writes to disk ~every 2 seconds, tolerates small data loss); supports pub/sub, sessions, leaderboards. Both offer sub-millisecond latency." },
+  { q: "What is a DAG in the context of workflow orchestration?", a: "DAG = Directed Acyclic Graph. A set of tasks (nodes) connected by dependencies (directed edges) with NO cycles. In Apache Airflow, each task is an operator; dependencies are declared with >> syntax. The orchestrator runs tasks only when ALL upstream dependencies have completed successfully." },
+  { q: "Why can't you just use Python scripts + cron jobs for complex data pipelines?", a: "The 'fragile script' problem: as N data sources grow, interconnected Python scripts become (1) Fragile — silent failures cascade, (2) Error-prone — no retry logic, (3) Hard to schedule — cron can't handle inter-task dependencies, (4) Unobservable — no centralised view of pipeline state. Orchestrators (Airflow, Prefect) solve all four problems." },
+  { q: "What are the 4 DataOps pillars?", a: "1. Automation / CI-CD — automated build-test-deploy for every code change. 2. Version Control — code + data + schemas (not just code like DevOps). 3. Automated Testing — test data VALUES (row counts, null rates, ranges) not just logic. 4. Monitoring & Observability — freshness, volume, schema, quality alerts." },
+  { q: "Why does DataOps need DATA and SCHEMA versioning in addition to code versioning?", a: "DevOps only versions code. DataOps must also version data and schemas because 'data outlives code.' A model trained on data from 6 months ago must be reproducible. Schema changes in a source system (new column, renamed field) can break downstream pipelines silently. Schema registries (Confluent, AWS Glue) and tools like DVC/Delta Lake time travel address this." },
+  { q: "What are the 4 monitoring signals in DataOps observability?", a: "1. Freshness — is data up to date? (e.g., table last updated 2 hours ago when it should be 15 min) 2. Volume — right number of rows? (0 rows when expecting 1 million = upstream failure) 3. Schema — column names/types unchanged? 4. Quality — null rates within tolerance? Values in expected ranges? Each signal catches different failure modes." },
+  { q: "What is the 'Data Lakehouse' and which technologies implement it?", a: "Lakehouse = Data Lake + ACID transactions + metadata governance. Combines lake flexibility (cheap object storage, all data formats) with warehouse reliability (ACID, schema enforcement). Technologies: Databricks Delta Lake, Apache Iceberg (Netflix), Apache Hudi (Uber). They work by maintaining a transaction log alongside Parquet files in object storage." },
+  { q: "Star Schema vs. Snowflake Schema — when to use each?", a: "Star Schema: denormalised dimensions (redundant data, fewer joins). Faster queries. Use for most OLAP workloads. Snowflake Schema: normalised dimensions (sub-tables). More joins, lower storage. Use when dimension tables are huge (millions of SKUs) or have deep hierarchies (5+ levels). Modern cloud warehouses favour Star Schema since storage is cheap." },
+  { q: "What is 'Data Locality' in HDFS/Hadoop?", a: "Data Locality = running the compute task on the SAME node that stores the data block. This avoids moving data across the network — the most expensive operation in distributed computing. MapReduce and Spark schedulers attempt to exploit data locality: 'move computation to data, not data to computation.'" },
+  { q: "ETL vs. ELT — which preserves raw data? Which is the modern default?", a: "ELT preserves raw data (load raw → transform inside warehouse). ELT is the modern default. ELT became standard with cloud columnar warehouses (Snowflake, BigQuery) that can efficiently transform raw data using SQL. ETL (transform before loading) was standard when warehouses couldn't handle raw data volumes efficiently." },
+  { q: "What are the three 'Key Drivers' of data warehouse modernisation per the professor?", a: "1. Rise of major public cloud providers — AWS, GCP, Azure (ease of deployment, drop-in storage costs). 2. Emergence of highly scalable COLUMNAR databases — Redshift, Snowflake, BigQuery (optimised for OLAP at petabyte scale). 3. Drop in storage costs — S3 at ~$0.023/GB/month made storing raw data economically viable." },
+  { q: "What is PII and how is it handled in data transformations?", a: "PII = Personally Identifiable Information (email, phone, SSN, address). Handled via: (1) Hashing — SHA256 of email → irreversible token; (2) Masking — show only last 4 digits of credit card; (3) Tokenisation — replace with random token mapped to real value only in a secure vault. Required for GDPR, HIPAA, and CCPA compliance." },
+  { q: "What is the 'Fragile ETL' problem the professor described?", a: "As the number of data sources grows from 1 to N, managing interconnected hard-coded Python scripts + complex SQL procedures (without orchestration) becomes: fragile (scripts break silently), error-prone (no retries), unschedulable for complex dependencies, and unobservable (no pipeline visibility). The solution is an orchestration framework like Airflow." },
+  { q: "What is 'Data Gravity' in cloud strategy?", a: "Data Gravity = the tendency for data to attract applications and services once stored in a particular cloud provider. Getting data INTO a cloud is cheap or free, but getting it OUT is expensive (egress fees). Once a petabyte of data lands in AWS S3, migrating it costs thousands of dollars in egress — making the cloud choice a long-term strategic lock-in decision." },
+  { q: "What is the difference between a Data Lake 'Data Swamp' and 'Dark Data'?", a: "Data Swamp: an ungoverned data lake where data is dumped without metadata, cataloging, or lifecycle management. Becomes unmanageable and useless. Prevent with: data catalog, schema registry, lineage tracking, retention policies. Dark Data: data collected and stored but NEVER used for analysis. Estimates: 50-90% of enterprise data is dark. Risk: compliance (GDPR) and wasted cost." },
+  { q: "What are the three types of data analytics the professor mentioned?", a: "1. Business Analytics — historical and current data analysis; past→present trends. Tools: Tableau, Power BI, Looker. 2. Operational Analytics — real-time, immediate action signals. Tools: Grafana, Datadog. 3. Embedded Analytics — data-powered features inside end-user applications (your bank app's spending chart). Tools: Looker embedded, Metabase, Sisense." },
+  { q: "HDD vs. SSD — what is the key physical difference the professor highlighted?", a: "HDD (Hard Disk Drive): mechanical device with ROTATING magnetic disks and a read/write head that physically moves to seek data. Slower, noisier, cheaper per GB. SSD (Solid State Drive): uses FLASH memory chips with NO moving parts. Faster, quieter, more reliable (no mechanical failure), costlier. Professor: 'people are not buying more RAM — they purchase SSDs instead.'" },
+  { q: "What is Serialisation and name 3 serialisation formats from the lecture?", a: "Serialisation = packing data into a standard format for storage, transformation, or network transmission. Enables data exchange between systems with different internal formats. Formats: (1) XML — structured, verbose, enterprise legacy; (2) JSON — lightweight, flexible, REST API default; (3) CSV — tabular, simple, widely supported; (4) Apache Parquet — columnar, binary, optimised for analytics; (5) Apache Avro — schema-embedded binary format." },
+  { q: "What is NAS (Network Attached Storage) and what are its trade-offs?", a: "NAS = Network Attached Storage. A file storage system served to clients over a network. Advantages: shared file access across multiple machines, built-in redundancy, centralised management. Disadvantages: performance penalty vs. local disk (network latency), single point of failure if not HA-configured. Common in on-premise enterprise file servers." },
+  { q: "Why does HDFS use replication factor 3? What happens when a DataNode fails?", a: "Replication factor 3 = each block stored on 3 different DataNodes, ideally on different racks. Why: commodity hardware fails often — at 1000 nodes, ~30 failures/year (every 12 days). With 3 replicas, you can lose 2 copies without losing data. On DataNode failure: NameNode detects missing heartbeats → automatically triggers re-replication from surviving 2 copies to restore 3-copy redundancy." },
+  { q: "What is the difference between Orchestration (Airflow) and Scheduling (cron)?", a: "Cron/Scheduling: runs tasks at fixed times, no dependency management, no retry, no alerting. Orchestration (Airflow): runs tasks based on DEPENDENCY completion (not just time), automatic retry on failure, configurable backfill of missed runs, email/Slack alerts, web UI for monitoring. Airflow also supports dynamic DAG generation — you can programmatically create thousands of parallel tasks." },
+  { q: "What is Hadoop's YARN? What problem does it solve?", a: "YARN = Yet Another Resource Negotiator. The resource management layer of the Hadoop ecosystem. Before YARN, MapReduce was both the resource manager AND processing engine — no other framework could run on the cluster. YARN decoupled resource management from processing, enabling Spark, Flink, Tez, and others to share the same cluster simultaneously. Think of YARN as the 'OS' of the Hadoop cluster." },
+  { q: "Name the 8 layers of the ML Infrastructure Stack from bottom to top.", a: "Bottom → Top: (1) Data Warehouse, (2) Compute Resources, (3) Job Scheduler, (4) Architecture, (5) Versioning, (6) Model Operations, (7) Feature Engineering, (8) Model Development. Bottom 3 = foundational infrastructure (generic). Middle 3 = software architecture (ML-specific integration). Top 2 = data science & ML (model-specific). Infrastructure complements the interests of data scientists by handling everything below Model Development." },
+  { q: "What are the three security states of data? Give one protection mechanism for each.", a: "(1) Data at Rest — stored in medium. Protection: full-disk/object encryption (S3-SSE, Snowflake AES-256). (2) Data in Transit — moving between systems. Protection: TLS 1.3 / mTLS message encryption. (3) Data in Use — being accessed. Protection: Role-Based Access Control (RBAC) / principle of least privilege. Each state requires different security tooling." },
+  { q: "What are the four phases of a CT/CD pipeline for ML?", a: "(1) Experimental Development — ML engineer tests a new idea in a sandbox, validates it performs better. (2) Continuous Integration — Pull Request triggers automated unit tests + training pipeline + push to Model Registry. (3) Continuous Deployment — canary deployment → A/B test → if satisfactory, promote new model to production. (4) Continuous Training — once in registry, model deteriorates; automatic daily retraining on new data keeps it fresh." },
+  { q: "In the DoorDash ML platform, what is the Feature Store vs. the Feature Warehouse?", a: "Feature Store: low-latency (Redis-backed) store that the Prediction Service reads from in real-time when scoring. Supports numerical, categorical, and embedding features. Sub-millisecond lookup. Feature Warehouse (Snowflake): stores historical feature snapshots for offline model training. Batch access, not real-time. The Historical Aggregator computes long-term features and writes to BOTH the Feature Warehouse (for training) and the Feature Store (for serving)." },
+  { q: "What is IaC (Infrastructure as Code) and name two tools?", a: "IaC = managing and provisioning cloud infrastructure through machine-readable code files instead of manual configuration. Benefits: repeatable, version-controlled, auditable deployments. Tools: Terraform (cloud-agnostic, declarative HCL), Pulumi (multi-cloud, uses real programming languages), AWS CDK (AWS-specific, Python/TypeScript), Azure Bicep (Azure-specific). GitOps tools (ArgoCD, Flux) extend IaC by using Git as the source of truth." },
+  { q: "What is Query Federation? Name two tools and the key use case.", a: "Query federation = pulling data from multiple sources (lakes, RDBMSs, warehouses) via a distributed query engine WITHOUT centralising data first. Tools: Trino, Presto, Starburst (managed). Key use case: ad hoc exploratory analysis across heterogeneous sources without building ETL pipelines. Also ideal for compliance-sensitive environments because federated queries provide read-only access — end users read only what they're supposed to and nothing more." }
+];
+
+// ===== GLOSSARY DATA =====
+const glossaryData = [
+  { abbr: "ETL", full: "Extract, Transform, Load", def: "Classic data pipeline pattern. Transform on a staging server BEFORE loading into warehouse. Legacy pattern for row-based warehouses." },
+  { abbr: "ELT", full: "Extract, Load, Transform", def: "Modern pattern. Load raw data into cloud warehouse FIRST, then transform using SQL inside the warehouse. Preserves raw data." },
+  { abbr: "EtLT", full: "Extract, (small-t) Transform, Load, Transform", def: "Hybrid subpattern. Minimal pre-load transforms (deduplication, PII masking) followed by full warehouse-side transforms." },
+  { abbr: "HDFS", full: "Hadoop Distributed File System", def: "Distributed file system designed for commodity hardware. Splits files into 128MB blocks, replicates each block 3× across DataNodes. Managed by the NameNode (master)." },
+  { abbr: "YARN", full: "Yet Another Resource Negotiator", def: "Hadoop's resource management layer. Enables multiple processing engines (Spark, Flink, MapReduce) to share a single cluster. Decouples resource management from computation." },
+  { abbr: "CTCD", full: "Continuous Training and Continuous Deployment", def: "ML-specific extension of CI/CD. Automates model retraining on new data AND deployment of updated model artifacts. The professor emphasised this is NOT the same as CI/CD." },
+  { abbr: "CICD", full: "Continuous Integration / Continuous Delivery", def: "Software engineering practice of automating code build, test, and deploy. DataOps extends this with data/schema versioning and data value testing." },
+  { abbr: "DAG", full: "Directed Acyclic Graph", def: "A graph of nodes (tasks) connected by directed edges (dependencies) with no cycles. Used by orchestrators like Airflow to define pipeline task order." },
+  { abbr: "PII", full: "Personally Identifiable Information", def: "Data that can identify an individual: name, email, phone, SSN, IP address. Must be protected via hashing, masking, or tokenisation for GDPR, HIPAA, CCPA compliance." },
+  { abbr: "SAN", full: "Storage Area Network", def: "Virtualised block storage devices served over a dedicated high-speed network. Creates a pool of storage assigned to servers as virtual disks. Common in on-premise data centres." },
+  { abbr: "NAS", full: "Network Attached Storage", def: "File storage system served to clients over a network. Supports shared file access across multiple machines. Performance penalty vs. local disk due to network latency." },
+  { abbr: "EBS", full: "Elastic Block Store", def: "AWS cloud block storage that persists independently of EC2 instances. Replicates to 2+ host machines in the same AZ. Suitable for databases requiring high durability." },
+  { abbr: "EFS", full: "Elastic File System", def: "AWS managed cloud file system for shared access by multiple EC2 instances. Similar to NAS but cloud-native; AWS manages disk clusters and networking." },
+  { abbr: "S3", full: "Simple Storage Service", def: "Amazon's object storage. Stores objects as key-value pairs. Immutable once written. 11-nines durability. ~$0.023/GB/month standard; $0.004/GB/month Glacier Deep Archive." },
+  { abbr: "HDD", full: "Hard Disk Drive", def: "Mechanical rotating disk storage. Cheap per GB. Slow random access (seek time). Magnetic platters. 120–200 MB/s sequential read." },
+  { abbr: "SSD", full: "Solid State Drive", def: "Flash memory storage. No moving parts. Fast random access (<0.1ms). Silent. 3,500+ MB/s (NVMe). More expensive per GB than HDD." },
+  { abbr: "RAM", full: "Random Access Memory", def: "Volatile (loses data on power-off) memory used by CPUs for fast data access. ~50,000 MB/s bandwidth. Foundation of caching systems (Redis, Memcached)." },
+  { abbr: "OLTP", full: "Online Transaction Processing", def: "Database workload optimised for fast, small reads and writes (point lookups, row inserts). Used by operational apps. Row-oriented storage engines (B-trees)." },
+  { abbr: "OLAP", full: "Online Analytical Processing", def: "Database workload optimised for complex aggregations over many rows. Used by analytics. Column-oriented storage engines. Examples: Redshift, BigQuery, Snowflake." },
+  { abbr: "ACID", full: "Atomicity, Consistency, Isolation, Durability", def: "Database transaction properties. Data Lakehouse (Delta Lake, Iceberg, Hudi) brings ACID to data lakes built on object storage." },
+  { abbr: "dbt", full: "Data Build Tool", def: "Open-source SQL transformation framework. Write SQL models, dbt manages dependencies, runs tests, and generates data lineage docs. Standard for ELT transformation layer in modern data stacks." },
+  { abbr: "CDC", full: "Change Data Capture", def: "Technique for capturing row-level changes (INSERT, UPDATE, DELETE) from a source database and streaming them downstream. Foundation of Data Fabric and real-time replication." },
+  { abbr: "GCS", full: "Google Cloud Storage", def: "Google's object storage service. Competitor to AWS S3. Used as the storage layer for BigQuery and Google Cloud data lakes." },
+  { abbr: "EMR", full: "Elastic MapReduce", def: "AWS managed big data service. Runs Hadoop, Spark, Hive, and other frameworks on a managed cluster. Cloud equivalent of on-premise YARN + HDFS." },
+  { abbr: "RAID", full: "Redundant Array of Independent Disks", def: "Multiple physical disks managed together to provide redundancy (RAID 1/5/6), performance (RAID 0), or both (RAID 10). Appears to the OS as a single block device." },
+  { abbr: "BI", full: "Business Intelligence", def: "The tools, processes, and practices for collecting, integrating, analysing, and presenting business data to support decision-making. Tools: Tableau, Power BI, Looker." },
+  { abbr: "FWF", full: "Fixed-Width Format", def: "Data format where each column occupies a fixed number of character positions. Common in mainframe/legacy systems (banking, government). No delimiter — parsing requires knowing column positions." },
+  { abbr: "WSDL", full: "Web Services Description Language", def: "XML-based language for describing SOAP web services — what operations are available, their input/output types, and the endpoint URL." },
+  { abbr: "IAM", full: "Identity and Access Management", def: "Security framework defining who can access what resources and what actions they can take. AWS IAM, Azure AD, and GCP IAM are examples. Implements least-privilege access in data platforms." },
+  { abbr: "TLS", full: "Transport Layer Security", def: "Cryptographic protocol for secure data transmission over networks. Current standard: TLS 1.3. Used to encrypt data in transit between data pipeline components." },
+  { abbr: "IaC", full: "Infrastructure as Code", def: "Managing and provisioning cloud infrastructure through machine-readable code files. Tools: Terraform, Pulumi, AWS CDK, Azure Bicep. Enables repeatable, version-controlled, automated deployments." },
+  { abbr: "RBAC", full: "Role-Based Access Control", def: "Security model where access permissions are assigned to roles, and users/systems are assigned to roles. Implements the principle of least privilege — each entity can only access what it needs." },
+  { abbr: "CT", full: "Continuous Training", def: "The ML-specific addition to CI/CD. Automatically retrains ML models on new incoming data to prevent model performance degradation due to data drift. Part of the CT/CD pipeline." },
+  { abbr: "IaaS", full: "Infrastructure as a Service", def: "Cloud model where provider manages networking, storage, servers, and virtualisation. Customer manages OS, runtime, middleware, application, and data. Example: AWS EC2, Azure VMs." },
+  { abbr: "PaaS", full: "Platform as a Service", def: "Cloud model where provider manages everything except application logic and data. Example: Google App Engine, AWS Elastic Beanstalk. Developer only writes code." },
+  { abbr: "SaaS", full: "Software as a Service", def: "Cloud model where provider manages everything. Customer only manages data. Example: Salesforce, Snowflake, Fivetran. Zero infrastructure management." },
+  { abbr: "OLAP", full: "Online Analytical Processing", def: "Database workload optimised for complex aggregations over many rows. Used by analytics. Column-oriented storage engines. Examples: Redshift, BigQuery, Snowflake." },
+  { abbr: "OLTP", full: "Online Transaction Processing", def: "Database workload optimised for fast, small reads and writes (point lookups, row inserts). Used by operational apps. Row-oriented storage engines (B-trees)." }
+];
+
+// ===== CHECKLIST DATA =====
+const checklistData = [
+  { group: "Core Pipeline Architecture", items: [
+    "Can describe the 5-layer data pipeline: Source → Ingestion → Transform → Storage → Serving",
+    "Know the 3 key drivers of data warehouse modernisation (Cloud, Columnar DBs, Storage cost)",
+    "Understand ETL vs. ELT — where transformation happens and which preserves raw data",
+    "Can explain EtLT (Extract, small-t transform, Load, Transform) subpattern",
+    "Know what 'schema-on-read' and 'schema-on-write' mean"
+  ]},
+  { group: "Reverse ETL", items: [
+    "Can define Reverse ETL: warehouse → operational tools",
+    "Know who uses ETL (analysts) vs. who uses Reverse ETL (sales/marketing/support)",
+    "Can give 2 real-world examples of Reverse ETL in action",
+    "Understand the Forward Engineering / Reverse Engineering analogy",
+    "Know tools: Census, Hightouch for Reverse ETL"
+  ]},
+  { group: "Data Ingestion", items: [
+    "Know the 6 interface types: DB connection, REST API, Kafka, File/S3, HDFS/HBase, Warehouse",
+    "Know the 4 format types: Structured (SQL), Semi-structured (JSON/XML/CSV), Unstructured (TAVI), Streaming (Kafka)",
+    "Know commercial tools (Fivetran, Stitch) vs. open-source (Singer, Airbyte, Sqoop)",
+    "Know that data engineer's 2 key questions are: INTERFACE and FORMAT"
+  ]},
+  { group: "Data Transformation", items: [
+    "Can explain simple transforms (timezone conversion, type casting) vs. complex (multi-table aggregation, sessionisation)",
+    "Know dbt as the primary transformation tool in the modern data stack",
+    "Understand PII handling: hashing, masking, tokenisation",
+    "Can compare Star Schema vs. Snowflake Schema on 5 dimensions",
+    "Know when to use each schema type"
+  ]},
+  { group: "Storage Types", items: [
+    "Can define and compare Block, Object, and File storage",
+    "Know RAID, SAN, and AWS EBS as block storage examples",
+    "Know AWS S3/Azure Blob/GCS as object storage examples",
+    "Know NTFS, EXT4, NAS, AWS EFS as file storage examples",
+    "Know that Object Storage is IMMUTABLE once written",
+    "Know that AWS EBS replicates to 2+ host machines"
+  ]},
+  { group: "Raw Storage Ingredients", items: [
+    "Know the 3-tier storage model: Raw Ingredients → Storage Systems → Storage Abstractions",
+    "Can compare HDD vs. SSD vs. RAM on speed, persistence, cost",
+    "Know RAM is VOLATILE (data lost on power-off)",
+    "Know HDD has moving parts (seek time); SSD does not",
+    "Understand serialisation formats: JSON, XML, CSV, Parquet, Avro"
+  ]},
+  { group: "HDFS Architecture", items: [
+    "Can explain NameNode vs. DataNode roles",
+    "Know NameNode stores METADATA only (not data)",
+    "Know Secondary NameNode is NOT a backup (most tested misconception!)",
+    "Know default block size: 128MB and WHY",
+    "Know default replication factor: 3",
+    "Know the DataNode heartbeat (3 sec) and block report (hourly) mechanism",
+    "Understand data locality and why it matters",
+    "Know Hadoop is 'partially dead' — HDFS still lives, pure MapReduce mostly dead"
+  ]},
+  { group: "Caching — Redis & Memcached", items: [
+    "Can explain cache hit vs. cache miss",
+    "Know the 3-step Redis cycle: check cache → miss → query DB → prime cache",
+    "Know Memcached is purely volatile; Redis has optional persistence",
+    "Know Redis writes to disk every ~2 seconds (tolerates small data loss)",
+    "Know Memcached supports only strings/integers; Redis supports complex structures"
+  ]},
+  { group: "Orchestration", items: [
+    "Understand why Python scripts fail at scale (fragility, no dependency management, no retry)",
+    "Know what a DAG is in the context of Airflow",
+    "Know general-purpose tools: Airflow, Luigi, AWS Glue",
+    "Know ML-specific tools: Kubeflow Pipelines (Docker containers on Kubernetes)",
+    "Can compare Orchestration vs. cron scheduling on 5 dimensions"
+  ]},
+  { group: "DataOps & CTCD", items: [
+    "Know CTCD ≠ CICD — Continuous Training and Continuous Deployment",
+    "Can list the 4 DataOps pillars: Automation, Version Control, Testing, Monitoring",
+    "Know the 4 monitoring signals: Freshness, Volume, Schema, Quality",
+    "Understand why DataOps needs data/schema versioning on top of code versioning",
+    "Know tools: Great Expectations (testing), dbt tests, Monte Carlo (observability)"
+  ]},
+  { group: "Data Serving Infrastructure", items: [
+    "Know the 5 ways to serve data: File Exchange, Databases, Streaming, Query Federation, Jupyter",
+    "Can distinguish Business Analytics vs. Operational Analytics vs. Embedded Analytics",
+    "Know Query Federation tools: Trino, Presto, Starburst",
+    "Know embedded analytics tools: Looker, Qlik Embedded, Sisense",
+    "Understand that the line between Business and Operational analytics is blurring"
+  ]},
+  { group: "ML Infrastructure Stack", items: [
+    "Can name all 8 layers of the ML stack from bottom (Data Warehouse) to top (Model Development)",
+    "Understand the 3 zones: Foundational Infrastructure, Software Architecture, Data Science & ML",
+    "Know that Model Development occupies only a tiny part of the full machinery",
+    "Understand Feature Store vs. Feature Warehouse distinction",
+    "Know what Model Operations tracks and why it prevents chaos"
+  ]},
+  { group: "Automation, Cloud & Security", items: [
+    "Know the difference between IaC (Terraform) and Pipeline Automation (Airflow)",
+    "Can name IaC tools: Terraform, Pulumi, AWS CDK, Azure Bicep",
+    "Know the 3 security states: Data at Rest, Data in Transit, Data in Use",
+    "Know one protection mechanism for each security state",
+    "Can compare IaaS vs. PaaS vs. SaaS cloud models"
+  ]},
+  { group: "CT/CD Pipeline Phases", items: [
+    "Can describe all 4 CT/CD phases: Experimental, CI, CD, CT",
+    "Know what triggers a canary deployment",
+    "Understand why Prediction Logs are stored and their dual role",
+    "Know that only the Model Training Pipeline has write access to the Model Store",
+    "Understand why models deteriorate after deployment (data/concept drift)"
+  ]},
+  { group: "DoorDash Case Study", items: [
+    "Can name at least 5 components of the DoorDash ML platform and their roles",
+    "Distinguish Realtime Feature Aggregator (streaming, Kafka) vs. Historical Aggregator (batch ETL)",
+    "Know that Feature Store (Redis) vs. Feature Warehouse (Snowflake) serve different purposes",
+    "Understand how the Model Training Pipeline implements CT/CD",
+    "Can map DoorDash architecture to the generic data pipeline stages from Session 5"
+  ]}
+];
+
+// ===== STATE =====
+let currentTopic = 'overview';
+let visitedTopics = new Set(['overview']);
+const totalTopics = 16;
+
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let quizResults = [];
+
+let fcIndex = 0;
+let fcFlipped = false;
+let fcRatings = {};
+
+// ===== NAVIGATION =====
+function showTopic(id) {
+  document.querySelectorAll('.topic-section').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('topic-' + id);
+  if (el) el.classList.add('active');
+
+  document.querySelectorAll('.nav-item[data-topic]').forEach(el => el.classList.remove('active'));
+  const navEl = document.querySelector(`.nav-item[data-topic="${id}"]`);
+  if (navEl) {
+    navEl.classList.add('active');
+    navEl.classList.add('visited');
+    navEl.querySelector('.nav-dot').style.background = 'var(--teal)';
+  }
+
+  visitedTopics.add(id);
+  updateProgress();
+  currentTopic = id;
+  closeSidebar();
+  window.scrollTo(0, 0);
+}
+
+function updateProgress() {
+  const count = visitedTopics.size;
+  const pct = Math.round((count / totalTopics) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = count + ' / ' + totalTopics;
+}
+
+function switchMode(mode) {
+  document.querySelectorAll('.mode-panel').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.mode-tab').forEach(el => el.classList.remove('active'));
+
+  const studyNav = document.getElementById('study-nav');
+  const quizNav = document.getElementById('quiz-nav');
+  const fcNav = document.getElementById('fc-nav');
+
+  if (mode === 'study') {
+    document.getElementById('study-mode').classList.add('active');
+    document.querySelectorAll('.mode-tab')[0].classList.add('active');
+    studyNav.style.display = 'block'; quizNav.style.display = 'none'; fcNav.style.display = 'none';
+  } else if (mode === 'quiz') {
+    document.getElementById('quiz-mode').classList.add('active');
+    document.querySelectorAll('.mode-tab')[1].classList.add('active');
+    studyNav.style.display = 'none'; quizNav.style.display = 'block'; fcNav.style.display = 'none';
+    if (quizIndex === 0 && !quizAnswered) initQuiz();
+  } else if (mode === 'flashcard') {
+    document.getElementById('flashcard-mode').classList.add('active');
+    document.querySelectorAll('.mode-tab')[2].classList.add('active');
+    studyNav.style.display = 'none'; quizNav.style.display = 'none'; fcNav.style.display = 'block';
+    renderFlashcard();
+  } else if (mode === 'glossary') {
+    document.getElementById('glossary-mode').classList.add('active');
+    studyNav.style.display = 'block'; quizNav.style.display = 'none'; fcNav.style.display = 'none';
+    renderGlossary();
+  } else if (mode === 'checklist') {
+    document.getElementById('checklist-mode').classList.add('active');
+    studyNav.style.display = 'block'; quizNav.style.display = 'none'; fcNav.style.display = 'none';
+    renderChecklist();
+  }
+  window.scrollTo(0,0);
+  closeSidebar();
+}
+
+// ===== EXPAND CARDS =====
+function toggleExpand(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// ===== TABS =====
+function switchTab(btn, contentId) {
+  const container = btn.closest('.tab-container');
+  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  container.querySelector('#' + contentId).classList.add('active');
+}
+
+// ===== QUIZ =====
+function initQuiz() {
+  quizIndex = 0; quizScore = 0; quizAnswered = false; quizResults = [];
+  document.getElementById('quiz-main').style.display = 'block';
+  document.getElementById('quiz-score-screen').style.display = 'none';
+  initDots();
+  renderQuestion();
+}
+
+function initDots() {
+  const dotsEl = document.getElementById('quiz-dots');
+  dotsEl.innerHTML = '';
+  quizData.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'qdot';
+    d.id = 'qdot-' + i;
+    dotsEl.appendChild(d);
+  });
+}
+
+function renderQuestion() {
+  const q = quizData[quizIndex];
+  document.getElementById('quiz-progress').textContent = `Question ${quizIndex + 1} of ${quizData.length}`;
+  document.getElementById('quiz-question').textContent = q.q;
+  const optsEl = document.getElementById('quiz-options');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-opt';
+    div.textContent = opt;
+    div.onclick = () => answerQuestion(i);
+    optsEl.appendChild(div);
+  });
+  document.getElementById('quiz-explanation').className = 'quiz-explanation';
+  document.getElementById('quiz-explanation').innerHTML = '';
+  document.getElementById('quiz-next-btn').style.display = 'none';
+  quizAnswered = false;
+}
+
+function answerQuestion(selected) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quizData[quizIndex];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.classList.add('answered'));
+  if (selected === q.correct) {
+    opts[selected].classList.add('correct');
+    quizScore++;
+    quizResults.push('correct');
+    document.getElementById('qdot-' + quizIndex).classList.add('correct');
+  } else {
+    opts[selected].classList.add('wrong');
+    opts[q.correct].classList.add('correct');
+    quizResults.push('wrong');
+    document.getElementById('qdot-' + quizIndex).classList.add('wrong');
+  }
+  const expEl = document.getElementById('quiz-explanation');
+  expEl.innerHTML = '<strong>Explanation:</strong> ' + q.exp;
+  expEl.classList.add('show');
+  document.getElementById('quiz-next-btn').style.display = 'inline-block';
+}
+
+function nextQuestion() {
+  quizIndex++;
+  if (quizIndex >= quizData.length) {
+    showScore();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showScore() {
+  document.getElementById('quiz-main').style.display = 'none';
+  const scoreScreen = document.getElementById('quiz-score-screen');
+  scoreScreen.style.display = 'block';
+  const pct = Math.round((quizScore / quizData.length) * 100);
+  document.getElementById('score-circle').textContent = pct + '%';
+  let msg, sub;
+  if (pct >= 90) { msg = '🏆 Excellent!'; sub = 'Outstanding mastery of Session 5 concepts.'; }
+  else if (pct >= 75) { msg = '✅ Great Work!'; sub = 'Solid understanding. Review a few more explanations.'; }
+  else if (pct >= 60) { msg = '📖 Good Progress'; sub = 'Review the topics you found difficult and retry.'; }
+  else { msg = '🔄 Keep Studying'; sub = 'Go back to Study Mode and revise the key concepts.'; }
+  document.getElementById('score-msg').textContent = msg;
+  document.getElementById('score-sub').textContent = `${quizScore} / ${quizData.length} correct — ${sub}`;
+}
+
+function restartQuiz() {
+  initQuiz();
+}
+
+// ===== FLASHCARDS =====
+function renderFlashcard() {
+  const card = flashcards[fcIndex];
+  document.getElementById('fc-question').textContent = card.q;
+  document.getElementById('fc-answer').textContent = card.a;
+  document.getElementById('fc-counter').textContent = `Card ${fcIndex + 1} of ${flashcards.length}`;
+  document.getElementById('fc-nav-counter').textContent = `${fcIndex + 1} / ${flashcards.length}`;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('fc-rating-btns').style.display = 'none';
+  fcFlipped = false;
+
+  const allRated = flashcards.every((_, i) => fcRatings[i]);
+  document.getElementById('fc-complete-msg').style.display = allRated ? 'block' : 'none';
+}
+
+function flipCard() {
+  fcFlipped = !fcFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', fcFlipped);
+  if (fcFlipped) document.getElementById('fc-rating-btns').style.display = 'flex';
+}
+
+function rateCard(rating) {
+  fcRatings[fcIndex] = rating;
+  document.getElementById('fc-easy-count').textContent = Object.values(fcRatings).filter(r=>r==='easy').length;
+  document.getElementById('fc-good-count').textContent = Object.values(fcRatings).filter(r=>r==='good').length;
+  document.getElementById('fc-hard-count').textContent = Object.values(fcRatings).filter(r=>r==='hard').length;
+  nextCard();
+}
+
+function nextCard() {
+  if (fcIndex < flashcards.length - 1) { fcIndex++; renderFlashcard(); }
+}
+
+function prevCard() {
+  if (fcIndex > 0) { fcIndex--; renderFlashcard(); }
+}
+
+function restartFlashcards() {
+  fcIndex = 0; fcFlipped = false; fcRatings = {};
+  document.getElementById('fc-easy-count').textContent = '0';
+  document.getElementById('fc-good-count').textContent = '0';
+  document.getElementById('fc-hard-count').textContent = '0';
+  renderFlashcard();
+}
+
+// ===== GLOSSARY =====
+function renderGlossary() {
+  const tbody = document.getElementById('glossary-body');
+  tbody.innerHTML = '';
+  glossaryData.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.className = 'glossary-row';
+    tr.dataset.search = (item.abbr + ' ' + item.full + ' ' + item.def).toLowerCase();
+    tr.innerHTML = `<td class="abbr-col">${item.abbr}</td><td class="full-col">${item.full}</td><td>${item.def}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterGlossary(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.glossary-row').forEach(row => {
+    row.classList.toggle('hidden', q && !row.dataset.search.includes(q));
+  });
+}
+
+// ===== CHECKLIST =====
+function renderChecklist() {
+  const container = document.getElementById('checklist-container');
+  if (container.innerHTML !== '') { updateChecklistStats(); return; }
+  container.innerHTML = '';
+  let totalItems = 0;
+  checklistData.forEach((group, gi) => {
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'checklist-group';
+    const label = document.createElement('div');
+    label.className = 'checklist-group-label';
+    label.textContent = group.group;
+    groupDiv.appendChild(label);
+    group.items.forEach((item, ii) => {
+      totalItems++;
+      const key = `dmml5-check-${gi}-${ii}`;
+      const row = document.createElement('div');
+      row.className = 'checklist-item';
+      const saved = localStorage.getItem(key) === 'true';
+      if (saved) row.classList.add('checked');
+      row.innerHTML = `<input type="checkbox" id="${key}" ${saved ? 'checked' : ''}><label for="${key}">${item}</label>`;
+      row.querySelector('input').addEventListener('change', function() {
+        localStorage.setItem(key, this.checked);
+        row.classList.toggle('checked', this.checked);
+        updateChecklistStats();
+      });
+      groupDiv.appendChild(row);
+    });
+    container.appendChild(groupDiv);
+  });
+  document.getElementById('check-total').textContent = totalItems;
+  updateChecklistStats();
+}
+
+function updateChecklistStats() {
+  const total = document.querySelectorAll('.checklist-item').length;
+  const done = document.querySelectorAll('.checklist-item.checked').length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  document.getElementById('check-done').textContent = done;
+  document.getElementById('check-total').textContent = total;
+  document.getElementById('check-pct').textContent = pct + '%';
+}
+
+function resetChecklist() {
+  document.querySelectorAll('.checklist-item input').forEach(cb => {
+    cb.checked = false;
+    localStorage.removeItem(cb.id);
+  });
+  document.querySelectorAll('.checklist-item').forEach(item => item.classList.remove('checked'));
+  updateChecklistStats();
+}
+
+// ===== SIDEBAR MOBILE =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+  initDots();
+  renderGlossary();
+  updateProgress();
+});
+</script>
+</body>
+</html>

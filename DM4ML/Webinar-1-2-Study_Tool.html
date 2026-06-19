@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DM4ML Study Tool — Data Management for Machine Learning</title>
+<style>
+:root{
+  --bg:#0f1117; --bg2:#151823; --bg3:#1b1f2e; --bg-card:#1a1d29;
+  --border:#272b3a; --border-light:#33384a;
+  --text:#e8e9ed; --text-dim:#a3a8b8; --text-faint:#6b7080;
+  --purple:#9d7bf0; --purple-dim:#2a2440;
+  --teal:#3ddbb8; --teal-dim:#16332e;
+  --amber:#f0b429; --amber-dim:#3a2f14;
+  --sky:#5ec8ee; --sky-dim:#172e3a;
+  --coral:#f0795a; --coral-dim:#3a2018;
+  --green:#4ade80; --red:#f87171;
+  --radius:12px; --radius-sm:8px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --maxw:880px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.6; font-size:15.5px;
+  -webkit-font-smoothing:antialiased;
+}
+::-webkit-scrollbar{width:9px; height:9px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-light); border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:#454b62;}
+
+a{color:var(--sky); text-decoration:none;}
+code{font-family:"SF Mono",Menlo,Consolas,monospace; font-size:0.88em;}
+
+/* ============ APP LAYOUT ============ */
+#app{display:flex; min-height:100vh;}
+
+/* ---- Sidebar ---- */
+#sidebar{
+  width:280px; flex-shrink:0; background:var(--bg2);
+  border-right:1px solid var(--border);
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+  display:flex; flex-direction:column; z-index:50;
+  transition:transform 0.25s ease;
+}
+.sb-header{padding:20px 18px 14px; border-bottom:1px solid var(--border);}
+.sb-title{font-size:15px; font-weight:700; letter-spacing:0.2px; color:var(--text);}
+.sb-sub{font-size:11.5px; color:var(--text-faint); margin-top:3px; line-height:1.4;}
+
+.progress-wrap{padding:14px 18px; border-bottom:1px solid var(--border);}
+.progress-label{display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;}
+.progress-bar-bg{height:6px; background:var(--bg3); border-radius:4px; overflow:hidden;}
+.progress-bar-fill{height:100%; background:linear-gradient(90deg,var(--teal),var(--sky)); border-radius:4px; transition:width 0.4s ease; width:0%;}
+
+.mode-tabs{display:flex; gap:4px; padding:12px 14px; border-bottom:1px solid var(--border);}
+.mode-tab{
+  flex:1; text-align:center; padding:8px 4px; font-size:12.5px; font-weight:600;
+  border-radius:7px; cursor:pointer; color:var(--text-dim); transition:all 0.15s;
+  border:1px solid transparent;
+}
+.mode-tab:hover{background:var(--bg3); color:var(--text);}
+.mode-tab.active{background:var(--purple-dim); color:var(--purple); border-color:#3d3470;}
+
+.nav-scroll{flex:1; overflow-y:auto; padding:10px 10px 18px;}
+.nav-section-label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.7px; color:var(--text-faint); padding:14px 10px 6px;}
+.nav-item{
+  display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px;
+  cursor:pointer; color:var(--text-dim); font-size:13.6px; margin-bottom:2px;
+  transition:all 0.13s; position:relative;
+}
+.nav-item:hover{background:var(--bg3); color:var(--text);}
+.nav-item.active{background:var(--purple-dim); color:#c9b6ff; font-weight:600;}
+.nav-item .num{
+  width:20px; height:20px; border-radius:6px; background:var(--bg3); color:var(--text-faint);
+  display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; flex-shrink:0;
+}
+.nav-item.active .num{background:var(--purple); color:#1a1428;}
+.nav-item.visited:not(.active) .num{background:var(--teal-dim); color:var(--teal);}
+.nav-item .label{flex:1; min-width:0;}
+.nav-item .check{font-size:11px; color:var(--teal); flex-shrink:0;}
+
+.sb-footer{padding:12px 18px; border-top:1px solid var(--border); font-size:10.5px; color:var(--text-faint); text-align:center;}
+
+/* ---- Mobile sidebar toggle ---- */
+#sb-toggle{
+  display:none; position:fixed; top:14px; left:14px; z-index:100;
+  width:40px; height:40px; border-radius:10px; background:var(--bg-card);
+  border:1px solid var(--border); color:var(--text); align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:var(--shadow);
+}
+#sb-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:49;}
+
+/* ---- Main content ---- */
+#main{flex:1; min-width:0; padding:38px 28px 80px; display:flex; justify-content:center;}
+#content{width:100%; max-width:var(--maxw);}
+
+.page-header{margin-bottom:26px;}
+.page-eyebrow{font-size:12px; color:var(--purple); text-transform:uppercase; letter-spacing:0.8px; font-weight:700; margin-bottom:8px;}
+.page-title{font-size:28px; font-weight:800; margin:0 0 8px; color:#fff; letter-spacing:-0.3px;}
+.page-desc{color:var(--text-dim); font-size:15px; max-width:680px;}
+
+h2.sec-title{font-size:19px; font-weight:700; margin:36px 0 14px; color:var(--text); display:flex; align-items:center; gap:8px;}
+h2.sec-title:first-of-type{margin-top:24px;}
+h3.sub-title{font-size:15.5px; font-weight:700; margin:22px 0 10px; color:var(--text);}
+p{color:#cdd0db; margin:10px 0;}
+ul.plain, ol.plain{color:#cdd0db; padding-left:22px;}
+ul.plain li, ol.plain li{margin-bottom:6px;}
+strong{color:#fff; font-weight:650;}
+
+/* ============ CALLOUT BOXES ============ */
+.callout{
+  border-radius:var(--radius); padding:14px 16px 15px; margin:14px 0;
+  border:1px solid; position:relative; font-size:14.5px;
+}
+.callout .co-label{
+  display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:800;
+  text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px;
+}
+.callout p{margin:4px 0; color:#d8dae3;}
+.callout .source-tag{
+  display:inline-block; margin-top:8px; font-size:11px; font-weight:600;
+  padding:2px 8px; border-radius:5px; opacity:0.85;
+}
+
+.co-def{background:var(--purple-dim); border-color:#3d3470;}
+.co-def .co-label{color:var(--purple);}
+.co-insight{background:var(--teal-dim); border-color:#1f4a40;}
+.co-insight .co-label{color:var(--teal);}
+.co-tip{background:var(--amber-dim); border-color:#4a3d18;}
+.co-tip .co-label{color:var(--amber);}
+.co-research{background:var(--sky-dim); border-color:#1e4254;}
+.co-research .co-label{color:var(--sky);}
+.co-research .source-tag{background:#0d2733; color:var(--sky);}
+.co-warn{background:var(--coral-dim); border-color:#4a2c1e;}
+.co-warn .co-label{color:var(--coral);}
+
+/* ============ TABLES ============ */
+.tbl-wrap{overflow-x:auto; margin:16px 0; border-radius:var(--radius); border:1px solid var(--border);}
+table.cmp{width:100%; border-collapse:collapse; font-size:14px;}
+table.cmp th{
+  background:var(--bg3); color:var(--text); text-align:left; padding:11px 14px;
+  font-weight:700; font-size:12.5px; text-transform:uppercase; letter-spacing:0.3px;
+  border-bottom:1px solid var(--border-light);
+}
+table.cmp td{padding:11px 14px; border-bottom:1px solid var(--border); color:#cdd0db; vertical-align:top;}
+table.cmp tr:last-child td{border-bottom:none;}
+table.cmp tr:hover td{background:rgba(255,255,255,0.02);}
+table.cmp td.hl-purple{color:var(--purple); font-weight:600;}
+table.cmp td.hl-teal{color:var(--teal); font-weight:600;}
+
+/* ============ EXPANDABLE CARDS ============ */
+.exp-card{
+  border:1px solid var(--border); border-radius:var(--radius); margin:10px 0;
+  background:var(--bg-card); overflow:hidden;
+}
+.exp-head{
+  display:flex; align-items:center; justify-content:space-between; padding:14px 16px;
+  cursor:pointer; user-select:none; transition:background 0.15s;
+}
+.exp-head:hover{background:var(--bg3);}
+.exp-head .title{font-weight:650; color:var(--text); font-size:14.5px; display:flex; align-items:center; gap:10px;}
+.exp-head .chev{color:var(--text-faint); transition:transform 0.2s; font-size:12px;}
+.exp-card.open .chev{transform:rotate(90deg);}
+.exp-body{max-height:0; overflow:hidden; transition:max-height 0.25s ease;}
+.exp-card.open .exp-body{max-height:2000px;}
+.exp-body-inner{padding:0 16px 16px; color:#cdd0db; font-size:14px;}
+.exp-body-inner p{margin:8px 0;}
+
+/* ============ FLOW DIAGRAM ============ */
+.flow{display:flex; flex-wrap:wrap; align-items:center; gap:0; margin:18px 0; padding:18px; background:var(--bg-card); border-radius:var(--radius); border:1px solid var(--border);}
+.flow-step{
+  background:var(--bg3); border:1px solid var(--border-light); border-radius:10px;
+  padding:10px 14px; font-size:13px; font-weight:600; color:var(--text); text-align:center;
+  min-width:90px;
+}
+.flow-step.acc-purple{border-color:#3d3470; background:var(--purple-dim); color:#c9b6ff;}
+.flow-step.acc-teal{border-color:#1f4a40; background:var(--teal-dim); color:var(--teal);}
+.flow-step.acc-amber{border-color:#4a3d18; background:var(--amber-dim); color:var(--amber);}
+.flow-step.acc-sky{border-color:#1e4254; background:var(--sky-dim); color:var(--sky);}
+.flow-arrow{color:var(--text-faint); font-size:18px; margin:0 8px; flex-shrink:0;}
+.flow-cap{width:100%; font-size:11.5px; color:var(--text-faint); margin-top:2px;}
+
+@media(max-width:600px){
+  .flow{flex-direction:column; align-items:stretch;}
+  .flow-arrow{transform:rotate(90deg); margin:2px auto;}
+  .flow-step{min-width:0;}
+}
+
+/* ============ TABS (variants) ============ */
+.vtabs-bar{display:flex; gap:4px; border-bottom:1px solid var(--border); margin:16px 0 0; flex-wrap:wrap;}
+.vtab-btn{
+  padding:9px 16px; font-size:13px; font-weight:600; color:var(--text-dim);
+  cursor:pointer; border-bottom:2px solid transparent; transition:all 0.15s;
+}
+.vtab-btn:hover{color:var(--text);}
+.vtab-btn.active{color:var(--purple); border-bottom-color:var(--purple);}
+.vtab-panels{border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); padding:16px; background:var(--bg-card);}
+.vtab-panel{display:none;}
+.vtab-panel.active{display:block;}
+
+/* ============ CODE BLOCKS ============ */
+.code-block{
+  background:#0a0c12; border:1px solid var(--border); border-radius:var(--radius);
+  margin:14px 0; overflow:hidden;
+}
+.code-head{
+  display:flex; justify-content:space-between; align-items:center; padding:8px 14px;
+  background:var(--bg3); font-size:11px; color:var(--text-faint); font-weight:700;
+  text-transform:uppercase; letter-spacing:0.5px;
+}
+.code-block pre{margin:0; padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.6; color:#d8e0ee;}
+.code-block .kw{color:#c792ea;} .code-block .str{color:#a8e6a3;} .code-block .com{color:#6b7080;} .code-block .fn{color:#82aaff;} .code-block .num{color:#f78c6c;}
+
+/* ============ BAR CHART ============ */
+.barchart{margin:16px 0; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 18px 10px;}
+.bc-title{font-size:12.5px; font-weight:700; color:var(--text-dim); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.4px;}
+.bc-row{display:flex; align-items:center; gap:10px; margin-bottom:11px;}
+.bc-label{width:140px; flex-shrink:0; font-size:12.5px; color:var(--text-dim); text-align:right;}
+.bc-track{flex:1; background:var(--bg3); border-radius:5px; height:22px; overflow:hidden; position:relative;}
+.bc-fill{height:100%; border-radius:5px; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; transition:width 1s ease; width:0%;}
+.bc-fill span{font-size:11px; font-weight:700; color:#0a0c12;}
+.bc-note{font-size:11px; color:var(--text-faint); margin-top:6px; text-align:center;}
+
+/* ============ BUTTONS ============ */
+.btn{
+  display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:9px;
+  font-size:13.5px; font-weight:650; cursor:pointer; border:1px solid var(--border-light);
+  background:var(--bg3); color:var(--text); transition:all 0.15s; user-select:none;
+}
+.btn:hover{background:#262b3c; transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn-primary{background:linear-gradient(135deg,var(--purple),#7c5cd6); color:#fff; border-color:transparent;}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-sm{padding:6px 13px; font-size:12px;}
+.btn-row{display:flex; gap:10px; margin:18px 0; flex-wrap:wrap;}
+
+/* ============ PAGE NAV (prev/next) ============ */
+.page-nav{display:flex; justify-content:space-between; margin-top:46px; padding-top:22px; border-top:1px solid var(--border); gap:14px;}
+.pn-btn{
+  flex:1; max-width:48%; padding:13px 16px; border:1px solid var(--border); border-radius:var(--radius);
+  cursor:pointer; transition:all 0.15s; background:var(--bg-card);
+}
+.pn-btn:hover{border-color:var(--purple); background:var(--bg3);}
+.pn-btn .pn-dir{font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.5px; font-weight:700;}
+.pn-btn .pn-name{font-size:14px; color:var(--text); font-weight:650; margin-top:3px;}
+.pn-btn.pn-next{text-align:right; margin-left:auto;}
+.pn-spacer{flex:1;}
+
+/* ============ QUIZ MODE ============ */
+.quiz-wrap{max-width:680px; margin:0 auto;}
+.quiz-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+.dot-tracker{display:flex; gap:5px; flex-wrap:wrap;}
+.qdot{width:11px; height:11px; border-radius:50%; background:var(--bg3); border:1px solid var(--border-light);}
+.qdot.correct{background:var(--green); border-color:var(--green);}
+.qdot.wrong{background:var(--red); border-color:var(--red);}
+.qdot.current{box-shadow:0 0 0 2px var(--purple);}
+
+.quiz-card{background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:26px; box-shadow:var(--shadow);}
+.q-meta{display:flex; justify-content:space-between; font-size:12px; color:var(--text-faint); margin-bottom:12px; text-transform:uppercase; letter-spacing:0.4px; font-weight:700;}
+.q-text{font-size:17px; font-weight:650; color:#fff; margin-bottom:20px; line-height:1.5;}
+.q-opt{
+  display:flex; align-items:flex-start; gap:12px; padding:13px 15px; border:1.5px solid var(--border);
+  border-radius:10px; margin-bottom:9px; cursor:pointer; transition:all 0.15s; background:var(--bg3);
+}
+.q-opt:hover{border-color:var(--border-light); background:#22273a;}
+.q-opt .opt-letter{
+  width:24px; height:24px; border-radius:7px; background:var(--bg2); display:flex; align-items:center;
+  justify-content:center; font-size:12px; font-weight:700; color:var(--text-dim); flex-shrink:0; margin-top:1px;
+}
+.q-opt .opt-text{color:#dadce5; font-size:14.5px; padding-top:1px;}
+.q-opt.correct{border-color:var(--green); background:rgba(74,222,128,0.1);}
+.q-opt.correct .opt-letter{background:var(--green); color:#0a0c12;}
+.q-opt.wrong{border-color:var(--red); background:rgba(248,113,113,0.1);}
+.q-opt.wrong .opt-letter{background:var(--red); color:#0a0c12;}
+.q-opt.disabled{cursor:default;}
+.q-opt.dim{opacity:0.45;}
+
+.q-explain{
+  margin-top:16px; padding:15px 16px; border-radius:10px; background:var(--bg3);
+  border-left:3px solid var(--purple); font-size:13.8px; color:#cdd0db; display:none;
+}
+.q-explain.show{display:block;}
+.q-explain b{color:var(--sky);}
+.q-footer{display:flex; justify-content:space-between; margin-top:20px;}
+
+.score-screen{text-align:center; padding:40px 20px;}
+.score-num{font-size:64px; font-weight:800; background:linear-gradient(135deg,var(--purple),var(--teal)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.score-label{font-size:15px; color:var(--text-dim); margin-top:6px;}
+.score-msg{font-size:16px; margin:22px 0; color:var(--text);}
+
+/* ============ FLASHCARD MODE ============ */
+.fc-wrap{max-width:600px; margin:0 auto; text-align:center;}
+.fc-progress{font-size:12.5px; color:var(--text-faint); margin-bottom:16px; font-weight:600;}
+.fc-stage{perspective:1600px; height:340px; margin-bottom:20px;}
+.fc-card{
+  width:100%; height:100%; position:relative; cursor:pointer; transition:transform 0.5s;
+  transform-style:preserve-3d;
+}
+.fc-card.flipped{transform:rotateY(180deg);}
+.fc-face{
+  position:absolute; inset:0; backface-visibility:hidden; border-radius:18px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:32px; box-shadow:var(--shadow); border:1px solid var(--border-light);
+}
+.fc-front{background:linear-gradient(160deg,#221d3a,#1a1d29);}
+.fc-back{background:linear-gradient(160deg,#13312c,#1a1d29); transform:rotateY(180deg); overflow-y:auto;}
+.fc-tag{font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:var(--purple); margin-bottom:14px;}
+.fc-back .fc-tag{color:var(--teal);}
+.fc-q{font-size:19px; font-weight:650; color:#fff; line-height:1.45;}
+.fc-a{font-size:15.5px; color:#dadce5; line-height:1.55; text-align:left;}
+.fc-hint{font-size:11.5px; color:var(--text-faint); margin-top:18px;}
+.fc-rate-row{display:flex; gap:10px; justify-content:center; margin-top:6px;}
+.fc-rate{
+  flex:1; max-width:140px; padding:11px; border-radius:10px; cursor:pointer; font-size:13px;
+  font-weight:700; border:1px solid var(--border-light); transition:all 0.15s;
+}
+.fc-rate.hard{background:var(--coral-dim); color:var(--coral);}
+.fc-rate.good{background:var(--amber-dim); color:var(--amber);}
+.fc-rate.easy{background:var(--teal-dim); color:var(--teal);}
+.fc-rate:hover{filter:brightness(1.2); transform:translateY(-1px);}
+.fc-counters{display:flex; justify-content:center; gap:18px; margin-top:18px; font-size:12.5px; color:var(--text-dim);}
+.fc-counters span b{color:var(--text);}
+.fc-nav{display:flex; justify-content:center; gap:12px; margin-top:18px;}
+.fc-deck-select{margin-bottom:16px; display:flex; gap:6px; flex-wrap:wrap; justify-content:center;}
+.fc-chip{padding:6px 13px; border-radius:20px; background:var(--bg3); border:1px solid var(--border); font-size:12px; color:var(--text-dim); cursor:pointer;}
+.fc-chip.active{background:var(--purple-dim); color:var(--purple); border-color:#3d3470;}
+
+/* ============ GLOSSARY ============ */
+.gloss-search{
+  width:100%; padding:13px 16px; border-radius:11px; border:1px solid var(--border);
+  background:var(--bg-card); color:var(--text); font-size:14.5px; margin-bottom:18px;
+}
+.gloss-search:focus{outline:none; border-color:var(--purple);}
+table.gloss{width:100%; border-collapse:collapse; font-size:13.6px;}
+table.gloss th{background:var(--bg3); padding:10px 13px; text-align:left; font-size:11.5px; text-transform:uppercase; color:var(--text-dim); position:sticky; top:0;}
+table.gloss td{padding:10px 13px; border-bottom:1px solid var(--border); color:#cdd0db; vertical-align:top;}
+table.gloss td.term{color:var(--sky); font-weight:700; white-space:nowrap;}
+table.gloss tr.hidden{display:none;}
+
+/* ============ CHECKLIST ============ */
+.cl-summary{
+  display:flex; align-items:center; justify-content:space-between; background:var(--bg-card);
+  border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; margin-bottom:20px;
+}
+.cl-count{font-size:24px; font-weight:800; color:var(--teal);}
+.cl-count span{font-size:14px; color:var(--text-faint); font-weight:500;}
+.cl-group{margin-bottom:8px;}
+.cl-group-title{font-size:13px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px; margin:22px 0 8px;}
+.cl-item{
+  display:flex; align-items:flex-start; gap:11px; padding:10px 12px; border-radius:9px;
+  cursor:pointer; transition:background 0.15s;
+}
+.cl-item:hover{background:var(--bg-card);}
+.cl-box{
+  width:20px; height:20px; border-radius:6px; border:1.5px solid var(--border-light); flex-shrink:0;
+  margin-top:1px; display:flex; align-items:center; justify-content:center; transition:all 0.15s;
+}
+.cl-item.checked .cl-box{background:var(--teal); border-color:var(--teal);}
+.cl-box svg{display:none; width:13px; height:13px;}
+.cl-item.checked .cl-box svg{display:block;}
+.cl-text{font-size:14px; color:#cdd0db; transition:all 0.15s;}
+.cl-item.checked .cl-text{color:var(--text-faint); text-decoration:line-through;}
+
+/* ============ HOME / LANDING ============ */
+.home-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-top:24px;}
+.home-card{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:18px;
+  cursor:pointer; transition:all 0.15s;
+}
+.home-card:hover{border-color:var(--purple); transform:translateY(-2px); box-shadow:var(--shadow);}
+.home-card .hc-num{font-size:11px; color:var(--purple); font-weight:800;}
+.home-card .hc-title{font-size:15px; font-weight:700; color:var(--text); margin:6px 0 4px;}
+.home-card .hc-desc{font-size:12.5px; color:var(--text-faint); line-height:1.45;}
+.stat-row{display:flex; gap:14px; margin-top:20px; flex-wrap:wrap;}
+.stat-box{background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 22px; flex:1; min-width:130px; text-align:center;}
+.stat-box .stat-n{font-size:26px; font-weight:800; color:var(--teal);}
+.stat-box .stat-l{font-size:11.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:0.4px; margin-top:3px;}
+
+@media(max-width:880px){
+  #sidebar{position:fixed; left:0; top:0; transform:translateX(-100%); width:280px; box-shadow:0 0 40px rgba(0,0,0,0.6);}
+  #sidebar.open{transform:translateX(0);}
+  #sb-toggle{display:flex;}
+  #sb-overlay.open{display:block;}
+  #main{padding:70px 16px 70px;}
+  .bc-label{width:90px; font-size:11px;}
+  .fc-stage{height:300px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="sb-overlay" onclick="closeSidebar()"></div>
+  <div id="sb-toggle" onclick="toggleSidebar()">☰</div>
+
+  <nav id="sidebar">
+    <div class="sb-header">
+      <div class="sb-title">📊 DM4ML Study Tool</div>
+      <div class="sb-sub">Data Management for Machine Learning · AIMLCZG529 / DSECLZG529</div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Study Progress</span><span id="progress-pct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="mode-tabs">
+      <div class="mode-tab active" data-mode="study" onclick="setMode('study')">Study</div>
+      <div class="mode-tab" data-mode="quiz" onclick="setMode('quiz')">Quiz</div>
+      <div class="mode-tab" data-mode="flash" onclick="setMode('flash')">Flashcards</div>
+    </div>
+
+    <div class="nav-scroll" id="nav-scroll"><!-- injected by JS --></div>
+
+    <div class="sb-footer">Built from lecture + research · 2026</div>
+  </nav>
+
+  <main id="main">
+    <div id="content"><!-- injected by JS --></div>
+  </main>
+
+</div>
+
+<script>
+/* ============================================================
+   DM4ML STUDY TOOL — APP LOGIC
+   ============================================================ */
+const STORAGE_KEYS = {
+  visited: 'dm4ml_visited_pages',
+  checklist: 'dm4ml_checklist',
+  quizHistory: 'dm4ml_quiz_history',
+  fcRatings: 'dm4ml_fc_ratings'
+};
+
+let state = {
+  mode: 'study',
+  currentPage: 'home',
+  visited: JSON.parse(localStorage.getItem(STORAGE_KEYS.visited) || '{}'),
+};
+
+function saveVisited(){ localStorage.setItem(STORAGE_KEYS.visited, JSON.stringify(state.visited)); }
+
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sb-overlay').classList.toggle('open'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sb-overlay').classList.remove('open'); }
+
+</script>
+<script>
+/* ============================================================
+   NAVIGATION STRUCTURE
+   ============================================================ */
+const NAV = [
+  {id:'home', label:'Overview', icon:'🏠', group:null},
+  {id:'s1', label:'1 · Intro & Data Representations', icon:'', group:'Foundations'},
+  {id:'s2', label:'2 · Principles of Data', icon:'', group:'Foundations'},
+  {id:'s3', label:'3 · Data Architectures', icon:'', group:'Foundations'},
+  {id:'s4', label:'4 · Data Pipelines (ETL/ELT)', icon:'', group:'Pipelines'},
+  {id:'s5', label:'5 · Modern Data Stack & DataOps', icon:'', group:'Pipelines'},
+  {id:'s6', label:'6 · ML Lifecycle & Workflow', icon:'', group:'Pipelines'},
+  {id:'s7', label:'7 · Data Collection & Ingestion', icon:'', group:'Quality'},
+  {id:'s8', label:'8 · Profiling & Validation', icon:'', group:'Quality'},
+  {id:'lab1', label:'Lab · AWS Athena + Glue + IAM', icon:'', group:'Hands-On Labs'},
+  {id:'lab2', label:'Lab · BigQuery + Airbyte + dbt', icon:'', group:'Hands-On Labs'},
+  {id:'glossary', label:'Glossary', icon:'📖', group:null},
+  {id:'checklist', label:'Revision Checklist', icon:'✅', group:null},
+];
+
+function renderNav(){
+  const scroll = document.getElementById('nav-scroll');
+  let html = '';
+  let lastGroup = '__init__';
+  NAV.forEach((item, idx) => {
+    if(item.group !== lastGroup){
+      if(item.group) html += `<div class="nav-section-label">${item.group}</div>`;
+      lastGroup = item.group;
+    }
+    const isActive = state.currentPage === item.id;
+    const isVisited = state.visited[item.id];
+    const isTopic = item.id.match(/^s\d/) || item.id.startsWith('lab');
+    html += `<div class="nav-item ${isActive?'active':''} ${isVisited?'visited':''}" onclick="goTo('${item.id}')">
+      ${isTopic ? `<div class="num">${isVisited && !isActive ? '✓' : item.id.replace(/[^0-9]/g,'')||'•'}</div>` : `<div class="num">${item.icon||'•'}</div>`}
+      <div class="label">${item.label}</div>
+    </div>`;
+  });
+  scroll.innerHTML = html;
+  updateProgress();
+}
+
+function updateProgress(){
+  const topicIds = NAV.filter(n => n.id.match(/^s\d/) || n.id.startsWith('lab')).map(n=>n.id);
+  const visitedCount = topicIds.filter(id => state.visited[id]).length;
+  const pct = Math.round((visitedCount/topicIds.length)*100);
+  document.getElementById('progress-fill').style.width = pct+'%';
+  document.getElementById('progress-pct').textContent = pct+'%';
+}
+
+function goTo(pageId){
+  state.currentPage = pageId;
+  state.visited[pageId] = true;
+  saveVisited();
+  closeSidebar();
+  renderNav();
+  render();
+  window.scrollTo(0,0);
+}
+
+function setMode(mode){
+  state.mode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('active', t.dataset.mode===mode));
+  if(mode==='quiz'){ state.currentPage='__quiz__'; }
+  else if(mode==='flash'){ state.currentPage='__flash__'; }
+  else { state.currentPage = (state.currentPage==='__quiz__'||state.currentPage==='__flash__') ? 'home' : state.currentPage; }
+  renderNav();
+  render();
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   RENDER ENGINE — dispatches to mode-specific renderers
+   ============================================================ */
+function render(){
+  const c = document.getElementById('content');
+  if(state.mode === 'quiz'){ c.innerHTML = renderQuiz(); initQuiz(); return; }
+  if(state.mode === 'flash'){ c.innerHTML = renderFlash(); initFlash(); return; }
+  // study mode
+  if(state.currentPage === 'home') { c.innerHTML = renderHome(); return; }
+  if(state.currentPage === 'glossary'){ c.innerHTML = renderGlossary(); initGlossary(); return; }
+  if(state.currentPage === 'checklist'){ c.innerHTML = renderChecklist(); initChecklist(); return; }
+  const page = PAGES[state.currentPage];
+  if(page){ c.innerHTML = page(); initInteractive(); }
+}
+
+/* Re-init expandable cards / vtabs after innerHTML injection */
+function initInteractive(){
+  document.querySelectorAll('.exp-head').forEach(h=>{
+    h.onclick = () => h.parentElement.classList.toggle('open');
+  });
+  document.querySelectorAll('.barchart .bc-fill').forEach(f=>{
+    const w = f.getAttribute('data-width');
+    setTimeout(()=>{ f.style.width = w+'%'; }, 80);
+  });
+}
+function showTab(groupId, idx){
+  document.querySelectorAll(`.vtabs-${groupId} .vtab-btn`).forEach((b,i)=>b.classList.toggle('active', i===idx));
+  document.querySelectorAll(`.vtabs-${groupId} .vtab-panel`).forEach((p,i)=>p.classList.toggle('active', i===idx));
+}
+
+function pageNav(prevId, nextId){
+  const prev = NAV.find(n=>n.id===prevId);
+  const next = NAV.find(n=>n.id===nextId);
+  return `<div class="page-nav">
+    ${prev ? `<div class="pn-btn" onclick="goTo('${prevId}')"><div class="pn-dir">← Previous</div><div class="pn-name">${prev.label}</div></div>` : '<div class="pn-spacer"></div>'}
+    ${next ? `<div class="pn-btn pn-next" onclick="goTo('${nextId}')"><div class="pn-dir">Next →</div><div class="pn-name">${next.label}</div></div>` : ''}
+  </div>`;
+}
+
+/* ============================================================
+   HOME PAGE
+   ============================================================ */
+function renderHome(){
+  return `
+  <div class="page-header">
+    <div class="page-eyebrow">Data Management for Machine Learning</div>
+    <h1 class="page-title">AIMLCZG529 / DSECLZG529 Study Tool</h1>
+    <p class="page-desc">Built from your two lecture webinars (AWS Athena/Glue/IAM lab, and the BigQuery/Airbyte/dbt/Looker Studio modern-stack demo) plus the full 8-session course syllabus, enriched with 2025–2026 industry research, benchmarks, and exam-style practice.</p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-n">8</div><div class="stat-l">Core Sessions</div></div>
+    <div class="stat-box"><div class="stat-n">2</div><div class="stat-l">Hands-On Labs</div></div>
+    <div class="stat-box"><div class="stat-n">30</div><div class="stat-l">Quiz Questions</div></div>
+    <div class="stat-box"><div class="stat-n">36</div><div class="stat-l">Flashcards</div></div>
+  </div>
+
+  <h2 class="sec-title">📚 Core Sessions</h2>
+  <div class="home-grid">
+    <div class="home-card" onclick="goTo('s1')"><div class="hc-num">SESSION 1</div><div class="hc-title">Intro & Data Representations</div><div class="hc-desc">DIKW hierarchy, structured/semi/unstructured data, where ML sits in the pipeline.</div></div>
+    <div class="home-card" onclick="goTo('s2')"><div class="hc-num">SESSION 2</div><div class="hc-title">Principles of Data</div><div class="hc-desc">Data as asset vs liability, reliability, training-serving skew.</div></div>
+    <div class="home-card" onclick="goTo('s3')"><div class="hc-num">SESSION 3</div><div class="hc-title">Data Architectures</div><div class="hc-desc">Centralized/decentralized/hybrid, OLTP vs OLAP, warehouse/lake/lakehouse.</div></div>
+    <div class="home-card" onclick="goTo('s4')"><div class="hc-num">SESSION 4</div><div class="hc-title">Data Pipelines</div><div class="hc-desc">Batch vs streaming, ETL vs ELT, CDC, idempotency.</div></div>
+    <div class="home-card" onclick="goTo('s5')"><div class="hc-num">SESSION 5</div><div class="hc-title">Modern Data Stack & DataOps</div><div class="hc-desc">Ingestion→storage→transform→orchestration→serving; DataOps pillars.</div></div>
+    <div class="home-card" onclick="goTo('s6')"><div class="hc-num">SESSION 6</div><div class="hc-title">ML Lifecycle & Workflow</div><div class="hc-desc">Data/Model/Code, the ML loop, data drift vs concept drift.</div></div>
+    <div class="home-card" onclick="goTo('s7')"><div class="hc-num">SESSION 7</div><div class="hc-title">Data Collection & Ingestion</div><div class="hc-desc">Source categorization, push/pull, 1st/2nd/3rd-party data.</div></div>
+    <div class="home-card" onclick="goTo('s8')"><div class="hc-num">SESSION 8</div><div class="hc-title">Profiling & Validation</div><div class="hc-desc">Data quality dimensions, profiling vs validation, completeness math.</div></div>
+  </div>
+
+  <h2 class="sec-title">🧪 Hands-On Labs (from your webinars)</h2>
+  <div class="home-grid">
+    <div class="home-card" onclick="goTo('lab1')"><div class="hc-num">LAB · WEBINAR 1</div><div class="hc-title">AWS Athena + Glue + IAM</div><div class="hc-desc">Serverless querying, partitioning for cost/performance, views, CloudFormation named queries, IAM access.</div></div>
+    <div class="home-card" onclick="goTo('lab2')"><div class="hc-num">LAB · WEBINAR 2</div><div class="hc-title">BigQuery + Airbyte + dbt + Looker Studio</div><div class="hc-desc">Full ELT stack demo: ingestion, warehouse, transformation, BI visualization.</div></div>
+  </div>
+
+  <h2 class="sec-title">🛠 Reference</h2>
+  <div class="home-grid">
+    <div class="home-card" onclick="goTo('glossary')"><div class="hc-num">REFERENCE</div><div class="hc-title">Glossary</div><div class="hc-desc">Searchable table of every abbreviation and term used across both webinars and the syllabus.</div></div>
+    <div class="home-card" onclick="goTo('checklist')"><div class="hc-num">REFERENCE</div><div class="hc-title">Revision Checklist</div><div class="hc-desc">Tick off every examinable concept. Saved automatically in your browser.</div></div>
+  </div>
+
+  <div class="callout co-tip" style="margin-top:32px;">
+    <div class="co-label">⏰ Exam Tip</div>
+    <p>Your exams are <strong>June 20 (Data Management for ML)</strong> and June 21 (Deep RL). The practice worksheet questions map almost 1:1 onto the 8 sessions here — work through Quiz Mode first to find weak spots, then drill those sessions in Study Mode.</p>
+  </div>
+  `;
+}
+
+
+/* ============================================================
+   STUDY PAGES — SESSIONS 1–4
+   ============================================================ */
+const PAGES = {};
+
+PAGES.s1 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 1</div>
+    <h1 class="page-title">Introduction & Data Representations</h1>
+    <p class="page-desc">What data management actually is, the DIKW hierarchy, the three data shapes you'll meet everywhere, and where ML actually sits in a much longer pipeline.</p>
+  </div>
+
+  <h2 class="sec-title">🧱 What is Data Management?</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>Data management</strong> is the discipline of acquiring, storing, organizing, governing, and serving trustworthy data so that downstream consumers — including ML models — can rely on it.</p>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>Most ML failures are <strong>data failures</strong>, not model failures. A state-of-the-art architecture trained on bad, undocumented, or unavailable data will fail in production regardless of how clever the modeling is.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>Industry surveys consistently find that data scientists spend 60–80% of project time on data preparation and cleaning rather than modeling — the "data work is the real work" problem that data management as a discipline exists to reduce.</p>
+    <span class="source-tag">Source: industry practitioner surveys, 2024–2025</span>
+  </div>
+
+  <h2 class="sec-title">📈 The DIKW Hierarchy</h2>
+  <p>Each layer adds <em>meaning</em> and <em>value</em> to the layer below it.</p>
+  <div class="flow">
+    <div class="flow-step acc-sky">Data<br><span style="font-size:11px;opacity:0.8">37.2</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Information<br><span style="font-size:11px;opacity:0.8">37.2°C in Mumbai</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Knowledge<br><span style="font-size:11px;opacity:0.8">Unusually hot</span></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Wisdom<br><span style="font-size:11px;opacity:0.8">Issue heat advisory</span></div>
+  </div>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Why does DIKW matter for ML specifically?</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <p>ML models typically operate at the boundary between <strong>Information</strong> and <strong>Knowledge</strong> — they take structured/processed data and surface patterns a human would call "knowledge" (e.g., "this transaction is unusually likely to be fraud"). The "Wisdom" layer — deciding what action to take — is usually left to a human or a downstream business rule, which is why ML systems are described as decision-<em>support</em>, not full decision-<em>making</em>, in most regulated industries.</p>
+    </div></div>
+  </div>
+
+  <h2 class="sec-title">🗂 Structured vs Semi-Structured vs Unstructured Data</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Type</th><th>Definition</th><th>Examples</th><th>Typical Store</th></tr>
+      <tr><td class="hl-purple">Structured</td><td>Fixed rows/columns, enforced schema</td><td>Sales tables, transaction logs</td><td>SQL databases (Postgres, MySQL)</td></tr>
+      <tr><td class="hl-teal">Semi-structured</td><td>Self-describing tags/keys, flexible schema</td><td>JSON, XML, application logs</td><td>Document stores, data lakes</td></tr>
+      <tr><td>Unstructured</td><td>No fixed schema at all</td><td>Text, images, audio, video</td><td>Object storage (S3), data lakes</td></tr>
+    </table>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>The lecture explicitly flags: <strong>unstructured data is the bulk of modern ML data</strong> (think LLM training corpora, computer vision datasets). Don't default to assuming ML = tabular data.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>Industry estimates commonly cite that roughly 80–90% of enterprise data is unstructured or semi-structured — a figure widely repeated by IDC and major cloud vendors in 2024–2025 data-management reports, reinforcing why lakehouses (which handle any file type) have overtaken rigid warehouses as the default ML data store.</p>
+    <span class="source-tag">Source: IDC / cloud vendor data reports, 2024–2025</span>
+  </div>
+
+  <h2 class="sec-title">🔄 Where ML Sits in the Pipeline</h2>
+  <div class="flow">
+    <div class="flow-step">Collect</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Clean</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Store</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Transform</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Train</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Serve</div>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Common Mistake</div>
+    <p>Treating "ML" as the whole project. ML is <strong>one stage</strong> in a much longer pipeline. Upstream data quality <em>caps</em> model quality — this is the classic <strong>garbage in, garbage out</strong> principle, and it's a favorite trick-question premise: a question may describe a great model and ask why it's failing, and the answer is almost always upstream data.</p>
+  </div>
+
+  ${pageNav(null, 's2')}
+`;
+
+PAGES.s2 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 2</div>
+    <h1 class="page-title">Principles of Data</h1>
+    <p class="page-desc">Why data is simultaneously your biggest asset and your biggest liability, what "reliable" data actually means, and the sneaky failure mode called training-serving skew.</p>
+  </div>
+
+  <h2 class="sec-title">⚖️ Data as Asset vs Liability</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>As an Asset</th><th>As a Liability</th></tr>
+      <tr><td>Fuels models, insight, and revenue</td><td>Storage and compute cost</td></tr>
+      <tr><td>Can be a competitive moat (proprietary data)</td><td>Privacy and breach risk</td></tr>
+      <tr><td>Compounds in value as more is collected</td><td>Compliance burden (GDPR, DPDP Act, etc.)</td></tr>
+    </table>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>The practical rule: <strong>keep what earns its keep; don't hoard.</strong> Every dataset you retain should justify its storage cost and compliance risk against the value it actually delivers.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>This tension is formalized in modern data governance as "data minimization" — a core GDPR principle now echoed in India's Digital Personal Data Protection (DPDP) Act, 2023, which obligates organizations to delete personal data once its purpose is fulfilled, directly operationalizing the "don't hoard" rule from a compliance angle.</p>
+    <span class="source-tag">Source: DPDP Act 2023 framework, ongoing 2025–2026 rules notifications</span>
+  </div>
+
+  <h2 class="sec-title">🚨 Why ML Pipelines Are Especially Data-Sensitive</h2>
+  <p>Models don't just use data — they <strong>memorize and propagate</strong> it:</p>
+  <ul class="plain">
+    <li>Sensitive data can leak via model predictions (membership inference, model inversion attacks)</li>
+    <li>Biased input data biases the model's outputs</li>
+    <li>Poisoned or corrupted input degrades the model <strong>silently</strong> — no error, just quietly worse predictions</li>
+  </ul>
+  <div class="callout co-warn">
+    <div class="co-label">Warning</div>
+    <p>"Silently degrades" is the key exam phrase. Unlike a software bug that throws an exception, bad training data usually produces a model that <em>still runs</em> and <em>still returns predictions</em> — just wrong ones. This is why classification of sensitive data and guarding it throughout the pipeline (not just at the source) matters.</p>
+  </div>
+
+  <h2 class="sec-title">🛡 Data Reliability</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>Data reliability</strong> is trust that data is correct, complete, fresh, and available when needed.</p>
+  </div>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">The four pillars of reliability</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <ul class="plain">
+        <li><strong>Freshness</strong> — is the data current enough for the decision being made?</li>
+        <li><strong>Completeness</strong> — are all expected records/fields present?</li>
+        <li><strong>Correctness</strong> — does the data accurately reflect reality?</li>
+        <li><strong>Availability</strong> — can consumers actually access it when they need to?</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <h2 class="sec-title">⚡ Training–Serving Skew</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>Training-serving skew</strong> occurs when a feature is stale, missing, or computed <em>differently</em> at serving time than it was at training time — causing a model with great offline accuracy to perform badly in production.</p>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>The fix the lecture content implies: <strong>compute features identically</strong> in both training and serving paths, and monitor continuously. This is exactly the problem <strong>feature stores</strong> (covered in Session 5's modern stack) are built to solve.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>Training-serving skew is one of the most cited real-world ML production failure modes — Google's well-known "Rules of Machine Learning" guide and subsequent MLOps literature (2024–2025) both name it explicitly as a top cause of the gap between offline and online model performance, reinforcing why feature stores like Feast and Tecton exist as a dedicated tooling category.</p>
+    <span class="source-tag">Source: MLOps tooling literature, 2024–2025</span>
+  </div>
+
+  <div class="vtabs-bar vtabs-skew">
+    <div class="vtab-btn active" onclick="showTab('skew',0)">Skew Example A: Stale Feature</div>
+    <div class="vtab-btn" onclick="showTab('skew',1)">Skew Example B: Different Code Path</div>
+  </div>
+  <div class="vtab-panels vtabs-skew">
+    <div class="vtab-panel active">
+      <p>A "user's average order value over 30 days" feature is computed nightly in a batch job for training, but in serving, the live API call only has the user's last 2 orders cached — so the model sees a very different distribution of that feature at inference time than it learned during training.</p>
+    </div>
+    <div class="vtab-panel">
+      <p>Training code computes "days since signup" in Python using <code>datetime.now() - signup_date</code>, while the real-time serving code (written separately in a different language/service) computes it slightly differently (e.g., off-by-one timezone handling) — a subtle bug that silently shifts every prediction.</p>
+    </div>
+  </div>
+
+  ${pageNav('s1', 's3')}
+`;
+
+PAGES.s3 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 3</div>
+    <h1 class="page-title">Data Architectures</h1>
+    <p class="page-desc">How organizations structure their data systems at a macro level — and the warehouse/lake/lakehouse decision that underlies everything in your two lab webinars.</p>
+  </div>
+
+  <h2 class="sec-title">🏢 Centralized vs Decentralized vs Hybrid</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Model</th><th>Description</th><th>Strength</th><th>Risk</th></tr>
+      <tr><td class="hl-purple">Centralized</td><td>One store, one team governs everything</td><td>Easy to govern, consistent</td><td>Can become a bottleneck</td></tr>
+      <tr><td class="hl-teal">Decentralized</td><td>Domain teams own their own data ("data mesh")</td><td>Scalable, domain expertise</td><td>Risk of silos, inconsistent standards</td></tr>
+      <tr><td>Hybrid</td><td>Shared backbone + domain-owned stores</td><td>Most common in practice</td><td>Requires strong platform team</td></tr>
+    </table>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>Hybrid is explicitly called out as the <strong>most common</strong> real-world pattern — large orgs rarely go pure-centralized (too slow) or pure-decentralized (too chaotic). Your OBE-style enterprise setups with a central Snowflake backbone plus team-owned schemas are a textbook hybrid example.</p>
+  </div>
+
+  <h2 class="sec-title">⚙️ OLTP vs OLAP</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th></th><th>OLTP</th><th>OLAP</th></tr>
+      <tr><td><strong>Full form</strong></td><td>Online Transaction Processing</td><td>Online Analytical Processing</td></tr>
+      <tr><td><strong>Workload</strong></td><td>Small, frequent reads/writes</td><td>Large scans and aggregations</td></tr>
+      <tr><td><strong>Orientation</strong></td><td>Row-oriented</td><td>Column-oriented</td></tr>
+      <tr><td><strong>Purpose</strong></td><td>Run the business (e.g., process an order)</td><td>Analyze the business (e.g., total sales by region)</td></tr>
+      <tr><td><strong>Examples</strong></td><td>Postgres, MySQL backing an app</td><td>Snowflake, BigQuery, Redshift</td></tr>
+    </table>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Common Mistake / Exam Trap</div>
+    <p><strong>Don't analyze on the production database.</strong> Running heavy analytical (OLAP-style) queries directly against an OLTP system competes for the same resources the live application needs, risking outages. This is precisely <em>why</em> separate analytical warehouses exist.</p>
+  </div>
+
+  <h2 class="sec-title">🏗 Warehouse vs Lake vs Lakehouse</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Type</th><th>Schema</th><th>Data Types</th><th>Trade-off</th></tr>
+      <tr><td class="hl-purple">Warehouse</td><td>Schema-on-write (rigid)</td><td>Structured only</td><td>Reliable but inflexible</td></tr>
+      <tr><td class="hl-teal">Lake</td><td>Schema-on-read (flexible)</td><td>Any data (raw files)</td><td>Cheap & flexible, but easily ungoverned</td></tr>
+      <tr><td>Lakehouse</td><td>Both, layered</td><td>Any data + SQL access</td><td>Modern default for ML</td></tr>
+    </table>
+  </div>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Why is the lakehouse "the modern default for ML"?</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <p>ML needs both: raw unstructured data (images, text, logs) for feature engineering AND reliable structured tables for reproducible training sets. A lakehouse gives you cheap object storage underneath, with a transactional/SQL layer (e.g., Delta Lake, Apache Iceberg) on top — exactly the combination your webinars demonstrate: Databricks/Delta Lake = lakehouse, while BigQuery/Snowflake = warehouse.</p>
+    </div></div>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>Databricks (lakehouse pioneer) and Snowflake (warehouse-turned-multi-format) have converged in capability through 2024–2025 — Snowflake added native Iceberg table support and Databricks added stronger SQL/BI tooling, blurring the historical line. For exam purposes, hold onto the <em>conceptual</em> distinction (schema-on-write vs schema-on-read) even as products converge.</p>
+    <span class="source-tag">Source: Snowflake & Databricks product announcements, 2024–2025</span>
+  </div>
+
+  <h2 class="sec-title">🐊 Data Swamp</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p>A <strong>data swamp</strong> is a data lake without catalogs, schemas, ownership, or quality checks — data that is un-findable and untrustworthy, even though it's technically "stored."</p>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>The one-line answer to "how do you avoid a data swamp": <strong>govern the lake.</strong> Flexibility without discipline is exactly what destroys reliability — this is the lake's core weakness mirrored back as the swamp's definition.</p>
+  </div>
+
+  ${pageNav('s2', 's4')}
+`;
+
+PAGES.s4 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 4</div>
+    <h1 class="page-title">Data Pipelines</h1>
+    <p class="page-desc">Batch vs streaming, the ETL vs ELT debate (the conceptual backbone of <em>both</em> your lab webinars), CDC, and why pipeline steps must be idempotent.</p>
+  </div>
+
+  <h2 class="sec-title">⏱ Batch vs Streaming</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th></th><th>Batch</th><th>Streaming</th></tr>
+      <tr><td><strong>Pattern</strong></td><td>Scheduled chunks of data</td><td>Events processed as they arrive</td></tr>
+      <tr><td><strong>Latency</strong></td><td>High (minutes to hours/days)</td><td>Low (sub-second to seconds)</td></tr>
+      <tr><td><strong>Efficiency</strong></td><td>High — can optimize for throughput</td><td>Lower — optimized for freshness, more complex</td></tr>
+      <tr><td><strong>Use case</strong></td><td>Weekly sales report</td><td>Fraud detection at checkout</td></tr>
+    </table>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>The decision rule is simple: <strong>choose by required freshness.</strong> If a report only needs to be accurate as of last night, batch is cheaper and simpler. If a decision must be made within milliseconds of an event, you need streaming — there's no "better" option in the abstract, only the option that matches the latency requirement.</p>
+  </div>
+
+  <h2 class="sec-title">🔁 ETL vs ELT — The Core of Both Lab Webinars</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>ETL</strong> (Extract, Transform, Load) transforms data <em>before</em> loading it into the target warehouse, usually on a separate staging server. <strong>ELT</strong> (Extract, Load, Transform) loads raw data first and transforms it <em>in place</em>, inside the destination system.</p>
+  </div>
+  <div class="flow">
+    <div class="flow-step acc-amber">Extract</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Transform</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Load</div>
+    <div class="flow-cap">ETL — transform happens before the warehouse</div>
+  </div>
+  <div class="flow">
+    <div class="flow-step acc-teal">Extract</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Load</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Transform</div>
+    <div class="flow-cap">ELT — raw data lands first, transform happens inside the warehouse</div>
+  </div>
+
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip — Which suits ML?</div>
+    <p><strong>ELT suits ML</strong> because it keeps the raw data available for re-processing when features change. With ETL, once you've transformed and discarded the raw form, you can't easily go back and engineer a new feature from the original signal. This is the single most testable fact in this session.</p>
+  </div>
+
+  <h3 class="sub-title">🎬 This is exactly what your two lab webinars demonstrated</h3>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Lab 1 (AWS): Athena + Glue is an ELT-flavored pattern</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <p>Raw taxi trip data was already sitting in S3 (raw, untransformed). Glue created a <em>catalog</em> over it (metadata, not a copy), and Athena queried/transformed it <em>in place</em> with SQL — partitioning by month and by pay type to create new derived tables. The "load" (S3) happened before any "transform" (the Athena SQL) — classic ELT.</p>
+    </div></div>
+  </div>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Lab 2 (GCP): BigQuery + Airbyte + dbt is explicitly ELT</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <p>The instructor said it directly: Airbyte does the "EL" (Extract-Load) of raw CSV into BigQuery's raw_data dataset, and dbt does the "T" (Transform) afterward, building staging and summary models <em>on top of</em> the already-loaded raw data. This is the dbt philosophy by definition — dbt only ever transforms data that's already landed in the warehouse.</p>
+    </div></div>
+  </div>
+
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>dbt Labs' own materials frame the shift plainly: ELT lets <span style="color:#cdd0db">analysts and data teams transform data iteratively without reloading the entire dataset</span>, capitalizing on cloud warehouse compute instead of separate ETL infrastructure — directly matching what the lecture demonstrated hands-on with dbt Cloud.</p>
+    <span class="source-tag">Source: dbt Labs, "ETL vs ELT: Key differences explained," 2025–2026</span>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition — Real Cost Numbers</div>
+    <p>Case studies from Coalesce/dbt-ecosystem vendors report concrete ELT modernization wins: one industrial firm cut reporting cycles from 3 months to 2 days (a 10x productivity gain) after moving to a Snowflake + dbt + Fivetran-style ELT stack, and a bank-scale migration moved 25 dimension tables 3x faster with automated lineage versus its legacy ETL approach.</p>
+    <span class="source-tag">Source: Coalesce.io case studies, 2025–2026</span>
+  </div>
+
+  <h2 class="sec-title">📡 Change Data Capture (CDC)</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>CDC</strong> moves only the <em>changed</em> rows (read from the source database's transaction log) instead of re-copying entire tables on every sync — keeping downstream stores fresh without the cost of full reloads.</p>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>CDC is the technical mechanism that <strong>underpins streaming</strong> ingestion from transactional databases. It's how tools like Debezium, Fivetran, and Airbyte's database connectors achieve near-real-time sync without hammering the source system with full-table scans.</p>
+  </div>
+
+  <h2 class="sec-title">♻️ Idempotency — Why Pipeline Steps Must Be Safe to Re-Run</h2>
+  <div class="callout co-warn">
+    <div class="co-label">Common Mistake / Exam Trap</div>
+    <p>Pipelines fail and get re-run constantly (network blips, timeouts, manual retries). <strong>An idempotent step run twice produces the same result as running it once.</strong> A naive <code>INSERT/append</code> on retry will double-count rows. The fix is to design with <strong>upsert</strong> (update-if-exists, insert-if-not) or full <strong>overwrite</strong> semantics so retries are safe — and to design for late-arriving or out-of-order data, not just clean reruns.</p>
+  </div>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Pattern</th><th>Behavior on Retry</th><th>Idempotent?</th></tr>
+      <tr><td>Naive <code>INSERT</code> append</td><td>Duplicates every row</td><td>❌ No</td></tr>
+      <tr><td><code>UPSERT</code> (merge on key)</td><td>Updates existing, inserts new — same result</td><td>✅ Yes</td></tr>
+      <tr><td>Full table <code>OVERWRITE</code></td><td>Replaces entire result deterministically</td><td>✅ Yes</td></tr>
+    </table>
+  </div>
+
+  ${pageNav('s3', 's5')}
+`;
+
+
+/* ============================================================
+   STUDY PAGES — SESSIONS 5–8
+   ============================================================ */
+
+PAGES.s5 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 5</div>
+    <h1 class="page-title">Modern Data Infrastructure & DataOps</h1>
+    <p class="page-desc">The five-layer architecture both your webinars demonstrated tool-by-tool, what an orchestrator actually does, and why DevOps practices don't transfer to data unchanged.</p>
+  </div>
+
+  <h2 class="sec-title">🧩 The Five Layers of the Modern Data Stack</h2>
+  <div class="flow">
+    <div class="flow-step acc-sky">Ingestion</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Storage</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Transformation</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Orchestration</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Serving</div>
+    <div class="flow-cap">Data flows up the stack — exactly the order both webinars demoed live</div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Layer</th><th>Purpose</th><th>Lecture/Generic Tools</th><th>Tool used in YOUR webinars</th></tr>
+      <tr><td class="hl-purple">Ingestion</td><td>Get data from sources into the platform</td><td>Fivetran, Kafka, Stitch, Talend, Apache NiFi</td><td><strong>Airbyte</strong> (Webinar 2), manual S3 load (Webinar 1)</td></tr>
+      <tr><td class="hl-teal">Storage</td><td>Hold data centrally, queryable</td><td>S3/lakehouse, Snowflake, BigQuery</td><td><strong>S3 + Glue Catalog</strong> (Webinar 1), <strong>BigQuery</strong> (Webinar 2)</td></tr>
+      <tr><td class="hl-amber" style="color:var(--amber)">Transformation</td><td>Clean, model, engineer features</td><td>dbt, Spark</td><td><strong>Athena SQL</strong> (Webinar 1), <strong>dbt Cloud</strong> (Webinar 2)</td></tr>
+      <tr><td>Orchestration</td><td>Schedule & monitor the DAG</td><td>Airflow, Prefect, Dagster</td><td>Not demoed (CloudFormation used instead, for IaC)</td></tr>
+      <tr><td>Serving</td><td>Feature store / BI consumption</td><td>Feast, Tecton, Tableau, Power BI</td><td><strong>Looker Studio / Data Studio</strong> (Webinar 2)</td></tr>
+    </table>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>If asked to "name the layers of the modern data stack," the order matters and is always: <strong>Ingestion → Storage → Transformation → Orchestration → Serving.</strong> Data flows up — never skip a layer in your answer even if a specific company's stack collapses two of them into one tool (e.g., BigQuery doing both storage AND transformation, as Lokesh explicitly pointed out in Webinar 2).</p>
+  </div>
+
+  <h2 class="sec-title">🛂 Orchestrator</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p>A <strong>workflow orchestrator</strong> runs the pipeline's DAG (Directed Acyclic Graph) — executing each task once its dependencies are met, handling retries, backfills, and alerting. Think of it as <strong>a project manager for data</strong> (Airflow, Prefect, Dagster).</p>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight from the lecture</div>
+    <p>Neither webinar used a dedicated orchestrator — BigQuery's own scheduler and dbt Cloud's run scheduling stood in for it. This is realistic: small/medium teams often defer adopting Airflow until their DAG complexity outgrows what the warehouse-native scheduler can handle.</p>
+  </div>
+
+  <h2 class="sec-title">⚙️ DataOps</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>DataOps</strong> applies DevOps thinking to data: automate, version, test, and monitor the entire data lifecycle.</p>
+  </div>
+  <h3 class="sub-title">The Four Pillars</h3>
+  <ul class="plain">
+    <li><strong>Automation / CI-CD</strong> — pipelines deploy through code, not manual clicks</li>
+    <li><strong>Version control</strong> — for both code AND data/schema (not just code, unlike traditional DevOps)</li>
+    <li><strong>Automated tests on values</strong> — not just logic tests, but tests on the actual data (nulls, ranges, freshness)</li>
+    <li><strong>Monitoring</strong> — continuous observability of pipeline health and data quality</li>
+  </ul>
+  <div class="callout co-warn">
+    <div class="co-label">Exam Trap — Why DevOps Doesn't Transfer Unchanged</div>
+    <p>This is a favorite "explain the difference" question. Data adds three things software DevOps never had to deal with: <strong>(1) data/schema versioning</strong> (not just code versioning), <strong>(2) drift over time</strong> (data changes shape and meaning even when the code doesn't), and <strong>(3) tests on values</strong> (not just logic/unit tests — you test that a column's values stay within expected ranges). This is precisely why DataOps is its own discipline rather than "DevOps applied to data."</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>dbt's built-in test framework (<code>dbt test</code>) and the open-source Great Expectations library are the two dominant 2024–2026 tools for "automated tests on values" — both let teams declare expectations (e.g., "this column must never be null," "this value must be between 0 and 100") as code, version them alongside the transformation logic, and fail the pipeline run if violated.</p>
+    <span class="source-tag">Source: dbt Labs & Great Expectations documentation, 2025</span>
+  </div>
+
+  ${pageNav('s4', 's6')}
+`;
+
+PAGES.s6 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 6</div>
+    <h1 class="page-title">The ML Lifecycle & Workflow</h1>
+    <p class="page-desc">Why ML engineering is harder than either software engineering or statistics alone, the full lifecycle loop, and the two flavors of "drift" that quietly kill deployed models.</p>
+  </div>
+
+  <h2 class="sec-title">🧬 Three Levels of ML Software</h2>
+  <div class="flow">
+    <div class="flow-step acc-sky">Data</div>
+    <div class="flow-step acc-teal">Model</div>
+    <div class="flow-step acc-amber">Code / Infrastructure</div>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>These three levels are <strong>intertwined</strong> — a change to any one ripples through the others. Change the data distribution, and the model's learned weights become stale even if the code is untouched. Change the serving infrastructure, and a perfectly good model can produce different outputs due to training-serving skew (Session 2). This interdependency is exactly why <strong>ML engineering is harder than traditional software engineering or classical statistics alone</strong> — you're debugging three coupled systems simultaneously.</p>
+  </div>
+
+  <h2 class="sec-title">🔄 The ML Lifecycle Loop</h2>
+  <div class="flow">
+    <div class="flow-step">Ingest</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Validate</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Prepare Features</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Train</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Evaluate</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Deploy</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Monitor</div>
+    <div class="flow-cap">Monitor feeds back into Retrain — it's a loop, not a line</div>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>Always note explicitly that this is a <strong>loop</strong>, not a one-way pipeline. "Monitor → Retrain" closing the loop back to the top is the detail that separates a complete answer from a partial one.</p>
+  </div>
+
+  <h3 class="sub-title">What does the Validation stage actually protect against?</h3>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Validation checks data BEFORE training</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <p>It checks schema (are columns the expected type?), ranges (are values plausible?), and nulls (is anything unexpectedly missing?) — catching the data problems that would otherwise <strong>silently poison the model</strong>. This directly previews Session 8's profiling/validation content and reuses the "silent" failure language from Session 2's training-serving skew.</p>
+    </div></div>
+  </div>
+
+  <h2 class="sec-title">📉 Data Drift vs Concept Drift</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th></th><th>Data Drift</th><th>Concept Drift</th></tr>
+      <tr><td><strong>What shifts</strong></td><td>The <em>inputs</em> (feature distributions)</td><td>The <em>input→target relationship</em> itself</td></tr>
+      <tr><td><strong>Example</strong></td><td>Average customer age in your data slowly rises over time</td><td>What counts as "spam" email changes as spammers adapt their tactics</td></tr>
+      <tr><td><strong>Detection</strong></td><td>Compare input feature distributions over time (e.g., statistical distance metrics)</td><td>Compare model accuracy/error metrics over time on fresh labeled data</td></tr>
+    </table>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Exam Trap</div>
+    <p>Don't conflate the two. Data drift = the <em>X</em>'s changed. Concept drift = the <em>relationship between X and Y</em> changed, even if X's distribution looks the same. A model can suffer concept drift even while its inputs look statistically identical to training — this is the harder, sneakier case.</p>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>Both erode deployed models over time. The biggest practical lesson from production ML: <strong>the biggest failures come after deployment</strong>, not during training — which is exactly why "monitor + retrain" must be treated as a first-class part of the lifecycle loop, not an afterthought.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>Modern MLOps platforms (Evidently AI, Arize, WhyLabs, all actively developed through 2025–2026) build entire product categories around automatically detecting drift using statistical tests like Population Stability Index (PSI) and Kolmogorov-Smirnov tests on incoming feature distributions — operationalizing exactly the "compare distributions over time" detection method above.</p>
+    <span class="source-tag">Source: ML observability tooling landscape, 2025–2026</span>
+  </div>
+
+  ${pageNav('s5', 's7')}
+`;
+
+PAGES.s7 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 7</div>
+    <h1 class="page-title">Data Collection & Ingestion</h1>
+    <p class="page-desc">How to categorize any data source you'll ever encounter, the push/pull and batch/streaming axes, and why most quality problems start right here at the door.</p>
+  </div>
+
+  <h2 class="sec-title">🗃 Four Ways to Categorize a Data Source</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Axis</th><th>Categories</th></tr>
+      <tr><td class="hl-purple">Type</td><td>Database, API, File, Stream</td></tr>
+      <tr><td class="hl-teal">Ownership</td><td>1st-party, 2nd-party, 3rd-party</td></tr>
+      <tr><td>Location</td><td>On-prem, Cloud, Edge</td></tr>
+      <tr><td>Structure</td><td>Structured, Semi-structured, Unstructured</td></tr>
+    </table>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>If a question gives you a real-world data source (e.g., "a wearable fitness tracker sending heart-rate readings") and asks you to categorize it, run it through <strong>all four axes</strong>: Type = Stream, Ownership = 1st-party (if it's your own product) or 3rd-party (if purchased), Location = Edge/Cloud, Structure = Semi-structured (sensor JSON payloads). This matches the bridge-vibration sensor example used live in Webinar 2's lecture portion.</p>
+  </div>
+
+  <h2 class="sec-title">↔️ Push vs Pull, Batch vs Streaming</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th></th><th>Push</th><th>Pull</th></tr>
+      <tr><td><strong>Who initiates</strong></td><td>Source sends data to you</td><td>You fetch data on a schedule</td></tr>
+      <tr><td><strong>Examples</strong></td><td>Webhooks, streaming events</td><td>Scheduled API polling, nightly DB extract</td></tr>
+    </table>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p><strong>Streaming + CDC keeps stores fresh by moving only changes</strong> — this ties Session 4's CDC concept directly back to ingestion: CDC is fundamentally a "push" pattern that reads only deltas off a transaction log, rather than a "pull" pattern that re-fetches everything.</p>
+  </div>
+
+  <h2 class="sec-title">🥇🥈🥉 First-, Second-, Third-Party Data</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Party</th><th>Source</th><th>Trust/Control</th><th>Trade-off</th></tr>
+      <tr><td class="hl-purple">First-party</td><td>Your own systems</td><td>Most trusted, most controllable</td><td>Limited to what you already collect</td></tr>
+      <tr><td class="hl-teal">Second-party</td><td>A partner's shared data</td><td>Moderate trust</td><td>Depends on partner's data hygiene</td></tr>
+      <tr><td>Third-party</td><td>Purchased/aggregated from data brokers</td><td>Least control</td><td>Reach, but unknown quality + compliance risk</td></tr>
+    </table>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Exam Trap</div>
+    <p>Third-party data is tempting because of <strong>reach</strong> (scale you couldn't collect yourself), but the trade-off is <strong>unknown quality and added compliance risk</strong> — you often can't verify how the data was originally collected or whether subjects consented, which becomes your legal exposure once you use it.</p>
+  </div>
+
+  <h2 class="sec-title">🚪 Why Quality Problems Start at Ingestion</h2>
+  <div class="callout co-def">
+    <div class="co-label">Core Idea</div>
+    <p>The data source is <strong>outside your control</strong> and can change without warning — schema changes, duplicate records, late-arriving data, or silent format drift (a column that used to be an integer suddenly becomes a string, for example).</p>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>The fix the syllabus wants you to state: <strong>validate at ingestion</strong> — schema checks and data contracts — so changes are caught <em>immediately</em> at the door, rather than discovered three stages downstream when a model's accuracy mysteriously drops.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>"Data contracts" — formal, versioned agreements between data producers and consumers about schema and semantics — emerged as a mainstream 2024–2025 data engineering practice specifically to address this problem, treating a schema change at the source like a breaking API change that requires a version bump and consumer notification, rather than a silent surprise.</p>
+    <span class="source-tag">Source: data engineering practice literature, 2024–2025</span>
+  </div>
+
+  <h3 class="sub-title">🎬 Connecting to your lab webinars</h3>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Both webinars are live demonstrations of ingestion choices</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <p>Webinar 1 used a <strong>pull/batch</strong> pattern — pre-staged CSV files already resting in an S3 bucket, pulled into a Glue/Athena catalog on demand. Webinar 2 used Airbyte specifically as a <strong>pull/batch connector framework</strong> — it polls a CSV-in-Google-Cloud-Storage source on a schedule and loads (pulls) it into BigQuery. Neither demo used true push/streaming ingestion, even though both lecture-discussed it (sensor data, event streams) as the harder real-world case.</p>
+    </div></div>
+  </div>
+
+  ${pageNav('s6', 's8')}
+`;
+
+PAGES.s8 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Session 8</div>
+    <h1 class="page-title">Data Profiling & Validation</h1>
+    <p class="page-desc">The difference between exploring data and enforcing rules on it, the eight dimensions of data quality, and a worked numeric example that's a near-guaranteed exam question.</p>
+  </div>
+
+  <h2 class="sec-title">🔍 Profiling vs Validation</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Profiling</th><th>Validation</th></tr>
+      <tr><td>Explores data to learn its <strong>baseline</strong></td><td>Checks data against <strong>explicit expectations</strong></td></tr>
+      <tr><td>Distributions, null rates, ranges — descriptive</td><td>Pass/fail rules — flags or blocks violations</td></tr>
+      <tr><td>Done once (or periodically) to understand the data</td><td>Done continuously, on every batch</td></tr>
+    </table>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip — The one-line distinction</div>
+    <p><strong>"Profile to set, validate to enforce."</strong> Profiling is how you decide what the rules <em>should</em> be; validation is running those rules going forward. They're sequential and complementary, not competing techniques — a classic exam phrasing trap is to ask you to pick one as "better," when the correct answer is that they serve different stages of the same process.</p>
+  </div>
+
+  <h2 class="sec-title">📏 The Eight Dimensions of Data Quality</h2>
+  <div class="flow">
+    <div class="flow-step acc-purple">Accuracy</div>
+    <div class="flow-step acc-teal">Completeness</div>
+    <div class="flow-step acc-amber">Consistency</div>
+    <div class="flow-step acc-sky">Timeliness</div>
+  </div>
+  <div class="flow">
+    <div class="flow-step">Validity</div>
+    <div class="flow-step">Uniqueness</div>
+    <div class="flow-step">Integrity</div>
+    <div class="flow-step">Lineage</div>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Exam Trap</div>
+    <p>"A dataset can be perfect on one dimension and broken on another." A table can have 100% completeness (no nulls) and still fail on validity (values outside the allowed range) or uniqueness (duplicate primary keys). Never assume one passing check means the data is "good" overall — quality is multi-dimensional and each dimension needs its own check.</p>
+  </div>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Quick definitions for all 8 dimensions</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <ul class="plain">
+        <li><strong>Accuracy</strong> — does the data reflect real-world truth?</li>
+        <li><strong>Completeness</strong> — are required fields/records present (not null/missing)?</li>
+        <li><strong>Consistency</strong> — does the same fact agree across systems/tables?</li>
+        <li><strong>Timeliness</strong> — is data available within the needed time window?</li>
+        <li><strong>Validity</strong> — does data conform to defined formats/ranges/types?</li>
+        <li><strong>Uniqueness</strong> — no unintended duplicate records?</li>
+        <li><strong>Integrity</strong> — do relationships between datasets hold (e.g., foreign keys resolve)?</li>
+        <li><strong>Lineage</strong> — can you trace where data came from and how it was transformed?</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <h2 class="sec-title">🧮 Worked Numeric Example (near-guaranteed exam question)</h2>
+  <div class="callout co-def">
+    <div class="co-label">Problem</div>
+    <p>An email column has <strong>9,200 non-null rows out of 10,000 total rows</strong>. What is the completeness, and does it pass a <strong>98% threshold</strong>?</p>
+  </div>
+  <div class="code-block">
+    <div class="code-head">SOLUTION</div>
+    <pre><span class="com"># completeness = non-null rows / total rows</span>
+completeness = <span class="num">9200</span> / <span class="num">10000</span> = <span class="num">0.92</span> = <span class="num">92</span>%
+
+<span class="com"># compare against threshold</span>
+<span class="kw">if</span> <span class="num">92</span>% &lt; <span class="num">98</span>%:
+    result = <span class="str">"FAIL"</span>  <span class="com"># pipeline alerts/blocks; bad data stopped before training</span></pre>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>The generalizable insight behind this question: <strong>most data quality dimensions reduce to a ratio compared against a threshold.</strong> Whatever numbers a question gives you (rows, nulls, duplicates, out-of-range values), the method is always: compute the ratio → compare to the stated threshold → state pass/fail → state the consequence (alert, block, quarantine).</p>
+  </div>
+
+  <div class="barchart">
+    <div class="bc-title">Completeness vs Required Threshold</div>
+    <div class="bc-row">
+      <div class="bc-label">Actual (92%)</div>
+      <div class="bc-track"><div class="bc-fill" data-width="92" style="background:var(--coral);"><span>92%</span></div></div>
+    </div>
+    <div class="bc-row">
+      <div class="bc-label">Threshold (98%)</div>
+      <div class="bc-track"><div class="bc-fill" data-width="98" style="background:var(--teal);"><span>98%</span></div></div>
+    </div>
+    <div class="bc-note">92% &lt; 98% → check FAILS → pipeline blocks before training</div>
+  </div>
+
+  <h2 class="sec-title">⚙️ How and Where Validation Runs</h2>
+  <div class="flow">
+    <div class="flow-step">Define expectations</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Run on every batch</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-coral" style="border-color:#4a2c1e;background:var(--coral-dim);color:var(--coral);">Stop / Quarantine on failure</div>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>Validation is <strong>automated</strong>, runs <strong>at ingestion and between every stage</strong> (not just once at the start), using tools like <strong>Great Expectations</strong> or <strong>dbt tests</strong> to define expectations as code, run them on every batch, and stop or quarantine on failure. The reason it must run <em>continuously</em>: sources drift — a check that passed last month can silently start failing as the upstream system changes.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>Great Expectations remains the dominant open-source data validation framework through 2025–2026, letting teams write declarative "expectation suites" (e.g., <code>expect_column_values_to_not_be_null</code>) that double as both documentation and enforceable tests — directly operationalizing the "define expectations, run on every batch" workflow above.</p>
+    <span class="source-tag">Source: Great Expectations project documentation, 2025–2026</span>
+  </div>
+
+  ${pageNav('s7', 'lab1')}
+`;
+
+
+/* ============================================================
+   LAB PAGES — FROM YOUR TWO WEBINAR TRANSCRIPTS
+   ============================================================ */
+
+PAGES.lab1 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Hands-On Lab · Webinar 1 (May 20)</div>
+    <h1 class="page-title">AWS Athena + Glue + IAM</h1>
+    <p class="page-desc">Facilitator TN Yamuna's walkthrough: serverless querying of NYC taxi trip data in S3, partitioning for performance/cost, views, CloudFormation-saved queries, and IAM-based access for an end user named Mary.</p>
+  </div>
+
+  <h2 class="sec-title">🎯 The Use Case</h2>
+  <div class="callout co-insight">
+    <div class="co-label">Scenario</div>
+    <p>You're a data engineer/analyst with raw 2017 NYC yellow-taxi trip data sitting in an S3 bucket. An end user — <strong>Mary</strong>, a data scientist who isn't hands-on with AWS — needs specific analysis (trips over $100, broken down by distance/fare/tip) without ever touching the console herself. The lab walks through building that entire backend, then granting Mary scoped access to run it.</p>
+  </div>
+
+  <h2 class="sec-title">🪄 Athena — Serverless Query Service</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>Amazon Athena</strong> is a serverless, interactive query service used to analyze data stored directly in Amazon S3 using standard SQL. "Serverless" means you never provision, install, or manage any server or disk — the service already exists; you just configure it and call it.</p>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>Because Athena is serverless, it has <strong>no storage of its own</strong> — query <em>results</em> must be written somewhere, which is why the very first setup step in the lecture was configuring an S3 bucket under Athena's Query Settings to hold output.</p>
+  </div>
+
+  <h2 class="sec-title">🗄 AWS Glue — The Metadata Catalog</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p>An <strong>AWS Glue database</strong> is a logical container that organizes and stores <em>metadata tables</em> within the Glue Data Catalog. Glue doesn't store your actual data — it creates a catalog (schema, location, format) <em>pointing at</em> data that already lives in S3.</p>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight (in the instructor's own framing)</div>
+    <p>S3 is like a <strong>data lake</strong> — a dump of everything. You rarely need 100% of it for a given analysis. Glue lets you define a table over just the relevant slice, in the right format, so Athena's SQL queries have something structured to run against — this is the lecture's plain-English explanation of <em>why</em> a catalog layer exists at all.</p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step acc-sky">S3 (raw data)</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Glue Database + Table (catalog/metadata)</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Athena (SQL query engine)</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Results → S3 output bucket</div>
+  </div>
+
+  <div class="callout co-warn">
+    <div class="co-label">Common Mistake (flagged live in the lecture)</div>
+    <p>Always qualify which <strong>database</strong> you're working in. If you accidentally stay on "default" instead of switching to your created database (e.g., <code>taxi_data</code>), none of your tables will be visible and none of your queries will work. The instructor explicitly warned the class about this — it's a very easy first-time mistake.</p>
+  </div>
+
+  <h2 class="sec-title">⚡ Performance Optimization: Partitioning</h2>
+  <p>The lecture ran a live, measured comparison of querying the <strong>same logical data</strong> three different ways:</p>
+
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Approach</th><th>Data Scanned</th><th>Query Time</th><th>Technique</th></tr>
+      <tr><td>Full table, filtered by month in SQL (<code>WHERE month=Jan</code>)</td><td>~9.3 GB (2.3M+ rows)</td><td>~29–30 sec</td><td>None — scans everything, then filters</td>
+      </tr><tr><td class="hl-teal">Pre-partitioned "Jan" table, no filter needed</td><td>~815 MB</td><td>~7 sec</td><td>Horizontal partitioning (by month)</td></tr>
+      <tr><td>Full table filtered by pay type in SQL</td><td>~9.3 GB</td><td>~20–25 sec</td><td>None</td></tr>
+      <tr><td class="hl-purple">Pre-partitioned "credit card" table</td><td>~71 MB</td><td>~1.something sec (vs 3.16 sec)</td><td>Vertical partitioning (by pay type)</td></tr>
+    </table>
+  </div>
+
+  <div class="barchart">
+    <div class="bc-title">Data Scanned: Unpartitioned vs Partitioned (Live Lecture Numbers)</div>
+    <div class="bc-row"><div class="bc-label">Full table (Jan filter)</div><div class="bc-track"><div class="bc-fill" data-width="100" style="background:var(--coral);"><span>9.3 GB</span></div></div></div>
+    <div class="bc-row"><div class="bc-label">Jan partition</div><div class="bc-track"><div class="bc-fill" data-width="9" style="background:var(--teal);"><span>815 MB</span></div></div></div>
+    <div class="bc-row"><div class="bc-label">Full table (pay-type filter)</div><div class="bc-track"><div class="bc-fill" data-width="100" style="background:var(--coral);"><span>9.3 GB</span></div></div></div>
+    <div class="bc-row"><div class="bc-label">Credit-card partition</div><div class="bc-track"><div class="bc-fill" data-width="1" style="background:var(--purple);"><span>71 MB</span></div></div></div>
+    <div class="bc-note">Partitioning by month cut scan size ~91%; partitioning by pay type cut it ~99% in the live demo</div>
+  </div>
+
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>The instructor's live numbers are not a fluke — they match documented AWS guidance precisely. AWS's own Athena cost-optimization documentation states that for time-partitioned data, a query filtering to one day out of a year-long 10 TB dataset scans roughly 10TB/365 ≈ 27 GB instead of the full 10 TB — a <strong>99.7% reduction</strong>. Because Athena bills <strong>$5 per TB scanned</strong>, partitioning is simultaneously a performance fix and a direct cost-control lever.</p>
+    <span class="source-tag">Source: AWS Athena documentation & cost-optimization guides, 2025–2026</span>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition — Beyond Partitioning</div>
+    <p>The lecture didn't cover it, but the two complementary techniques real teams layer on top of partitioning are: <strong>columnar formats</strong> (converting CSV to Parquet/ORC, since Athena only reads the columns a query actually needs instead of every column in every row) and <strong>bucketing</strong> (sub-dividing a partition by hash of a high-cardinality column like a customer ID). Documented case studies show columnar conversion alone cutting an 8 GB CSV's query cost by ~85%, and bucketing cutting cost by up to 97% on high-cardinality lookups.</p>
+    <span class="source-tag">Source: AWS Athena performance tuning guides, 2025–2026</span>
+  </div>
+
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>The instructor made an important nuance explicit: once data is already in a small, purpose-built partition (like the credit-card-only table), <strong>adding a redundant filter on top doesn't help</strong> — a student asked exactly this, and the answer was "not required, because the partition already did the work." Know <em>when</em> a filter is doing real work vs. when it's a no-op.</p>
+  </div>
+
+  <h2 class="sec-title">👁 Views</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p>A <strong>view</strong> is a virtual table — a saved, predefined query structure that doesn't store data itself. It only fetches data when queried, letting users run a simple <code>SELECT * FROM view</code> instead of re-writing a complex join/aggregation every time.</p>
+  </div>
+  <div class="exp-card">
+    <div class="exp-head"><div class="title">Why views matter more as complexity grows</div><div class="chev">▶</div></div>
+    <div class="exp-body"><div class="exp-body-inner">
+      <p>With one table, a view doesn't save much typing. But the instructor's own example scales this up: a view joining <strong>multiple tables</strong> (credit card trips + cash trips, compared side-by-side) collapses what would be a multi-table join with aggregate functions and GROUP BY into a single <code>SELECT * FROM compare_pay</code>. The more dimension/fact tables and aggregate logic involved, the more a view pays for itself.</p>
+    </div></div>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Common Mistake</div>
+    <p>A view created from the <strong>full unpartitioned table</strong> still scans the full table every time it's queried — creating a view does <em>not</em> automatically give you the performance benefits of partitioning. The instructor demonstrated this directly: a view built on the 9.3 GB yellow table still scanned 9.3 GB on every run, same as the raw query.</p>
+  </div>
+
+  <h2 class="sec-title">📦 CloudFormation — Saving the Query as a Named, Deployable Resource</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>AWS CloudFormation</strong> is AWS's infrastructure-as-code service. A <strong>named query</strong> saved via a CloudFormation template is, in the instructor's own analogy, "like a simple program that is saved" — instead of an end user typing SQL into Athena's interactive editor, the validated query becomes a reusable resource an application's backend can call by ID.</p>
+  </div>
+  <div class="flow">
+    <div class="flow-step">Write CFN template (YAML/JSON)</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Validate template</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Create stack</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Stack provisions resources + named query</div>
+  </div>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>The instructor explicitly compared a CloudFormation <strong>stack</strong> to an Azure <strong>Resource Group</strong>, and the overall CloudFormation workflow to Azure Resource Manager — useful if you're more familiar with Azure (as your OBE/Azure-heavy work background is) than raw AWS.</p>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>The lecture stressed: <strong>validate before deploying.</strong> <code>aws cloudformation validate-template</code> only confirms the YAML/JSON syntax is well-formed — it does <em>not</em> confirm the SQL inside actually runs correctly. You must separately test the underlying query in Athena itself; template validity and query correctness are two independent checks.</p>
+  </div>
+
+  <h2 class="sec-title">🔐 IAM — Identity and Access Management</h2>
+  <div class="callout co-def">
+    <div class="co-label">Definition</div>
+    <p><strong>IAM (Identity and Access Management)</strong> controls who can do what. The lecture's hierarchy: <strong>Policies</strong> (the actual permissions, e.g., "allow Athena read + AWS Glue read") are attached to <strong>Roles/Groups</strong>, which are then mapped to <strong>Users</strong> (e.g., Mary and Paolo in the "Data Science Group").</p>
+  </div>
+  <div class="flow">
+    <div class="flow-step acc-sky">Policy<br><span style="font-size:11px;opacity:0.8">permissions</span></div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Role / Group<br><span style="font-size:11px;opacity:0.8">e.g. "Data Science"</span></div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">User<br><span style="font-size:11px;opacity:0.8">Mary, Paolo</span></div>
+  </div>
+  <h3 class="sub-title">The end-to-end access grant the lecture demonstrated</h3>
+  <ol class="plain">
+    <li>Locate Mary's <strong>Access Key</strong> and <strong>Secret Access Key</strong> in IAM (her credentials, tied to the Data-Scientist policy already granting Athena + Glue + CloudFormation + Cloud9 permissions)</li>
+    <li>Go to the CloudFormation stack's <strong>Outputs</strong> tab — the stack itself outputs Mary's access key as a built-in resource</li>
+    <li>In the Cloud9 terminal, store Mary's access key and secret key into shell variables</li>
+    <li>Run a command that maps the <strong>named query ID</strong> to <strong>Mary's credentials</strong>, confirming via a describe/view action that she now has access to that specific saved query — and only that one</li>
+  </ol>
+  <div class="callout co-insight">
+    <div class="co-label">Insight — Why this matters for production systems</div>
+    <p>This is the backend mechanism behind <strong>any</strong> "data scientist clicks a button, sees a chart" frontend: the calling application passes a user's access key + secret key as credentials to the backend, the backend checks those credentials have rights to the named Athena/Glue resources, and only then does the query run and return data to the frontend. The "nice user web interface" is just the visible tip of this access-controlled backend chain.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>The pattern demonstrated — storing long-lived IAM access keys in shell variables for a CLI session — is explicitly discouraged by current (2025–2026) AWS security guidance, which now recommends short-lived credentials via IAM Identity Center / STS temporary tokens or IAM roles assumed via <code>sts:AssumeRole</code> instead of static access keys, precisely because long-lived keys are a major source of credential leaks if accidentally committed to code or logs.</p>
+    <span class="source-tag">Source: AWS IAM security best practices documentation, 2025–2026</span>
+  </div>
+
+  <h2 class="sec-title">🧠 Full Architecture Recap</h2>
+  <div class="flow">
+    <div class="flow-step acc-sky">S3 raw data</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Glue catalog/table</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Athena SQL + partitioning</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Saved as named query (CloudFormation)</div><div class="flow-arrow">→</div>
+    <div class="flow-step">IAM-gated access for Mary</div>
+  </div>
+
+  ${pageNav('s8', 'lab2')}
+`;
+
+PAGES.lab2 = () => `
+  <div class="page-header">
+    <div class="page-eyebrow">Hands-On Lab · Webinar 2 (June 3)</div>
+    <h1 class="page-title">BigQuery + Airbyte + dbt + Looker Studio</h1>
+    <p class="page-desc">Facilitator Lokesh S's walkthrough: building a full modern ELT data stack end-to-end using a telecom customer-churn dataset, demonstrating every layer from Session 5's architecture with a concrete tool.</p>
+  </div>
+
+  <h2 class="sec-title">🎯 The Use Case</h2>
+  <div class="callout co-insight">
+    <div class="co-label">Scenario</div>
+    <p>A telecom company wants to understand <strong>customer churn</strong> — customers switching mobile networks/numbers. Raw customer data (customer ID, age, gender, churn flag, contract type, monthly charges) sits in a CSV. The goal: build a complete pipeline so that a <strong>business manager</strong> can open a dashboard and see churn patterns, without ever touching the underlying tools.</p>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip — The instructor's own framing</div>
+    <p>This lab is explicitly framed as "primarily ELT, not ETL" — <strong>load first, transform later</strong> — and is the most direct real-world illustration of Session 4's ETL-vs-ELT content: raw data lands untransformed in BigQuery first; all cleaning/modeling happens afterward via dbt, directly inside the warehouse.</p>
+  </div>
+
+  <h2 class="sec-title">🧩 Mapping the Demo to the 5-Layer Modern Stack</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Stack Layer</th><th>Tool Used</th><th>What Happened</th></tr>
+      <tr><td class="hl-purple">Ingestion</td><td><strong>Airbyte</strong></td><td>Connects a CSV source (Google Cloud Storage bucket) to a BigQuery destination via a 3-step setup: connection → source → destination</td></tr>
+      <tr><td class="hl-teal">Storage</td><td><strong>BigQuery</strong></td><td>Acts as the raw data layer — a dataset + table (<code>telecom_data</code> / <code>raw_data</code>) holds the unmodified CSV contents</td></tr>
+      <tr><td class="hl-amber" style="color:var(--amber)">Transformation</td><td><strong>dbt Cloud</strong></td><td>Two models built: a staging model (<code>stage_telecom</code>) and a summary model (<code>telecom_churn_summary</code>)</td></tr>
+      <tr><td>Serving / BI</td><td><strong>Looker Studio</strong> (formerly Google Data Studio)</td><td>Connects directly to the dbt-transformed tables in BigQuery; manager builds bar/pie/time-series charts on churn rate, contract type, total customers</td></tr>
+    </table>
+  </div>
+
+  <h2 class="sec-title">📥 Layer 1: Ingestion Tool Landscape (as surveyed in the lecture)</h2>
+  <div class="tbl-wrap">
+    <table class="cmp">
+      <tr><th>Category</th><th>Tools Named</th></tr>
+      <tr><td>Data integration / ELT connectors</td><td>Airbyte, Stitch, Talend, Apache NiFi</td></tr>
+      <tr><td>Data warehouse (chosen: BigQuery)</td><td>BigQuery, Snowflake</td></tr>
+      <tr><td>Lakehouse (alternate path, not used live)</td><td>Delta Lake, Databricks</td></tr>
+      <tr><td>Transformation (chosen: dbt)</td><td>dbt</td></tr>
+      <tr><td>BI / Serving (chosen: Looker Studio)</td><td>Tableau, Power BI, Looker Studio, Jupyter, DataRobot</td></tr>
+      <tr><td>Governance / Orchestration (discussed, not used)</td><td>Apache Airflow, Informatica, SAP</td></tr>
+      <tr><td>Versioning</td><td>Git (code), dbt (data/model versioning)</td></tr>
+    </table>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Important Nuance — directly from a student Q&A in the lecture</div>
+    <p>A student (Dhivya) asked the exact right exam-style question: <em>"We can also do transformation directly in BigQuery — when would we choose dbt instead?"</em> The instructor's honest answer: <strong>BigQuery alone is sufficient</strong> for all of this. The choice of dbt vs. native BigQuery SQL is an <strong>organizational/tooling preference</strong> (partnerships, team skill, governance needs) — not a technical requirement. Don't assume more tools = more correct; assume <strong>tool choice reflects trade-offs</strong>, and BigQuery-only pipelines are entirely valid.</p>
+  </div>
+
+  <h2 class="sec-title">🔌 Setting Up Airbyte (Ingestion Layer)</h2>
+  <p>The lecture walked through Airbyte's <strong>three-part setup</strong>:</p>
+  <ol class="plain">
+    <li><strong>Connection</strong> — create a new connection in your Airbyte workspace</li>
+    <li><strong>Source</strong> — select CSV as the file format, point it at the file's location (a Google Cloud Storage bucket URL or public URL), and provide a <strong>service account JSON key</strong> for authenticated access</li>
+    <li><strong>Destination</strong> — select BigQuery, provide the Google Cloud project ID, choose the dataset location (e.g., US multi-region), and specify the target dataset name</li>
+  </ol>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>Airbyte's UI explicitly separates <strong>source authentication</strong> from <strong>destination authentication</strong> — you need a service account JSON key for BOTH ends of the pipe (reading from GCS, writing to BigQuery), even though both happen to be Google Cloud services in this demo. Don't assume "same cloud provider" means "same credential."</p>
+  </div>
+
+  <h2 class="sec-title">🏗 Setting Up BigQuery (Storage Layer)</h2>
+  <ol class="plain">
+    <li>Go to <code>console.cloud.google.com</code> → create a new Project (e.g., named "PM for ML" / "DML for ML" in the demo — note GCP project names disallow underscores)</li>
+    <li>Open BigQuery → create a Dataset, choosing a <strong>region</strong> (the lecture used "US multi-region" for availability)</li>
+    <li>Create a Table inside the dataset — either empty (manually defined schema) or via <strong>Upload</strong> with <strong>schema auto-detect</strong>, which the instructor used directly on the telecom CSV</li>
+  </ol>
+  <div class="callout co-warn">
+    <div class="co-label">Common Mistake (flagged live)</div>
+    <p>A student (Shriyansh) asked whether uploading would only populate columns that already existed in the table, or preserve everything. The instructor's answer: if you pre-select specific columns, only those are kept and the rest is dropped silently; if you use straight "Upload" with auto-detect, <strong>every column is preserved</strong>. Know which mode you're in before you upload, or you can silently lose columns.</p>
+  </div>
+
+  <h2 class="sec-title">🛠 Setting Up dbt Cloud (Transformation Layer)</h2>
+  <div class="flow">
+    <div class="flow-step">Create dbt project</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-sky">Connect to BigQuery<br><span style="font-size:11px;opacity:0.8">via service account JSON</span></div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Set up repository<br><span style="font-size:11px;opacity:0.8">Git-backed</span></div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">Write models in Notebook/Studio</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">Run → results land back in BigQuery</div>
+  </div>
+  <p>Two dbt models were built:</p>
+  <ul class="plain">
+    <li><strong>Stage model</strong> (<code>stage_telecom</code>) — first-pass cleaning of the raw ingested table</li>
+    <li><strong>Summary model</strong> (<code>telecom_churn_summary</code>) — aggregated churn metrics built on top of the staging model</li>
+  </ul>
+  <div class="callout co-insight">
+    <div class="co-label">Insight</div>
+    <p>This staging → summary pattern is <strong>the canonical dbt project structure</strong> used industry-wide: raw → staging (light cleaning, renaming, type-casting) → intermediate/marts (business-logic aggregation). The lecture's two-model demo is a minimal but textbook-correct version of this layering.</p>
+  </div>
+  <div class="callout co-research">
+    <div class="co-label">🔎 Research Addition</div>
+    <p>dbt's official project-structure guidance (consistent through 2025–2026 releases) recommends exactly this layered approach — staging models that do 1:1 light transformations of raw sources, feeding into intermediate and mart-level models that encode business logic — making this lecture demo a faithful (if simplified) version of how dbt is used in real production data teams.</p>
+    <span class="source-tag">Source: dbt Labs project structure guide, 2025–2026</span>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>Once dbt's connection to BigQuery is established and models run successfully, the output lands back in BigQuery under a new schema (the lecture saw it appear under "schema analytics" / a <code>dbt_</code>-prefixed dataset) — reinforcing that <strong>dbt never stores data itself</strong>; it only compiles and runs SQL <em>against</em> the warehouse, fully consistent with the ELT principle that the warehouse (BigQuery) is the single source of computational truth.</p>
+  </div>
+
+  <h2 class="sec-title">📊 Setting Up Looker Studio (Serving / BI Layer)</h2>
+  <ol class="plain">
+    <li>Go to <code>datastudio.google.com</code> → Create → Report</li>
+    <li>Connect Data Source → select BigQuery → choose your Project → choose the dbt-transformed Dataset/Table (not the raw table, if you want pre-aggregated metrics)</li>
+    <li>Add charts: bar chart, pie chart, time-series, table — choosing dimensions (e.g., contract type) and metrics (e.g., churn rate, total customers)</li>
+  </ol>
+  <div class="callout co-insight">
+    <div class="co-label">Insight — Looker Studio vs. Data Studio naming</div>
+    <p>The instructor clarified a naming history point directly: <strong>Google Data Studio was renamed Looker Studio</strong>, and at the time of this lecture is being referred to again as "Data Studio" — Google has rebranded this product more than once. If you see either name in a question, they refer to the same free Google BI tool.</p>
+  </div>
+  <div class="callout co-warn">
+    <div class="co-label">Common Mistake</div>
+    <p>The instructor tried inserting a histogram on the raw, unaggregated table and found it "doesn't help here" — raw row-level data (each record = one customer) doesn't produce meaningful summary charts. You need to point your BI tool at the <strong>transformed/aggregated</strong> table (the dbt output), not the raw ingestion table, for charts to be useful. This is a direct, practical reason the Transformation layer exists between Storage and Serving.</p>
+  </div>
+
+  <h2 class="sec-title">🌐 Why So Many Tools for One Pipeline?</h2>
+  <div class="callout co-insight">
+    <div class="co-label">The instructor's own closing explanation</div>
+    <p>"Single tool, BigQuery itself, is enough to construct a modern data stack" — but organizations combine multiple specialized tools because of <strong>partnerships, cost structures, trust, and existing investments</strong>. AWS, GCP, and tools like dbt and Airbyte are increasingly built as <strong>partner ecosystems</strong> (the lecture pointed out GCP's own "Partner Center" listing Airbyte, dbt, Snowflake, Databricks, Apache Kafka, SAP, and others directly inside the BigQuery console) — so combining tools is often cheaper and more supported than it looks, not more complex.</p>
+  </div>
+  <div class="callout co-tip">
+    <div class="co-label">Exam Tip</div>
+    <p>If asked "why use dbt/Airbyte instead of doing everything in BigQuery," the strongest answer references this lecture directly: <strong>it's not a technical necessity, it's an organizational choice</strong> driven by tool specialization, governance preferences, and partner pricing — not because BigQuery is technically incapable of ingestion or transformation.</p>
+  </div>
+
+  <h2 class="sec-title">🧠 Full Architecture Recap</h2>
+  <div class="flow">
+    <div class="flow-step acc-sky">CSV in GCS bucket</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-teal">Airbyte (EL)</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-amber">BigQuery raw dataset</div><div class="flow-arrow">→</div>
+    <div class="flow-step acc-purple">dbt models (T)</div><div class="flow-arrow">→</div>
+    <div class="flow-step">BigQuery transformed dataset</div><div class="flow-arrow">→</div>
+    <div class="flow-step">Looker Studio dashboard</div>
+  </div>
+
+  ${pageNav('lab1', null)}
+`;
+
+
+/* ============================================================
+   QUIZ MODE — 30 QUESTIONS
+   ============================================================ */
+const QUIZ = [
+  {
+    session:'S1', q:'A team builds a highly sophisticated model architecture, but it performs poorly in production. What is the MOST likely root cause according to the data management principle covered in Session 1?',
+    options:['The learning rate was set too high','Upstream data quality problems are capping model quality (garbage in, garbage out)','The model needs more layers','The GPU was undersized'],
+    correct:1,
+    explain:'<b>Lecture:</b> Most ML failures are data failures, not model failures — upstream data quality caps what any model can achieve, no matter how sophisticated. <b>Research:</b> Industry surveys (2024–2025) consistently show 60–80% of ML project time goes to data work specifically because this bottleneck is so common.'
+  },
+  {
+    session:'S1', q:'In the DIKW hierarchy, "37.2°C in Mumbai" (as opposed to the raw number 37.2) represents which layer?',
+    options:['Data','Information','Knowledge','Wisdom'],
+    correct:1,
+    explain:'<b>Lecture:</b> Data is the bare number (37.2); Information adds context (37.2°C in Mumbai); Knowledge adds interpretation (unusually hot); Wisdom adds action (issue heat advisory).'
+  },
+  {
+    session:'S1', q:'Which data type is described in the lecture as making up "the bulk of ML data" in modern applications?',
+    options:['Structured data','Semi-structured data','Unstructured data','Metadata'],
+    correct:2,
+    explain:'<b>Lecture:</b> Unstructured data (text, images, audio) is explicitly called out as the bulk of modern ML data. <b>Research:</b> IDC and cloud-vendor reports (2024–2025) put unstructured/semi-structured data at roughly 80–90% of all enterprise data.'
+  },
+  {
+    session:'S2', q:'A company stores years of old customer logs "just in case," paying significant storage costs and increasing their breach exposure with no clear use. This illustrates data behaving as:',
+    options:['An asset only','A liability','Both equally, always','Metadata'],
+    correct:1,
+    explain:'<b>Lecture:</b> Data is a liability when it incurs storage/compute cost and privacy/breach/compliance risk without earning its keep. The rule: keep what earns its keep, don\'t hoard.'
+  },
+  {
+    session:'S2', q:'Why are ML pipelines described as "especially data-sensitive" compared to traditional software?',
+    options:['ML code is harder to write','Models memorize and propagate data — leaking sensitive info, encoding bias, or degrading silently from poisoned input','ML always requires more storage','ML pipelines never have bugs'],
+    correct:1,
+    explain:'<b>Lecture:</b> Models can leak sensitive data via predictions, propagate bias from biased inputs, and degrade silently (no crash, just worse predictions) when fed poisoned data — a failure mode traditional software rarely has.'
+  },
+  {
+    session:'S2', q:'A model has 96% offline test accuracy but performs noticeably worse once deployed, because a feature is computed differently in the live serving path than it was during training. This is:',
+    options:['Concept drift','Training-serving skew','Data drift','A data swamp'],
+    correct:1,
+    explain:'<b>Lecture:</b> Training-serving skew is exactly this: a feature stale, missing, or computed differently at serving vs. training time. The fix is computing features identically in both paths (the motivation for feature stores).'
+  },
+  {
+    session:'S2', q:'Which of the following is NOT one of the four pillars of data reliability covered in the lecture?',
+    options:['Freshness','Completeness','Scalability','Availability'],
+    correct:2,
+    explain:'<b>Lecture:</b> The four pillars are freshness, completeness, correctness, and availability. Scalability is a system property, not a reliability dimension.'
+  },
+  {
+    session:'S3', q:'A large organization has a shared central data backbone, but individual business units also maintain their own domain-specific data stores on top of it. This architecture is:',
+    options:['Purely centralized','Purely decentralized','Hybrid','A data swamp'],
+    correct:2,
+    explain:'<b>Lecture:</b> Hybrid combines a shared backbone with domain-owned stores and is explicitly called the most common real-world pattern — pure centralized or pure decentralized are both less common at scale.'
+  },
+  {
+    session:'S3', q:'Running heavy analytical reporting queries directly against the live production application database is risky mainly because:',
+    options:['SQL syntax differs between OLTP and OLAP','It competes for the same resources the live application needs, risking outages','OLTP databases cannot run SELECT statements','It violates GDPR'],
+    correct:1,
+    explain:'<b>Lecture:</b> OLTP systems are built for small frequent reads/writes to run the business; large OLAP-style scans compete for the same resources and can degrade or crash the live application. This is exactly why separate analytical warehouses exist.'
+  },
+  {
+    session:'S3', q:'Which storage architecture uses "schema-on-write" and is described as reliable but inflexible?',
+    options:['Data lake','Data warehouse','Data swamp','Data mesh'],
+    correct:1,
+    explain:'<b>Lecture:</b> Warehouses enforce schema-on-write (rigid, structured-only). Lakes use schema-on-read (flexible, any data type, cheap but easily ungoverned). Lakehouses combine both.'
+  },
+  {
+    session:'S3', q:'A data lake with no catalogs, no schema enforcement, and no ownership — making the data un-findable and untrustworthy — is called a:',
+    options:['Lakehouse','Data mesh','Data swamp','Data warehouse'],
+    correct:2,
+    explain:'<b>Lecture:</b> A data swamp is exactly this failure mode. The fix is to govern the lake — flexibility without discipline destroys reliability.'
+  },
+  {
+    session:'S4', q:'Why does the lecture state that ELT, rather than ETL, suits ML pipelines better?',
+    options:['ELT is always faster','ELT keeps the raw data available for re-processing when features change','ELT requires no transformation logic at all','ETL cannot run on cloud warehouses'],
+    correct:1,
+    explain:'<b>Lecture:</b> ETL discards the raw, untransformed form once it\'s transformed; ELT keeps raw data intact in the warehouse, so when feature requirements change later, you can re-derive new features from the original signal without re-extracting from source.'
+  },
+  {
+    session:'S4', q:'In Webinar 2 (BigQuery + Airbyte + dbt), which tool performed the "T" (Transform) step of ELT?',
+    options:['Airbyte','BigQuery storage','dbt Cloud','Looker Studio'],
+    correct:2,
+    explain:'<b>Lecture:</b> Airbyte performed Extract+Load (EL) from CSV into BigQuery\'s raw dataset; dbt Cloud then transformed that already-loaded raw data into staging and summary models — textbook ELT.'
+  },
+  {
+    session:'S4', q:'A nightly pipeline job fails halfway and is automatically retried. After the retry, the final row counts are exactly the same as if it had run once successfully. This pipeline step is:',
+    options:['Idempotent','A data swamp','Schema-on-write','Concept drift'],
+    correct:0,
+    explain:'<b>Lecture:</b> Idempotent steps produce the same result whether run once or multiple times (via UPSERT or full OVERWRITE), which is essential because pipelines fail and get retried constantly.'
+  },
+  {
+    session:'S4', q:'Which technique moves only the changed rows from a source database (via its transaction log) instead of re-copying entire tables on every sync?',
+    options:['CDC (Change Data Capture)','CTAS (Create Table As Select)','ETL','OLAP'],
+    correct:0,
+    explain:'<b>Lecture:</b> CDC reads changed rows from the transaction log, keeping downstream stores fresh cheaply, and underpins most modern streaming ingestion from transactional databases.'
+  },
+  {
+    session:'S4', q:'A naive pipeline retry uses a plain INSERT/append on failure-recovery. What is the likely result?',
+    options:['No effect, the system auto-deduplicates','Rows get double-counted','The table schema is dropped','Nothing — INSERT is always idempotent'],
+    correct:1,
+    explain:'<b>Lecture:</b> A naive append on retry double-counts rows because INSERT is not idempotent by default — this is exactly why UPSERT or full OVERWRITE patterns are used instead.'
+  },
+  {
+    session:'S5', q:'What is the correct order of layers in the modern data stack as covered in the lecture?',
+    options:['Storage → Ingestion → Orchestration → Transformation → Serving','Ingestion → Storage → Transformation → Orchestration → Serving','Transformation → Ingestion → Storage → Serving → Orchestration','Serving → Transformation → Storage → Ingestion → Orchestration'],
+    correct:1,
+    explain:'<b>Lecture:</b> Data flows up: Ingestion → Storage → Transformation → Orchestration → Serving. This exact order matches what both lab webinars demonstrated tool by tool.'
+  },
+  {
+    session:'S5', q:'A workflow orchestrator like Airflow is best described in the lecture\'s own analogy as:',
+    options:['A database for storing transformed data','A project manager for data — running the DAG, handling retries, backfills, and alerts','A BI dashboard tool','A data catalog'],
+    correct:1,
+    explain:'<b>Lecture:</b> The orchestrator runs each task in the DAG once its dependencies are met, with retries, backfills, and alerting — "a project manager for data."'
+  },
+  {
+    session:'S5', q:'Why is DataOps considered its own discipline rather than just "DevOps applied to data"?',
+    options:['Data doesn\'t need version control','Data adds schema/data versioning, drift over time, and tests on values — not just logic tests','DataOps doesn\'t use CI/CD','There is no difference; the terms are interchangeable'],
+    correct:1,
+    explain:'<b>Lecture:</b> Data brings three things traditional software DevOps never had to handle: data/schema versioning (not just code), drift over time (data changes shape even when code doesn\'t), and tests on values (not just logic).'
+  },
+  {
+    session:'S5', q:'In your two lab webinars, which tool served the "Serving / BI" layer of the modern stack?',
+    options:['Glue','Airbyte','Looker Studio (Data Studio)','dbt'],
+    correct:2,
+    explain:'<b>Lecture (Webinar 2):</b> Looker Studio connected directly to the BigQuery transformed tables to build the manager-facing dashboard — the serving/BI layer.'
+  },
+  {
+    session:'S6', q:'According to Session 6, why is ML engineering considered harder than either traditional software engineering or classical statistics alone?',
+    options:['ML requires more RAM','Data, Model, and Code/Infrastructure are intertwined — a change in one ripples through the others','ML doesn\'t use version control','Statistics is unrelated to ML'],
+    correct:1,
+    explain:'<b>Lecture:</b> The three levels of ML software (Data, Model, Code/Infrastructure) are coupled — changing one affects the others, meaning you\'re effectively debugging three interacting systems at once.'
+  },
+  {
+    session:'S6', q:'In the ML lifecycle loop (Ingest → Validate → Prepare Features → Train → Evaluate → Deploy → Monitor), what closes the loop back to the start?',
+    options:['Evaluate feeds back into Ingest directly','Monitor feeds back into Retrain, restarting the cycle','The loop is actually linear, it never repeats','Deploy is the final, permanent step'],
+    correct:1,
+    explain:'<b>Lecture:</b> The lifecycle is explicitly a loop, not a line — Monitor feeds back into Retrain, which restarts the cycle from the top. This detail separates a complete exam answer from a partial one.'
+  },
+  {
+    session:'S6', q:'A spam classifier\'s input email features look statistically the same as during training, but spammers have changed their tactics so the actual definition of "spam" has shifted. This is:',
+    options:['Data drift','Concept drift','Training-serving skew','A data swamp'],
+    correct:1,
+    explain:'<b>Lecture:</b> Concept drift is when the input→target relationship itself shifts, even if input distributions look unchanged — the harder, sneakier case compared to data drift (where the inputs themselves visibly shift).'
+  },
+  {
+    session:'S6', q:'What does the "Validate" stage of the ML lifecycle protect against?',
+    options:['Slow model training','Data problems (schema, ranges, nulls) that would otherwise silently poison the model before training even starts','Network latency in serving','Underfitting'],
+    correct:1,
+    explain:'<b>Lecture:</b> Validation checks data before training — schema, ranges, nulls — catching problems that would otherwise silently poison the model, directly reusing the "silent" failure language from Session 2.'
+  },
+  {
+    session:'S7', q:'A company purchases an aggregated mailing list from a data broker. This is an example of:',
+    options:['First-party data','Second-party data','Third-party data','Synthetic data'],
+    correct:2,
+    explain:'<b>Lecture:</b> Third-party data is purchased/aggregated from outside sources — offering reach you couldn\'t collect yourself, but at the cost of unknown quality and added compliance risk since you can\'t verify original collection/consent.'
+  },
+  {
+    session:'S7', q:'A sensor on a bridge continuously emits vibration readings as JSON events. Categorized by Session 7\'s four axes, this source is best described as:',
+    options:['Type: File, Structure: Structured','Type: Stream, Structure: Semi-structured','Type: Database, Structure: Unstructured','Type: API, Structure: Structured'],
+    correct:1,
+    explain:'<b>Lecture (live example used in Webinar 2):</b> Continuous sensor data is a Stream (Type axis) carrying self-describing JSON payloads (Semi-structured, Structure axis) — this exact bridge-vibration example was used live in the lecture.'
+  },
+  {
+    session:'S7', q:'Why do most data quality problems start at the ingestion stage, according to the lecture?',
+    options:['Ingestion always uses the slowest hardware','The source is outside your control and can change (schema, duplicates, late data, format drift) without warning','Ingestion never has bugs, only transformation does','Validation only matters at the final serving stage'],
+    correct:1,
+    explain:'<b>Lecture:</b> Because the source is outside your control, schema changes or format drift can happen silently. The fix: validate at ingestion (schema checks, data contracts) to catch changes immediately.'
+  },
+  {
+    session:'S8', q:'A team writes code that explores a new dataset\'s null rates, value distributions, and ranges to understand its baseline characteristics before deciding on any rules. This is:',
+    options:['Validation','Profiling','Lineage tracking','Idempotency testing'],
+    correct:1,
+    explain:'<b>Lecture:</b> Profiling explores data to learn its baseline; validation then checks data against explicit expectations derived from that baseline. "Profile to set, validate to enforce."'
+  },
+  {
+    session:'S8', q:'An email column has 9,200 non-null values out of 10,000 total rows. At a 98% completeness threshold, what happens?',
+    options:['92% ≥ 98%, so the check passes','92% < 98%, so the check FAILS and the pipeline alerts/blocks','100% completeness is assumed since most rows are filled','The threshold doesn\'t apply to email columns'],
+    correct:1,
+    explain:'<b>Lecture:</b> Completeness = 9200/10000 = 92%. Since 92% is less than the 98% threshold, the check FAILS, triggering an alert or block before the bad data reaches training — this exact numeric pattern (ratio vs. threshold) generalizes to most data-quality dimensions.'
+  },
+  {
+    session:'S8', q:'A table has zero null values (100% complete) but contains duplicate primary keys and several out-of-range numeric values. What does this demonstrate?',
+    options:['The data is fully trustworthy since completeness passed','A dataset can pass one quality dimension (completeness) while failing others (uniqueness, validity) — quality is multi-dimensional','Completeness is the only dimension that matters','Duplicate keys are not a data quality issue'],
+    correct:1,
+    explain:'<b>Lecture:</b> "A dataset can be perfect on one dimension and broken on another" — never assume one passing check means the data is good overall; each of the eight quality dimensions (accuracy, completeness, consistency, timeliness, validity, uniqueness, integrity, lineage) needs its own check.'
+  },
+  {
+    session:'Lab1', q:'In the AWS Athena lab, why does Athena require you to configure an S3 bucket under Query Settings before running any queries?',
+    options:['Athena needs S3 to store its source code','Athena is serverless and has no storage of its own — query results must be written somewhere','S3 is required for IAM authentication','This step is optional and was skipped in the demo'],
+    correct:1,
+    explain:'<b>Lecture:</b> Because Athena is serverless (no provisioned server/disk of its own), it has nowhere to write query output by default — hence the very first setup step was pointing Athena to an S3 "query results" bucket.'
+  },
+  {
+    session:'Lab1', q:'In the live Athena demo, querying a table partitioned by month (vs. scanning the full unpartitioned table with a WHERE filter) reduced data scanned from ~9.3GB to approximately:',
+    options:['8.5 GB (minimal change)','815 MB (~91% reduction)','71 MB (~99% reduction)','0 MB'],
+    correct:1,
+    explain:'<b>Lecture:</b> The month-partitioned ("Jan") table scanned ~815MB vs. ~9.3GB for the full table — roughly a 91% reduction in data scanned, which directly reduced query time from ~29s to ~7s. (71MB was the result for the pay-type/vertical-partition example, not the month partition.)'
+  },
+  {
+    session:'Lab1', q:'In the Athena/Glue lab, what is the role of the AWS Glue database/catalog?',
+    options:['It physically stores a duplicate copy of all the S3 data','It creates metadata tables (schema, location, format) pointing at data that already lives in S3, without duplicating it','It replaces the need for IAM entirely','It is only used for billing'],
+    correct:1,
+    explain:'<b>Lecture:</b> Glue is explicitly described as a logical container for metadata — it catalogs data in S3 so Athena can query it via SQL, but it does not store a separate copy of the actual data.'
+  },
+  {
+    session:'Lab1', q:'In the lab\'s IAM walkthrough, what was the actual mechanism used to grant the end user "Mary" access to a specific saved Athena query?',
+    options:['Mary was given full admin access to the AWS account','Mary\'s IAM access key + secret key were mapped to the specific named-query ID created via CloudFormation, scoping her access to just that query','Mary was given a copy of the raw S3 data directly','Access was granted by emailing Mary the SQL text'],
+    correct:1,
+    explain:'<b>Lecture:</b> The instructor stored Mary\'s access key and secret access key as shell variables in Cloud9, then ran a command mapping those credentials to the specific named-query ID — scoped access to one resource, not blanket account access.'
+  },
+  {
+    session:'Lab2', q:'In the BigQuery/Airbyte/dbt lab, what specific question did a student (Dhivya) raise that the instructor confirmed was a valid point?',
+    options:['Whether BigQuery can read CSV files at all','Whether BigQuery alone could perform the same transformations dbt does, making dbt optional rather than required','Whether Looker Studio can connect to AWS','Whether Airbyte requires a credit card'],
+    correct:1,
+    explain:'<b>Lecture:</b> Dhivya asked exactly when you\'d choose dbt vs. doing transformation natively in BigQuery. The instructor confirmed: BigQuery alone is sufficient; the choice of dbt is organizational (partnerships, governance preference), not a technical necessity.'
+  },
+  {
+    session:'Lab2', q:'In the lab\'s dbt setup, what were the two models built on top of the raw ingested telecom data?',
+    options:['A staging model and a summary/churn-aggregation model','A backup model and an archive model','A security model and a billing model','Only one combined model — staging and summary were merged'],
+    correct:0,
+    explain:'<b>Lecture:</b> Two dbt models were built: a staging model (light cleaning of raw data) and a summary model (aggregated churn metrics) — the canonical staging → summary/mart layering pattern used in real dbt projects.'
+  },
+  {
+    session:'Lab2', q:'Why did the instructor find that inserting a histogram directly on the RAW (unaggregated) BigQuery table in Looker Studio "didn\'t help"?',
+    options:['Looker Studio cannot connect to BigQuery at all','Raw row-level data (one row per customer) doesn\'t produce meaningful summary charts — you need the transformed/aggregated table for charts to be useful','Histograms are not supported in Looker Studio','The raw table had no data in it'],
+    correct:1,
+    explain:'<b>Lecture:</b> The instructor demonstrated live that charts built on raw, row-level data are not meaningful — BI tools need to point at the dbt-transformed, aggregated tables, which is a concrete reason the Transformation layer sits between Storage and Serving in the modern stack.'
+  },
+];
+
+function renderQuiz(){
+  if(!window.quizState) initQuizState();
+  const qs = window.quizState;
+  if(qs.finished) return renderQuizScore();
+  const q = QUIZ[qs.idx];
+  const dots = QUIZ.map((_,i)=>{
+    let cls='qdot';
+    if(qs.history[i]===true) cls+=' correct';
+    else if(qs.history[i]===false) cls+=' wrong';
+    if(i===qs.idx) cls+=' current';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+  const answered = qs.answers[qs.idx] !== undefined;
+  const optsHtml = q.options.map((opt,i)=>{
+    let cls='q-opt';
+    if(answered){
+      cls+=' disabled';
+      if(i===q.correct) cls+=' correct';
+      else if(i===qs.answers[qs.idx]) cls+=' wrong';
+      else cls+=' dim';
+    }
+    return `<div class="${cls}" onclick="${answered?'':`answerQuiz(${i})`}">
+      <div class="opt-letter">${String.fromCharCode(65+i)}</div>
+      <div class="opt-text">${opt}</div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="quiz-wrap">
+    <div class="page-header" style="margin-bottom:14px;">
+      <div class="page-eyebrow">Quiz Mode</div>
+      <h1 class="page-title" style="font-size:22px;">Test Your Knowledge</h1>
+    </div>
+    <div class="quiz-top">
+      <div class="dot-tracker">${dots}</div>
+      <div style="font-size:12.5px;color:var(--text-faint);font-weight:600;">${qs.idx+1} / ${QUIZ.length}</div>
+    </div>
+    <div class="quiz-card">
+      <div class="q-meta"><span>${q.session}</span><span>${answered ? (qs.answers[qs.idx]===q.correct?'✓ Correct':'✗ Incorrect') : 'Choose an answer'}</span></div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-opts">${optsHtml}</div>
+      <div class="q-explain ${answered?'show':''}">${q.explain}</div>
+      <div class="q-footer">
+        <div class="btn btn-sm" onclick="prevQuiz()" style="${qs.idx===0?'visibility:hidden':''}">← Back</div>
+        <div class="btn btn-sm btn-primary" onclick="nextQuiz()" style="${answered?'':'visibility:hidden'}">${qs.idx===QUIZ.length-1?'See Score':'Next →'}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderQuizScore(){
+  const qs = window.quizState;
+  const correct = Object.values(qs.history).filter(v=>v===true).length;
+  const pct = Math.round((correct/QUIZ.length)*100);
+  let msg, emoji;
+  if(pct>=90){msg='Outstanding — you clearly know this material cold.'; emoji='🏆';}
+  else if(pct>=75){msg='Strong work. Review the few you missed and you\'re exam-ready.'; emoji='💪';}
+  else if(pct>=50){msg='Solid foundation, but go back through the missed sessions in Study Mode.'; emoji='📘';}
+  else {msg='This is a good diagnostic — head back to Study Mode and work through each session before retrying.'; emoji='🔁';}
+
+  return `
+  <div class="quiz-wrap">
+    <div class="quiz-card score-screen">
+      <div style="font-size:38px;">${emoji}</div>
+      <div class="score-num">${pct}%</div>
+      <div class="score-label">${correct} / ${QUIZ.length} correct</div>
+      <div class="score-msg">${msg}</div>
+      <div class="btn-row" style="justify-content:center;">
+        <div class="btn btn-primary" onclick="restartQuiz()">Retake Quiz</div>
+        <div class="btn" onclick="goTo('home')">Back to Overview</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initQuizState(){
+  window.quizState = {idx:0, answers:{}, history:{}, finished:false};
+}
+function initQuiz(){ /* no-op, state persists in window.quizState */ }
+
+function answerQuiz(i){
+  const qs = window.quizState;
+  qs.answers[qs.idx] = i;
+  qs.history[qs.idx] = (i === QUIZ[qs.idx].correct);
+  render();
+}
+function nextQuiz(){
+  const qs = window.quizState;
+  if(qs.idx < QUIZ.length-1){ qs.idx++; }
+  else { qs.finished = true; }
+  render();
+}
+function prevQuiz(){
+  const qs = window.quizState;
+  if(qs.idx>0){ qs.idx--; render(); }
+}
+function restartQuiz(){ initQuizState(); render(); }
+
+
+/* ============================================================
+   FLASHCARD MODE — 36 CARDS
+   ============================================================ */
+const FLASHCARDS = [
+  {deck:'S1', front:'What is data management?', back:'Acquiring, storing, organizing, governing, and serving trustworthy data. Most ML failures are data failures — a great model on bad/undocumented/unavailable data fails in production.'},
+  {deck:'S1', front:'Explain the DIKW hierarchy with the lecture\'s example.', back:'Data (37.2) → Information (37.2°C in Mumbai) → Knowledge (unusually hot) → Wisdom (issue a heat advisory). Each layer adds meaning and value over the last.'},
+  {deck:'S1', front:'Differentiate structured, unstructured, and semi-structured data.', back:'Structured: fixed rows/columns, SQL-friendly. Unstructured: no schema — text/images, the bulk of ML data. Semi-structured: self-describing tags/keys, like JSON or logs.'},
+  {deck:'S1', front:'Where does ML sit in the data pipeline, and what limits model quality?', back:'ML is one stage in collect → clean → store → transform → train → serve. Upstream data quality caps the model\'s ceiling — garbage in, garbage out.'},
+  {deck:'S2', front:'Compare data as an asset vs. a liability.', back:'Asset: fuels models, insight, revenue — a competitive moat. Liability: storage/compute cost, privacy/breach risk, compliance burden. Rule: keep what earns its keep, don\'t hoard.'},
+  {deck:'S2', front:'Why are ML pipelines especially data-sensitive?', back:'Models memorize and propagate data: sensitive data can leak via predictions, biased data biases the model, and poisoned input degrades performance silently (no crash, just worse results). Classify and guard data throughout the pipeline.'},
+  {deck:'S2', front:'Define data reliability and its four pillars.', back:'Reliability = trust that data is correct, complete, fresh, and available when needed. The four pillars: freshness, completeness, correctness, availability.'},
+  {deck:'S2', front:'What is training-serving skew, and how do you prevent it?', back:'When a feature is stale, missing, or computed differently at serving time vs. training time, causing a high-offline-accuracy model to fail live. Prevent it by computing features identically in both paths and monitoring continuously — the core motivation for feature stores.'},
+  {deck:'S3', front:'Compare centralized, decentralized, and hybrid data architectures.', back:'Centralized: one store, easy to govern, can bottleneck. Decentralized: domain-owned (data mesh), scalable, risks silos. Hybrid: shared backbone + domain stores — the most common pattern in practice.'},
+  {deck:'S3', front:'Distinguish OLTP from OLAP.', back:'OLTP (Online Transaction Processing): small frequent reads/writes to run the business, row-oriented. OLAP (Online Analytical Processing): large scans/aggregations for analytics, column-oriented. Never analyze on the production OLTP database.'},
+  {deck:'S3', front:'Compare warehouse, lake, and lakehouse.', back:'Warehouse: structured, schema-on-write, rigid but reliable. Lake: raw any-data, schema-on-read, cheap but easily ungoverned. Lakehouse: both combined — the modern default for ML.'},
+  {deck:'S3', front:'What is a data swamp, and how do you avoid one?', back:'A data lake with no catalogs, schemas, ownership, or quality checks — un-findable and untrustworthy. Avoid it by governing the lake; flexibility without discipline destroys reliability.'},
+  {deck:'S4', front:'Compare batch vs. streaming processing with a use case for each.', back:'Batch: scheduled chunks, efficient but high-latency (e.g., weekly sales report). Streaming: events processed as they arrive, fresh but complex (e.g., fraud detection at checkout). Choose based on required freshness.'},
+  {deck:'S4', front:'Distinguish ETL from ELT. Which suits ML and why?', back:'ETL transforms before loading into the warehouse. ELT loads raw data first, transforms in place afterward. ELT suits ML because it keeps raw data available for re-processing when feature requirements change.'},
+  {deck:'S4', front:'What is CDC (Change Data Capture) and why use it?', back:'Change Data Capture moves only changed rows (read from the source\'s transaction log) instead of re-copying whole tables — keeps downstream stores fresh cheaply and underpins most streaming ingestion.'},
+  {deck:'S4', front:'Why must pipeline steps be idempotent?', back:'Pipelines fail and get retried constantly; an idempotent step run twice produces the same result as running it once. A naive append double-counts rows; an upsert or full overwrite stays correct on retry. Design for retries and late/out-of-order data.'},
+  {deck:'S5', front:'List the five layers of the modern data stack, in order.', back:'Ingestion → Storage → Transformation → Orchestration → Serving (e.g., Fivetran/Airbyte → S3/lakehouse or BigQuery → dbt/Spark → Airflow → feature store/BI). Data flows up.'},
+  {deck:'S5', front:'What does a workflow orchestrator do?', back:'Runs the pipeline\'s DAG: executes each task once its dependencies are met, handling retries, backfills, and alerts (e.g., Airflow, Prefect, Dagster) — "a project manager for data."'},
+  {deck:'S5', front:'Define DataOps and its four pillars.', back:'DataOps = DevOps thinking applied to the data lifecycle. Pillars: automation/CI-CD, version control (code AND data/schema), automated tests on values (not just logic), and continuous monitoring.'},
+  {deck:'S5', front:'Why doesn\'t DevOps transfer to data management unchanged?', back:'Data adds three things software DevOps never needed: data/schema versioning, drift over time (data changes shape even when code doesn\'t), and tests on actual values rather than just logic — which is why DataOps is its own discipline.'},
+  {deck:'S6', front:'What are the three intertwined levels of ML software, and why does this matter?', back:'Data, Model, and Code/Infrastructure. A change to any one ripples through the others — this coupling is exactly why ML engineering is harder than software engineering or statistics alone.'},
+  {deck:'S6', front:'List the full ML lifecycle stages in order, and note its key structural property.', back:'Ingest → Validate → Prepare Features → Train → Evaluate → Deploy → Monitor → (Retrain). It\'s a loop, not a line — Monitor feeds back into Retrain.'},
+  {deck:'S6', front:'What does the "Validate" stage of the ML lifecycle protect against?', back:'It checks data (schema, ranges, nulls) before training begins, catching data problems that would otherwise silently poison the model.'},
+  {deck:'S6', front:'Distinguish data drift from concept drift.', back:'Data drift: the input feature distributions shift over time. Concept drift: the relationship between inputs and the target shifts, even if inputs look statistically unchanged. Both erode deployed models — the biggest ML failures happen post-deployment, hence monitor + retrain as a lifecycle stage.'},
+  {deck:'S7', front:'List the four axes for categorizing any data source.', back:'Type (DB, API, file, stream), Ownership (1st/2nd/3rd-party), Location (on-prem/cloud/edge), Structure (structured/semi/unstructured).'},
+  {deck:'S7', front:'Distinguish push vs. pull and batch vs. streaming ingestion.', back:'Push: source sends data to you (webhooks, streaming). Pull: you fetch on a schedule (polling). Batch: bulk transfer. Streaming: event-by-event. Streaming + CDC keeps stores fresh by moving only changes.'},
+  {deck:'S7', front:'Compare first-, second-, and third-party data.', back:'First-party: your own systems, most trusted and controllable. Second-party: a partner\'s shared data, moderate trust. Third-party: purchased/aggregated — more reach, but less control, unknown quality, and higher compliance risk.'},
+  {deck:'S7', front:'Why do most data quality problems start at ingestion, and what\'s the fix?', back:'The source is outside your control and can change without warning (schema changes, duplicates, late data, format drift). Fix: validate at ingestion with schema checks and data contracts to catch changes immediately, not three stages downstream.'},
+  {deck:'S8', front:'Distinguish profiling from validation.', back:'Profiling explores data to learn its baseline (distributions, nulls, ranges) — descriptive. Validation checks data against explicit expectations and flags/blocks violations — enforcement. Rule of thumb: profile to set, validate to enforce.'},
+  {deck:'S8', front:'List the eight dimensions of data quality.', back:'Accuracy, completeness, consistency, timeliness, validity, uniqueness, integrity, lineage. A dataset can be perfect on one dimension and broken on another — quality is multi-dimensional.'},
+  {deck:'S8', front:'Worked example: an email column has 9,200 non-null rows out of 10,000. What\'s the completeness, and does it pass a 98% threshold?', back:'Completeness = 9200/10000 = 92%. Since 92% < 98%, the check FAILS — the pipeline alerts/blocks, stopping the bad data before it reaches training. Most quality dimensions reduce to a ratio compared against a threshold.'},
+  {deck:'S8', front:'How and where does data validation typically run in production?', back:'Automated, at ingestion and between every pipeline stage: define expectations as code (Great Expectations, dbt tests, schema contracts), run them on every batch, and stop/quarantine on failure. Runs continuously because sources drift.'},
+  {deck:'Lab1', front:'In the AWS lab, why does Athena need an S3 bucket configured before running any query?', back:'Athena is serverless and has no storage of its own — query results must be written somewhere, so the very first setup step is pointing Athena\'s Query Settings at an S3 output bucket.'},
+  {deck:'Lab1', front:'What is the role of an AWS Glue database/table in the Athena lab?', back:'Glue is a logical metadata catalog — it creates schema/location/format metadata pointing at data already in S3, without duplicating the actual data. This catalog is what lets Athena run SQL against raw S3 files.'},
+  {deck:'Lab1', front:'What performance gains did partitioning achieve in the live Athena demo?', back:'Partitioning by month cut data scanned from ~9.3GB to ~815MB (~91% reduction, query time 29s→7s). Partitioning by pay type (vertical partition) cut a similar query down to ~71MB scanned — both dramatically reduced cost and time, since Athena bills $5/TB scanned.'},
+  {deck:'Lab1', front:'How was end user "Mary" granted access to a saved Athena query in the lab?', back:'Mary\'s IAM access key + secret access key (drawn from her Data-Scientist group policy) were mapped via a CLI command to the specific named-query ID created through a validated CloudFormation stack — scoping her access to just that one query, not the whole account.'},
+  {deck:'Lab2', front:'In the BigQuery/Airbyte/dbt lab, which tool performed Extract+Load, and which performed Transform?', back:'Airbyte performed Extract+Load (EL): pulling CSV data from a Google Cloud Storage bucket into a raw BigQuery dataset. dbt Cloud then performed Transform (T): building staging and summary models on top of that already-loaded raw data — textbook ELT.'},
+  {deck:'Lab2', front:'What two dbt models were built in the lab, and what does each do?', back:'A staging model (light first-pass cleaning of the raw ingested table) and a summary model (aggregated churn metrics built on top of staging) — the canonical staging → summary/mart layering pattern used in real dbt projects.'},
+  {deck:'Lab2', front:'Why is choosing dbt over native BigQuery SQL transformation NOT a technical necessity, per the lecture Q&A?', back:'A student (Dhivya) asked exactly this; the instructor confirmed BigQuery alone is fully capable of doing the same transformations. The choice of dbt (or any specialized tool) is organizational — driven by partnerships, governance preference, and team skill — not a technical requirement.'},
+];
+
+function renderFlash(){
+  if(!window.fcState) initFcState();
+  const fs = window.fcState;
+  const deckCards = fs.deck==='All' ? FLASHCARDS : FLASHCARDS.filter(c=>c.deck===fs.deck);
+  if(fs.idx >= deckCards.length) fs.idx = 0;
+  const card = deckCards[fs.idx];
+  const decks = ['All', ...Array.from(new Set(FLASHCARDS.map(c=>c.deck)))];
+  const chips = decks.map(d=>`<div class="fc-chip ${fs.deck===d?'active':''}" onclick="setFcDeck('${d}')">${d}</div>`).join('');
+
+  const ratingCounts = fs.ratings;
+
+  return `
+  <div class="fc-wrap">
+    <div class="page-header" style="margin-bottom:10px;">
+      <div class="page-eyebrow">Flashcard Mode</div>
+      <h1 class="page-title" style="font-size:22px;">Active Recall</h1>
+    </div>
+    <div class="fc-deck-select">${chips}</div>
+    <div class="fc-progress">Card ${fs.idx+1} of ${deckCards.length} · ${card.deck}</div>
+    <div class="fc-stage">
+      <div class="fc-card ${fs.flipped?'flipped':''}" onclick="flipCard()">
+        <div class="fc-face fc-front">
+          <div class="fc-tag">Question</div>
+          <div class="fc-q">${card.front}</div>
+          <div class="fc-hint">Click to reveal answer</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-tag">Answer</div>
+          <div class="fc-a">${card.back}</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-rate-row">
+      <div class="fc-rate hard" onclick="rateFc('hard')">😓 Hard</div>
+      <div class="fc-rate good" onclick="rateFc('good')">🙂 Good</div>
+      <div class="fc-rate easy" onclick="rateFc('easy')">😎 Easy</div>
+    </div>
+    <div class="fc-nav">
+      <div class="btn btn-sm" onclick="navFc(-1)">← Prev</div>
+      <div class="btn btn-sm btn-primary" onclick="navFc(1)">Next →</div>
+    </div>
+    <div class="fc-counters">
+      <span>Hard: <b>${ratingCounts.hard}</b></span>
+      <span>Good: <b>${ratingCounts.good}</b></span>
+      <span>Easy: <b>${ratingCounts.easy}</b></span>
+    </div>
+  </div>`;
+}
+
+function initFcState(){
+  const saved = JSON.parse(localStorage.getItem('dm4ml_fc_ratings')||'null');
+  window.fcState = {
+    deck:'All', idx:0, flipped:false,
+    ratings: saved || {hard:0, good:0, easy:0}
+  };
+}
+function initFlash(){}
+function flipCard(){ window.fcState.flipped = !window.fcState.flipped; render(); }
+function setFcDeck(d){ window.fcState.deck=d; window.fcState.idx=0; window.fcState.flipped=false; render(); }
+function navFc(dir){
+  const fs = window.fcState;
+  const deckCards = fs.deck==='All' ? FLASHCARDS : FLASHCARDS.filter(c=>c.deck===fs.deck);
+  fs.idx = (fs.idx + dir + deckCards.length) % deckCards.length;
+  fs.flipped = false;
+  render();
+}
+function rateFc(rating){
+  window.fcState.ratings[rating]++;
+  localStorage.setItem('dm4ml_fc_ratings', JSON.stringify(window.fcState.ratings));
+  navFc(1);
+}
+
+
+/* ============================================================
+   GLOSSARY
+   ============================================================ */
+const GLOSSARY = [
+  {term:'DIKW', full:'Data, Information, Knowledge, Wisdom', def:'A hierarchy showing how raw data gains meaning as it\'s contextualized, interpreted, and acted upon.', usage:'Used to explain how a number (37.2) becomes a heat advisory.'},
+  {term:'OLTP', full:'Online Transaction Processing', def:'Systems optimized for small, frequent reads/writes that run the live business.', usage:'Never run heavy analytics directly against an OLTP production database.'},
+  {term:'OLAP', full:'Online Analytical Processing', def:'Systems optimized for large scans and aggregations over historical data, for analytics.', usage:'Data warehouses (Snowflake, BigQuery) are OLAP systems.'},
+  {term:'ETL', full:'Extract, Transform, Load', def:'Data integration pattern where transformation happens before loading into the target store.', usage:'Traditional warehouse loading pattern; less ML-friendly than ELT.'},
+  {term:'ELT', full:'Extract, Load, Transform', def:'Data integration pattern where raw data loads first, transformation happens afterward inside the destination.', usage:'Used by both webinars — Airbyte/dbt and Glue/Athena both follow this pattern.'},
+  {term:'CDC', full:'Change Data Capture', def:'Technique that captures only changed rows from a source\'s transaction log instead of re-copying full tables.', usage:'Underpins near-real-time sync tools like Debezium, Fivetran.'},
+  {term:'DAG', full:'Directed Acyclic Graph', def:'A graph of tasks with dependencies and no cycles, used to represent a pipeline\'s execution order.', usage:'Orchestrators like Airflow run pipelines defined as DAGs.'},
+  {term:'IAM', full:'Identity and Access Management', def:'AWS service for managing users, groups, roles, and the policies (permissions) attached to them.', usage:'Used in Lab 1 to scope Mary\'s access to a single named Athena query.'},
+  {term:'CFN', full:'CloudFormation', def:'AWS\'s infrastructure-as-code service; templates define and provision resources as a "stack."', usage:'Used in Lab 1 to save an Athena query as a reusable, deployable named resource.'},
+  {term:'ARN', full:'Amazon Resource Name', def:'A unique identifier for any AWS resource (e.g., a CloudFormation stack, an IAM user).', usage:'The lab noted Mary\'s ARN when inspecting her IAM credentials.'},
+  {term:'S3', full:'Simple Storage Service', def:'AWS\'s object storage service; commonly used as the raw layer of a data lake.', usage:'Held the raw NYC taxi CSV data queried throughout Lab 1.'},
+  {term:'Glue', full:'AWS Glue', def:'AWS\'s managed data catalog and ETL service; creates metadata tables over data in S3 without duplicating it.', usage:'Created the "taxi_data" database/catalog queried by Athena in Lab 1.'},
+  {term:'Athena', full:'Amazon Athena', def:'AWS\'s serverless, interactive SQL query service for analyzing data directly in S3.', usage:'Ran all the partitioning/view/query-optimization demos in Lab 1.'},
+  {term:'BigQuery', full:'Google BigQuery', def:'Google Cloud\'s serverless, fully-managed data warehouse.', usage:'Acted as both the raw storage layer and (optionally) transformation engine in Lab 2.'},
+  {term:'dbt', full:'data build tool', def:'A transformation framework that lets teams write modular SQL models (version-controlled, testable) that run inside the warehouse.', usage:'Built the staging and churn-summary models in Lab 2, on top of raw data already loaded by Airbyte.'},
+  {term:'Airbyte', full:'Airbyte', def:'An open-source data integration (EL) platform connecting hundreds of sources to destinations like BigQuery, Snowflake, etc.', usage:'Performed the Extract+Load step from a CSV in Google Cloud Storage into BigQuery in Lab 2.'},
+  {term:'GCS', full:'Google Cloud Storage', def:'Google Cloud\'s object storage service, analogous to AWS S3.', usage:'Held the source telecom-churn CSV file ingested by Airbyte in Lab 2.'},
+  {term:'Looker Studio', full:'Google Looker Studio (formerly Google Data Studio)', def:'Google\'s free BI/dashboarding tool connecting directly to data warehouses like BigQuery.', usage:'Built the manager-facing churn dashboard in Lab 2 — note the product has been renamed more than once.'},
+  {term:'MDS', full:'Modern Data Stack', def:'The five-layer architecture: Ingestion → Storage → Transformation → Orchestration → Serving, typically built from specialized best-in-class tools.', usage:'Both lab webinars are concrete, tool-by-tool implementations of the MDS.'},
+  {term:'CTAS', full:'Create Table As Select', def:'A SQL pattern that creates a new table directly from the result of a SELECT query — often used to materialize a partitioned or filtered subset.', usage:'Used implicitly in Lab 1 to create the month- and pay-type-partitioned tables.'},
+  {term:'PII', full:'Personally Identifiable Information', def:'Any data that can identify a specific individual; subject to heightened privacy/compliance handling.', usage:'A key driver of "data as liability" — PII increases breach risk and compliance burden.'},
+  {term:'DPDP Act', full:'Digital Personal Data Protection Act, 2023 (India)', def:'India\'s data protection law requiring data minimization and deletion once purpose is fulfilled.', usage:'Cited as the regulatory mechanism enforcing "don\'t hoard data" in practice.'},
+  {term:'PSI', full:'Population Stability Index', def:'A statistical metric measuring how much a feature\'s distribution has shifted between two time periods.', usage:'Used by ML observability tools (Evidently AI, WhyLabs) to automatically detect data drift.'},
+  {term:'Data Mesh', full:'Data Mesh', def:'A decentralized data architecture where domain teams own and serve their own data products.', usage:'The "decentralized" option in the centralized/decentralized/hybrid comparison.'},
+  {term:'Data Contract', full:'Data Contract', def:'A formal, versioned agreement between a data producer and consumer about schema and semantics.', usage:'A modern (2024–2025) practice to validate-at-ingestion and avoid silent source-schema changes.'},
+  {term:'GE', full:'Great Expectations', def:'An open-source Python framework for declaring and enforcing data validation rules ("expectations") as code.', usage:'Cited as the dominant tool for "automated tests on values" in DataOps.'},
+  {term:'Feature Store', full:'Feature Store', def:'A system that computes and serves ML features consistently for both training and serving, preventing training-serving skew.', usage:'The tooling-level solution to Session 2\'s training-serving skew problem (e.g., Feast, Tecton).'},
+  {term:'Data Swamp', full:'Data Swamp', def:'A data lake without catalogs, schema, ownership, or quality checks — un-findable and untrustworthy.', usage:'The failure mode a lake falls into without governance.'},
+  {term:'Lakehouse', full:'Data Lakehouse', def:'An architecture combining a data lake\'s flexible storage with a warehouse\'s transactional/SQL layer (e.g., Delta Lake on Databricks).', usage:'Described as the "modern default for ML" in Session 3.'},
+];
+
+function renderGlossary(){
+  const rows = GLOSSARY.map(g => `
+    <tr data-search="${(g.term+' '+g.full+' '+g.def+' '+g.usage).toLowerCase()}">
+      <td class="term">${g.term}</td>
+      <td>${g.full}</td>
+      <td>${g.def}</td>
+      <td style="color:var(--text-faint);font-size:13px;">${g.usage}</td>
+    </tr>`).join('');
+
+  return `
+  <div class="page-header">
+    <div class="page-eyebrow">Reference</div>
+    <h1 class="page-title">Glossary</h1>
+    <p class="page-desc">Every abbreviation and term from both lecture webinars and the course syllabus, searchable.</p>
+  </div>
+  <input type="text" class="gloss-search" id="gloss-search" placeholder="Search terms, e.g. 'partition', 'IAM', 'ELT'..." oninput="filterGlossary()">
+  <div class="tbl-wrap">
+    <table class="gloss" id="gloss-table">
+      <thead><tr><th>Term</th><th>Full Form</th><th>Definition</th><th>Usage Note</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+  `;
+}
+function initGlossary(){}
+function filterGlossary(){
+  const q = document.getElementById('gloss-search').value.toLowerCase().trim();
+  document.querySelectorAll('#gloss-table tbody tr').forEach(tr=>{
+    const matches = tr.getAttribute('data-search').includes(q);
+    tr.classList.toggle('hidden', !matches);
+  });
+}
+
+/* ============================================================
+   REVISION CHECKLIST
+   ============================================================ */
+const CHECKLIST = [
+  {group:'Session 1 — Intro & Data Representations', items:[
+    'Define data management and explain why it\'s the foundation of ML',
+    'Walk through the DIKW hierarchy with an example',
+    'Differentiate structured / semi-structured / unstructured data',
+    'Explain where ML sits in the collect→clean→store→transform→train→serve pipeline',
+  ]},
+  {group:'Session 2 — Principles of Data', items:[
+    'Explain data as asset vs. liability',
+    'Explain why ML pipelines are especially data-sensitive',
+    'Define data reliability and its four pillars',
+    'Define training-serving skew and how to prevent it',
+  ]},
+  {group:'Session 3 — Data Architectures', items:[
+    'Compare centralized / decentralized / hybrid architectures',
+    'Differentiate OLTP from OLAP',
+    'Compare warehouse / lake / lakehouse',
+    'Define a data swamp and how to avoid one',
+  ]},
+  {group:'Session 4 — Data Pipelines', items:[
+    'Compare batch vs. streaming with a use case each',
+    'Differentiate ETL from ELT and explain why ELT suits ML',
+    'Define CDC and why it\'s used',
+    'Explain why pipeline steps must be idempotent',
+  ]},
+  {group:'Session 5 — Modern Data Infrastructure & DataOps', items:[
+    'List the five layers of the modern data stack in order',
+    'Explain what a workflow orchestrator does',
+    'Define DataOps and its four pillars',
+    'Explain why DevOps doesn\'t transfer to data unchanged',
+  ]},
+  {group:'Session 6 — ML Lifecycle & Workflow', items:[
+    'Name the three intertwined levels of ML software',
+    'List all ML lifecycle stages in order and note it\'s a loop',
+    'Explain what the Validate stage protects against',
+    'Differentiate data drift from concept drift',
+  ]},
+  {group:'Session 7 — Data Collection & Ingestion', items:[
+    'List the four axes for categorizing data sources',
+    'Differentiate push/pull and batch/streaming',
+    'Compare first- / second- / third-party data',
+    'Explain why quality problems start at ingestion, and the fix',
+  ]},
+  {group:'Session 8 — Data Profiling & Validation', items:[
+    'Differentiate profiling from validation',
+    'List all eight dimensions of data quality',
+    'Solve a completeness-ratio-vs-threshold numeric problem',
+    'Explain how and where validation runs in production',
+  ]},
+  {group:'Lab 1 — AWS Athena + Glue + IAM', items:[
+    'Explain why Athena needs an S3 output bucket configured first',
+    'Explain the role of AWS Glue as a metadata catalog',
+    'Describe how partitioning reduced data scanned and query time',
+    'Walk through how IAM scoped Mary\'s access to one named query',
+  ]},
+  {group:'Lab 2 — BigQuery + Airbyte + dbt + Looker Studio', items:[
+    'Map Airbyte / BigQuery / dbt / Looker Studio onto the 5-layer stack',
+    'Explain the EL (Airbyte) vs. T (dbt) split in this lab\'s ELT pipeline',
+    'Describe the staging → summary dbt model pattern used',
+    'Explain why dbt vs. native BigQuery transformation is a choice, not a requirement',
+  ]},
+];
+
+function checklistFlatIds(){
+  const ids = [];
+  CHECKLIST.forEach((g,gi)=> g.items.forEach((_,ii)=> ids.push(`${gi}-${ii}`)));
+  return ids;
+}
+
+function renderChecklist(){
+  const saved = JSON.parse(localStorage.getItem('dm4ml_checklist')||'{}');
+  const allIds = checklistFlatIds();
+  const completedCount = allIds.filter(id=>saved[id]).length;
+
+  const groups = CHECKLIST.map((g,gi)=>`
+    <div class="cl-group">
+      <div class="cl-group-title">${g.group}</div>
+      ${g.items.map((item,ii)=>{
+        const id = `${gi}-${ii}`;
+        const checked = !!saved[id];
+        return `<div class="cl-item ${checked?'checked':''}" onclick="toggleChecklist('${id}')">
+          <div class="cl-box"><svg viewBox="0 0 24 24" fill="none" stroke="#0a0c12" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+          <div class="cl-text">${item}</div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+
+  return `
+  <div class="page-header">
+    <div class="page-eyebrow">Reference</div>
+    <h1 class="page-title">Revision Checklist</h1>
+    <p class="page-desc">Tick off each examinable concept as you nail it. Your progress saves automatically in this browser.</p>
+  </div>
+  <div class="cl-summary">
+    <div><div class="cl-count" id="cl-count">${completedCount}<span> / ${allIds.length} completed</span></div></div>
+    <div class="btn btn-sm" onclick="resetChecklist()">Reset All</div>
+  </div>
+  ${groups}
+  `;
+}
+function initChecklist(){}
+function toggleChecklist(id){
+  const saved = JSON.parse(localStorage.getItem('dm4ml_checklist')||'{}');
+  saved[id] = !saved[id];
+  localStorage.setItem('dm4ml_checklist', JSON.stringify(saved));
+  render();
+}
+function resetChecklist(){
+  if(confirm('Reset all checklist progress?')){
+    localStorage.setItem('dm4ml_checklist', '{}');
+    render();
+  }
+}
+
+
+/* ============================================================
+   APP INIT
+   ============================================================ */
+renderNav();
+render();
+
+</script>
+</body>
+</html>
