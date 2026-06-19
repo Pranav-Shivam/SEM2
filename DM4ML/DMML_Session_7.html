@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMML — Data Management for Machine Learning | Study Tool</title>
+<style>
+:root {
+  --bg:#0f1117;--surface:#161b27;--surface2:#1e2535;--border:#2a3347;
+  --text:#e2e8f0;--text-muted:#8892a4;
+  --purple:#a78bfa;--purple-bg:#1e1535;--purple-border:#4c1d95;
+  --teal:#34d399;--teal-bg:#0d2b1f;--teal-border:#065f46;
+  --amber:#fbbf24;--amber-bg:#2a1f07;--amber-border:#78350f;
+  --sky:#38bdf8;--sky-bg:#0c2040;--sky-border:#0369a1;
+  --orange:#fb923c;--orange-bg:#2a1507;--orange-border:#7c2d12;
+  --coral:#f87171;--sidebar-w:260px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;}
+#sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;position:sticky;top:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;z-index:100;}
+.sidebar-header{padding:18px 16px 12px;border-bottom:1px solid var(--border);}
+.sidebar-logo{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--purple);margin-bottom:4px;}
+.sidebar-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;}
+.progress-wrap{padding:10px 16px;border-bottom:1px solid var(--border);}
+.progress-label{font-size:11px;color:var(--text-muted);margin-bottom:5px;display:flex;justify-content:space-between;}
+.progress-bar-outer{background:var(--surface2);border-radius:4px;height:6px;}
+.progress-bar-inner{background:linear-gradient(90deg,var(--purple),var(--teal));height:6px;border-radius:4px;transition:width .4s;width:0%;}
+.mode-tabs{display:flex;padding:10px 12px;gap:4px;border-bottom:1px solid var(--border);}
+.mode-tab{flex:1;padding:7px 4px;font-size:11px;font-weight:600;text-align:center;border-radius:6px;cursor:pointer;border:none;background:var(--surface2);color:var(--text-muted);transition:all .2s;letter-spacing:.5px;}
+.mode-tab.active{background:var(--purple);color:#fff;}
+.nav-section{padding:8px 16px 4px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-top:4px;}
+.nav-item{padding:9px 16px;font-size:13px;cursor:pointer;color:var(--text-muted);border-left:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:8px;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--purple);border-left-color:var(--purple);background:rgba(167,139,250,.07);}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .3s;}
+#main{flex:1;overflow-y:auto;min-width:0;}
+.page{display:none;padding:32px 40px;max-width:900px;margin:0 auto;}
+.page.active{display:block;}
+h1{font-size:28px;font-weight:800;color:var(--text);margin-bottom:8px;}
+h2{font-size:20px;font-weight:700;color:var(--text);margin:28px 0 12px;padding-top:8px;}
+h3{font-size:16px;font-weight:700;color:var(--purple);margin:20px 0 8px;}
+p{font-size:14px;line-height:1.75;color:var(--text-muted);margin-bottom:12px;}
+strong{color:var(--text);font-weight:600;}
+code{background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12px;color:var(--teal);}
+pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin:12px 0;overflow-x:auto;}
+pre code{background:none;padding:0;font-size:13px;line-height:1.6;color:#94d1aa;}
+.page-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);margin-bottom:16px;}
+.page-subtitle{font-size:15px;color:var(--text-muted);margin-bottom:24px;}
+hr{border:none;border-top:1px solid var(--border);margin:24px 0;}
+.callout{border-radius:10px;padding:14px 16px;margin:14px 0;border-left:4px solid;}
+.callout-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.callout p{margin:0;font-size:13.5px;line-height:1.65;}
+.callout.def{background:var(--purple-bg);border-color:var(--purple);}
+.callout.def .callout-title{color:var(--purple);}
+.callout.insight{background:var(--teal-bg);border-color:var(--teal);}
+.callout.insight .callout-title{color:var(--teal);}
+.callout.exam{background:var(--amber-bg);border-color:var(--amber);}
+.callout.exam .callout-title{color:var(--amber);}
+.callout.research{background:var(--sky-bg);border-color:var(--sky);}
+.callout.research .callout-title{color:var(--sky);}
+.callout.warning{background:var(--orange-bg);border-color:var(--orange);}
+.callout.warning .callout-title{color:var(--orange);}
+.table-wrap{overflow-x:auto;margin:14px 0;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:var(--surface2);color:var(--text);font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid var(--purple);}
+td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text-muted);vertical-align:top;}
+tr:hover td{background:rgba(167,139,250,.04);}
+.expand-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin:10px 0;overflow:hidden;}
+.expand-header{padding:13px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px;transition:background .2s;}
+.expand-header:hover{background:var(--surface2);}
+.expand-arrow{color:var(--purple);font-size:16px;transition:transform .3s;}
+.expand-header.open .expand-arrow{transform:rotate(180deg);}
+.expand-body{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.expand-body.open{max-height:2000px;}
+.expand-content{padding:0 16px 14px;border-top:1px solid var(--border);font-size:13.5px;line-height:1.7;color:var(--text-muted);}
+.expand-content p{margin-bottom:8px;}
+.tab-group{margin:16px 0;}
+.tab-buttons{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:-1px;}
+.tab-btn{padding:8px 16px;font-size:12px;font-weight:600;border-radius:8px 8px 0 0;cursor:pointer;border:1px solid var(--border);border-bottom:none;background:var(--surface2);color:var(--text-muted);transition:all .2s;}
+.tab-btn.active{background:var(--surface);color:var(--purple);border-color:var(--purple);}
+.tab-panel{background:var(--surface);border:1px solid var(--border);border-radius:0 8px 8px 8px;padding:16px;display:none;}
+.tab-panel.active{display:block;}
+.flow-diagram{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:16px 0;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;justify-content:center;}
+.flow-node{background:var(--surface2);border:1px solid var(--purple-border);border-radius:8px;padding:10px 14px;font-size:12px;font-weight:600;color:var(--purple);text-align:center;min-width:90px;}
+.flow-node.teal{border-color:var(--teal-border);color:var(--teal);}
+.flow-node.amber{border-color:var(--amber-border);color:var(--amber);}
+.flow-node.coral{border-color:var(--orange-border);color:var(--coral);}
+.flow-arrow{color:var(--text-muted);font-size:18px;padding:0 2px;}
+.flow-arrow.back{color:var(--teal);}
+.stat-bar-wrap{margin:6px 0;}
+.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:4px;display:flex;justify-content:space-between;}
+.stat-bar-outer{background:var(--surface2);border-radius:4px;height:8px;}
+.stat-bar-inner{height:8px;border-radius:4px;}
+.cm-grid{display:grid;grid-template-columns:auto 1fr 1fr;gap:2px;margin:14px 0;max-width:380px;font-size:12px;}
+.cm-cell{padding:10px;border-radius:4px;text-align:center;font-weight:700;}
+.cm-header{background:var(--surface2);color:var(--text-muted);display:flex;align-items:center;justify-content:center;}
+.cm-tp{background:rgba(52,211,153,.15);color:var(--teal);border:1px solid var(--teal-border);}
+.cm-tn{background:rgba(52,211,153,.15);color:var(--teal);border:1px solid var(--teal-border);}
+.cm-fp{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid var(--orange-border);}
+.cm-fn{background:rgba(248,113,113,.15);color:var(--coral);border:1px solid var(--orange-border);}
+.metric-row{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0;}
+.metric-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;flex:1;min-width:120px;}
+.metric-val{font-size:22px;font-weight:800;color:var(--purple);}
+.metric-label{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;}
+#quiz-page,#flash-page,#glossary-page,#checklist-page{display:none;padding:28px 40px;max-width:860px;margin:0 auto;}
+.quiz-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.quiz-score-display{font-size:18px;font-weight:700;color:var(--purple);}
+.quiz-progress-dots{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:20px;}
+.q-dot{width:12px;height:12px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);flex-shrink:0;}
+.q-dot.correct{background:var(--teal);border-color:var(--teal);}
+.q-dot.wrong{background:var(--coral);border-color:var(--coral);}
+.q-dot.current{border-color:var(--purple);box-shadow:0 0 0 2px rgba(167,139,250,.4);}
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;}
+.q-number{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.q-text{font-size:16px;font-weight:600;color:var(--text);margin-bottom:20px;line-height:1.5;}
+.q-options{display:flex;flex-direction:column;gap:8px;}
+.q-option{padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;color:var(--text-muted);transition:all .2s;display:flex;gap:10px;align-items:flex-start;}
+.q-option:hover:not(.disabled){border-color:var(--purple);color:var(--text);}
+.q-option.correct-ans{background:rgba(52,211,153,.1);border-color:var(--teal);color:var(--teal);}
+.q-option.wrong-ans{background:rgba(248,113,113,.1);border-color:var(--coral);color:var(--coral);}
+.q-option.disabled{cursor:default;}
+.opt-letter{font-weight:700;font-size:12px;width:18px;flex-shrink:0;margin-top:1px;}
+.q-explanation{margin-top:14px;padding:12px 14px;background:var(--sky-bg);border:1px solid var(--sky-border);border-radius:8px;font-size:13px;line-height:1.6;color:var(--text);}
+.q-nav{display:flex;justify-content:space-between;align-items:center;margin-top:18px;}
+.btn{padding:10px 22px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;}
+.btn-primary{background:var(--purple);color:#fff;}
+.btn-primary:hover{background:#8b5cf6;}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-secondary:hover{border-color:var(--purple);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.score-screen{text-align:center;padding:40px 20px;}
+.score-big{font-size:64px;font-weight:900;color:var(--purple);line-height:1;}
+.score-pct{font-size:20px;color:var(--text-muted);margin-bottom:16px;}
+.score-msg{font-size:18px;font-weight:600;color:var(--teal);margin-bottom:24px;}
+.flash-counter{font-size:13px;color:var(--text-muted);margin-bottom:16px;display:flex;justify-content:space-between;}
+.flash-rating-tally{font-size:12px;display:flex;gap:14px;}
+.flash-card-wrap{perspective:1200px;cursor:pointer;margin:20px 0;}
+.flash-card{position:relative;min-height:260px;transform-style:preserve-3d;transition:transform .5s;}
+.flash-card.flipped{transform:rotateY(180deg);}
+.flash-front,.flash-back{position:absolute;width:100%;min-height:260px;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:28px;text-align:center;border:1px solid var(--border);}
+.flash-front{background:var(--surface);}
+.flash-back{background:var(--surface2);transform:rotateY(180deg);}
+.flash-side-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;}
+.flash-q{font-size:18px;font-weight:700;color:var(--text);line-height:1.4;}
+.flash-a{font-size:14px;color:var(--text-muted);line-height:1.7;}
+.flash-hint{font-size:12px;color:var(--text-muted);margin-top:8px;}
+.flash-ratings{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px;}
+.flash-btn{padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;}
+.flash-btn.hard{background:rgba(248,113,113,.15);color:var(--coral);border:1px solid var(--orange-border);}
+.flash-btn.good{background:rgba(251,191,36,.15);color:var(--amber);border:1px solid var(--amber-border);}
+.flash-btn.easy{background:rgba(52,211,153,.15);color:var(--teal);border:1px solid var(--teal-border);}
+.flash-nav{display:flex;justify-content:space-between;align-items:center;}
+.search-input{width:100%;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;margin-bottom:16px;outline:none;}
+.search-input:focus{border-color:var(--purple);}
+.search-input::placeholder{color:var(--text-muted);}
+.check-section{margin-bottom:20px;}
+.check-section-title{font-size:14px;font-weight:700;color:var(--purple);margin-bottom:8px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:background .15s;}
+.check-item:hover{background:var(--surface2);}
+.check-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--purple);cursor:pointer;flex-shrink:0;margin-top:2px;}
+.check-label{font-size:13.5px;color:var(--text-muted);line-height:1.5;}
+.check-label.done{text-decoration:line-through;opacity:.6;}
+.checklist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.checklist-count{font-size:22px;font-weight:800;color:var(--purple);}
+.checklist-count span{font-size:14px;font-weight:400;color:var(--text-muted);}
+#hamburger{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:20px;}
+@media(max-width:768px){
+  #hamburger{display:block;}
+  #sidebar{position:fixed;left:-270px;transition:left .3s;z-index:150;}
+  #sidebar.open{left:0;}
+  #main{margin-left:0;}
+  .page,#quiz-page,#flash-page,#glossary-page,#checklist-page{padding:20px 16px;}
+  h1{font-size:22px;}
+  .two-col{grid-template-columns:1fr;}
+  .flow-node{padding:7px 8px;font-size:11px;min-width:70px;}
+}
+</style>
+</head>
+<body>
+<button id="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">DMML · Lec 6–7</div>
+    <div class="sidebar-title">Data Management for Machine Learning</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Study Progress</span><span id="progress-txt">0 / 8</span></div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar"></div></div>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('study',event)">📖 Study</button>
+    <button class="mode-tab" onclick="switchMode('quiz',event)">✏️ Quiz</button>
+    <button class="mode-tab" onclick="switchMode('flash',event)">🃏 Cards</button>
+  </div>
+  <div id="study-nav">
+    <div class="nav-section">Core Topics</div>
+    <div class="nav-item" onclick="showPage('crisp')"><span class="nav-dot" id="dot-crisp"></span>CRISP-DM Lifecycle</div>
+    <div class="nav-item" onclick="showPage('frame')"><span class="nav-dot" id="dot-frame"></span>Problem Framing</div>
+    <div class="nav-item" onclick="showPage('confmat')"><span class="nav-dot" id="dot-confmat"></span>Confusion Matrix</div>
+    <div class="nav-item" onclick="showPage('pipeline')"><span class="nav-dot" id="dot-pipeline"></span>Data Pipeline</div>
+    <div class="nav-item" onclick="showPage('registry')"><span class="nav-dot" id="dot-registry"></span>Model Registry</div>
+    <div class="nav-item" onclick="showPage('drift')"><span class="nav-dot" id="dot-drift"></span>Drift & Monitoring</div>
+    <div class="nav-item" onclick="showPage('preprocess')"><span class="nav-dot" id="dot-preprocess"></span>Pre-processing</div>
+    <div class="nav-item" onclick="showPage('ingestion')"><span class="nav-dot" id="dot-ingestion"></span>Data Ingestion</div><div class="nav-item" onclick="showPage('ch7')"><span class="nav-dot"></span>Chapter 7 Revision</div>
+    <div class="nav-section">Reference</div>
+    <div class="nav-item" onclick="showPage('glossary')"><span class="nav-dot"></span>Glossary</div>
+    <div class="nav-item" onclick="showPage('checklist')"><span class="nav-dot"></span>Revision Checklist</div>
+  </div>
+</nav>
+<main id="main">
+<!-- PAGE: CRISP-DM -->
+<article class="page active" id="page-crisp">
+  <div class="page-badge">Session 6–7 · Core Framework</div>
+  <h1>CRISP-DM Lifecycle</h1>
+  <p class="page-subtitle">The Cross Industry Standard Process for Data Mining — the de facto framework for every ML project since 1999.</p>
+  <div class="callout def"><div class="callout-title">📘 Definition</div><p><strong>CRISP-DM</strong> is a six-stage iterative methodology for data mining and ML projects. Published in 1999, it remains the most widely adopted framework. Every stage can loop back — it is a cycle, not a waterfall. IBM SPSS, TFX, SageMaker, and MLflow all map to its stages.</p></div>
+  <h2>The Six Stages — Flow Diagram</h2>
+  <div class="flow-diagram">
+    <div class="flow-node">1. Business<br>Understanding</div><div class="flow-arrow">→</div>
+    <div class="flow-node">2. Data<br>Understanding</div><div class="flow-arrow">→</div>
+    <div class="flow-node teal">3. Data<br>Preparation</div><div class="flow-arrow">→</div>
+    <div class="flow-node amber">4. Modeling</div><div class="flow-arrow">→</div>
+    <div class="flow-node">5. Evaluation</div><div class="flow-arrow">→</div>
+    <div class="flow-node coral">6. Deployment</div>
+    <div class="flow-arrow back" style="margin-left:8px">⟲ iterative</div>
+  </div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>1. Business Understanding — "Deciding what kind of house you need"</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Set objectives, assess feasibility, identify risks, produce a project plan. The most skipped yet most critical stage. Key question: <em>What decision will this model inform?</em></p><p><strong>Deliverables:</strong> Project objectives, success criteria, resource inventory, risk assessment, project plan.</p><div class="callout exam"><div class="callout-title">⚡ Exam Tip</div><p>Professor warned: "Engineers love building models. But a model that predicts the wrong thing is worthless. Always start with: what decision will this model inform?"</p></div></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>2. Data Understanding — "Surveying the land"</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Collect initial data, describe shape (mean, median, range, types), explore patterns, verify quality. Produces four reports: data collection, data description, data exploration, data quality.</p><p><strong>Key rule:</strong> Understanding comes BEFORE preparation. You cannot clean data you don't understand.</p></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>3. Data Preparation — "Laying the foundation"</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Select, clean, construct derived attributes (e.g., "car age" from manufacturing date), integrate multiple sources, reformat. The most time-consuming stage — typically 60–80% of project time.</p><div class="callout warning"><div class="callout-title">⚠️ Warning</div><p>"If the foundation is crooked, the walls will crack — no model can fix bad data." Poor preparation is the #1 cause of ML project failure.</p></div></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>4. Modeling — "Building the walls"</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Select technique, document assumptions, generate test design, build model with chosen parameters (batch size, learning rate), assess, revise. Often multiple techniques are tried.</p></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>5. Evaluation — "Inspection against business criteria"</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Check results against <em>business</em> success criteria (not just technical metrics). Three tasks: Evaluate Results → Review Process → Determine Next Steps.</p><div class="callout exam"><div class="callout-title">⚡ Key Distinction</div><p>Modeling assessment = technical fit. Evaluation = business value. A technically perfect model solving the wrong problem fails Evaluation.</p></div></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>6. Deployment — "Handing over the keys"</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Plan deployment, monitoring, and maintenance. Produce final report. Post-mortem review. <strong>Unlike a house, an ML project is never "done"</strong> — models degrade, data drifts, you cycle back.</p></div></div></div>
+  <h2>Industry Scenario: Churn Prediction</h2>
+  <div class="callout insight"><div class="callout-title">🏭 Full CRISP-DM Walkthrough — Telecom Churn</div><p><strong>Business:</strong> Predict customers leaving in 30 days. Recall ≥ 85%. FN cost=$500, FP cost=$20.</p><p><strong>Data:</strong> 12 months of records, 15% missing tenure, 7 inconsistent payment categories.</p><p><strong>Prep:</strong> Impute tenure with median, standardise payment to 4 categories, create avg_charge_to_tenure_ratio.</p><p><strong>Model:</strong> XGBoost after grid search. 88% recall. Projected ROI: $2.3M/year.</p><p><strong>Deploy:</strong> REST API, daily batch scoring, dashboard tracking recall, precision, drift.</p></div>
+  <h2>CRISP-DM vs Modern Variants</h2>
+  <div class="tab-group"><div class="tab-buttons"><button class="tab-btn active" onclick="switchTab(this,'cc1')">Classic CRISP-DM</button><button class="tab-btn" onclick="switchTab(this,'cc2')">CRISP-ML(Q) (2021)</button><button class="tab-btn" onclick="switchTab(this,'cc3')">Platform Mapping</button></div>
+    <div class="tab-panel active" id="cc1"><p>Original 1999 standard. Six iterative stages. Tool-agnostic and industry-agnostic. Still most-cited framework in academic ML literature. IBM SPSS Modeler officially supports it.</p></div>
+    <div class="tab-panel" id="cc2"><p><strong>CRISP-ML(Q)</strong> — 2021 quality-focused update. Adds a Quality Assurance layer to every stage. Requires measurable KPIs ("time savings per user per session"), feasibility confirmation, and formalised risk registers.</p><div class="callout research"><div class="callout-title">🔬 Research — ml-ops.org (2021)</div><p>Helpful addition: define a non-ML heuristic benchmark at Business Understanding. "Will this ML approach clearly outperform a simple rule-based system?" If not, skip ML.</p></div></div>
+    <div class="tab-panel" id="cc3"><div class="table-wrap"><table><tr><th>CRISP-DM Stage</th><th>Google TFX</th><th>AWS SageMaker</th><th>MLflow</th></tr><tr><td>Business Understanding</td><td>Project scoping</td><td>ML problem framing</td><td>Experiment planning</td></tr><tr><td>Data Understanding</td><td>ExampleGen</td><td>Data Wrangler</td><td>Data profiling</td></tr><tr><td>Data Preparation</td><td>Transform</td><td>Processing Jobs</td><td>mlflow.data</td></tr><tr><td>Modeling</td><td>Trainer</td><td>Training Jobs</td><td>mlflow.log_params</td></tr><tr><td>Evaluation</td><td>Evaluator</td><td>Model Monitor</td><td>mlflow.log_metrics</td></tr><tr><td>Deployment</td><td>Pusher</td><td>SageMaker Endpoints</td><td>mlflow.deploy</td></tr></table></div></div>
+  </div>
+  <div class="callout warning"><div class="callout-title">⚠️ Common Exam Traps</div><p><strong>1.</strong> Treating CRISP-DM as one-pass. It is iterative — plan for loops back.</p><p><strong>2.</strong> Confusing Data Understanding with Data Preparation. Understanding precedes cleaning.</p><p><strong>3.</strong> The professor's principle: "Stay tool-agnostic and model-agnostic — the same data can be viewed differently."</p></div>
+</article>
+
+<!-- PAGE: PROBLEM FRAMING -->
+<article class="page" id="page-frame">
+  <div class="page-badge">Session 6–7 · Business Layer</div>
+  <h1>Problem Framing & Success Criteria</h1>
+  <p class="page-subtitle">Before a single line of code: quantify goals, costs, and metrics.</p>
+  <div class="callout def"><div class="callout-title">📘 The Four Framing Questions</div><p><strong>1.</strong> What is the goal? (Classify / Predict / Cluster / Rank)<br><strong>2.</strong> What does the data cost? (acquisition, storage, labeling, compute)<br><strong>3.</strong> What does a wrong prediction cost? (Type I vs II asymmetry)<br><strong>4.</strong> What quantitative metric proves success?</p></div>
+  <h2>Qualitative vs Quantitative Metrics</h2>
+  <div class="table-wrap"><table><tr><th>Type</th><th>Definition</th><th>ML Example</th><th>Verdict</th></tr><tr><td><strong>Qualitative</strong></td><td>Descriptive, subjective</td><td>"The model seems accurate"</td><td style="color:var(--coral)">❌ Not actionable</td></tr><tr><td><strong>Quantitative</strong></td><td>Measurable, verifiable</td><td>"F1 ≥ 0.85 on holdout test set"</td><td style="color:var(--teal)">✅ Required</td></tr></table></div>
+  <h2>Cost Asymmetry: Type I vs Type II</h2>
+  <div class="two-col">
+    <div class="callout warning"><div class="callout-title">⚠️ Type I Error — False Positive</div><p>Model says YES, reality says NO. Fraud detection: block a legitimate transaction. Cost = customer trust. Precision measures this error's frequency.</p></div>
+    <div class="callout warning"><div class="callout-title">⚠️ Type II Error — False Negative</div><p>Model says NO, reality says YES. Fraud detection: approve a fraudulent transaction. Cost = direct financial loss. Recall measures this error's frequency.</p></div>
+  </div>
+  <h2>Full Example: Gold Price Prediction</h2>
+  <div class="callout insight"><div class="callout-title">🏭 Framing from Scratch</div><p><strong>Goal:</strong> Predict tomorrow's gold price within ±2% of actual closing price.</p><p><strong>Data cost:</strong> Historical API $200/mo + news sentiment $500/mo = $8,400/year.</p><p><strong>Error cost:</strong> 5% miss on $1M position = $50,000 loss per incident.</p><p><strong>Success metric:</strong> RMSE ≤ $35/oz on 90-day rolling test window. Auto-retrain if threshold breached.</p></div>
+  <h2>Metric Selection Guide</h2>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>When to use Accuracy vs F1 vs AUC-ROC vs RMSE</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><div class="table-wrap"><table><tr><th>Metric</th><th>Best For</th><th>Avoid When</th></tr><tr><td>Accuracy</td><td>Balanced classes, equal error costs</td><td>Imbalanced data — misleading</td></tr><tr><td>Precision</td><td>FP cost high (spam, legal)</td><td>FN cost high (cancer screening)</td></tr><tr><td>Recall</td><td>FN cost high (cancer, fraud)</td><td>FP cost high (spam blocking)</td></tr><tr><td>F1</td><td>Imbalanced, balanced FP/FN cost</td><td>Very asymmetric costs</td></tr><tr><td>AUC-ROC</td><td>Ranking quality, threshold-independent</td><td>Heavily imbalanced multi-class</td></tr><tr><td>RMSE / MAE</td><td>Regression (continuous output)</td><td>Classification tasks</td></tr></table></div></div></div></div>
+  <div class="callout exam"><div class="callout-title">⚡ Exam Trap</div><p>A model achieving 99% accuracy on data where 99% of samples are Class A is worthless — it just always predicts Class A. Always check class balance before choosing accuracy. Align metric choice with stakeholders before building.</p></div>
+  <div class="callout research"><div class="callout-title">🔬 Research — CRISP-ML(Q), ml-ops.org (2021)</div><p>Formalises this further: define measurable economic success criteria alongside ML and business criteria. KPIs must be verifiable. Establish a non-ML heuristic baseline — "can a rule-based system reach 70%? If so, ML must clearly beat it to justify the cost."</p></div>
+</article>
+
+<!-- PAGE: CONFUSION MATRIX -->
+<article class="page" id="page-confmat">
+  <div class="page-badge">Session 6–7 · Model Evaluation</div>
+  <h1>Confusion Matrix & Error Types</h1>
+  <p class="page-subtitle">The 2×2 table that reveals what accuracy hides — asymmetric error costs.</p>
+  <div class="callout def"><div class="callout-title">📘 Definition</div><p>A <strong>confusion matrix</strong> compares actual class labels against predicted labels, decomposing errors into TP, FP, FN, TN. It exposes the cost asymmetry that accuracy alone conceals.</p></div>
+  <h2>The Matrix</h2>
+  <div class="cm-grid">
+    <div class="cm-cell cm-header"></div><div class="cm-cell cm-header">Predicted +</div><div class="cm-cell cm-header">Predicted −</div>
+    <div class="cm-cell cm-header">Actual +</div><div class="cm-cell cm-tp">TP ✓<br><small>Correct Hit</small></div><div class="cm-cell cm-fn">FN ✗<br><small>Type II: Missed</small></div>
+    <div class="cm-cell cm-header">Actual −</div><div class="cm-cell cm-fp">FP ✗<br><small>Type I: False Alarm</small></div><div class="cm-cell cm-tn">TN ✓<br><small>Correct Rejection</small></div>
+  </div>
+  <h2>Error Type Definitions</h2>
+  <div class="two-col">
+    <div class="callout warning"><div class="callout-title">⚠️ Type I Error — False Positive</div><p>Predicts positive, reality is negative. The false alarm. Mnemonic: Type <strong>I</strong> = "<strong>I</strong> falsely accuse." Example: airport scanner beeps for a metalless person.</p></div>
+    <div class="callout warning"><div class="callout-title">⚠️ Type II Error — False Negative</div><p>Predicts negative, reality is positive. The missed detection. Mnemonic: Type <strong>II</strong> = "<strong>II</strong> missed it." Example: scanner stays silent for someone with metal.</p></div>
+  </div>
+  <h2>Derived Metrics</h2>
+  <div class="table-wrap"><table><tr><th>Metric</th><th>Formula</th><th>Interpretation</th></tr><tr><td>Accuracy</td><td>(TP+TN)/Total</td><td>Overall correct predictions</td></tr><tr><td>Precision (PPV)</td><td>TP/(TP+FP)</td><td>Of positive predictions, how many correct?</td></tr><tr><td>Recall (Sensitivity)</td><td>TP/(TP+FN)</td><td>Of actual positives, how many caught?</td></tr><tr><td>Specificity</td><td>TN/(TN+FP)</td><td>Of actual negatives, how many correctly rejected?</td></tr><tr><td>F1 Score</td><td>2×(P×R)/(P+R)</td><td>Harmonic mean of precision and recall</td></tr></table></div>
+  <h2>Disease Screening Case Study (10,000 patients)</h2>
+  <div class="callout insight"><div class="callout-title">🏭 Why Accuracy Lies on Imbalanced Data</div><p><strong>Setup:</strong> 100 sick (1%), 9,900 healthy. Model: 95% sensitivity, 90% specificity.<br>TP=95, FN=5, FP=990, TN=8,910</p><p><strong>Accuracy</strong> = (95+8910)/10000 = <strong>90.05%</strong> — looks great!</p><p><strong>Precision</strong> = 95/(95+990) = <strong>8.8%</strong> — terrible! 91.2% of positive predictions are wrong.</p><p><strong>Recall</strong> = 95/(95+5) = <strong>95%</strong> — good for catching disease.</p><p>Of 1,085 positive predictions, only 95 were truly sick. 990 healthy people get unnecessary follow-ups.</p></div>
+  <h2>Metric Benchmark Bars</h2>
+  <div style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin:12px 0;">
+    <div class="stat-bar-wrap"><div class="stat-label"><span>Accuracy</span><span>90.05%</span></div><div class="stat-bar-outer"><div class="stat-bar-inner" style="width:90%;background:var(--amber);"></div></div></div>
+    <div class="stat-bar-wrap"><div class="stat-label"><span>Recall / Sensitivity</span><span>95%</span></div><div class="stat-bar-outer"><div class="stat-bar-inner" style="width:95%;background:var(--teal);"></div></div></div>
+    <div class="stat-bar-wrap"><div class="stat-label"><span>Precision (PPV)</span><span>8.8%</span></div><div class="stat-bar-outer"><div class="stat-bar-inner" style="width:8.8%;background:var(--coral);"></div></div></div>
+    <div class="stat-bar-wrap"><div class="stat-label"><span>F1 Score</span><span>16.1%</span></div><div class="stat-bar-outer"><div class="stat-bar-inner" style="width:16.1%;background:var(--purple);"></div></div></div>
+  </div>
+  <div class="callout exam"><div class="callout-title">⚡ Exam Tips</div><p><strong>1.</strong> Professor warned: accuracy is deceptive for imbalanced data. Always compute P, R, F1.<br><strong>2.</strong> Type I vs II confusion: memorise the mnemonics.<br><strong>3.</strong> In regulated industries, confusion matrix breakdowns prove the model doesn't systematically harm protected groups.</p></div>
+</article>
+
+<!-- PAGE: DATA PIPELINE -->
+<article class="page" id="page-pipeline">
+  <div class="page-badge">Session 6–7 · Architecture</div>
+  <h1>The ML Data Pipeline</h1>
+  <p class="page-subtitle">Five stages, one feedback loop — the backbone of every MLOps system.</p>
+  <div class="callout def"><div class="callout-title">📘 Definition</div><p>An <strong>ML data pipeline</strong> is a five-stage automated workflow: raw data → feature store → training → deployment → monitoring, with a feedback loop from Stage 5 back to Stage 1. It is a cycle, not a waterfall.</p></div>
+  <h2>Pipeline Architecture</h2>
+  <div class="flow-diagram">
+    <div class="flow-node">1. Collect<br>Preprocess<br>Engineer</div><div class="flow-arrow">→</div>
+    <div class="flow-node teal">2. Store<br>Features</div><div class="flow-arrow">→</div>
+    <div class="flow-node amber">3. Train<br>Tune<br>Evaluate</div><div class="flow-arrow">→</div>
+    <div class="flow-node">4. Deploy</div><div class="flow-arrow">→</div>
+    <div class="flow-node coral">5. Monitor</div>
+    <div class="flow-arrow back" style="margin-left:8px">⟲ to Stage 1</div>
+  </div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>Stage 1: Collect / Pre-process / Engineer</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Raw data arrives from databases, logs, APIs, files. Clean, impute, transform, engineer features. After engineering, check feature correlations — pairs at ≥0.95 correlation add noise without signal, drop one.</p></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>Stage 2: Feature Store — Online & Offline Stores</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Centralised catalog preventing duplicate feature engineering. Two layers:</p><div class="table-wrap"><table><tr><th>Store</th><th>Latency</th><th>Use Case</th><th>Technology</th></tr><tr><td>Online</td><td>&lt;5ms</td><td>Real-time inference serving</td><td>Redis, DynamoDB, Cassandra</td></tr><tr><td>Offline</td><td>Minutes+</td><td>Batch training, backfill</td><td>S3/Parquet, BigQuery, Hive</td></tr></table></div><div class="callout research"><div class="callout-title">🔬 Research — Introl Blog, Databricks (2025)</div><p>Uber Michelangelo: 10,000 features across 1,000 models. Spotify: 100 billion events/day into features. Netflix: petabytes across tiered stores. Without a feature store → training-serving skew.</p></div></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>Stage 3: Train / Tune / Evaluate</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Drop correlated features, train models, tune hyperparameters (grid search / random / Bayesian), evaluate against holdout data. Output: trained model artifact + evaluation report → sent to Model Registry.</p></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>Stage 4: Deploy</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Push trained model to production. Patterns: REST API (real-time), batch scoring (scheduled bulk), blue/green deployment (zero-downtime). Docker containers + Kubernetes = standard production infrastructure.</p></div></div></div>
+  <div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)"><span>Stage 5: Monitor + Feedback Loop</span><span class="expand-arrow">▼</span></div><div class="expand-body"><div class="expand-content"><p>Watch for drift. Feedback loop: drift detected → diagnose → collect new data → retrain → redeploy → monitor. What to monitor: prediction distribution, feature distribution, business KPIs, and ground-truth labels when available.</p><div class="callout warning"><div class="callout-title">⚠️ Critical</div><p>Deploying without monitoring is flying blind. You won't know the model is broken until users complain.</p></div></div></div></div>
+  <h2>E-commerce Pipeline (Full Example)</h2>
+  <div class="callout insight"><div class="callout-title">🏭 Production Pipeline Walkthrough</div><p><strong>Collect:</strong> User clickstream (10M events/day), 50K SKUs, 100K purchases/day.<br><strong>Store:</strong> Online=Redis &lt;5ms. Offline=S3/Parquet 90-day history.<br><strong>Train:</strong> Two-tower neural network. Weekly full retrain + daily incremental update.<br><strong>Deploy:</strong> TensorFlow Serving on Kubernetes. Blue/green deployment.<br><strong>Monitor:</strong> Track CTR, coverage, embedding drift. Auto-investigate if CTR drops &gt;5% WoW.</p></div>
+  <div class="callout warning"><div class="callout-title">⚠️ Three Cardinal Mistakes</div><p><strong>1. No feature store.</strong> Teams engineer features differently → training-serving skew.</p><p><strong>2. Correlated features not removed.</strong> ≥0.95 correlation = noise without signal.</p><p><strong>3. No feedback loop.</strong> No monitoring = flying blind.</p></div>
+</article>
+
+<!-- PAGE: MODEL REGISTRY -->
+<article class="page" id="page-registry">
+  <div class="page-badge">Session 6–7 · MLOps Infrastructure</div>
+  <h1>Model Registry & Repository</h1>
+  <p class="page-subtitle">Git for models — version control, lineage, reproducibility, and governance.</p>
+  <div class="callout def"><div class="callout-title">📘 Definition</div><p>A <strong>model registry</strong> is a repository for storing ML model artifacts + metadata, enabling version control, lineage tracking, stage governance, and full reproducibility. Think: library catalog where each book (model) has an ID, author, date, genre, and performance summary.</p></div>
+  <h2>What the Registry Stores</h2>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-val">📦</div><div class="metric-label">Model Artifact (.pkl/.onnx)</div></div>
+    <div class="metric-card"><div class="metric-val">📊</div><div class="metric-label">Performance Metrics</div></div>
+    <div class="metric-card"><div class="metric-val">🔧</div><div class="metric-label">Hyperparameters</div></div>
+    <div class="metric-card"><div class="metric-val">📁</div><div class="metric-label">Training Data Reference</div></div>
+    <div class="metric-card"><div class="metric-val">👤</div><div class="metric-label">Author + Timestamp</div></div>
+    <div class="metric-card"><div class="metric-val">🏷️</div><div class="metric-label">Version + Stage</div></div>
+  </div>
+  <h2>Code: Register & Version a Model</h2>
+  <pre><code>from sklearn.ensemble import RandomForestClassifier
+import pickle, json
+
+# Engineer A — Train and register model v1.0
+model = RandomForestClassifier(n_estimators=100, max_depth=10)
+model.fit(X_train, y_train)
+accuracy = model.score(X_test, y_test)  # 0.87
+
+with open('churn_model_v1.0.pkl', 'wb') as f:
+    pickle.dump(model, f)
+
+metadata = {
+    'version': '1.0', 'algorithm': 'RandomForest',
+    'params': {'n_estimators': 100, 'max_depth': 10},
+    'accuracy': 0.87, 'training_data': 'customer_data_Q1.csv',
+    'train_date': '2025-06-10', 'author': 'Engineer A'
+}
+with open('churn_model_v1.0_metadata.json', 'w') as f:
+    json.dump(metadata, f)
+# Commit both to registry (Git / MLflow / SageMaker)</code></pre>
+  <h2>Version Timeline</h2>
+  <div class="flow-diagram">
+    <div class="flow-node" style="min-width:150px;">v1.0 · Jun 10<br><small>RF acc=0.87</small></div><div class="flow-arrow">→</div>
+    <div class="flow-node teal" style="min-width:150px;">v1.1 · Jun 12<br><small>RF+ acc=0.91</small></div><div class="flow-arrow">→</div>
+    <div class="flow-node amber" style="min-width:150px;">v2.0 · Jun 15<br><small>XGBoost acc=0.93</small></div>
+  </div>
+  <h2>Stage Governance Flow</h2>
+  <div class="flow-diagram">
+    <div class="flow-node">Staging<br><small>(newly trained)</small></div><div class="flow-arrow">→ review →</div>
+    <div class="flow-node teal">Production<br><small>(approved, live)</small></div><div class="flow-arrow">→ retire →</div>
+    <div class="flow-node coral">Archived<br><small>(superseded)</small></div>
+  </div>
+  <div class="callout insight"><div class="callout-title">🏭 Industry Registry Tools</div><p><strong>MLflow Model Registry</strong> — open-source, most widely used. <strong>Amazon SageMaker Model Registry</strong> — native AWS, approval workflows. <strong>Google Vertex AI</strong> — GCP native with AutoML integration. All implement the same concept the professor described.</p></div>
+  <div class="callout warning"><div class="callout-title">⚠️ Common Mistakes</div><p><strong>1. Saving only model weights, not metadata.</strong> A .pkl without params, lineage, and metrics is useless 6 months later.</p><p><strong>2. Pickle-only serialisation.</strong> Breaks across Python versions. Use ONNX for production portability.</p><p><strong>3. No stage governance.</strong> Model should never jump from "just trained" to "production" without review.</p></div>
+  <div class="callout exam"><div class="callout-title">⚡ Exam Tip</div><p>The professor's scenario: two engineers collaborating. The registry creates shared truth — audit which data and code produced any model. Exam may ask you to trace the full lineage chain: data → code → hyperparameters → artifact → metrics.</p></div>
+</article>
+
+<!-- PAGE: DRIFT & MONITORING -->
+<article class="page" id="page-drift">
+  <div class="page-badge">Session 6–7 · Production ML</div>
+  <h1>Model Drift, Feedback Loop & Monitoring</h1>
+  <p class="page-subtitle">The world changes. Models that don't notice this silently rot in production.</p>
+  <div class="callout def"><div class="callout-title">📘 Definitions</div><p><strong>Model Drift:</strong> Performance degradation caused by changes in production data vs. training data.<br><strong>Data Drift:</strong> P(X) changes — input feature distribution shifts.<br><strong>Concept Drift:</strong> P(Y|X) changes — same features now predict different outcomes.</p></div>
+  <h2>Drift Types Compared</h2>
+  <div class="table-wrap"><table><tr><th>Type</th><th>What Changes</th><th>Detection</th><th>Example</th></tr><tr><td><strong>Data Drift</strong></td><td>Input distribution P(X)</td><td>KS-test, PSI, JS divergence</td><td>Average transaction drops 30%</td></tr><tr><td><strong>Concept Drift</strong></td><td>P(Y|X) relationship</td><td>Monitor prediction error over time</td><td>Same browsing, no longer predicts purchase</td></tr><tr><td><strong>Label Drift</strong></td><td>Target distribution P(Y)</td><td>Monitor prediction distribution</td><td>Churn rate drops from 26% to 8%</td></tr><tr><td><strong>Upstream Drift</strong></td><td>Schema or pipeline changes</td><td>Schema validation, data contracts</td><td>Date format changed at source</td></tr></table></div>
+  <h2>Feedback Loop Architecture</h2>
+  <div class="flow-diagram">
+    <div class="flow-node coral">Monitor<br>Production</div><div class="flow-arrow">→ alert →</div>
+    <div class="flow-node">Diagnose<br>Root Cause</div><div class="flow-arrow">→</div>
+    <div class="flow-node teal">Collect<br>New Data</div><div class="flow-arrow">→</div>
+    <div class="flow-node amber">Retrain<br>Model</div><div class="flow-arrow">→</div>
+    <div class="flow-node">Evaluate &amp;<br>Redeploy</div>
+  </div>
+  <h2>Fraud Detection Case Study</h2>
+  <div class="callout insight"><div class="callout-title">🏭 Real Drift Scenario — 4-Hour Resolution</div><p><strong>Context:</strong> Model trained Q1 2025. Q2: fraudsters shift to small "test" transactions before large fraud.</p><p><strong>Data drift:</strong> Average transaction amount drops 30%.</p><p><strong>Concept drift:</strong> False negative rate rises from 2% → 8%.</p><p><strong>Alarm fires:</strong> FN crosses 5% threshold.</p><p><strong>Response:</strong> Lineage tracker confirms model v2.1 trained Q1. Retraining scheduler collects Q2 data, relabels, retrains as v2.2. Blue/green swap. FN restored to 1.8%.</p><p><strong>Total time: 4 hours.</strong> Without monitoring: weeks undetected → estimated $500K in missed fraud.</p></div>
+  <h2>Monitoring Tool Landscape (2025–2026)</h2>
+  <div class="callout research"><div class="callout-title">🔬 Research — Evidently AI, kgt.solutions (2025–2026)</div><p><strong>Evidently AI:</strong> Leading open-source library (20M+ downloads). KS-test, PSI, Jensen-Shannon divergence. Integrates with MLflow, Grafana, Airflow.<br><strong>Arize AI:</strong> Fastest-growing managed platform, real-time alerting at scale.<br><strong>Fiddler AI:</strong> Purpose-built for regulated industries (compliance + explainability).<br><strong>Stat:</strong> 85% of ML models fail in production, most silently. MLOps market: 35.5% CAGR → $19.55B by 2032.</p></div>
+  <div class="callout warning"><div class="callout-title">⚠️ Critical Mistakes</div><p><strong>1. Only monitoring system health</strong> (CPU, latency). A model can return predictions at 200ms while being completely wrong about them.<br><strong>2. No drift threshold.</strong> "Seems worse" is not actionable. Define: "If F1 drops below 0.80 for 3 consecutive days, trigger retraining."<br><strong>3. Retraining on corrupted data.</strong> If data is corrupted (not just shifted), retraining makes it worse. Diagnose root cause first.</p></div>
+  <div class="callout exam"><div class="callout-title">⚡ Exam Tip — The Four Feedback Loop Components</div><p>Professor mentioned these four explicitly: <strong>Alarm Manager</strong> (fires when metric threshold breached), <strong>Lineage Tracker</strong> (confirms which model is running and on what data), <strong>Retraining Scheduler</strong> (orchestrates collection + pipeline), <strong>Model Update Pipeline</strong> (evaluates, versions, deploys new model).</p></div>
+</article>
+
+<!-- PAGE: PRE-PROCESSING -->
+<article class="page" id="page-preprocess">
+  <div class="page-badge">Session 6–7 · Data Engineering</div>
+  <h1>Data Pre-processing Techniques</h1>
+  <p class="page-subtitle">Impute → deduplicate → split → normalise. The order matters critically.</p>
+  <div class="callout def"><div class="callout-title">📘 Correct Pre-processing Order</div><p>1. Impute missing values → 2. Remove outliers → 3. <strong>Remove duplicates</strong> → 4. Conform formats → 5. Split stratified → 6. Normalise (fit on train only)</p></div>
+  <h2>1. Data Imputation</h2>
+  <div class="callout def"><div class="callout-title">📘 Definition</div><p><strong>Imputation</strong> replaces missing values with a substitute to prevent row loss. Common strategies: mean (normal dist), median (skewed), mode (categorical), KNN (model-based).</p></div>
+  <pre><code># Mean imputation: x_missing = (1/n-k) × Σ x_observed
+from sklearn.impute import SimpleImputer
+imputer = SimpleImputer(strategy='median')
+X_train['tenure'] = imputer.fit_transform(X_train[['tenure']])
+# ALWAYS fit imputer on training data only, then transform all splits</code></pre>
+  <h2>2. Duplicate & Outlier Removal</h2>
+  <div class="callout warning"><div class="callout-title">⚠️ Most Important Rule: Deduplicate BEFORE Splitting</div><p>A duplicate landing in both train and test = data leakage. Evaluation metrics become deceptively optimistic — the model is tested on data it partially trained on. The professor stated this as the most emphatic pre-processing warning.</p></div>
+  <h2>3. Data Splitting</h2>
+  <div class="tab-group"><div class="tab-buttons"><button class="tab-btn active" onclick="switchTab(this,'sp1')">Split Ratios</button><button class="tab-btn" onclick="switchTab(this,'sp2')">Stratified vs Random</button><button class="tab-btn" onclick="switchTab(this,'sp3')">Rules</button></div>
+    <div class="tab-panel active" id="sp1"><div class="table-wrap"><table><tr><th>Split</th><th>Train</th><th>Val</th><th>Test</th><th>Best For</th></tr><tr><td>60-20-20</td><td>60%</td><td>20%</td><td>20%</td><td>Medium datasets with hyperparameter tuning</td></tr><tr><td>80-20</td><td>80%</td><td>—</td><td>20%</td><td>No tuning needed, simpler models</td></tr><tr><td>80-10-10</td><td>80%</td><td>10%</td><td>10%</td><td>Large datasets</td></tr><tr><td>90-10</td><td>90%</td><td>—</td><td>10%</td><td>Very limited data</td></tr></table></div></div>
+    <div class="tab-panel" id="sp2"><p><strong>Random:</strong> Rows randomly assigned. May not preserve class proportions. Dangerous for imbalanced data.</p><p><strong>Stratified:</strong> Each split mirrors class distribution. If 5% churn, each fold has 5% churners. Always use for imbalanced classes.</p></div>
+    <div class="tab-panel" id="sp3"><p><strong>Validation set:</strong> tunes hyperparameters. <strong>Test set:</strong> touched ONLY ONCE for final evaluation. Iterating on test set converts it into a de-facto validation set and inflates reported performance.</p></div>
+  </div>
+  <h2>4. Normalisation</h2>
+  <div class="two-col">
+    <div class="callout def"><div class="callout-title">📘 Z-Score Standardisation</div><p>z = (x − μ) / σ. Centers at 0, unit variance. Best for roughly normal distributions. No bound on output range.</p></div>
+    <div class="callout def"><div class="callout-title">📘 Min-Max Normalisation</div><p>x' = (x − x_min)/(x_max − x_min). Scales to [0,1]. Sensitive to outliers — one extreme value skews all others.</p></div>
+  </div>
+  <div class="callout warning"><div class="callout-title">⚠️ Fit Scaler on TRAINING Data Only</div><p>Fitting on the full dataset (including test) lets test set statistics influence normalisation = data leakage. Use training mean/std to normalise both training AND test. Never recompute on test data.</p></div>
+  <h2>5. Overfitting vs. Underfitting</h2>
+  <div class="table-wrap"><table><tr><th>Condition</th><th>Analogy</th><th>Symptom</th><th>Fix</th></tr><tr><td><strong>Underfitting</strong></td><td>Adult in 5-year-old's shirt</td><td>High train + test error</td><td>More complex model, more features</td></tr><tr><td><strong>Best Fit</strong></td><td>Right-sized shirt</td><td>Low train + test error</td><td>—</td></tr><tr><td><strong>Overfitting</strong></td><td>5-year-old in adult's shirt</td><td>Low train error, HIGH test error</td><td>Regularisation (L1/L2), more data, simpler model</td></tr></table></div>
+  <h2>Full Worked Example</h2>
+  <div class="callout insight"><div class="callout-title">🏭 Churn Dataset Pre-processing (10,000 rows)</div><p><strong>1. Impute:</strong> tenure 800 missing → median (24 mo); monthly_charges 50 missing → mean ($64.70).<br><strong>2. Outlier:</strong> tenure=900 (75 years, impossible) → remove.<br><strong>3. Deduplicate:</strong> 120 exact dupes → remove. Now 9,879 rows.<br><strong>4. Conform:</strong> "Credit Card"/"CC" → standardise to "credit_card".<br><strong>5. Stratified split 70-15-15:</strong> churn rate=26.5% preserved in each fold.<br><strong>6. Z-score:</strong> monthly_charges → μ=0, σ=1. Fit on train only, apply to all splits.</p></div>
+</article>
+
+<!-- PAGE: DATA INGESTION -->
+<article class="page" id="page-ingestion">
+  <div class="page-badge">Session 7 · Data Collection</div>
+  <h1>Data Collection & Ingestion</h1>
+  <p class="page-subtitle">The pipeline's entry point — where most quality problems start.</p>
+  <div class="callout def"><div class="callout-title">📘 Core Principle</div><p><strong>Ingestion</strong> receives data from external sources into the pipeline. The source is outside your control and changes without warning. <strong>Validate at ingestion</strong> to catch problems immediately — not three stages later.</p></div>
+  <h2>Source Classification</h2>
+  <div class="tab-group"><div class="tab-buttons"><button class="tab-btn active" onclick="switchTab(this,'src1')">By Type</button><button class="tab-btn" onclick="switchTab(this,'src2')">By Ownership</button><button class="tab-btn" onclick="switchTab(this,'src3')">By Structure</button></div>
+    <div class="tab-panel active" id="src1"><div class="table-wrap"><table><tr><th>Type</th><th>Examples</th><th>Ingestion Pattern</th></tr><tr><td><strong>Databases</strong></td><td>MySQL, PostgreSQL, MongoDB</td><td>Replicas / CDC (transaction logs)</td></tr><tr><td><strong>APIs</strong></td><td>REST, GraphQL endpoints</td><td>Polling (pull) or webhooks (push)</td></tr><tr><td><strong>Files</strong></td><td>CSV, JSON, Parquet, Excel</td><td>Object storage (S3, GCS, ADLS)</td></tr><tr><td><strong>Streams</strong></td><td>Kafka, Kinesis, Pub/Sub</td><td>Real-time event-by-event consumer</td></tr></table></div></div>
+    <div class="tab-panel" id="src2"><div class="table-wrap"><table><tr><th>Ownership</th><th>Definition</th><th>Trust</th><th>Compliance</th></tr><tr><td><strong>First-party</strong></td><td>Your own systems</td><td>Highest</td><td>Full control</td></tr><tr><td><strong>Second-party</strong></td><td>Partner's data</td><td>Medium</td><td>Negotiated access</td></tr><tr><td><strong>Third-party</strong></td><td>Purchased / aggregated</td><td>Lowest</td><td>GDPR/CCPA risk</td></tr></table></div></div>
+    <div class="tab-panel" id="src3"><p><strong>Structured:</strong> Fixed schema, rows/columns (relational DBs, CSV). Easiest to process.<br><strong>Semi-structured:</strong> Flexible schema, self-describing (JSON, XML). Common in APIs.<br><strong>Unstructured:</strong> No schema (images, audio, free text). Hardest — requires preprocessing before feature extraction.</p></div>
+  </div>
+  <h2>Ingestion Patterns Compared</h2>
+  <div class="table-wrap"><table><tr><th>Pattern</th><th>Definition</th><th>Latency</th><th>Best For</th></tr><tr><td><strong>Batch</strong></td><td>Bulk transfer on schedule (hourly/daily)</td><td>Hours</td><td>Reporting, model training, historical backfill</td></tr><tr><td><strong>Micro-batch</strong></td><td>Very frequent small batches</td><td>Seconds</td><td>Near-real-time without full streaming overhead</td></tr><tr><td><strong>Streaming</strong></td><td>Event-by-event, continuous</td><td>Milliseconds</td><td>Fraud detection, real-time recommendations</td></tr><tr><td><strong>CDC</strong></td><td>Capture only changed rows from source DB</td><td>Low</td><td>Efficient near-real-time DB sync</td></tr></table></div>
+  <h2>Push vs Pull</h2>
+  <div class="two-col">
+    <div class="callout def"><div class="callout-title">📘 Pull Ingestion</div><p>You fetch on a schedule. Poll API hourly, query DB on cron. Simpler. You control timing. Risk: miss events between polls. Best for 3rd-party APIs and non-streaming databases.</p></div>
+    <div class="callout def"><div class="callout-title">📘 Push Ingestion</div><p>Source sends to you. Webhooks, Kafka event streams. Lower latency. Source drives timing. Requires robust receiving infrastructure. Best for clickstreams, real-time transactions.</p></div>
+  </div>
+  <h2>Change Data Capture (CDC)</h2>
+  <div class="callout insight"><div class="callout-title">🏭 CDC: The Backbone of Near-Real-Time Pipelines</div><p>Reads the database transaction log (Postgres WAL, MySQL binlog) to capture INSERT, UPDATE, and DELETE events as they occur — no full table scans needed. Streaming + CDC = near-real-time feature freshness at low compute cost.</p></div>
+  <pre><code>-- Incremental extraction with high-water mark (simpler alternative)
+SELECT * FROM source_db.orders
+WHERE updated_at > '2025-03-15 00:00:00'   -- last checkpoint
+  AND updated_at <= '2025-03-16 00:00:00'; -- current run boundary
+-- ⚠️ LIMITATION: misses hard deletes — use CDC if deletes matter!</code></pre>
+  <h2>What Goes Wrong at Ingestion</h2>
+  <div class="callout warning"><div class="callout-title">⚠️ Four Common Ingestion Failures</div><p><strong>1. Schema change:</strong> Source column renamed without notice → downstream transforms break silently.<br><strong>2. Format drift:</strong> Date changes from YYYY-MM-DD to MM/DD/YYYY → NaT/null downstream.<br><strong>3. Duplicates / late records:</strong> Kafka processes message twice; late-arriving event bypasses join window.<br><strong>4. API rate limits/outages:</strong> 3rd-party returns 429 → ingestion stops silently, model trains on stale data.<br><strong>Solution: Data contracts</strong> — formal schema agreements enforced at ingestion. Fail loudly, immediately.</p></div>
+  <div class="callout research"><div class="callout-title">🔬 Research — datavidhya.com, estuary.dev (2025–2026)</div><p>Modern tools (Estuary Flow) unify batch + streaming with sub-100ms latency. Schema versioning built-in. Incremental extraction fails silently on hard deletes — a common exam scenario. CDC is the correct solution.</p></div>
+  <div class="callout exam"><div class="callout-title">⚡ Session 7 Core Principle</div><p>"Validate at the loading dock — catch source changes immediately." This is the concept of <strong>data contracts</strong>: formal producer-consumer schema agreements. A renamed column = broken contract. Catching it at ingestion = 1 hour. Catching it after model training = 3 days.</p></div>
+</article>
+
+<!-- GLOSSARY PAGE -->
+<article class="page" id="glossary-page">
+  <div class="page-badge">Reference</div>
+  <h1>Glossary</h1>
+  <p class="page-subtitle">All key abbreviations, terms, and concepts from Lectures 6–7</p>
+  <input class="search-input" id="glossary-search" placeholder="🔍  Search terms, definitions, acronyms…" oninput="filterGlossary(this.value)">
+  <div class="table-wrap">
+    <table id="glossary-table">
+      <thead><tr><th>Term / Abbr.</th><th>Full Form</th><th>Definition & Usage</th></tr></thead>
+      <tbody id="glossary-body"></tbody>
+    </table>
+  </div>
+</article>
+
+<!-- REVISION CHECKLIST PAGE -->
+<article class="page" id="checklist-page">
+  <div class="page-badge">Reference</div>
+  <div class="checklist-header">
+    <div>
+      <h1>Revision Checklist</h1>
+      <p class="page-subtitle">Tick each concept when you're confident — saves automatically</p>
+    </div>
+    <div style="text-align:right">
+      <div class="checklist-count" id="check-count">0 <span>/ 35 done</span></div>
+      <button class="btn-secondary" onclick="resetChecklist()" style="margin-top:6px">↺ Reset</button>
+    </div>
+  </div>
+  <div id="checklist-body"></div>
+</article>
+
+<!-- QUIZ PAGE -->
+<article class="page" id="quiz-page">
+  <div class="page-badge">Quiz Mode</div>
+  <div id="quiz-start-screen">
+    <h1>Knowledge Test</h1>
+    <p class="page-subtitle">25 questions · mix of definition, application & trap questions</p>
+    <div class="callout insight" style="margin:24px 0"><div class="callout-title">📊 What's covered</div>
+    <p>CRISP-DM lifecycle · Problem framing · Confusion matrix maths · ML pipeline · Model registry · Drift detection · Pre-processing rules · Data ingestion patterns · CDC · Data contracts</p></div>
+    <button class="btn-primary" onclick="startQuiz()" style="font-size:16px;padding:14px 40px;">Start Quiz →</button>
+  </div>
+  <div id="quiz-active" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:13px;color:var(--text-muted)">Question <span id="q-num">1</span> of 25</div>
+      <div id="q-dots" style="display:flex;gap:4px;flex-wrap:wrap;max-width:280px"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px">
+      <div id="q-text" style="font-size:16px;font-weight:600;color:var(--text);line-height:1.6;margin-bottom:20px"></div>
+      <div id="q-options"></div>
+    </div>
+    <div id="q-feedback" style="display:none;padding:16px;border-radius:10px;margin-bottom:16px;font-size:14px;line-height:1.7"></div>
+    <button id="q-next-btn" style="display:none" class="btn-primary" onclick="nextQuestion()">Next Question →</button>
+  </div>
+  <div id="quiz-end" style="display:none;text-align:center;padding:40px 20px">
+    <div id="quiz-score-circle" style="width:120px;height:120px;border-radius:50%;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;border:4px solid var(--purple)"></div>
+    <h2 id="quiz-result-title" style="margin-bottom:8px"></h2>
+    <p id="quiz-result-msg" style="margin-bottom:28px"></p>
+    <button class="btn-primary" onclick="startQuiz()">Retake Quiz</button>
+    <button class="btn-secondary" onclick="switchMode('study',null)" style="margin-left:12px">Back to Study</button>
+  </div>
+</article>
+
+<!-- FLASHCARD PAGE -->
+<article class="page" id="flash-page">
+  <div class="page-badge">Flashcard Mode</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1 style="font-size:22px">Flashcards</h1>
+      <p style="font-size:13px;color:var(--text-muted);margin:0">32 cards · click to flip · rate your confidence</p>
+    </div>
+    <div style="display:flex;gap:6px;font-size:12px">
+      <span style="background:rgba(248,113,113,.15);color:#f87171;padding:4px 10px;border-radius:20px">Hard: <strong id="cnt-hard">0</strong></span>
+      <span style="background:rgba(251,191,36,.15);color:var(--amber);padding:4px 10px;border-radius:20px">Good: <strong id="cnt-good">0</strong></span>
+      <span style="background:rgba(52,211,153,.15);color:var(--teal);padding:4px 10px;border-radius:20px">Easy: <strong id="cnt-easy">0</strong></span>
+    </div>
+  </div>
+  <div class="flash-nav" style="margin-bottom:16px">
+    <button class="btn-secondary" onclick="prevCard()">← Prev</button>
+    <span id="flash-counter" style="font-size:14px;color:var(--text-muted)">Card 1 / 32</span>
+    <button class="btn-secondary" onclick="nextCard()">Next →</button>
+  </div>
+  <div class="flashcard" id="flashcard" onclick="flipCard()">
+    <div class="flashcard-inner" id="flashcard-inner">
+      <div class="flash-face flash-front" id="flash-front"></div>
+      <div class="flash-face flash-back" id="flash-back"></div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:16px;justify-content:center">
+    <button class="flash-btn hard" onclick="rateCard('hard')">😓 Hard</button>
+    <button class="flash-btn good" onclick="rateCard('good')">🤔 Good</button>
+    <button class="flash-btn easy" onclick="rateCard('easy')">✅ Easy</button>
+  </div>
+  <div style="margin-top:16px">
+    <div style="height:4px;background:var(--surface2);border-radius:2px"><div id="flash-progress" style="height:4px;background:linear-gradient(90deg,var(--purple),var(--teal));border-radius:2px;transition:width .3s;width:3.125%"></div></div>
+  </div>
+</article>
+
+
+<article class="page" id="page-ch7">
+<div class="page-badge">Chapter 7 · Exam Focus</div>
+<h1>Data Collection & Ingestion — Complete Revision</h1>
+<p class="page-subtitle">High-yield exam notes, governance, lineage, contracts, and Netflix case study.</p>
+
+<h2>Data Source Mind Map</h2>
+<div class="callout insight"><div class="callout-title">Quick Revision</div>
+<p>Creation → Analog / Digital<br>
+Location → Internal / External<br>
+Creator → User Generated / System Generated<br>
+Format → Structured / Semi-Structured / Unstructured<br>
+System → SQL / NoSQL</p></div>
+
+<h2>Netflix Case Study</h2>
+<div class="callout def"><div class="callout-title">Industry Example</div>
+<p>Ratings + Watch History + Searches + Reviews + Device Data + Metadata → Recommendation Engine.</p></div>
+
+<h2>Data Governance</h2>
+<div class="callout exam"><div class="callout-title">Remember</div>
+<p>Governance ensures quality, ownership, security, compliance, and trust.</p></div>
+
+<h2>Data Contracts</h2>
+<div class="callout research"><div class="callout-title">Modern Data Engineering</div>
+<p>Producer → Data Contract → Consumer. Defines schema, null rules, ownership, and update frequency.</p></div>
+
+<h2>Data Lineage</h2>
+<div class="callout insight"><div class="callout-title">Exam Favourite</div>
+<p>Source → Raw Data → Clean Data → Features → Model → Dashboard.</p></div>
+
+<h2>2-Minute Exam Revision</h2>
+<ul>
+<li>Structured = fixed schema</li>
+<li>Semi-Structured = flexible schema (JSON/XML)</li>
+<li>Unstructured = images, audio, text</li>
+<li>First-party = your data</li>
+<li>Second-party = partner data</li>
+<li>Third-party = purchased data</li>
+<li>Batch = scheduled</li>
+<li>Streaming = real-time</li>
+</ul>
+</article>
+
+</main>
+<script>
+// ═══════════════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════════════
+const glossaryData = [
+  {t:'CRISP-DM',f:'Cross-Industry Standard Process for Data Mining',d:'6-phase cyclical ML project methodology: Business Understanding → Data Understanding → Data Preparation → Modelling → Evaluation → Deployment. Non-linear; phases may loop back.'},
+  {t:'CRISP-ML(Q)',f:'Cross-Industry Standard Process for Machine Learning with Quality',d:'2021 update of CRISP-DM adding MLOps, monitoring, and quality assurance phases. Adds explicit model monitoring and feedback loop stage. (Source: ml-ops.org)'},
+  {t:'TP',f:'True Positive',d:'Model correctly predicts positive class. E.g. model flags fraud and it is indeed fraud. Used in Recall = TP/(TP+FN) and Precision = TP/(TP+FP).'},
+  {t:'TN',f:'True Negative',d:'Model correctly predicts negative class. E.g. model says no fraud and there is no fraud. Used in Specificity = TN/(TN+FP).'},
+  {t:'FP',f:'False Positive',d:'Model incorrectly flags something as positive (Type I error). E.g. legitimate transaction blocked. Reduces Precision.'},
+  {t:'FN',f:'False Negative',d:'Model misses a positive case (Type II error). E.g. fraud not detected. Reduces Recall. Often more costly in medical/fraud contexts.'},
+  {t:'Precision',f:'Positive Predictive Value',d:'TP / (TP + FP). Of all positive predictions, how many were correct? Optimise when false positives are costly (spam filter, content moderation).'},
+  {t:'Recall',f:'Sensitivity / True Positive Rate',d:'TP / (TP + FN). Of all actual positives, how many did we catch? Optimise when false negatives are costly (disease screening, fraud detection).'},
+  {t:'F1',f:'F1 Score',d:'Harmonic mean of Precision and Recall: 2*(P*R)/(P+R). Balanced metric for imbalanced classes. Always ≤ arithmetic mean.'},
+  {t:'AUC-ROC',f:'Area Under the Receiver Operating Characteristic Curve',d:'Model discrimination ability across all classification thresholds. 0.5 = random, 1.0 = perfect. Threshold-independent.'},
+  {t:'Type I Error',f:'False Positive Error',d:'Rejecting a true null hypothesis. Alpha (α) controls this. Mnemonic: crying wolf — raising a false alarm.'},
+  {t:'Type II Error',f:'False Negative Error',d:'Failing to reject a false null hypothesis. Beta (β) controls this. Mnemonic: missing the wolf — failing to catch a real case.'},
+  {t:'RMSE',f:'Root Mean Squared Error',d:'√(mean(predicted-actual)²). Penalises large errors heavily due to squaring. Standard regression metric.'},
+  {t:'MAE',f:'Mean Absolute Error',d:'mean(|predicted-actual|). More robust to outliers than RMSE. Easier to interpret as average error magnitude.'},
+  {t:'Data Drift',f:'Feature/Covariate Drift',d:'Statistical distribution of input features (X) changes over time. E.g. user age distribution shifts. Model may still be logically correct but inputs changed.'},
+  {t:'Concept Drift',f:'Label/Target Drift',d:'Relationship between features and target (y|X) changes. Model becomes wrong even if inputs look normal. E.g. customer churn behaviour changes post-pandemic.'},
+  {t:'PSI',f:'Population Stability Index',d:'Measures distribution shift between two samples. PSI < 0.1: stable; 0.1–0.2: moderate; > 0.2: significant drift. Alert threshold in prod monitoring.'},
+  {t:'KS-test',f:'Kolmogorov-Smirnov Test',d:'Statistical test comparing two distributions by max absolute difference of CDFs. Used by Evidently AI for drift detection.'},
+  {t:'JS Divergence',f:'Jensen-Shannon Divergence',d:'Symmetric version of KL divergence. Measures similarity between two probability distributions. Bounded 0–1. Used in production drift monitoring.'},
+  {t:'MLOps',f:'Machine Learning Operations',d:'Practices for deploying, monitoring, and maintaining ML models in production. Combines DevOps with ML-specific concerns. Market: $2.33B→$19.55B (35.5% CAGR).'},
+  {t:'Model Registry',f:'-',d:'Centralised versioned repository for trained models. Stores: model artefact, version, metrics, training data reference, feature schema, lineage. Like git for models.'},
+  {t:'Model Lineage',f:'-',d:'Complete audit trail of a model: what training data, which features, which code version, who trained it, what evaluation scores. Required for compliance and reproducibility.'},
+  {t:'Feature Store',f:'-',d:'Centralised repository for computed, versioned features. Serves both training (offline) and inference (online). Prevents training-serving skew. Uber Michelangelo: 10K+ features.'},
+  {t:'CDC',f:'Change Data Capture',d:'Reads database transaction log (WAL/binlog) to capture row-level inserts, updates, deletes as they happen. No full table scan needed. Does NOT miss hard deletes (unlike high-water mark).'},
+  {t:'ETL',f:'Extract, Transform, Load',d:'Classic data pipeline pattern: extract from source, transform/clean, load into destination. Transform before load. Traditional data warehouse approach.'},
+  {t:'ELT',f:'Extract, Load, Transform',d:'Modern cloud data warehouse pattern: load raw data first, then transform inside the warehouse. More flexible; raw data preserved.'},
+  {t:'Imputation',f:'-',d:'Replacing missing values with estimated values. Methods: mean/median (numerical), mode (categorical), KNN, regression. NEVER impute before train/test split.'},
+  {t:'Stratified Split',f:'-',d:'Train/test split that preserves class proportions. Essential for imbalanced datasets. E.g. 5% fraud: stratified ensures both splits have ~5% fraud.'},
+  {t:'Normalisation',f:'Min-Max Scaling',d:'Scales values to [0,1]: (x − min)/(max − min). Fit on TRAIN ONLY, apply to all sets. Sensitive to outliers.'},
+  {t:'Z-score',f:'Standardisation',d:'(x − μ) / σ. Mean 0, std 1. Fit on TRAIN ONLY. Better than min-max when data has outliers or Gaussian distribution assumed.'},
+  {t:'Overfitting',f:'-',d:'Model memorises training data, fails to generalise. High train accuracy, low test accuracy. Fix: regularisation, more data, simpler model, dropout, cross-validation.'},
+  {t:'Underfitting',f:'-',d:'Model too simple to capture patterns. Both train and test accuracy are low. Fix: more features, more complex model, less regularisation.'},
+  {t:'Data Contract',f:'-',d:'Formal schema agreement between data producer and consumer. Enforced at ingestion. Schema change = contract violation = immediate failure alert. Prevents silent downstream breakage.'},
+  {t:'Feedback Loop',f:'-',d:'Mechanism to route production outcomes back to training pipeline. Enables continuous model improvement. Critical missing piece in basic CRISP-DM.'},
+  {t:'Blue-Green Deploy',f:'-',d:'Two production environments. New model deployed to green (idle). Traffic switched when validated. Blue kept for instant rollback. Zero-downtime deployment pattern.'},
+  {t:'Batch Scoring',f:'-',d:'Running inference on large datasets periodically (hourly/daily). Outputs stored for later use. High throughput, not real-time. Opposite: online/real-time scoring.'},
+  {t:'TFX',f:'TensorFlow Extended',d:'End-to-end ML platform by Google. Includes data validation (TFDV), transform, training, serving. Used in large-scale production pipelines.'},
+  {t:'ONNX',f:'Open Neural Network Exchange',d:'Open format for ML models enabling interoperability between frameworks (PyTorch → TensorFlow, etc.). Stored in model registry for framework-agnostic serving.'},
+];
+
+const checklistData = [
+  {section:'CRISP-DM Lifecycle',items:[
+    'Name all 6 CRISP-DM phases in correct order',
+    'Explain why CRISP-DM is non-linear / cyclical',
+    'Identify which phase the "non-ML baseline" belongs to',
+    'Describe what outputs each phase produces',
+  ]},
+  {section:'Problem Framing',items:[
+    'State the 4 key questions for framing an ML problem',
+    'Explain what makes a good success metric vs a proxy metric',
+    'Distinguish ML problems from non-ML problems',
+    'Explain what a "non-ML heuristic baseline" is and why it matters',
+  ]},
+  {section:'Confusion Matrix',items:[
+    'Draw a 2×2 confusion matrix with correct TP/FP/TN/FN placement',
+    'Calculate Precision from TP and FP values',
+    'Calculate Recall from TP and FN values',
+    'Calculate F1 score from Precision and Recall',
+    'Identify Type I vs Type II errors and their consequences',
+    'Explain the accuracy trap on imbalanced datasets',
+    'Know when to optimise Precision vs Recall',
+  ]},
+  {section:'ML Data Pipeline',items:[
+    'List the 5 stages of the ML data pipeline',
+    'Explain the role of the feedback loop',
+    'Describe what a feature store does (offline vs online)',
+    'Explain training-serving skew and how to prevent it',
+  ]},
+  {section:'Model Registry',items:[
+    'List what a model registry stores',
+    'Explain model lineage and why it matters for compliance',
+    'Distinguish model registry from feature store',
+    'Describe a model deployment strategy (blue-green)',
+  ]},
+  {section:'Drift & Monitoring',items:[
+    'Distinguish data drift from concept drift with examples',
+    'Name three statistical tests used to detect drift (KS, PSI, JS)',
+    'Know PSI thresholds (< 0.1 stable, 0.1–0.2 moderate, > 0.2 significant)',
+    'Explain why 85% of ML models fail silently',
+    'Describe the feedback loop for continuous retraining',
+  ]},
+  {section:'Data Pre-processing',items:[
+    'Name three imputation strategies and when to use each',
+    'Explain the golden rule: fit scaler on TRAIN, apply to ALL',
+    'Explain why you must split BEFORE imputing',
+    'Distinguish overfitting from underfitting with solutions',
+    'Explain stratified splitting for imbalanced datasets',
+  ]},
+  {section:'Data Ingestion',items:[
+    'Compare batch, streaming, micro-batch, and CDC',
+    'Distinguish push vs pull ingestion with examples',
+    'Explain what CDC is and its advantage over high-water mark',
+    'List four common ingestion failure types',
+    'Explain the "validate at the loading dock" principle / data contracts',
+    'Distinguish 1st, 2nd, and 3rd-party data by trust and compliance risk',
+  ]},
+];
+
+const quizData = [
+  {q:'What is the correct order of CRISP-DM phases?',opts:['Business → Data → Preparation → Modelling → Evaluation → Deployment','Business → Modelling → Data → Preparation → Evaluation → Deployment','Data → Business → Preparation → Evaluation → Modelling → Deployment','Modelling → Business → Data → Preparation → Evaluation → Deployment'],a:0,exp:'CRISP-DM: Business Understanding → Data Understanding → Data Preparation → Modelling → Evaluation → Deployment. Mnemonic: "Better Data Produces More Elegant Decisions." The order matters but phases are non-linear — you can loop back.'},
+  {q:'A fraud detection model achieves 99% accuracy on a dataset where 1% of transactions are fraudulent. What is the most likely problem?',opts:['Overfitting','The accuracy trap — the model predicts "no fraud" every time','Underfitting','Data drift'],a:1,exp:'The accuracy trap: on 99% negative data, a model that always predicts "no fraud" achieves 99% accuracy with 0 recall. Accuracy is misleading on imbalanced classes. Use F1, Precision, Recall, or AUC-ROC instead.'},
+  {q:'You are building a disease screening model. Missing a positive case (cancer) is far more dangerous than a false alarm. Which metric should you prioritise?',opts:['Precision','Accuracy','Recall','Specificity'],a:2,exp:'Recall = TP/(TP+FN). It measures how many actual positives you catch. Maximise recall when false negatives are costly — missed cancer, missed fraud. False alarms (FP) are acceptable at the screening stage.'},
+  {q:'A Type I error in ML classification is equivalent to:',opts:['A False Negative','A False Positive','A True Positive with low confidence','Underfitting on training data'],a:1,exp:'Type I error = False Positive = incorrectly labelling something as positive. Mnemonic: "crying wolf." Type II = False Negative = missing a real case. Controlled by α (Type I) and β (Type II) respectively.'},
+  {q:'Which CRISP-DM phase focuses on assessing whether the model meets business goals — not just technical metrics?',opts:['Modelling','Data Preparation','Evaluation','Deployment'],a:2,exp:'Evaluation revisits Business Understanding: does the model actually solve the business problem? Technical metrics (RMSE, F1) can look good while business value is poor. This is why Evaluation is separate from Modelling.'},
+  {q:'You impute missing values in your training data before splitting into train/test sets. What is wrong?',opts:['Nothing — imputation must happen before splitting','Data leakage: test set statistics contaminate training imputation','The model will overfit','Imputation should only be applied to the test set'],a:1,exp:'Imputing before splitting causes data leakage: the imputer "sees" test set statistics (mean, median) during training. Always split first, fit imputer on train only, then apply to test. Rule: "Fit on train, transform all."'},
+  {q:'A model performs perfectly on training data but poorly on new data. This is called:',opts:['Underfitting','Concept drift','Overfitting','Feature leakage'],a:2,exp:'Overfitting: the model memorises training data rather than learning generalisable patterns. High train accuracy, low test accuracy. Fix: regularisation (L1/L2), more data, dropout, simpler architecture, cross-validation.'},
+  {q:'What is "concept drift"?',opts:['Input feature distributions change over time','The relationship between features and target label changes over time','The model code degrades in production','Training data volume decreases'],a:1,exp:'Concept drift = the mapping P(y|X) changes. The world changes so the model\'s learned rules no longer hold. Example: "loyal customer" behaviour pre-COVID ≠ post-COVID. Contrast with data drift (P(X) changes but relationship still holds).'},
+  {q:'What does a model registry store? Select the MOST complete answer.',opts:['Only the model binary file','Model binary, version number, and training date','Model binary, version, metrics, training data reference, feature schema, lineage, and deployment status','Only evaluation metrics and hyperparameters'],a:2,exp:'A model registry is like "git for models." It stores: the serialised model artefact, version tag, evaluation metrics, pointer to training data, feature schema, code commit hash, who trained it, and deployment history. Anything less makes reproducibility and compliance impossible.'},
+  {q:'You have a feature that ranges 0–1000 in training data. You apply min-max normalisation. Which statement is correct?',opts:['Fit the scaler on the full dataset before splitting','Fit on train, apply the SAME scaler to validation and test','Fit a separate scaler on each split','No scaling needed for tree-based models (applies to all models)'],a:1,exp:'The golden rule: fit the scaler (or any transformer) on TRAIN data only, then apply to validation and test using the SAME fitted parameters. Fitting on test = data leakage. Note: the "tree-based models don\'t need scaling" fact is true but the question is about the rule when you do scale.'},
+  {q:'Uber\'s Michelangelo feature store was notable because it:',opts:['Trained 10 models per day','Managed over 10,000 features and 1,000 models for the entire organisation','Was the first open-source feature store','Reduced training time by 80%'],a:1,exp:'Uber\'s Michelangelo (introduced ~2017) is the canonical enterprise feature store example. It centralised 10K+ features and served 1K+ models company-wide — preventing teams from computing the same features independently and enabling sharing. (Source: Uber Engineering Blog)'},
+  {q:'What is the primary limitation of incremental extraction using a high-water mark (e.g., WHERE updated_at > last_run)?',opts:['It is too slow for large databases','It cannot handle schema changes','It misses hard deletes — rows deleted from the source are invisible','It requires CDC infrastructure'],a:2,exp:'High-water mark captures inserts and updates (anything with an updated_at change) but silently misses hard DELETEs. If a row is deleted from the source, it has no updated_at and never triggers. CDC (reading the transaction log) captures all operations including deletes.'},
+  {q:'Change Data Capture (CDC) works by:',opts:['Running a full table scan on schedule','Comparing two snapshots of a table and diff-ing them','Reading the database transaction log to capture row-level changes','Using triggers on every UPDATE/INSERT/DELETE statement'],a:2,exp:'CDC reads the database\'s transaction log (PostgreSQL WAL, MySQL binlog) to capture every change as a stream of events. No full table scan needed. Captures inserts, updates, AND deletes. Lower compute cost, near-real-time latency. Triggers (option D) are another CDC implementation but not the log-based definition.'},
+  {q:'The "validate at the loading dock" principle refers to:',opts:['Testing models before deployment','Validating data schemas at the point of ingestion using data contracts','Running data quality checks only in the data warehouse','Checking model outputs before serving to users'],a:1,exp:'Data contracts enforce schema agreements at ingestion time. A renamed column, type change, or new null field is caught immediately — before it propagates. The professor\'s principle: catching a schema break at ingestion = 1 hour to fix; catching after model training = 3 days.'},
+  {q:'A feedback loop in an ML pipeline runs in which direction?',opts:['From deployment back to data collection and training','From business understanding forward to modelling','From modelling back to data preparation only','From evaluation forward to deployment'],a:0,exp:'The feedback loop routes PRODUCTION OUTCOMES back to the training pipeline. Real-world model predictions → ground truth labels → new training data. This is what enables continuous learning and model improvement. Basic CRISP-DM omits this; modern MLOps/CRISP-ML(Q) adds it explicitly.'},
+  {q:'Your disease screening model tests 200 people. 9 positives detected; 8 are true positives. 8 negatives are missed. What is the precision?',opts:['8.8%','88.9%','50%','100%'],a:1,exp:'Precision = TP/(TP+FP). TP=8, FP=1 (9 detected, 8 correct → 1 wrong). Precision = 8/9 = 88.9%. Recall = TP/(TP+FN) = 8/(8+8) = 50% — only half the actual cases were found. Lecture example used to show precision ≠ recall.'},
+  {q:'Which ingestion pattern provides the LOWEST latency for fraud detection?',opts:['Batch (daily)','Micro-batch (minute-level)','Streaming (event-by-event)','CDC with scheduled sync'],a:2,exp:'Streaming processes each event as it arrives — millisecond latency. Essential for fraud detection where a fraudulent transaction must be flagged before it completes. Batch and micro-batch have minutes-to-hours of latency. CDC can be streaming but is database-specific.'},
+  {q:'First-party data, second-party data, and third-party data are distinguished by:',opts:['Whether data is structured, semi-structured, or unstructured','Who owns the data: your systems, a partner\'s data, or purchased/aggregated data','Whether data is on-premises, cloud, or edge','Volume: MB, GB, or TB'],a:1,exp:'Ownership defines the party classification: 1st-party = your own systems (highest trust, full control); 2nd-party = direct partner data (negotiated access); 3rd-party = purchased/aggregated from brokers (lowest trust, GDPR/CCPA risk). Trust and compliance obligations decrease as party number increases.'},
+  {q:'Why might a professor teaching ML advocate for being "model-agnostic" in the Modelling phase?',opts:['All models give the same accuracy','The best model depends on data, not theoretical preference','Neural networks always outperform simpler models','Simpler models always outperform complex ones'],a:1,exp:'Model agnosticism means selecting the model based on data characteristics, problem type, constraints (latency, interpretability), and empirical results — not doctrine. No Free Lunch theorem: no single model is universally best. Start simple (logistic regression baseline), then scale complexity only if needed.'},
+  {q:'You notice your model\'s predictions have degraded but the input feature distributions look normal. What type of drift is most likely?',opts:['Data drift','Feature drift','Concept drift','Schema drift'],a:2,exp:'Concept drift: the relationship P(y|X) has changed even though P(X) looks the same. The world changed. For example, customer spending patterns shifted without the spending features themselves looking different. Concept drift is harder to detect than data drift.'},
+  {q:'Training-serving skew occurs when:',opts:['Training data is larger than serving data','Features are computed differently at training time vs inference time','The model is retrained too infrequently','Serving latency exceeds training time'],a:1,exp:'Training-serving skew: features look different at inference vs training time. E.g. train uses 30-day avg computed offline; inference uses 7-day avg computed in real-time. Feature stores solve this by ensuring both use the same feature computation logic and serving the same values.'},
+  {q:'In the CRISP-DM Data Understanding phase, the primary deliverable is:',opts:['A trained model','Cleaned, split training data','An exploratory data analysis report assessing data quality and relevance','A deployed API endpoint'],a:2,exp:'Data Understanding outputs: initial data collection report, data description (types, volumes), data quality assessment (nulls, outliers, duplicates), and initial data exploration findings. This phase gates entry to Data Preparation — you cannot clean what you do not understand.'},
+  {q:'Why is model lineage important in production systems?',opts:['It speeds up inference latency','It enables reproducibility, debugging, rollback, and regulatory compliance','It reduces model file size','It automatically detects concept drift'],a:1,exp:'Model lineage = the full audit trail: training data version, feature set, code commit, hyperparameters, who trained it, when, what metrics. Without lineage you cannot: reproduce a model, debug a regression, demonstrate compliance to auditors, or safely roll back. Required by GDPR Article 22, FINRA, and other regulations.'},
+  {q:'The F1 score for a model with Precision = 0.80 and Recall = 0.60 is approximately:',opts:['0.70','0.686','0.72','0.75'],a:1,exp:'F1 = 2*(P*R)/(P+R) = 2*(0.80*0.60)/(0.80+0.60) = 2*0.48/1.40 = 0.96/1.40 ≈ 0.686. Note F1 is the harmonic mean, always ≤ arithmetic mean (0.70). Trick answer 0.70 is the arithmetic mean, which is WRONG.'},
+  {q:'Which of these is a valid reason to prefer STREAMING over batch ingestion?',opts:['You need to train a model on 5 years of historical data','You need to detect credit card fraud before the transaction completes','Your data volume is 100GB per day','Your source system has a daily export job'],a:1,exp:'Streaming excels at sub-second decision requirements. Fraud detection must fire before the merchant approves the transaction — seconds or less. Historical training data (option A) is exactly what batch is designed for. High volume (option C) is not a reason alone — Netflix does batch at petabyte scale.'},
+  {q:'A source system silently renames a column from "user_age" to "age" overnight. Using data contracts, when should this failure be caught?',opts:['After the model retrains on the new data','At the point of ingestion, immediately','Only during the next evaluation cycle','Never — column renames are handled automatically'],a:1,exp:'Data contracts enforce schema expectations AT INGESTION. A contract violation (unexpected column name, wrong type, new nulls) triggers an immediate alert. "Validate at the loading dock." Catching it after model retraining (option A) is the 3-day nightmare scenario the lecture warns against.'},
+];
+
+const flashcards = [
+  {front:'What are the 6 phases of CRISP-DM?',back:'1. Business Understanding — define goals, success criteria, baseline\n2. Data Understanding — explore, assess quality\n3. Data Preparation — clean, engineer, split\n4. Modelling — select and train models\n5. Evaluation — assess against business goals\n6. Deployment — serve, monitor, feedback loop'},
+  {front:'What is the CRISP-ML(Q) addition to CRISP-DM?',back:'CRISP-ML(Q) (ml-ops.org, 2021) adds: explicit ML monitoring phase, model quality assurance, and a defined feedback loop back to data collection. Addresses the operational gap CRISP-DM left after deployment.'},
+  {front:'What 4 questions define good ML Problem Framing?',back:'1. What is the specific decision being made?\n2. What does success look like — and how do we measure it?\n3. What data do we have and can we get more?\n4. Do we actually need ML, or does a rule-based heuristic suffice?'},
+  {front:'Draw the confusion matrix. Where do TP, FP, TN, FN go?',back:'         Predicted +  |  Predicted −\nActual + :    TP         |     FN\nActual − :    FP         |     TN\n\nTP = correct positive | TN = correct negative\nFP = Type I error (false alarm) | FN = Type II error (miss)'},
+  {front:'Formula for Precision — when to use it?',back:'Precision = TP / (TP + FP)\nAnswers: "Of all predicted positives, how many were right?"\nUse when false positives are costly: spam filters, content moderation, drug trials. High precision = few false alarms.'},
+  {front:'Formula for Recall — when to use it?',back:'Recall = TP / (TP + FN)\nAnswers: "Of all actual positives, how many did we catch?"\nUse when false negatives are costly: disease screening, fraud detection, safety systems. High recall = few missed cases.'},
+  {front:'Formula for F1 Score',back:'F1 = 2 × (Precision × Recall) / (Precision + Recall)\nHarmonic mean — always ≤ arithmetic mean.\nExample: P=0.80, R=0.60 → F1 = 2×0.48/1.40 = 0.686 (NOT 0.70)\nUse when you need balance between precision and recall on imbalanced data.'},
+  {front:'Type I error vs Type II error — mnemonic?',back:'Type I = False Positive = "crying wolf" → false alarm\n  • Controlled by α (significance level)\n  • Example: blocking a legit transaction\n\nType II = False Negative = "missing the wolf"\n  • Controlled by β\n  • Example: missing a cancer diagnosis\n  • Often more dangerous in medical/fraud contexts'},
+  {front:'The Accuracy Trap — what is it and when does it strike?',back:'On imbalanced datasets (e.g. 99% negative), a model that always predicts "negative" achieves 99% accuracy with ZERO predictive value.\nPrecision = 0, Recall = 0, F1 = 0.\nFix: use F1, AUC-ROC, or class-weighted metrics. Always check class balance first.'},
+  {front:'What are the 5 stages of the ML data pipeline?',back:'1. Data Collection (sources, ingestion)\n2. Data Processing (cleaning, imputation, validation)\n3. Feature Engineering (transforms, selection, store)\n4. Model Training (fit, optimise, evaluate)\n5. Model Serving (deploy, monitor, feedback loop)\nFeedback loop: production outcomes → back to stage 1'},
+  {front:'What is a Feature Store? Offline vs Online?',back:'Centralised repository for computed, versioned features.\nOffline store: batch reads for model training (historical)\nOnline store: low-latency lookups for real-time inference\nPrevents training-serving skew. Uber: 10K+ features, Netflix, Spotify use at scale. Solves: "did training use the same features as serving?"'},
+  {front:'What does a Model Registry store?',back:'• Serialised model artefact (pkl, ONNX, TF SavedModel)\n• Version tag\n• Evaluation metrics (F1, RMSE, AUC)\n• Training data pointer / snapshot ID\n• Feature schema used\n• Code commit hash\n• Author, training timestamp\n• Deployment status and history\nThink: "git for models"'},
+  {front:'Data Drift vs Concept Drift — key difference?',back:'Data Drift: P(X) changes — input feature distributions shift\n  Example: user age distribution shifts after product rebrand\n  Detection: PSI, KS-test on feature distributions\n\nConcept Drift: P(y|X) changes — the relationship between features and target changes\n  Example: customer loyalty signals change post-pandemic\n  Harder to detect — requires label monitoring'},
+  {front:'PSI thresholds for model monitoring?',back:'PSI = Population Stability Index (compares distributions)\n• PSI < 0.10 → stable, no action\n• PSI 0.10–0.20 → moderate drift, investigate\n• PSI > 0.20 → significant drift → trigger retraining alert\nUsed alongside KS-test and JS divergence in tools like Evidently AI.'},
+  {front:'The golden rule of data preprocessing',back:'"Fit on train, transform all — NEVER fit on test."\n1. Split train/test FIRST\n2. Fit scaler/imputer on TRAIN only\n3. Apply the SAME fitted scaler to validation and test\nFitting on test = data leakage = inflated metrics = failed production.\nApplies to: MinMaxScaler, StandardScaler, imputers, encoders.'},
+  {front:'Z-score standardisation formula',back:'z = (x − μ) / σ\nwhere μ = mean of training set, σ = std dev of training set\nResult: mean=0, std=1\nFit on TRAIN, apply to ALL sets.\nBetter than min-max when: outliers present, Gaussian assumption holds, algorithm sensitive to scale (SVM, KNN, neural nets)'},
+  {front:'Min-Max normalisation formula',back:'x_scaled = (x − x_min) / (x_max − x_min)\nResult: scaled to [0, 1]\nFit on TRAIN (use train min/max), apply to ALL.\nProblem: test values outside train range get values outside [0,1]\nBetter for: bounded domains, neural net inputs, algorithms needing [0,1]'},
+  {front:'Overfitting vs Underfitting — causes and fixes',back:'Overfitting: high train acc, low test acc → memorised noise\n  Fixes: regularisation (L1/L2), dropout, more data, simpler model, cross-validation, early stopping\n\nUnderfitting: low train AND test acc → too simple\n  Fixes: more features, more complex model, less regularisation, train longer'},
+  {front:'Stratified train/test split — when and why?',back:'When: imbalanced class distributions (fraud, disease)\nWhy: random split may by chance put all rare positives in train or test → misleading evaluation\nHow: sklearn train_test_split(X, y, stratify=y)\nResult: both splits have the SAME class proportion (e.g. both have ~5% fraud)'},
+  {front:'Imputation — three strategies and when to use each',back:'1. Mean imputation: numerical data, symmetric distribution, few nulls\n2. Median imputation: numerical data with outliers/skew\n3. Mode imputation: categorical variables\n4. KNN imputation: when missingness correlates with other features\nRule: ALWAYS split before imputing. Fit imputer on train only.'},
+  {front:'What is Change Data Capture (CDC)?',back:'CDC reads the database transaction log (PostgreSQL WAL, MySQL binlog) to capture every INSERT, UPDATE, and DELETE as a stream of events.\n✅ Captures hard deletes (unlike high-water mark)\n✅ Near-real-time, low compute\n✅ No full table scan\nUsed in: Debezium, AWS DMS, Fivetran CDC, Estuary Flow'},
+  {front:'High-water mark vs CDC — key difference',back:'High-water mark: SELECT WHERE updated_at > last_run\n  ✅ Simple SQL, no infrastructure\n  ❌ Misses hard DELETEs (no updated_at change)\n  ❌ Misses updates that reset timestamp\n\nCDC (transaction log):\n  ✅ Captures ALL operations including DELETEs\n  ✅ Lower latency\n  ❌ Requires log access and CDC tooling'},
+  {front:'Push vs Pull ingestion — examples',back:'Pull: YOU fetch from source on schedule\n  Examples: poll REST API hourly, cron SQL query\n  Pro: simple, you control timing\n  Con: miss events between polls, latency = poll interval\n\nPush: SOURCE sends data to you\n  Examples: webhooks, Kafka event streams\n  Pro: real-time, event-driven\n  Con: need robust receiving infrastructure'},
+  {front:'Batch vs Streaming vs Micro-batch vs CDC',back:'Batch: bulk, scheduled (hourly/daily) · high latency · training, reporting\nMicro-batch: frequent small batches (seconds) · near-real-time\nStreaming: event-by-event (ms latency) · fraud, real-time recs\nCDC: DB log capture · near-real-time · efficient DB sync\n\nEstuary Flow: unifies batch+streaming with sub-100ms latency (2025)'},
+  {front:'1st, 2nd, 3rd-party data — trust and compliance',back:'1st-party: YOUR data (CRM, app logs, transactions)\n  Trust: highest · Compliance: full control\n\n2nd-party: PARTNER\'s data (shared directly)\n  Trust: medium · Compliance: negotiated access agreement\n\n3rd-party: PURCHASED/aggregated data\n  Trust: lowest · Compliance: GDPR/CCPA risk, often no consent chain'},
+  {front:'Data contracts — what are they and why?',back:'Formal schema agreement between data PRODUCER and CONSUMER.\nEnforced at ingestion point.\nCovers: column names, types, nullability, value ranges.\nViolation = immediate alert ("validate at the loading dock")\n\nCost of catching schema break:\n  At ingestion: ~1 hour\n  After model retraining: ~3 days\nTools: Great Expectations, dbt tests, Soda Core'},
+  {front:'4 common ingestion failure types',back:'1. Schema change: source column renamed → transforms break silently\n2. Format drift: date format changes YYYY-MM-DD→MM/DD/YYYY → NaT nulls\n3. Duplicates/late records: Kafka reprocessing, windowed join misses\n4. API rate limits/outages: 3rd-party 429 → silent stop → stale model\n\nFix for all: data contracts + monitoring + idempotent pipelines'},
+  {front:'MLOps market size and growth',back:'2024: $2.33 billion\n2030 forecast: $19.55 billion\nCAGR: 35.5%\n\nKey vendors: Evidently AI (20M+ downloads), Arize AI, Fiddler AI, MLflow, Weights & Biases, SageMaker, Vertex AI\n\n85% of ML models fail silently in production without monitoring (Source: Gartner / Evidently AI, 2024)'},
+  {front:'Evidently AI — what does it detect?',back:'Open-source ML monitoring library (20M+ downloads, 2024)\nDetects:\n  • Data drift (KS-test, PSI, Jensen-Shannon divergence)\n  • Target/prediction drift\n  • Data quality issues\n  • Model performance degradation\nOutputs: HTML reports, JSON metrics, real-time dashboards\nUsed with: Grafana, Prefect, MLflow, Airflow'},
+  {front:'Training-serving skew — definition and fix',back:'When features are computed DIFFERENTLY at training vs inference time.\nExample: train uses 30-day rolling average (computed offline), serving uses 7-day average (computed real-time) → model sees different inputs\n\nFix: Feature Store — single computation logic, identical outputs for training and serving. Guarantees consistency.'},
+  {front:'What is the feedback loop in an ML pipeline?',back:'Routes production outcomes back to the training pipeline:\nModel prediction → real-world outcome → label → new training data\n\nEnables: continuous model improvement, catching concept drift early, reducing human labelling burden\n\nExample: Netflix recommendation → user watches → implicit positive label → feeds back to model retraining queue'},
+  {front:'Blue-green deployment strategy',back:'Two production environments: Blue (live) and Green (idle)\n1. Deploy new model to Green\n2. Run validation / shadow traffic\n3. Switch traffic to Green\n4. Keep Blue for instant rollback\n\nBenefit: zero-downtime deployment, instant rollback if Green fails\nUsed in: SageMaker, Vertex AI, Kubernetes deployments'},
+  {front:'ONNX — what is it used for in MLOps?',back:'Open Neural Network Exchange — open model format\nConverts trained models between frameworks (PyTorch→TF, etc.)\nStored in model registry for framework-agnostic serving\nBenefit: train in PyTorch, serve via ONNX Runtime (faster inference)\nSupported by: Microsoft, Facebook, AWS, NVIDIA'},
+];
+
+// ═══════════════════════════════════════════════════════════
+//  NAVIGATION & MODE
+// ═══════════════════════════════════════════════════════════
+const studyPages = ['crisp','frame','confmat','pipeline','registry','drift','preprocess','ingestion'];
+const visitedPages = new Set();
+let currentMode = 'study';
+
+function showPage(id) {
+  // hide all
+  document.querySelectorAll('.page, #quiz-page, #flash-page, #glossary-page, #checklist-page').forEach(p => p.classList.remove('active'));
+  // activate target
+  const map = {
+    quiz: 'quiz-page', flash: 'flash-page', glossary: 'glossary-page', checklist: 'checklist-page'
+  };
+  const targetId = map[id] || `page-${id}`;
+  const el = document.getElementById(targetId);
+  if (el) el.classList.add('active');
+  // nav active state
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.getAttribute('onclick') && n.getAttribute('onclick').includes(`'${id}'`));
+  if (activeNav) activeNav.classList.add('active');
+  // track visited
+  if (studyPages.includes(id)) {
+    visitedPages.add(id);
+    const dot = document.getElementById('dot-' + id);
+    if (dot) dot.style.background = 'var(--teal)';
+    updateProgress();
+  }
+  window.scrollTo(0, 0);
+  document.getElementById('main').scrollTo(0,0);
+}
+
+function updateProgress() {
+  const count = visitedPages.size;
+  const total = studyPages.length;
+  document.getElementById('progress-txt').textContent = `${count} / ${total}`;
+  document.getElementById('progress-bar').style.width = `${(count / total) * 100}%`;
+}
+
+function switchMode(mode, e) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  if (e && e.target) e.target.classList.add('active');
+  else {
+    const tabs = document.querySelectorAll('.mode-tab');
+    const idx = {study:0, quiz:1, flash:2}[mode];
+    if (tabs[idx]) tabs[idx].classList.add('active');
+  }
+  const studyNav = document.getElementById('study-nav');
+  studyNav.style.display = mode === 'study' ? 'block' : 'none';
+  if (mode === 'quiz') showPage('quiz');
+  else if (mode === 'flash') { showPage('flash'); initFlash(); }
+  else showPage('crisp');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXPANDABLE CARDS
+// ═══════════════════════════════════════════════════════════
+function toggleCard(el) {
+  const card = el.closest('.expand-card');
+  card.classList.toggle('open');
+  el.textContent = card.classList.contains('open') ? '▲ Collapse' : '▼ Expand';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(btn, groupId, panelId) {
+  const group = btn.closest('.tab-group');
+  group.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const wrapper = group.nextElementSibling;
+  if (wrapper && wrapper.classList.contains('tab-panels')) {
+    wrapper.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+    const panel = document.getElementById(panelId);
+    if (panel) panel.style.display = 'block';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GLOSSARY
+// ═══════════════════════════════════════════════════════════
+function buildGlossary() {
+  const tbody = document.getElementById('glossary-body');
+  tbody.innerHTML = glossaryData.map(g => `
+    <tr>
+      <td><strong>${g.t}</strong></td>
+      <td style="color:var(--text-muted);font-size:13px">${g.f}</td>
+      <td style="font-size:13px">${g.d}</td>
+    </tr>`).join('');
+}
+
+function filterGlossary(q) {
+  const rows = document.querySelectorAll('#glossary-body tr');
+  const lower = q.toLowerCase();
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(lower) ? '' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CHECKLIST
+// ═══════════════════════════════════════════════════════════
+function buildChecklist() {
+  const body = document.getElementById('checklist-body');
+  let totalItems = 0;
+  body.innerHTML = checklistData.map((section, si) => {
+    return `<div class="check-section">
+      <div class="check-section-title">${section.section}</div>
+      ${section.items.map((item, ii) => {
+        const id = `chk-${si}-${ii}`;
+        totalItems++;
+        const saved = localStorage.getItem(id) === '1';
+        return `<label class="check-item" for="${id}">
+          <input type="checkbox" id="${id}" ${saved ? 'checked' : ''} onchange="saveCheck('${id}',this.checked)">
+          <span class="check-label ${saved ? 'done' : ''}" id="lbl-${id}">${item}</span>
+        </label>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+  updateCheckCount();
+}
+
+function saveCheck(id, checked) {
+  localStorage.setItem(id, checked ? '1' : '0');
+  const lbl = document.getElementById('lbl-' + id);
+  if (lbl) lbl.className = 'check-label' + (checked ? ' done' : '');
+  updateCheckCount();
+}
+
+function updateCheckCount() {
+  const all = document.querySelectorAll('#checklist-body input[type=checkbox]');
+  const done = Array.from(all).filter(c => c.checked).length;
+  const total = all.length;
+  const el = document.getElementById('check-count');
+  if (el) el.innerHTML = `${done} <span>/ ${total} done</span>`;
+}
+
+function resetChecklist() {
+  document.querySelectorAll('#checklist-body input[type=checkbox]').forEach(c => {
+    const id = c.id;
+    localStorage.removeItem(id);
+    c.checked = false;
+    const lbl = document.getElementById('lbl-' + id);
+    if (lbl) lbl.className = 'check-label';
+  });
+  updateCheckCount();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  QUIZ ENGINE
+// ═══════════════════════════════════════════════════════════
+let quizIdx = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let quizHistory = [];
+
+function startQuiz() {
+  quizIdx = 0; quizScore = 0; quizAnswered = false; quizHistory = [];
+  // shuffle
+  for (let i = quizData.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [quizData[i], quizData[j]] = [quizData[j], quizData[i]];
+  }
+  document.getElementById('quiz-start-screen').style.display = 'none';
+  document.getElementById('quiz-end').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizData[quizIdx];
+  document.getElementById('q-num').textContent = quizIdx + 1;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-feedback').style.display = 'none';
+  document.getElementById('q-next-btn').style.display = 'none';
+  quizAnswered = false;
+  // dots
+  const dots = document.getElementById('q-dots');
+  dots.innerHTML = Array.from({length: quizData.length}, (_, i) => {
+    let color = 'var(--border)';
+    if (i < quizHistory.length) color = quizHistory[i] ? 'var(--teal)' : 'var(--coral)';
+    return `<div style="width:10px;height:10px;border-radius:50%;background:${color};transition:background .3s"></div>`;
+  }).join('');
+  // options
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = q.opts.map((opt, i) => `
+    <div class="q-option" id="opt-${i}" onclick="selectAnswer(${i})"
+      style="padding:12px 16px;margin:8px 0;border-radius:8px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);font-size:14px;transition:all .15s;"
+      onmouseover="if(!this.dataset.locked)this.style.borderColor='var(--purple)'"
+      onmouseout="if(!this.dataset.locked)this.style.borderColor='var(--border)'">
+      <span style="color:var(--text-muted);margin-right:10px;font-weight:600">${String.fromCharCode(65+i)}.</span>${opt}
+    </div>`).join('');
+}
+
+function selectAnswer(i) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quizData[quizIdx];
+  const correct = i === q.a;
+  quizHistory.push(correct);
+  if (correct) quizScore++;
+  // colour options
+  document.querySelectorAll('.q-option').forEach((el, idx) => {
+    el.dataset.locked = '1';
+    el.style.cursor = 'default';
+    if (idx === q.a) { el.style.background = 'rgba(52,211,153,.15)'; el.style.borderColor = 'var(--teal)'; el.style.color = 'var(--teal)'; }
+    else if (idx === i && !correct) { el.style.background = 'rgba(248,113,113,.15)'; el.style.borderColor = 'var(--coral)'; el.style.color = 'var(--coral)'; }
+  });
+  // feedback
+  const fb = document.getElementById('q-feedback');
+  fb.style.display = 'block';
+  fb.style.background = correct ? 'rgba(52,211,153,.12)' : 'rgba(248,113,113,.12)';
+  fb.style.border = `1px solid ${correct ? 'var(--teal-border)' : 'var(--orange-border)'}`;
+  fb.innerHTML = `<strong style="color:${correct ? 'var(--teal)' : 'var(--coral)'}">${correct ? '✅ Correct!' : '❌ Incorrect'}</strong><br><br>${q.exp}`;
+  // next btn
+  const nbtn = document.getElementById('q-next-btn');
+  nbtn.style.display = 'block';
+  nbtn.textContent = quizIdx < quizData.length - 1 ? 'Next Question →' : 'See Results';
+  // update dots
+  const dotEls = document.querySelectorAll('#q-dots div');
+  if (dotEls[quizIdx]) dotEls[quizIdx].style.background = correct ? 'var(--teal)' : 'var(--coral)';
+}
+
+function nextQuestion() {
+  quizIdx++;
+  if (quizIdx >= quizData.length) return showQuizEnd();
+  renderQuestion();
+}
+
+function showQuizEnd() {
+  document.getElementById('quiz-active').style.display = 'none';
+  document.getElementById('quiz-end').style.display = 'block';
+  const pct = Math.round((quizScore / quizData.length) * 100);
+  const circle = document.getElementById('quiz-score-circle');
+  circle.textContent = pct + '%';
+  circle.style.borderColor = pct >= 80 ? 'var(--teal)' : pct >= 60 ? 'var(--amber)' : 'var(--coral)';
+  circle.style.color = pct >= 80 ? 'var(--teal)' : pct >= 60 ? 'var(--amber)' : 'var(--coral)';
+  const msgs = [
+    [90, 'Outstanding!', 'You\'ve mastered the material. Ready for the exam.'],
+    [75, 'Strong performance!', 'A few concepts to revisit — check the flashcards for weak areas.'],
+    [60, 'Good progress', 'Review the study pages for concepts you missed and retake.'],
+    [0, 'Keep going!', 'Use Study Mode to revisit the lecture content, then try again.'],
+  ];
+  const [, title, msg] = msgs.find(([threshold]) => pct >= threshold);
+  document.getElementById('quiz-result-title').textContent = title;
+  document.getElementById('quiz-result-msg').textContent = `${quizScore} / ${quizData.length} correct — ${msg}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FLASHCARD ENGINE
+// ═══════════════════════════════════════════════════════════
+let flashIdx = 0;
+let flashFlipped = false;
+const flashRatings = { hard: 0, good: 0, easy: 0 };
+
+function initFlash() {
+  flashIdx = 0; flashFlipped = false;
+  renderFlashcard();
+}
+
+function renderFlashcard() {
+  const card = flashcards[flashIdx];
+  document.getElementById('flash-front').innerHTML = `<div style="font-size:15px;font-weight:600;color:var(--text);line-height:1.5">${card.front}</div><div style="margin-top:16px;font-size:12px;color:var(--text-muted)">Click to reveal answer</div>`;
+  document.getElementById('flash-back').innerHTML = `<div style="font-size:13.5px;color:var(--text-muted);line-height:1.75;white-space:pre-line">${card.back}</div>`;
+  flashFlipped = false;
+  document.getElementById('flashcard-inner').style.transform = 'rotateY(0deg)';
+  document.getElementById('flash-counter').textContent = `Card ${flashIdx + 1} / ${flashcards.length}`;
+  document.getElementById('flash-progress').style.width = `${((flashIdx + 1) / flashcards.length) * 100}%`;
+}
+
+function flipCard() {
+  flashFlipped = !flashFlipped;
+  document.getElementById('flashcard-inner').style.transform = flashFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+}
+
+function nextCard() { if (flashIdx < flashcards.length - 1) { flashIdx++; renderFlashcard(); } }
+function prevCard() { if (flashIdx > 0) { flashIdx--; renderFlashcard(); } }
+
+function rateCard(rating) {
+  flashRatings[rating]++;
+  document.getElementById('cnt-' + rating).textContent = flashRatings[rating];
+  nextCard();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildGlossary();
+  buildChecklist();
+  // activate first tab panels
+  document.querySelectorAll('.tab-panels').forEach(tp => {
+    const panels = tp.querySelectorAll('.tab-panel');
+    panels.forEach((p, i) => p.style.display = i === 0 ? 'block' : 'none');
+  });
+  showPage('crisp');
+});
+</script>
+</body>
+</html>
