@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Lifecycle & Workflow — Interactive Study Tool</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --bg2: #161b27;
+  --bg3: #1e2535;
+  --bg4: #252d3e;
+  --border: #2e3850;
+  --text: #e2e8f0;
+  --text-muted: #8899bb;
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.1);
+  --teal: #2dd4bf;
+  --teal-bg: rgba(45,212,191,0.1);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251,191,36,0.1);
+  --sky: #38bdf8;
+  --sky-bg: rgba(56,189,248,0.1);
+  --orange: #fb923c;
+  --orange-bg: rgba(251,146,60,0.1);
+  --green: #4ade80;
+  --red: #f87171;
+  --coral: #f87171;
+  --sidebar-w: 270px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.65; }
+a { color: var(--purple); text-decoration: none; }
+
+/* LAYOUT */
+#app { display: flex; min-height: 100vh; }
+#sidebar {
+  width: var(--sidebar-w); flex-shrink: 0; background: var(--bg2);
+  border-right: 1px solid var(--border); position: sticky; top: 0;
+  height: 100vh; overflow-y: auto; display: flex; flex-direction: column;
+}
+#main { flex: 1; min-width: 0; overflow-x: hidden; }
+
+/* SIDEBAR */
+.sb-logo { padding: 18px 16px 12px; border-bottom: 1px solid var(--border); }
+.sb-logo h1 { font-size: 14px; color: var(--purple); font-weight: 700; line-height: 1.3; }
+.sb-logo p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+.progress-wrap { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.progress-label { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; display: flex; justify-content: space-between; }
+.progress-bar-outer { background: var(--bg3); border-radius: 4px; height: 6px; }
+.progress-bar-inner { background: linear-gradient(90deg, var(--purple), var(--teal)); border-radius: 4px; height: 6px; transition: width 0.4s; }
+
+.mode-tabs { display: flex; padding: 10px 12px; gap: 6px; border-bottom: 1px solid var(--border); }
+.mode-tab {
+  flex: 1; padding: 6px 2px; border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-muted); font-size: 12px; cursor: pointer; transition: all 0.2s;
+}
+.mode-tab.active { background: var(--purple); border-color: var(--purple); color: #fff; font-weight: 600; }
+.mode-tab:hover:not(.active) { background: var(--bg3); color: var(--text); }
+
+.nav-section-label { padding: 10px 16px 4px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.nav-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+  cursor: pointer; transition: background 0.15s; color: var(--text-muted); font-size: 13px;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: var(--purple-bg); color: var(--purple); border-left-color: var(--purple); }
+.nav-item.visited .nav-dot { background: var(--teal); }
+.nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bg4); flex-shrink: 0; border: 1px solid var(--border); }
+
+/* CONTENT AREA */
+#content-wrap { padding: 32px 36px 80px; max-width: 900px; }
+.page { display: none; }
+.page.active { display: block; }
+
+h2.page-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; color: var(--text); }
+.page-subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+h3.section-title { font-size: 17px; font-weight: 700; margin: 28px 0 12px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+h4.sub-title { font-size: 14px; font-weight: 600; color: var(--purple); margin: 16px 0 8px; }
+p { margin-bottom: 12px; }
+
+/* CALLOUT BOXES */
+.callout {
+  border-radius: 10px; padding: 14px 16px; margin: 16px 0;
+  border-left: 4px solid; font-size: 14px; line-height: 1.7;
+}
+.callout .callout-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+.callout-def { background: var(--purple-bg); border-color: var(--purple); }
+.callout-def .callout-title { color: var(--purple); }
+.callout-insight { background: var(--teal-bg); border-color: var(--teal); }
+.callout-insight .callout-title { color: var(--teal); }
+.callout-exam { background: var(--amber-bg); border-color: var(--amber); }
+.callout-exam .callout-title { color: var(--amber); }
+.callout-research { background: var(--sky-bg); border-color: var(--sky); }
+.callout-research .callout-title { color: var(--sky); }
+.callout-warn { background: var(--orange-bg); border-color: var(--orange); }
+.callout-warn .callout-title { color: var(--orange); }
+
+/* TABLES */
+.table-wrap { overflow-x: auto; margin: 16px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: var(--bg3); color: var(--teal); font-weight: 700; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--border); }
+td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:hover td { background: var(--bg2); }
+td code, th code { background: var(--bg4); padding: 1px 5px; border-radius: 4px; font-size: 12px; font-family: 'Courier New', monospace; }
+
+/* CODE BLOCKS */
+pre {
+  background: #0a0d14; border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; overflow-x: auto; font-size: 13px; margin: 14px 0;
+  font-family: 'Courier New', monospace; color: #a8d4f5; line-height: 1.6;
+}
+code { background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; color: var(--teal); }
+
+/* EXPANDABLE CARDS */
+.expand-group { margin: 12px 0; }
+.expand-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+.expand-header {
+  padding: 12px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg2); transition: background 0.2s; user-select: none; font-weight: 600; font-size: 14px;
+}
+.expand-header:hover { background: var(--bg3); }
+.expand-arrow { transition: transform 0.25s; font-size: 12px; color: var(--text-muted); }
+.expand-card.open .expand-arrow { transform: rotate(180deg); }
+.expand-body { display: none; padding: 16px; background: var(--bg); font-size: 14px; border-top: 1px solid var(--border); }
+.expand-card.open .expand-body { display: block; }
+
+/* FLOW DIAGRAM */
+.flow-diagram { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 16px 0; }
+.flow-step {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--text); min-width: 90px; text-align: center;
+}
+.flow-step.highlight { background: var(--purple-bg); border-color: var(--purple); color: var(--purple); }
+.flow-step.highlight2 { background: var(--teal-bg); border-color: var(--teal); color: var(--teal); }
+.flow-arrow { color: var(--text-muted); font-size: 18px; font-weight: bold; }
+
+/* TABS */
+.tabs-wrap { margin: 16px 0; }
+.tab-nav { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 0; flex-wrap: wrap; }
+.tab-btn {
+  padding: 8px 14px; cursor: pointer; background: transparent;
+  border: none; color: var(--text-muted); font-size: 13px; font-weight: 600;
+  border-bottom: 2px solid transparent; transition: all 0.2s; margin-bottom: -1px;
+}
+.tab-btn.active { color: var(--purple); border-bottom-color: var(--purple); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+.tab-panel { display: none; padding: 16px 0; }
+.tab-panel.active { display: block; }
+
+/* BAR CHART */
+.bar-chart { margin: 16px 0; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+.bar-label { width: 180px; flex-shrink: 0; color: var(--text-muted); text-align: right; }
+.bar-outer { flex: 1; background: var(--bg3); border-radius: 4px; height: 20px; }
+.bar-fill { height: 20px; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 700; color: #fff; transition: width 1s; }
+.bar-val { color: var(--text); font-weight: 700; min-width: 60px; }
+
+/* QUIZ */
+#quiz-wrap { padding: 28px 36px 80px; max-width: 760px; }
+.quiz-header { margin-bottom: 24px; }
+.quiz-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.quiz-progress-dots { display: flex; flex-wrap: wrap; gap: 5px; margin: 12px 0; }
+.qp-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border); }
+.qp-dot.correct { background: var(--green); border-color: var(--green); }
+.qp-dot.wrong { background: var(--red); border-color: var(--red); }
+.qp-dot.current { border-color: var(--purple); }
+
+.quiz-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+.quiz-q-num { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+.quiz-q-text { font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.5; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; }
+.quiz-opt {
+  padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; transition: all 0.2s; font-size: 14px; background: var(--bg3);
+}
+.quiz-opt:hover:not(.answered) { border-color: var(--purple); background: var(--purple-bg); }
+.quiz-opt.correct { background: rgba(74,222,128,0.15); border-color: var(--green); color: var(--green); }
+.quiz-opt.wrong { background: rgba(248,113,113,0.15); border-color: var(--red); color: var(--red); }
+.quiz-feedback { margin-top: 16px; padding: 14px; background: var(--bg3); border-radius: 8px; font-size: 13px; display: none; border-left: 3px solid var(--purple); }
+.quiz-feedback.show { display: block; }
+.quiz-nav { margin-top: 18px; display: flex; gap: 10px; align-items: center; }
+.btn {
+  padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border);
+  cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;
+}
+.btn-primary { background: var(--purple); border-color: var(--purple); color: #fff; }
+.btn-primary:hover { background: #9168f0; }
+.btn-outline { background: transparent; color: var(--text); }
+.btn-outline:hover { background: var(--bg3); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.score-screen { text-align: center; padding: 40px 20px; }
+.score-circle { width: 120px; height: 120px; border-radius: 50%; border: 6px solid var(--purple); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; }
+.score-pct { font-size: 32px; font-weight: 900; color: var(--purple); }
+.score-label { font-size: 11px; color: var(--text-muted); }
+
+/* FLASHCARDS */
+#flash-wrap { padding: 28px 36px 80px; max-width: 700px; }
+.flash-stats { display: flex; gap: 16px; margin-bottom: 20px; font-size: 13px; }
+.flash-stat { background: var(--bg2); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; }
+.flash-stat span { font-weight: 700; }
+.flash-stat.easy span { color: var(--green); }
+.flash-stat.good span { color: var(--amber); }
+.flash-stat.hard span { color: var(--red); }
+
+.flashcard-scene { perspective: 1200px; height: 320px; cursor: pointer; margin: 20px 0; }
+.flashcard { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s; border-radius: 14px; }
+.flashcard.flipped { transform: rotateY(180deg); }
+.flash-face {
+  position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+  border-radius: 14px; display: flex; flex-direction: column; justify-content: center;
+  align-items: center; padding: 28px; text-align: center; border: 1px solid var(--border);
+}
+.flash-front { background: var(--bg2); }
+.flash-back { background: var(--bg3); transform: rotateY(180deg); }
+.flash-face-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 14px; }
+.flash-face-text { font-size: 16px; line-height: 1.6; }
+.flash-back .flash-face-text { font-size: 14px; }
+.flash-hint { font-size: 12px; color: var(--text-muted); margin-top: 12px; }
+.flash-rating { display: flex; gap: 10px; justify-content: center; margin-top: 12px; }
+.flash-btn { padding: 10px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
+.flash-easy { background: rgba(74,222,128,0.2); color: var(--green); }
+.flash-good { background: rgba(251,191,36,0.2); color: var(--amber); }
+.flash-hard { background: rgba(248,113,113,0.2); color: var(--red); }
+.flash-nav { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+.flash-counter { text-align: center; font-size: 13px; color: var(--text-muted); }
+
+/* GLOSSARY */
+#glossary-wrap { padding: 28px 36px 80px; }
+.glossary-search { width: 100%; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; margin-bottom: 20px; }
+.glossary-search:focus { outline: none; border-color: var(--purple); }
+
+/* CHECKLIST */
+#checklist-wrap { padding: 28px 36px 80px; }
+.checklist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.checklist-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.checklist-item input[type=checkbox] { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--purple); cursor: pointer; }
+.checklist-text { font-size: 14px; }
+.checklist-text.done { text-decoration: line-through; color: var(--text-muted); }
+.checklist-topic { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.completion-badge { background: var(--purple-bg); border: 1px solid var(--purple); color: var(--purple); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  #sidebar { display: none; }
+  #sidebar.open { display: flex; position: fixed; z-index: 100; width: 260px; }
+  #content-wrap, #quiz-wrap, #flash-wrap, #glossary-wrap, #checklist-wrap { padding: 20px 16px 60px; }
+  .bar-label { width: 110px; font-size: 11px; }
+}
+
+.page-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+.tag-purple { background: var(--purple-bg); color: var(--purple); }
+.tag-teal { background: var(--teal-bg); color: var(--teal); }
+.tag-amber { background: var(--amber-bg); color: var(--amber); }
+
+.hamburger { display: none; position: fixed; top: 14px; left: 14px; z-index: 200; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; cursor: pointer; color: var(--text); font-size: 18px; }
+@media (max-width: 768px) { .hamburger { display: block; } }
+</style>
+</head>
+<body>
+
+<button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+<div id="app">
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-logo">
+    <h1>📚 ML Lifecycle & Workflow</h1>
+    <p>BITS · Data Management for ML</p>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Study Progress</span><span id="prog-text">0%</span></div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="prog-bar" style="width:0%"></div></div>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('study')">📖 Study</button>
+    <button class="mode-tab" onclick="switchMode('quiz')">❓ Quiz</button>
+    <button class="mode-tab" onclick="switchMode('flash')">🃏 Cards</button>
+  </div>
+
+  <div id="study-nav">
+    <div class="nav-section-label">Core Topics</div>
+    <div class="nav-item" data-page="intro" onclick="showPage('intro',this)"><span class="nav-dot"></span>Introduction & Overview</div>
+    <div class="nav-item" data-page="three-levels" onclick="showPage('three-levels',this)"><span class="nav-dot"></span>Three Levels of ML</div>
+    <div class="nav-item" data-page="data-pipeline" onclick="showPage('data-pipeline',this)"><span class="nav-dot"></span>Data Engineering Pipeline</div>
+    <div class="nav-item" data-page="ml-lifecycle" onclick="showPage('ml-lifecycle',this)"><span class="nav-dot"></span>ML Lifecycle Phases</div>
+    <div class="nav-item" data-page="data-processing" onclick="showPage('data-processing',this)"><span class="nav-dot"></span>Data Processing Deep Dive</div>
+    <div class="nav-item" data-page="model-dev" onclick="showPage('model-dev',this)"><span class="nav-dot"></span>Model Development</div>
+    <div class="nav-item" data-page="model-deploy" onclick="showPage('model-deploy',this)"><span class="nav-dot"></span>Model Deployment</div>
+    <div class="nav-item" data-page="monitoring" onclick="showPage('monitoring',this)"><span class="nav-dot"></span>Monitoring & Drift</div>
+    <div class="nav-item" data-page="serialization" onclick="showPage('serialization',this)"><span class="nav-dot"></span>Model Serialization</div>
+    <div class="nav-item" data-page="workflows" onclick="showPage('workflows',this)"><span class="nav-dot"></span>ML Workflow Patterns</div>
+    <div class="nav-item" data-page="serving" onclick="showPage('serving',this)"><span class="nav-dot"></span>Model Serving Patterns</div>
+    <div class="nav-item" data-page="mlops" onclick="showPage('mlops',this)"><span class="nav-dot"></span>DataOps → MLOps</div>
+    <div class="nav-item" data-page="failures" onclick="showPage('failures',this)"><span class="nav-dot"></span>Deployment Failures (Case Study)</div>
+    <div class="nav-section-label">Reference</div>
+    <div class="nav-item" onclick="switchMode('glossary')">📖 Glossary</div>
+    <div class="nav-item" onclick="switchMode('checklist')">✅ Checklist</div>
+  </div>
+</nav>
+
+<!-- MAIN AREA -->
+<main id="main">
+
+<!-- ======================== STUDY PAGES ======================== -->
+<div id="study-mode">
+<div id="content-wrap">
+
+<!-- PAGE: INTRO -->
+<div class="page active" id="page-intro">
+  <h2 class="page-title">Introduction & Overview</h2>
+  <p class="page-subtitle">Why ML moved from research to mainstream, and what the lifecycle achieves</p>
+
+  <div class="callout callout-def">
+    <div class="callout-title">📘 Definition — ML Lifecycle</div>
+    The ML lifecycle is the <strong>cyclic iterative process</strong> with instructions and best practices to use across defined phases while developing an ML workload. It adds clarity and structure for making a machine learning project successful.
+  </div>
+
+  <p>Machine learning has evolved from research and development to the mainstream, driven by the exponential growth of data sources, generative AI, and scalable cloud-based compute resources. ML workloads enable algorithms to learn from data through <strong>iterative and continuous cycles</strong>.</p>
+
+  <h3 class="section-title">🔄 The Big Picture Flow</h3>
+  <div class="flow-diagram">
+    <div class="flow-step highlight">Business Goal</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Data Collection</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Model Development</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Deployment</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight2">Monitoring</div>
+    <div class="flow-arrow">⟲</div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 Industry Insight — The Loop Never Ends</div>
+    Unlike traditional software, ML systems require <strong>continuous retraining</strong>. A model's accuracy degrades over time as real-world data drifts from training data. Companies like Netflix, Spotify, and Amazon retrain recommendation models daily or even hourly. The "end" of the lifecycle is always the start of the next iteration. (Source: bansal-ai.in, Session 6, 2026)
+  </div>
+
+  <h3 class="section-title">📊 Key Statistics (Hard Reality)</h3>
+  <div class="bar-chart">
+    <div class="bar-row">
+      <div class="bar-label">8–90 days to deploy one model</div>
+      <div class="bar-outer"><div class="bar-fill" style="width:85%;background:linear-gradient(90deg,var(--purple),var(--teal))">Most companies</div></div>
+      <div class="bar-val">85%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">18%+ take even longer</div>
+      <div class="bar-outer"><div class="bar-fill" style="width:18%;background:var(--orange)">18%</div></div>
+      <div class="bar-val">18%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Failures due to lack of expertise</div>
+      <div class="bar-outer"><div class="bar-fill" style="width:60%;background:var(--red)">Major factor</div></div>
+      <div class="bar-val">Major</div>
+    </div>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-title">⭐ Exam Tip</div>
+    The ML lifecycle is described as <strong>cyclic and iterative</strong> — not linear or sequential. The phases can have <strong>feedback loops</strong> that interrupt and cycle back across the lifecycle. This is the most commonly tested conceptual point.
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">⚠️ Common Misconception</div>
+    Many students think "deploy = done." In ML, deployment is just the beginning. The model must be <strong>actively monitored</strong>, and retraining must happen when performance degrades. Forgetting this is how you get a model that worked great at launch and fails silently 6 months later.
+  </div>
+</div>
+
+<!-- PAGE: THREE LEVELS -->
+<div class="page" id="page-three-levels">
+  <h2 class="page-title">Three Levels of ML Software</h2>
+  <p class="page-subtitle">Every ML system manages three intertwined assets: Data, Model, and Code</p>
+
+  <div class="callout callout-def">
+    <div class="callout-title">📘 Core Framework</div>
+    Every ML-based software needs to manage three main assets: <strong>Data</strong>, <strong>Model</strong>, and <strong>Code</strong>. A change to one ripples through the others — this entanglement is why ML engineering is harder than data engineering or modelling alone.
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab(this,'t1','lv')">Data Layer</button>
+      <button class="tab-btn" onclick="switchTab(this,'t2','lv')">Model Layer</button>
+      <button class="tab-btn" onclick="switchTab(this,'t3','lv')">Code Layer</button>
+    </div>
+    <div class="tab-panel active" id="lv-t1">
+      <h4 class="sub-title">Data Engineering</h4>
+      <p>The initial step in any data science workflow is to <strong>acquire and prepare the data</strong> to be analyzed. Responsible for: data acquisition, cleaning, validation, and feature engineering.</p>
+      <div class="callout callout-research">
+        <div class="callout-title">🔬 Research Context (bitsnotes.com, 2026)</div>
+        The data pipeline for ML spans 6 stages: Collection → Storage → EDA → Cleaning → ETL → Delivery. AWS services like S3 (storage), Glue (ETL), and Athena (querying) map directly to these stages in production systems.
+      </div>
+      <p><strong>Key principle:</strong> "Garbage In, Garbage Out" — the ML model is only as good as the data. Most time on an ML project is spent constructing datasets, cleaning, and transforming data.</p>
+    </div>
+    <div class="tab-panel" id="lv-t2">
+      <h4 class="sub-title">Model Engineering</h4>
+      <p>The core of the ML workflow — writing and executing ML algorithms to obtain an ML model. The model engineering pipeline is usually utilized by a <strong>data science team</strong> and includes operations leading to a final deployable model.</p>
+      <p>Key activities: feature engineering, algorithm selection, training, hyperparameter tuning, evaluation, and model packaging.</p>
+    </div>
+    <div class="tab-panel" id="lv-t3">
+      <h4 class="sub-title">Code / Deployment Engineering</h4>
+      <p>The final stage of delivering an ML project — <strong>integrating the ML model into the final product</strong>. This is often the most neglected layer but equally critical for production success.</p>
+      <p>Key activities: containerization (Docker), CI/CD pipelines, API creation, monitoring integration, and version control.</p>
+    </div>
+  </div>
+
+  <hr class="page-divider">
+  <h3 class="section-title">🔗 How the Three Levels Interact</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Change Made</th><th>Data Layer Impact</th><th>Model Layer Impact</th><th>Code Layer Impact</th></tr>
+      <tr><td>New data source added</td><td>Ingest, validate, re-feature engineer</td><td>Retrain on expanded dataset</td><td>Update data connectors in pipeline</td></tr>
+      <tr><td>Model algorithm changed</td><td>May need different features</td><td>Full retrain + re-evaluate</td><td>Update serving code, endpoints</td></tr>
+      <tr><td>Production API upgraded</td><td>Minimal</td><td>Minimal</td><td>Re-container, re-deploy</td></tr>
+      <tr><td>Data drift detected</td><td>Re-collect/augment data</td><td>Retrain on fresh data</td><td>Deploy new model version</td></tr>
+    </table>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 Industry Context — The Three Ops</div>
+    In industry, the three levels map to three operations disciplines: <strong>DataOps</strong> (data quality & pipelines), <strong>ModelOps</strong> (model training & registry), and <strong>DevOps</strong> (code deployment & infrastructure). Together they form <strong>MLOps</strong> — the practice of applying DevOps principles to ML systems. Companies like Google, Microsoft, and AWS have built entire platforms (Vertex AI, Azure ML, SageMaker) around this framework.
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-title">⭐ Exam Tip — The Three Methodologies</div>
+    Always associate each level with its methodology:
+    <ul style="margin-top:8px;padding-left:20px;font-size:14px">
+      <li><strong>Data Engineering:</strong> data acquisition &amp; preparation</li>
+      <li><strong>ML Model Engineering:</strong> ML model training &amp; serving</li>
+      <li><strong>Code Engineering:</strong> integrating ML model into final product</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PAGE: DATA PIPELINE -->
+<div class="page" id="page-data-pipeline">
+  <h2 class="page-title">Data Engineering Pipeline</h2>
+  <p class="page-subtitle">Four steps: Ingestion → Exploration → Cleaning → Splitting</p>
+
+  <p>The data engineering pipeline includes a <strong>sequence of operations</strong> on available data. The final goal of these operations is to create training and testing datasets for the ML algorithms. Data preparation is reported to be the <strong>most expensive</strong> phase with respect to resources and time.</p>
+
+  <div class="flow-diagram">
+    <div class="flow-step highlight">Step 1: Ingestion</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">Step 2: Exploration & Validation</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">Step 3: Wrangling (Cleaning)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight2">Step 4: Splitting</div>
+  </div>
+
+  <div class="expand-group">
+
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)">
+        <span>📥 Step 1: Data Ingestion</span><span class="expand-arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <p>Collecting data using various systems, frameworks and formats — internal/external databases, data marts, OLAP cubes, data warehouses, OLTP systems, Spark, HDFS, etc. May also include <strong>synthetic data generation</strong> or data enrichment.</p>
+        <h4 class="sub-title">Key Activities</h4>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Activity</th><th>Description</th></tr>
+            <tr><td>Data Sources ID</td><td>Find data and document its origin (data provenance)</td></tr>
+            <tr><td>Space Estimation</td><td>Check required storage space</td></tr>
+            <tr><td>Obtaining Data</td><td>Get data, convert to manipulable format without changing data</td></tr>
+            <tr><td>Back Up Data</td><td>Always work on a copy; keep original dataset untouched</td></tr>
+            <tr><td>Privacy Compliance</td><td>Delete/anonymize sensitive info — GDPR compliance</td></tr>
+            <tr><td>Metadata Catalog</td><td>Record size, format, aliases, last modified, access control lists</td></tr>
+            <tr><td>Test Data</td><td>Sample test set, put aside — avoid "data snooping" bias</td></tr>
+          </table>
+        </div>
+        <div class="callout callout-warn">
+          <div class="callout-title">⚠️ Data Snooping Bias</div>
+          If you select a particular ML model <em>using</em> the test set, you are guilty of data snooping. This leads to over-optimistic model selection that will not perform well in production. Set aside the test set at the very beginning and <strong>never look at it</strong> until final evaluation.
+        </div>
+        <div class="callout callout-research">
+          <div class="callout-title">🔬 Research — Data Sources in Practice (bitsnotes.com, 2026)</div>
+          Modern ingestion architectures use: streaming (Apache Kafka, AWS Kinesis for real-time data), batch ETL (AWS Glue for scheduled processing), and APIs (REST hooks from third-party data providers). IoT sensors, social networks, and time-series databases are common ML data sources.
+        </div>
+      </div>
+    </div>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)">
+        <span>🔍 Step 2: Exploration & Validation</span><span class="expand-arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <p>Includes <strong>data profiling</strong> to obtain information about content and structure. Output is a set of metadata (max, min, avg of values). Data validation operations are user-defined error detection functions that scan the dataset for errors.</p>
+        <h4 class="sub-title">Attribute Profiling</h4>
+        <ul style="padding-left:20px;font-size:14px;line-height:2">
+          <li>Name, Number of Records, Data Type (categorical, numerical, int/float, text)</li>
+          <li>Numerical measures (min, max, avg, median)</li>
+          <li>Missing value ratio = absent values / total records</li>
+          <li>Type of distribution (Gaussian, uniform, logarithmic)</li>
+        </ul>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Tool Recommendation — Exploratory Data Analysis</div>
+          Using <strong>Jupyter notebooks</strong> is a good way to keep records of data exploration and experimentation. In cloud contexts, AWS SageMaker provides managed notebooks. For big data, Amazon Athena can run SQL-based EDA at petabyte scale without downloading data.
+        </div>
+        <p><strong>Example — Address Validation:</strong> Are address components consistent? Is the correct postal code associated with the address? Are there missing values?</p>
+        <div class="callout callout-warn">
+          <div class="callout-title">⚠️ Validation vs. Exploration</div>
+          Validation is formal (automated rules checking for schema violations, range violations, null checks). Exploration is analytical (understanding distributions, spotting anomalies visually). Both happen in this step. <strong>Validation guards the training pipeline</strong> — data problems caught here don't poison the model.
+        </div>
+      </div>
+    </div>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)">
+        <span>🧹 Step 3: Data Wrangling (Cleaning)</span><span class="expand-arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <p>Data preparation step where we <strong>programmatically wrangle data</strong> — reformatting or restructuring particular attributes that might change the form of the data's schema. Recommend writing scripts/functions for all data transformations in the pipeline to reuse on future data.</p>
+        <h4 class="sub-title">Key Transformations</h4>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Operation</th><th>Description</th></tr>
+            <tr><td>Outliers</td><td>Fix or remove outliers (optional, task-dependent)</td></tr>
+            <tr><td>Missing Values</td><td>Fill with zero/mean/median, or drop rows/columns</td></tr>
+            <tr><td>Irrelevant Data</td><td>Drop attributes providing no useful information</td></tr>
+            <tr><td>Reorder fields</td><td>Move columns to desired positions</td></tr>
+            <tr><td>Extract values</td><td>Create new fields by extracting sub-values</td></tr>
+            <tr><td>Combine fields</td><td>Merge multiple fields into single field</td></tr>
+            <tr><td>Filter records</td><td>Remove sets of records based on conditions</td></tr>
+            <tr><td>Aggregate/Pivot</td><td>Change granularity of dataset via aggregations</td></tr>
+          </table>
+        </div>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Industry Practice — Data Wrangling Tools</div>
+          Tools like <strong>AWS Glue DataBrew</strong>, <strong>Pandas</strong>, and <strong>Apache Spark</strong> are standard. AWS Glue ETL jobs handle large-scale cleaning at petabyte scale. For interactive cleaning, SageMaker Data Wrangler provides a no-code/low-code visual interface. (Source: bitsnotes.com, 2026)
+        </div>
+      </div>
+    </div>
+
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)">
+        <span>✂️ Step 4: Data Splitting</span><span class="expand-arrow">▼</span>
+      </div>
+      <div class="expand-body">
+        <p>Splitting the data into <strong>training (80%), validation, and test datasets</strong> to be used during the core machine learning stages to produce the ML model.</p>
+        <div class="callout callout-exam">
+          <div class="callout-title">⭐ Exam Tip — Split Ratios</div>
+          The typical ratio is <strong>80% training / 10% validation / 10% test</strong>, though 70/15/15 is also common. The test set must NEVER be used during model development — only for final "Model Acceptance Test." <strong>Data leakage</strong> occurs when test data leaks into training; remove duplicates before splitting to avoid it.
+        </div>
+        <div class="callout callout-warn">
+          <div class="callout-title">⚠️ Data Leakage</div>
+          Data leakage occurs when information from the hold-out test dataset leaks into the training data. This makes model performance look better than it will be in production. One way to avoid this: remove duplicates <em>before</em> splitting the data.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-title">🔬 Industry Research — Athena Partitioning as a Data Pipeline Technique (bitsnotes.com, 2026)</div>
+    In AWS-based ML pipelines, <strong>horizontal partitioning</strong> (by date/month) and <strong>vertical partitioning</strong> (by categorical column) dramatically reduce query costs and time. Example benchmark: querying 9.32 GB full dataset took ~29 seconds and cost ~$0.047. After date partitioning (January only), data scanned dropped to 815 MB (91% reduction), time to ~7 seconds. After further vertical partitioning by payment_type, scanning dropped to 71 MB and ~1.8 seconds. <strong>Design principle: partition on columns that appear most in WHERE clauses.</strong>
+  </div>
+</div>
+
+<!-- PAGE: ML LIFECYCLE -->
+<div class="page" id="page-ml-lifecycle">
+  <h2 class="page-title">ML Lifecycle Phases</h2>
+  <p class="page-subtitle">From business goal to deployed, monitored, production system</p>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 Key Principle</div>
+    The phases of the ML lifecycle are <strong>not necessarily sequential</strong> in nature and can have feedback loops to interrupt the cycle across lifecycle phases.
+  </div>
+
+  <div class="flow-diagram" style="flex-direction:column;align-items:flex-start;gap:4px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="flow-step highlight" style="min-width:180px">1. Business Goal</div>
+      <span style="color:var(--text-muted);font-size:12px">→ Define the problem & value</span>
+    </div>
+    <div class="flow-arrow" style="margin-left:85px">↓</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="flow-step" style="min-width:180px">2. ML Problem Framing</div>
+      <span style="color:var(--text-muted);font-size:12px">→ What to predict? What metric?</span>
+    </div>
+    <div class="flow-arrow" style="margin-left:85px">↓</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="flow-step" style="min-width:180px">3. Data Processing</div>
+      <span style="color:var(--text-muted);font-size:12px">→ Collect, clean, feature engineer</span>
+    </div>
+    <div class="flow-arrow" style="margin-left:85px">↓</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="flow-step" style="min-width:180px">4. Model Development</div>
+      <span style="color:var(--text-muted);font-size:12px">→ Build, train, tune, evaluate</span>
+    </div>
+    <div class="flow-arrow" style="margin-left:85px">↓</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="flow-step highlight2" style="min-width:180px">5. Deployment</div>
+      <span style="color:var(--text-muted);font-size:12px">→ Serve in production</span>
+    </div>
+    <div class="flow-arrow" style="margin-left:85px">↓</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="flow-step highlight2" style="min-width:180px">6. Monitoring</div>
+      <span style="color:var(--text-muted);font-size:12px">→ Detect drift, trigger retraining ⟲</span>
+    </div>
+  </div>
+
+  <h3 class="section-title">📋 Phase 1 & 2: Business Goal + ML Problem Framing</h3>
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Business Goal Identification</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>The <strong>most important phase</strong> of the ML lifecycle. An organization must have a clear idea of the problem to be solved and the business value to be gained.</p>
+        <h4 class="sub-title">Business Considerations</h4>
+        <ul style="padding-left:20px;font-size:14px;line-height:2">
+          <li>Understand business requirements</li>
+          <li>Align affected stakeholders</li>
+          <li>Form a business question</li>
+          <li>Identify critical, must-have features</li>
+          <li>Consider new business processes that might emerge</li>
+          <li>Identify how business value can be measured using business metrics</li>
+        </ul>
+        <h4 class="sub-title">Cost and Performance Optimization</h4>
+        <ul style="padding-left:20px;font-size:14px;line-height:2">
+          <li>Evaluate cost of data acquisition, training, inference, and wrong predictions</li>
+          <li>Evaluate whether external data sources might improve model performance</li>
+          <li>Establish pathways to production</li>
+          <li>Review how to handle ML-generated errors</li>
+        </ul>
+        <div class="callout callout-exam">
+          <div class="callout-title">⭐ Homework Alert</div>
+          From the lecture: Find out what "Definition of Done" and "Acceptance Criteria" mean in software/ML projects. These are important project management concepts for ML.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>ML Problem Framing</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>The business problem is framed as an ML problem: what is <strong>observed</strong> (inputs) and what should be <strong>predicted</strong> (label or target variable).</p>
+        <h4 class="sub-title">Example — Manufacturing Company</h4>
+        <p>Goal: Maximize profits. Several ML approaches: (1) Forecast sales demand for existing products, (2) Forecast required input materials to reduce stock, (3) Predict sales for new products. Each frames the same business goal differently as an ML problem.</p>
+        <h4 class="sub-title">Framing Steps</h4>
+        <ol style="padding-left:20px;font-size:14px;line-height:2">
+          <li>Define criteria for a successful outcome</li>
+          <li>Establish observable, quantifiable performance metric (e.g., accuracy)</li>
+          <li>Define relationship between technical metric and business outcome</li>
+          <li>Get stakeholder agreement on metrics</li>
+          <li>Formulate as: inputs → desired outputs → performance metric</li>
+          <li>Map technical outcome to business outcome</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">🏗️ ML Lifecycle Architecture Components</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Component</th><th>Purpose</th><th>When Active</th></tr>
+      <tr><td><strong>Online Feature Store</strong></td><td>Low-latency retrieval for real-time inference</td><td>Prediction time</td></tr>
+      <tr><td><strong>Offline Feature Store</strong></td><td>History of feature values for training and batch scoring</td><td>Training time</td></tr>
+      <tr><td><strong>Model Registry</strong></td><td>Repository of ML model artifacts + metadata (version control)</td><td>Always</td></tr>
+      <tr><td><strong>Performance Feedback Loop</strong></td><td>Informs data prep based on model evaluation (dev phase)</td><td>Development</td></tr>
+      <tr><td><strong>Model Drift Feedback Loop</strong></td><td>Informs data prep based on model evaluation (production phase)</td><td>Production</td></tr>
+      <tr><td><strong>Alarm Manager</strong></td><td>Receives monitoring alerts, publishes notifications, triggers retraining</td><td>Production</td></tr>
+      <tr><td><strong>Scheduler</strong></td><td>Initiates model re-training at business-defined intervals</td><td>Production</td></tr>
+      <tr><td><strong>Lineage Tracker</strong></td><td>Enables re-creation of ML environment at specific point in time</td><td>Always</td></tr>
+    </table>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-title">🔬 Modern MLOps Platforms (2025)</div>
+    Major cloud platforms implement these components as managed services: AWS SageMaker (feature store, model registry, pipelines), Azure ML (model registry, monitoring), Google Vertex AI (feature store, lineage tracker). Open-source: MLflow (experiment tracking, model registry), DVC (data versioning), Feast (feature store).
+  </div>
+</div>
+
+<!-- PAGE: DATA PROCESSING DEEP DIVE -->
+<div class="page" id="page-data-processing">
+  <h2 class="page-title">Data Processing Deep Dive</h2>
+  <p class="page-subtitle">Preprocessing, Feature Engineering, and the science of preparing ML data</p>
+
+  <h3 class="section-title">🔧 Data Preprocessing Operations</h3>
+
+  <div class="tabs-wrap">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab(this,'pp1','pp')">Clean</button>
+      <button class="tab-btn" onclick="switchTab(this,'pp2','pp')">Partition</button>
+      <button class="tab-btn" onclick="switchTab(this,'pp3','pp')">Scale</button>
+      <button class="tab-btn" onclick="switchTab(this,'pp4','pp')">Unbias</button>
+      <button class="tab-btn" onclick="switchTab(this,'pp5','pp')">Augment</button>
+    </div>
+    <div class="tab-panel active" id="pp-pp1">
+      <h4 class="sub-title">Data Cleaning — Remove Outliers, Duplicates, Impute Missing</h4>
+      <p>Detect duplicates, replace inaccurate or irrelevant data, correct missing data using imputation techniques that minimize bias.</p>
+      <div class="callout callout-insight">
+        <div class="callout-title">💡 Classroom Example</div>
+        Consider 40 Grade 4 students calculating average age: (1) Same student entered 3 times = duplicate, (2) Age entered as 100 instead of 10 = outlier, (3) 2 students not entered = missing values. Each scenario corrupts the result differently.
+      </div>
+    </div>
+    <div class="tab-panel" id="pp-pp2">
+      <h4 class="sub-title">Partitioning — Train / Validate / Test Split</h4>
+      <p>To prevent overfitting and evaluate models accurately, randomly split data into train, validate, and test sets.</p>
+      <div class="callout callout-exam">
+        <div class="callout-title">⭐ Exam Tip</div>
+        Usual rule: <strong>80% train, 10% validate, 10% test</strong>. Data leakage = when test data info leaks into training data. Prevention: remove duplicates BEFORE splitting.
+      </div>
+    </div>
+    <div class="tab-panel" id="pp-pp3">
+      <h4 class="sub-title">Scaling — Normalization and Standardization</h4>
+      <p>Normalization: scales values to <strong>[0, 1]</strong> range. Used when features must have equal importance with different ranges.</p>
+      <p>Standardization: transforms to <strong>mean=0, std=1</strong>. Better for handling outliers.</p>
+      <div class="callout callout-def">
+        <div class="callout-title">📘 When to Use Each</div>
+        Use normalization for neural networks and distance-based algorithms (KNN, SVM). Use standardization when outliers are present or when algorithm assumes Gaussian distribution (Linear Regression, Logistic Regression, PCA).
+      </div>
+    </div>
+    <div class="tab-panel" id="pp-pp4">
+      <h4 class="sub-title">Bias Detection and Mitigation</h4>
+      <p>Biases are imbalances in prediction accuracy across different groups (e.g., age, income bracket). Can come from <strong>data</strong> (historical inequities) or <strong>algorithm</strong> (optimization objective not capturing fairness).</p>
+      <div class="callout callout-warn">
+        <div class="callout-title">⚠️ Real-World Bias Examples</div>
+        Amazon's 2018 hiring AI was biased against women (trained on historical male-dominated hiring data). Facial recognition systems have higher error rates for darker-skinned individuals. These are direct consequences of biased training data.
+      </div>
+    </div>
+    <div class="tab-panel" id="pp-pp5">
+      <h4 class="sub-title">Data Augmentation</h4>
+      <p>Artificially increases training data by <strong>synthesizing new data from existing data</strong>. Common in image classification (flipping, rotation, cropping), NLP (synonym replacement, back-translation), and time-series (noise injection).</p>
+      <p>Benefits: reduces overfitting, improves generalization to unseen data.</p>
+    </div>
+  </div>
+
+  <hr class="page-divider">
+  <h3 class="section-title">⚙️ Feature Engineering</h3>
+
+  <div class="callout callout-def">
+    <div class="callout-title">📘 What is a Feature?</div>
+    Every unique attribute of the data is considered a <strong>feature</strong> (also known as an attribute). Feature Engineering is the process of selecting and transforming variables when creating a predictive model.
+  </div>
+
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Feature Creation</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Creating new features from existing data to assist with better predictions.</p>
+        <p>Examples: <code>one-hot encoding</code> (convert categories to binary vectors), <code>binning</code> (convert continuous to categorical), <code>splitting</code> (extract parts of strings), <code>calculated features</code> (e.g., BMI from height+weight).</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Feature Transformation & Imputation</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Replacing missing features or invalid features. Techniques include: Cartesian products of features, non-linear transformations (binning numeric variables into categories), and creating domain-specific features (e.g., "day of week" from a timestamp for retail models).</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Feature Extraction (Dimensionality Reduction)</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Reducing the amount of data to be processed using dimensionality reduction techniques, while maintaining original data characteristics.</p>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Technique</th><th>Full Name</th><th>Use Case</th></tr>
+            <tr><td><code>PCA</code></td><td>Principal Component Analysis</td><td>Linear dimensionality reduction, uncorrelated features</td></tr>
+            <tr><td><code>ICA</code></td><td>Independent Component Analysis</td><td>Separating independent sources (e.g., audio signal separation)</td></tr>
+            <tr><td><code>LDA</code></td><td>Linear Discriminant Analysis</td><td>Supervised reduction, maximize class separability</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Feature Selection</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Selecting a subset of extracted features that is relevant and minimizes model error rate. Tools: <strong>feature importance score</strong> (tree-based models) and <strong>correlation matrix</strong> (remove highly correlated redundant features).</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: MODEL DEVELOPMENT -->
+<div class="page" id="page-model-dev">
+  <h2 class="page-title">Model Development</h2>
+  <p class="page-subtitle">Training, tuning, evaluation, and packaging the ML model</p>
+
+  <div class="flow-diagram">
+    <div class="flow-step highlight">Training & Tuning</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Evaluation & Testing</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight2">Packaging</div>
+  </div>
+
+  <h3 class="section-title">🏋️ Model Training & Tuning</h3>
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Algorithm Selection</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Train many ML models from different categories using standard parameters. Factors: <strong>success metrics, model explainability, compute requirements</strong> (training/prediction time, memory).</p>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Algorithm Categories to Try</div>
+          Linear regression, logistic regression, k-means, naive Bayes, SVM, Random Forest. For each: use N-fold cross-validation, compute mean and std of performance metric on N folds. Select top 3–5 most promising models, preferring models that make <em>different types of errors</em> (for ensembling).
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Distributed Training (Data & Model Parallelism)</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Type</th><th>What is Split</th><th>Use Case</th></tr>
+            <tr><td><strong>Data Parallelism</strong></td><td>Training dataset split into mini-batches across nodes. Each node trains on fraction of data.</td><td>Standard large-scale training; model fits in one GPU</td></tr>
+            <tr><td><strong>Model Parallelism</strong></td><td>Model itself split across multiple instances/nodes</td><td>Extremely large models (GPT-scale) that don't fit in single GPU memory</td></tr>
+          </table>
+        </div>
+        <div class="callout callout-research">
+          <div class="callout-title">🔬 Research — Real Costs of Distributed Training (2024–2025)</div>
+          Training GPT-3 (175B params) cost ~$4.6M. Training LLMs is growing in cost — NLP models use billions of parameters and this number keeps increasing. High CO₂ emissions due to heavy compute makes large-scale training a sustainability concern. Custom hardware-aware HPO techniques are needed to co-optimize for accuracy AND hardware efficiency.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Hyperparameter Tuning</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Hyperparameters are settings that <strong>control the behavior</strong> of the ML algorithm (not learned from data). Must be set before training begins.</p>
+        <p><strong>Examples:</strong> learning rate, number of epochs, hidden layers, hidden units, activation functions.</p>
+        <div class="callout callout-exam">
+          <div class="callout-title">⭐ Exam Tip — HPO Search Methods</div>
+          <strong>Random search is preferred over grid search</strong> for hyperparameter optimization. Also note: data transformation choices ARE hyperparameters. HPO task size grows exponentially with each new hyperparameter (adds a new search dimension).
+        </div>
+        <div class="callout callout-warn">
+          <div class="callout-title">⚠️ HPO Challenge</div>
+          HPO is very expensive and resource-heavy in practice, especially for deep learning. At AirBnB: team started with a complex deep learning model and faced complexity, many development cycles, and high hardware requirements. Solution: start simpler, iterate.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Debugging & Profiling</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>A training job can have problems: system bottlenecks, overfitting, saturated activation functions, vanishing gradients. A debugger provides visibility through monitoring, recording, and analyzing data. It captures state at periodic intervals.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">📊 Validation Metrics</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>ML Task</th><th>Primary Metrics</th><th>Notes</th></tr>
+      <tr><td>Classification</td><td>Accuracy, Precision, Recall, F1, AUC-ROC</td><td>Confusion matrix is essential diagnostic tool</td></tr>
+      <tr><td>Regression</td><td>RMSE, MAE, R²</td><td>RMSE penalizes large errors more heavily</td></tr>
+      <tr><td>Clustering</td><td>Silhouette Score, Inertia</td><td>No ground truth labels available</td></tr>
+      <tr><td>Ranking</td><td>NDCG, MAP</td><td>Common in recommendation systems</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">✅ Model Evaluation & Testing</h3>
+  <p>Validate the trained model to ensure it meets original business objectives before serving in production. Use the <strong>hold-back test dataset</strong> to estimate generalization error via the final "Model Acceptance Test."</p>
+
+  <div class="callout callout-exam">
+    <div class="callout-title">⭐ Exam Tip — Model Verification Challenges</div>
+    Booking.com realized required business value was NOT achieved after deploying 150 models. Challenge: defining right KPIs beyond just model performance metrics — must understand engineering AND business angles. Full-scale real-world testing is often impossible for safety/security/scale reasons → simulated testing with assumptions.
+  </div>
+
+  <h3 class="section-title">📦 Step 4: Model Packaging</h3>
+  <p>Exporting the final ML model into a specific format (e.g., PMML, PFA, or ONNX) that describes the model to be consumed by the business application. The ML model should work <strong>outside of the model-training environment</strong> — be executable as an independent asset.</p>
+</div>
+
+<!-- PAGE: MODEL DEPLOYMENT -->
+<div class="page" id="page-model-deploy">
+  <h2 class="page-title">Model Deployment</h2>
+  <p class="page-subtitle">Deploying the pipeline for automated retraining AND providing prediction API</p>
+
+  <div class="callout callout-def">
+    <div class="callout-title">📘 Definition — Model Serving</div>
+    Model Serving is the process of deploying the ML model in a production environment. Deploying an ML system includes two aspects: (1) deploying the pipeline for automated retraining, (2) providing an API for prediction on unseen data.
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 What Inference Requires</div>
+    Inference (getting predictions from a deployed model) requires: a <strong>model</strong>, an <strong>interpreter for execution</strong>, and <strong>input data</strong>.
+  </div>
+
+  <h3 class="section-title">🐳 Deployment as Docker Containers</h3>
+  <p>No standard, open solution to ML model deployment exists. However, <strong>containerization is the de-facto standard</strong> for delivery. ML model inference is stateless, lightweight, and idempotent → ideal for containers.</p>
+
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Docker-based Deployment</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Package the whole ML tech stack (dependencies) and model prediction code into a Docker container. Orchestration via <strong>Kubernetes</strong> or AWS Fargate. Prediction exposed through REST API (e.g., Flask application).</p>
+        <pre>
+# Simplified Docker deployment structure
+FROM python:3.10-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY model.pkl .
+COPY app.py .
+EXPOSE 8080
+CMD ["python", "app.py"]
+        </pre>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Serverless Functions (Cloud-native)</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Cloud vendors provide ML platforms: <strong>Amazon SageMaker</strong>, <strong>Google Cloud AI Platform</strong>, <strong>Azure ML Studio</strong>, IBM Watson ML. Serverless options: AWS Lambda, Google App Engine, Azure Functions.</p>
+        <p>Code + dependencies packaged into .zip files with single entry point function. Managed by cloud provider.</p>
+        <div class="callout callout-warn">
+          <div class="callout-title">⚠️ Serverless Constraint</div>
+          Pay attention to <strong>artifact size limits</strong> on serverless deployments. AWS Lambda has a 250MB deployment package limit (unzipped), which can be exceeded by large ML libraries like TensorFlow.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">🔄 Continuous Deployment — CI/CD/CT</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Acronym</th><th>Stands For</th><th>In ML Context</th></tr>
+      <tr><td><code>CI</code></td><td>Continuous Integration</td><td>Automated tests for data quality and model code</td></tr>
+      <tr><td><code>CD</code></td><td>Continuous Delivery/Deployment</td><td>Automated pipeline from code commit to production</td></tr>
+      <tr><td><code>CT</code></td><td>Continuous Training</td><td>ML-specific — automated model retraining on new data</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">⚠️ Deployment Challenges</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Challenge</th><th>Description</th><th>Example</th></tr>
+      <tr><td>Abstraction boundary erosion</td><td>Clean separation between components breaks down</td><td>Model directly reading DB it shouldn't access</td></tr>
+      <tr><td>Correction cascades</td><td>Fixing one model breaks another downstream</td><td>Input feature normalization model affects prediction model</td></tr>
+      <tr><td>Pipeline jungles</td><td>Tangled, unmaintainable data pipelines</td><td>Hundreds of preprocessing scripts with unclear dependencies</td></tr>
+      <tr><td>Integration (reuse)</td><td>Multiple models sharing embeddings maintained separately</td><td>Pinterest: 3 models with same embeddings tripling maintenance effort</td></tr>
+    </table>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-title">🔬 Pinterest Case Study — Model Integration Challenge</div>
+    Three models at Pinterest used similar embeddings but were maintained completely separately to allow individual iteration. This created engineering challenges — every effort on embeddings had to be multiplied by three. Solution: simplify deployment pipelines and improve performance on individual tasks through shared architecture.
+  </div>
+</div>
+
+<!-- PAGE: MONITORING -->
+<div class="page" id="page-monitoring">
+  <h2 class="page-title">Monitoring & Drift Detection</h2>
+  <p class="page-subtitle">Keeping the model alive after deployment</p>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 Why Monitoring is Critical</div>
+    <strong>"The biggest failures come after deployment."</strong> Teams celebrate a great eval score and stop watching; drift then degrades the model in silence. Monitoring + automated retraining isn't optional — it's the lifecycle. (bansal-ai.in, 2026)
+  </div>
+
+  <h3 class="section-title">🔍 Types of Drift</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Drift Type</th><th>Definition</th><th>Example</th><th>Detection Method</th></tr>
+      <tr><td><strong>Data Drift</strong></td><td>Significant changes to the input data distribution compared to training data</td><td>Customer demographics shift over time</td><td>Statistical tests (KS test, PSI)</td></tr>
+      <tr><td><strong>Concept Drift</strong></td><td>Properties of the target variable change — the relationship between inputs and outputs shifts</td><td>Consumer behavior changes after COVID; fraudsters change tactics</td><td>Monitor prediction accuracy over time</td></tr>
+      <tr><td><strong>Feature Drift</strong></td><td>Individual feature distributions change</td><td>A sensor starts returning slightly different range values</td><td>Feature-level monitoring dashboards</td></tr>
+    </table>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-title">📘 Model Decay / Model Staleness</div>
+    When a deployed model remains constant but real-world data changes, it becomes stale. This phenomenon is called <strong>'model decay'</strong> and should be carefully monitored. It's why offline learning (static models) requires scheduled retraining.
+  </div>
+
+  <h3 class="section-title">🔔 Monitoring Pipeline</h3>
+  <div class="flow-diagram">
+    <div class="flow-step">Capture production data</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Compare to training baseline</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Apply detection rules</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">Alert → Alarm Manager</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight2">Trigger Retraining</div>
+  </div>
+
+  <h3 class="section-title">📋 What to Monitor</h3>
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Issues Detected in Monitoring Phase</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <ul style="padding-left:20px;font-size:14px;line-height:2.2">
+          <li><strong>Data Quality</strong> — Schema changes, null increases, value range violations</li>
+          <li><strong>Model Quality</strong> — Accuracy, precision, recall degradation</li>
+          <li><strong>Bias Drift</strong> — Model becomes biased over time for certain demographic groups</li>
+          <li><strong>Feature Attribution Drift</strong> — Feature importance changes (SHAP values)</li>
+          <li><strong>Prediction Bias</strong> — Systematic over- or under-prediction</li>
+          <li><strong>Outlier Detection</strong> — Deploy outlier detector in production</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 Model Explainability in Monitoring</div>
+    Monitoring system uses <strong>explainability</strong> (e.g., SHAP — SHapley Additive exPlanations) to evaluate whether the model predictions can be trusted, not just whether they're accurate. A model might be accurate on average but rely on spurious correlations that break under distribution shift.
+  </div>
+
+  <h3 class="section-title">🔄 Model Update Pipeline</h3>
+  <p>If the alarm manager identifies violations, it launches the <strong>model update pipeline for a re-train</strong>. Re-training at intervals minimizes the risk of data and concept drift. A scheduler can initiate re-training at business-defined intervals. Data preparation, CI/CD/CT, and feature pipelines are active during this process.</p>
+
+  <div class="callout callout-exam">
+    <div class="callout-title">⭐ Exam Tip — Monitoring Scope</div>
+    The monitoring system captures data, compares to training set, defines rules to detect issues, and sends alerts. This process repeats on a defined schedule, when initiated by an event, or by human intervention. The four issues detected: <strong>data quality, model quality, bias drift, feature attribution drift</strong>.
+  </div>
+</div>
+
+<!-- PAGE: SERIALIZATION -->
+<div class="page" id="page-serialization">
+  <h2 class="page-title">Model Serialization Formats</h2>
+  <p class="page-subtitle">Exporting trained models for deployment and interoperability</p>
+
+  <div class="callout callout-def">
+    <div class="callout-title">📘 Why Serialization Matters</div>
+    To achieve a distributable format, the ML model must be present and executable as an <strong>independent asset</strong>. For example, we might want to use a Scikit-learn model in a Spark job — this means ML models must work outside the model-training environment.
+  </div>
+
+  <h3 class="section-title">🌐 Language-Agnostic Formats</h3>
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>ONNX — Open Neural Network eXchange ⭐ Most Important</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>ML framework independent file format. Created to allow any ML tool to share a single model format. Supported by Microsoft, Facebook, Amazon, and many others.</p>
+        <p>Once serialized in ONNX format → consumed by onnx-enabled runtime libraries (inference engines) → make predictions.</p>
+        <div class="callout callout-exam">
+          <div class="callout-title">⭐ Exam Tip</div>
+          ONNX is the modern standard for model interoperability. If a question asks about cross-framework model sharing, ONNX is the answer.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>PMML — Predictive Model Markup Language</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>XML-based format with extension <code>.pmml</code>. Standardized by the Data Mining Group (DMG). Describes model and pipeline in XML. Limitation: does not support all ML algorithms; limited in open-source tools due to licensing issues.</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>PFA — Portable Format for Analytics</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Designed as a replacement for PMML. JSON-formatted string that describes an executable "scoring engine." Each engine has well-defined input, output, and functions. Requires a PFA-enabled environment to run.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title">🔧 Vendor-Specific Formats</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Framework</th><th>Format</th><th>Extension</th><th>Notes</th></tr>
+      <tr><td>Scikit-Learn</td><td>Pickled Python objects</td><td><code>.pkl</code></td><td>Simple, but Python-only; security risk with untrusted pickles</td></tr>
+      <tr><td>H2O</td><td>POJO / MOJO</td><td>.java / .zip</td><td>POJO = Plain Old Java Object; MOJO = Model Object Optimized</td></tr>
+      <tr><td>SparkML</td><td>MLeap Bundle</td><td>.zip</td><td>Supports Spark, Scikit-learn, TensorFlow; JAR-based runtime</td></tr>
+      <tr><td>TensorFlow</td><td>Protocol Buffer</td><td><code>.pb</code></td><td>Google's binary serialization; machine readable</td></tr>
+      <tr><td>PyTorch</td><td>Torch Script</td><td><code>.pt</code></td><td>Served from C++ application possible</td></tr>
+      <tr><td>Keras</td><td>HDF5</td><td><code>.h5</code></td><td>Hierarchical Data Format; multidimensional arrays of data</td></tr>
+      <tr><td>Apple (iOS)</td><td>Core ML</td><td><code>.mlmodel</code></td><td>Native Objective-C and Swift support; convert via coremltools</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">📊 Data Serialization Formats (from lecture)</h3>
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 From the Classroom (B. Sunil, 30-05-2026)</div>
+    The lecture also covered data (not just model) serialization formats:
+    <ul style="margin-top:8px;padding-left:20px;font-size:14px;line-height:2">
+      <li><strong>JSON:</strong> key-value, human readable, universally used. E.g., <code>{"name":"Alice","age":30}</code></li>
+      <li><strong>JSON-B (JSONB):</strong> PostgreSQL's binary version of JSON — machine readable, stored in binary, faster reads, slower writes</li>
+      <li><strong>Protobuf:</strong> Google's binary serialization format (.proto schema) — machine readable</li>
+      <li><strong>Avro:</strong> Apache product — schema travels WITH the data; files are self-describing</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PAGE: WORKFLOWS -->
+<div class="page" id="page-workflows">
+  <h2 class="page-title">ML Workflow Patterns</h2>
+  <p class="page-subtitle">Offline vs. Online learning, Batch vs. Real-time prediction, AutoML</p>
+
+  <h3 class="section-title">🎓 Training Workflows</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Type</th><th>Also Known As</th><th>Description</th><th>Use Case</th></tr>
+      <tr><td><strong>Offline Learning</strong></td><td>Batch / Static learning</td><td>Model trained on already-collected data. After deployment, remains constant until re-trained. Becomes stale over time (model decay).</td><td>Most common; stable domains (image classification, credit scoring)</td></tr>
+      <tr><td><strong>Online Learning</strong></td><td>Dynamic / Incremental learning</td><td>Model regularly re-trained as new data arrives (data streams). The system learns about new data on the fly.</td><td>Time-series data, sensor data, stock trading, recommendation systems</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">🔮 Prediction Workflows</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Type</th><th>Description</th><th>Use Case</th></tr>
+      <tr><td><strong>Batch Predictions</strong></td><td>Predictions on a set of historical input data. Not time-dependent.</td><td>Monthly risk scoring, recommendation pre-computation</td></tr>
+      <tr><td><strong>Real-time (On-demand) Predictions</strong></td><td>Predictions generated in real-time using data available at request time.</td><td>Fraud detection at transaction, ad click prediction, chatbots</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">📐 Architecture Patterns</h3>
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Forecast Pattern (Academic / Kaggle)</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Widely spread in academic research and data science education (Kaggle, DataCamp). Take an available dataset, train a model, run on historical data, make predictions.</p>
+        <div class="callout callout-warn">
+          <div class="callout-title">⚠️ Not for Production</div>
+          The Forecast pattern is the easiest way to create an ML system but is <strong>not common in industry for production systems</strong> (e.g., mobile applications). It doesn't have a feedback loop or monitoring.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Web-Service Pattern (Most Common in Industry)</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>The <strong>most commonly described deployment architecture</strong> for ML models. Web service takes input data and outputs a prediction. Model trained offline but serves real-live prediction data. Model stays constant until re-trained and re-deployed.</p>
+        <div class="callout callout-exam">
+          <div class="callout-title">⭐ Exam Tip</div>
+          Web-service is offline training + real-time prediction. The model doesn't update at runtime — only during scheduled retraining cycles.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Online Learning / Real-time Streaming Analytics</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>The <strong>most dynamic</strong> way to embed ML in a production system. The system learns about new data on the fly — ML model is incrementally re-trained with new data. This continually re-trained model is instantly available as a web service.</p>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Naming Note</div>
+          "Online learning" is a confusing name because core training is usually NOT performed on the live system. Better to call it <strong>incremental learning</strong>. Works well with lambda architecture in big data systems.
+        </div>
+        <div class="callout callout-warn">
+          <div class="callout-title">⚠️ Critical Drawback</div>
+          If bad data enters the system, the ML model AND whole system performance will increasingly decline. This is why monitoring and data validation are especially critical for streaming architectures.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>AutoML Pattern</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>A sophisticated version of online learning. Promises training ML models with minimal effort and without ML expertise. User provides data; AutoML system automatically selects an ML algorithm and configures it.</p>
+        <div class="callout callout-research">
+          <div class="callout-title">🔬 AutoML in Practice (2024–2025)</div>
+          Major AutoML platforms: Google AutoML, AWS SageMaker Autopilot, Azure AutoML, H2O.ai Driverless AI. Trade-off: AutoML reduces expertise requirements but produces "black box" models that can be harder to debug and explain. Emerging: LLM-driven AutoML using generative AI code tools.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: SERVING PATTERNS -->
+<div class="page" id="page-serving">
+  <h2 class="page-title">Model Serving Patterns</h2>
+  <p class="page-subtitle">How to package and expose ML models to the world</p>
+
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Model-as-a-Service (MaaS)</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Common pattern for wrapping an ML model as an <strong>independent service</strong>. Wrap the model and interpreter within a dedicated web service. Applications request predictions via REST API or gRPC service.</p>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Classroom Example</div>
+          "Do you use Gemini or Copilot?" — These are Model-as-a-Service. You send a request via API, the model processes it in the cloud, and returns a response. You don't know (or need to know) how the model runs.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Model-as-a-Dependency</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>The most <strong>straightforward</strong> way to package an ML model. A packaged ML model is considered as a dependency within the software application — like an SDK or library.</p>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Classroom Example</div>
+          Think of it like <code>import tensorflow</code> or <code>using ML.Model</code> — the model is bundled with your code and shipped as part of the application. Used in mobile apps (Core ML on iOS).
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Precompute Serving</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Tightly related to the Forecast workflow. Use an already trained model to <strong>precompute predictions</strong> for incoming batch of data. Resulting predictions are persisted in the database. For any input request → query the database to get the prediction result (not the model).</p>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Use Case</div>
+          Product recommendations on e-commerce: compute personalized recommendations for all users every night and store in a DB. At request time, just fetch from DB — extremely fast, no model serving latency.
+        </div>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Model-on-Demand (Message Broker Architecture)</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Similar to Model-as-Dependency but available at runtime via a <strong>message-broker architecture</strong>.</p>
+        <h4 class="sub-title">Components:</h4>
+        <ul style="padding-left:20px;font-size:14px;line-height:2">
+          <li><strong>Broker Component:</strong> Contains event channels (message queues). A process writes prediction-requests to input queue.</li>
+          <li><strong>Event Processor Component:</strong> Contains model serving runtime + ML model. Reads requests from queue, sends to model, writes predictions to output queue.</li>
+        </ul>
+        <p>Queued prediction results are pushed to the service that initiated the prediction request.</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>Federated Learning (Hybrid Serving) ⭐ Advanced Topic</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Also known as <strong>hybrid serving</strong>. As many models as users exist, in addition to one held on a server. Starts with a unique model on the server (trained once with real-world data, sets initial model for each user).</p>
+        <h4 class="sub-title">How It Works:</h4>
+        <ol style="padding-left:20px;font-size:14px;line-height:2">
+          <li>Server sends current model to all devices</li>
+          <li>Each device trains on its OWN local data (never shared)</li>
+          <li>Devices send only model <strong>weights/updates</strong> back to server (not raw data)</li>
+          <li>Server aggregates updates → creates new global model</li>
+          <li>New model sent back to all devices as new initial model</li>
+        </ol>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 Classroom Example (B. Sunil, 30-05-2026)</div>
+          The spell checker on your Google keyboard. When you type "good" → suggests "good morning." The model trained on your local typing patterns without your private text ever leaving your device.
+        </div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Benefits</th><th>Constraints</th></tr>
+            <tr><td>Personal data never leaves device</td><td>Mobile devices are less powerful</td></tr>
+            <tr><td>Train accurate models without storing personal data in cloud</td><td>Training data distributed across millions of devices not always available</td></tr>
+            <tr><td>Privacy-preserving by design</td><td>Requires TensorFlow Federated (TFF) — lightweight TensorFlow</td></tr>
+          </table>
+        </div>
+        <div class="callout callout-exam">
+          <div class="callout-title">⭐ Exam Tip — Federated vs. Reinforcement Learning</div>
+          <strong>Federated Learning:</strong> Multiple devices train models locally; share only model weights with central server. Privacy-preserving, distributed.<br><br>
+          <strong>Reinforcement Learning:</strong> Agent learns by receiving immediate feedback from environment (reward/penalty signals). About learning through trial and error.<br><br>
+          These are completely different concepts — a common exam trap.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: MLOPS -->
+<div class="page" id="page-mlops">
+  <h2 class="page-title">DataOps → MLOps Relationship</h2>
+  <p class="page-subtitle">Integrating DataOps, ModelOps, and DevOps into a unified lifecycle</p>
+
+  <div class="flow-diagram">
+    <div class="flow-step highlight">DataOps</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step" style="background:var(--teal-bg);border-color:var(--teal);color:var(--teal)">ModelOps</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight2">DevOps</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">DataOps ⟲</div>
+  </div>
+
+  <div class="callout callout-def">
+    <div class="callout-title">📘 The Three Ops in ML</div>
+    <ul style="padding-left:20px;font-size:14px;line-height:2.2">
+      <li><strong>DataOps:</strong> Focuses on data quality, governance, and pipelines — gathering, cleansing, and prepping data</li>
+      <li><strong>ModelOps:</strong> Focuses on model training, registry, and versioning — turning data into trained models</li>
+      <li><strong>DevOps:</strong> Focuses on deployment infrastructure — deploying models into real-world environments via Inference API</li>
+    </ul>
+  </div>
+
+  <h3 class="section-title">🔄 The MLOps Cycle</h3>
+  <div class="expand-group">
+    <div class="expand-card open">
+      <div class="expand-header" onclick="toggleCard(this)"><span>DataOps → ModelOps: From Training Set to Trained Model</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>The process starts with DataOps — data is gathered, cleansed, and prepared, resulting in a comprehensive training set. This training set forms the <strong>crucial bridge to ModelOps</strong>. The prepared data is then employed for training and fine-tuning models.</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>ModelOps → DevOps: Using the Trained Model in Production API</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>The refined model (product of DataOps + ModelOps collaboration) transitions into DevOps. The model is deployed into a real-world environment via an <strong>Inference API</strong>, translating ML capabilities into practical applications.</p>
+      </div>
+    </div>
+    <div class="expand-card">
+      <div class="expand-header" onclick="toggleCard(this)"><span>DevOps → DataOps: Feedback and Retraining for Quality</span><span class="expand-arrow">▼</span></div>
+      <div class="expand-body">
+        <p>Track model performance, identifying and addressing drift, bias, and accuracy issues. Detected anomalies prompt a <strong>loop back to DataOps</strong> for training set adjustments → model retraining via ModelOps → redeployment into Inference API via DevOps.</p>
+        <div class="callout callout-insight">
+          <div class="callout-title">💡 This is Why It's a Loop</div>
+          Every production anomaly detected by DevOps monitoring flows back to DataOps. This feedback loop is what makes ML systems self-improving over time — if the loop is properly implemented and automated.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-research">
+    <div class="callout-title">🔬 MLOps Maturity Levels (Industry Standard, 2024–2025)</div>
+    Google defines 3 MLOps levels: Level 0 (manual, no automation — common in academia), Level 1 (ML pipeline automation — automated training), Level 2 (CI/CD pipeline automation — automated model deployment). Most companies operate at Level 0 or 1. True Level 2 MLOps with full automation is rare and complex. Tools: MLflow, Kubeflow, Vertex AI, SageMaker Pipelines, Azure ML.
+  </div>
+</div>
+
+<!-- PAGE: FAILURES CASE STUDY -->
+<div class="page" id="page-failures">
+  <h2 class="page-title">Deployment Failure Case Studies</h2>
+  <p class="page-subtitle">Real challenges in deploying ML models to production</p>
+
+  <div class="callout callout-insight">
+    <div class="callout-title">💡 The Hard Reality</div>
+    There are significant differences between what works in academic settings and what is required by real-world systems. Certain bottlenecks and invalidated assumptions should always be expected. Primary focus: <em>"How difficult is it to use?"</em>
+  </div>
+
+  <h3 class="section-title">📊 Phase: Data Management</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Challenge</th><th>Description</th><th>Real Example</th></tr>
+      <tr><td>Data Collection</td><td>Discovering what & where data exists. Finding sources and understanding structure.</td><td><strong>Twitter:</strong> Follows "single responsibility principle" — every service responsible for single operation. At large scale, impossible to track what entity data is stored by which service and in which form.</td></tr>
+      <tr><td>Data Preprocessing</td><td>Joining data from different schemas, conventions, storage methods into a single ML-suitable dataset.</td><td><strong>Firebird:</strong> Data joining was a massive challenge — had to join 12 datasets, each with different schemas and storage approaches.</td></tr>
+      <tr><td>Data Augmentation</td><td>Real-world data often unlabeled. Labeling challenge due to limited expert access, absence of high-variance data, high volume.</td><td>Manual labeling at scale requires hundreds of annotators; crowdsourcing introduces noise.</td></tr>
+      <tr><td>Data Analysis</td><td>Too few tools enabling efficient execution of data mining and profiling tasks at scale.</td><td>Custom tooling often required; off-the-shelf tools don't fit specific ML problem needs.</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">🤖 Phase: Model Learning</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Challenge</th><th>Description</th><th>Real Example</th></tr>
+      <tr><td>Model Selection</td><td>Complexity, many development cycles, high hardware requirements</td><td><strong>AirBnB:</strong> Team started with complex deep learning model. Faced: high complexity, many dev cycles, high hardware requirements. Solution: start simpler.</td></tr>
+      <tr><td>Model Training Cost</td><td>NLP models using billions of parameters; high CO₂ emissions</td><td>Overall cost of training NLP models is only growing. GPT-3 training cost ~$4.6M in compute.</td></tr>
+      <tr><td>Hyperparameter Optimization</td><td>HPO size grows exponentially; very expensive for deep learning</td><td>For mobile devices: need customized hardware-aware optimization to co-optimize accuracy AND hardware efficiency.</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">✅ Phase: Model Verification</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Challenge</th><th>Description</th><th>Real Example</th></tr>
+      <tr><td>Requirement Encoding</td><td>Defining right KPIs — not just model performance but business value</td><td><strong>Booking.com:</strong> Realized required business value was NOT achieved after deploying 150 models. Challenge: understanding both engineering AND business angles.</td></tr>
+      <tr><td>Test-based Verification</td><td>Full-scale real-world testing often impossible for safety/security/scale reasons</td><td>Solution: simulated testing with assumptions — but simulations definitely differ from real-world scenarios.</td></tr>
+      <tr><td>Formal Verification</td><td>Increased regulatory control; model risk frameworks required for business decision-making</td><td>Banking/healthcare ML models require extensive test suites to understand model behavior.</td></tr>
+    </table>
+  </div>
+
+  <h3 class="section-title">🚀 Phase: Model Deployment</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Challenge</th><th>Description</th><th>Real Example</th></tr>
+      <tr><td>Integration</td><td>Reuse of models; maintaining separate but similar models creates engineering overhead</td><td><strong>Pinterest:</strong> Three models used similar embeddings but maintained separately → every embedding change had to be multiplied by three.</td></tr>
+      <tr><td>Monitoring</td><td>All monitoring tools require considerable investigation and implementation. Out-of-the-box tooling doesn't fit specific needs.</td><td>The final ML solutions are so sensitive to problem specifics that custom monitoring tools are almost always required.</td></tr>
+      <tr><td>Updating / Concept Drift</td><td>Models must be updated as the world changes</td><td>Fraud detection models become obsolete as fraudsters adapt. Recommendation models decay as user tastes evolve.</td></tr>
+    </table>
+  </div>
+
+  <div class="callout callout-exam">
+    <div class="callout-title">⭐ Exam Tip — Four Deployment Failure Types</div>
+    Know these four technical failure patterns: <strong>Abstraction boundary erosion</strong> (clean separations break), <strong>Correction cascades</strong> (fixing one model breaks another), <strong>Pipeline jungles</strong> (tangled unmaintainable pipelines), <strong>Concept drift</strong> (world changes, model doesn't). The Pinterest, Booking.com, Twitter, Firebird, and AirBnB examples are all exam-testable.
+  </div>
+</div>
+
+</div><!-- end content-wrap -->
+</div><!-- end study-mode -->
+
+<!-- ======================== QUIZ MODE ======================== -->
+<div id="quiz-mode" style="display:none">
+<div id="quiz-wrap">
+  <div class="quiz-header">
+    <h2>❓ Quiz — ML Lifecycle & Workflow</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:4px">25 questions covering all concepts</p>
+    <div class="quiz-progress-dots" id="quiz-dots"></div>
+  </div>
+  <div id="quiz-card">
+    <div class="quiz-card">
+      <div class="quiz-q-num" id="q-num">Question 1 of 25</div>
+      <div class="quiz-q-text" id="q-text"></div>
+      <div class="quiz-options" id="q-opts"></div>
+      <div class="quiz-feedback" id="q-feedback"></div>
+      <div class="quiz-nav">
+        <button class="btn btn-primary" id="q-next" onclick="nextQuestion()" disabled>Next →</button>
+        <span id="q-score-live" style="color:var(--text-muted);font-size:13px"></span>
+      </div>
+    </div>
+  </div>
+  <div id="score-screen" style="display:none" class="score-screen">
+    <div class="score-circle">
+      <div class="score-pct" id="final-pct">0%</div>
+      <div class="score-label">Score</div>
+    </div>
+    <h3 id="score-msg" style="margin-bottom:10px"></h3>
+    <p id="score-detail" style="color:var(--text-muted);font-size:14px;margin-bottom:24px"></p>
+    <button class="btn btn-primary" onclick="restartQuiz()">🔄 Try Again</button>
+    <button class="btn btn-outline" onclick="switchMode('study')" style="margin-left:10px">📖 Back to Study</button>
+  </div>
+</div>
+</div>
+
+<!-- ======================== FLASHCARD MODE ======================== -->
+<div id="flash-mode" style="display:none">
+<div id="flash-wrap">
+  <h2 style="font-size:22px;font-weight:800;margin-bottom:6px">🃏 Flashcards</h2>
+  <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">30 cards — click to flip, then rate yourself</p>
+  <div class="flash-stats">
+    <div class="flash-stat easy">Easy: <span id="fc-easy">0</span></div>
+    <div class="flash-stat good">Good: <span id="fc-good">0</span></div>
+    <div class="flash-stat hard">Hard: <span id="fc-hard">0</span></div>
+  </div>
+  <div class="flashcard-scene" onclick="flipCard()">
+    <div class="flashcard" id="flashcard">
+      <div class="flash-face flash-front">
+        <div class="flash-face-label">Question</div>
+        <div class="flash-face-text" id="fc-front"></div>
+        <div class="flash-hint">Click to reveal answer</div>
+      </div>
+      <div class="flash-face flash-back">
+        <div class="flash-face-label">Answer</div>
+        <div class="flash-face-text" id="fc-back"></div>
+      </div>
+    </div>
+  </div>
+  <div class="flash-counter" id="fc-counter">Card 1 of 30</div>
+  <div class="flash-rating" id="fc-rating" style="display:none">
+    <button class="flash-btn flash-hard" onclick="rateCard('hard')">😓 Hard</button>
+    <button class="flash-btn flash-good" onclick="rateCard('good')">🤔 Good</button>
+    <button class="flash-btn flash-easy" onclick="rateCard('easy')">😄 Easy</button>
+  </div>
+  <div class="flash-nav">
+    <button class="btn btn-outline" onclick="prevCard()">← Prev</button>
+    <button class="btn btn-outline" onclick="shuffleCards()">🔀 Shuffle</button>
+    <button class="btn btn-outline" onclick="nextCard()">Next →</button>
+  </div>
+</div>
+</div>
+
+<!-- ======================== GLOSSARY ======================== -->
+<div id="glossary-mode" style="display:none">
+<div id="glossary-wrap">
+  <h2 style="font-size:22px;font-weight:800;margin-bottom:6px">📖 Glossary</h2>
+  <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">All abbreviations and key terms</p>
+  <input class="glossary-search" type="text" placeholder="🔍 Search terms..." oninput="filterGlossary(this.value)" id="g-search">
+  <div class="table-wrap">
+    <table id="g-table">
+      <tr><th>Term / Abbrev.</th><th>Full Form</th><th>Definition</th></tr>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ======================== CHECKLIST ======================== -->
+<div id="checklist-mode" style="display:none">
+<div id="checklist-wrap">
+  <div class="checklist-header">
+    <div>
+      <h2 style="font-size:22px;font-weight:800;margin-bottom:4px">✅ Revision Checklist</h2>
+      <p style="color:var(--text-muted);font-size:13px">Track all examinable concepts</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="completion-badge" id="check-count">0 / 0</div>
+      <button class="btn btn-outline" onclick="resetChecklist()">Reset</button>
+    </div>
+  </div>
+  <div id="checklist-items"></div>
+</div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ===================== DATA =====================
+const QUIZ_DATA = [
+  {q:"What are the three levels of ML software?",opts:["Data, Model, Code","Input, Processing, Output","Training, Validation, Testing","Features, Labels, Predictions"],ans:0,exp:"Every ML-based software manages three main assets: Data (data engineering), Model (ML model engineering), and Code (code engineering/deployment). A change to one ripples through the others."},
+  {q:"The ML lifecycle is best described as:",opts:["Linear and sequential","Cyclic and iterative with feedback loops","A one-time waterfall process","Only involving model training"],ans:1,exp:"The phases of the ML lifecycle are not necessarily sequential and can have feedback loops to interrupt the cycle across lifecycle phases. It's a loop, not a line."},
+  {q:"What percentage of time is most time on an ML project spent?",opts:["Model training","Constructing datasets, cleaning, and transforming data","Deployment and monitoring","Algorithm selection"],ans:1,exp:"Most of the time on an ML project is spent on constructing data sets, cleaning, and transforming data. Data preparation is the most expensive phase with respect to resources and time."},
+  {q:"What is the 'Data Snooping Bias'?",opts:["Using too much data for training","Selecting an ML model by using the test set, leading to overly optimistic model selection","Looking at data during cleaning","Using synthetic data"],ans:1,exp:"Data snooping occurs when you select a particular ML model by using the test set. This leads to ML model selection that is too optimistic and will not perform well in production. The test set must be set aside at ingestion time and never looked at."},
+  {q:"What is the typical train/validate/test split ratio?",opts:["60/20/20","80/10/10","50/25/25","70/20/10"],ans:1,exp:"The typical ratio is 80% training, 10% validation, 10% test. Some projects use 70/15/15. The key rule is the test set must never be used during model development."},
+  {q:"Federated Learning is also known as:",opts:["Reinforcement Learning","Online Learning","Hybrid Serving","Batch Serving"],ans:2,exp:"Federated Learning is also known as Hybrid Serving. It's a pattern where as many models as users exist, plus one central server model. Devices train locally and only share model weights, not raw personal data."},
+  {q:"In Federated Learning, what do devices send back to the central server?",opts:["Raw training data","Predictions only","Model weights or updates (not personal data)","Feature vectors"],ans:2,exp:"Each device trains the model locally on its own data. The devices send ONLY model weights or updates back to the central server — never raw personal data. This is the core privacy-preserving property of Federated Learning."},
+  {q:"What does 'model decay' (model staleness) refer to?",opts:["The model file getting corrupted","A deployed model becoming stale as real-world data drifts from training data","The training process slowing down","Model accuracy improving too fast"],ans:1,exp:"Model decay refers to an offline (static) model that remains constant after deployment. As the real world changes and data drifts from training data, the model's predictions become increasingly stale and inaccurate."},
+  {q:"What is the difference between Data Drift and Concept Drift?",opts:["They are the same thing","Data drift = input distribution changes; Concept drift = input-to-target relationship changes","Data drift = model accuracy drops; Concept drift = data quality degrades","Data drift = feature selection changes; Concept drift = feature values change"],ans:1,exp:"Data drift: significant changes to the input data distribution compared to training data. Concept drift: properties of the target variable change — the relationship between inputs and outputs shifts. Both erode model performance, but through different mechanisms."},
+  {q:"Which model serialization format is ML framework independent and supported by Microsoft, Facebook, and Amazon?",opts:["PMML","Pickle (.pkl)","ONNX","Protobuf (.pb)"],ans:2,exp:"ONNX (Open Neural Network eXchange) is the ML framework independent file format created to allow any ML tool to share a single model format. It is supported by many major tech companies including Microsoft, Facebook, and Amazon."},
+  {q:"What extension does Scikit-Learn use to save models?",opts:[".onnx",".pkl",".pb",".h5"],ans:1,exp:"Scikit-Learn saves models as pickled Python objects with a .pkl file extension. Note: pickled files can be a security risk if loaded from untrusted sources."},
+  {q:"What is the most commonly described ML deployment architecture in industry?",opts:["Forecast Pattern","Web-Service (Microservice) Pattern","Batch Processing Pattern","Federated Pattern"],ans:1,exp:"The web-service (microservice) pattern is the most commonly described deployment architecture for ML models. It wraps the model as an API that takes input data and outputs predictions in real-time, while the model was trained offline."},
+  {q:"The Forecast Pattern (offline batch training → batch prediction) is NOT commonly used because:",opts:["It's too expensive","It doesn't have a feedback loop or monitoring; not suitable for production systems","It requires too much data","It can't be deployed to the cloud"],ans:1,exp:"The Forecast pattern is widely used in academic research and data science education (Kaggle) but is NOT common in industry production systems. It doesn't have a monitoring feedback loop and serves historical data, not real-time."},
+  {q:"What are the two aspects of deploying an ML system to production?",opts:["Training and inference","Data collection and model evaluation","Deploying pipeline for automated retraining AND providing API for prediction","Docker containerization and Kubernetes orchestration"],ans:2,exp:"Deploying an ML system to production has two aspects: (1) deploying the pipeline for automated retraining (and ML model deployment), and (2) providing the API for prediction on unseen data. Both are required for a complete production ML system."},
+  {q:"Which company at AirBnB started with a complex deep learning model and faced challenges?",opts:["AirBnB's team started and found it worked perfectly","AirBnB faced complexity, many development cycles, and high hardware requirements","AirBnB's model was too simple","AirBnB couldn't collect enough data"],ans:1,exp:"AirBnB's team started with a complex deep learning model and faced: complexity, many development cycles, and high hardware requirements. This illustrates the real-world challenge of model selection — start simpler and iterate."},
+  {q:"At Booking.com, what was the key challenge after deploying 150 models?",opts:["The models were too slow","Required business value was not achieved; challenge was defining right KPIs beyond model performance","The models required too much compute","Data was insufficient"],ans:1,exp:"Booking.com realized that the required business value was not achieved after deploying 150 models. The challenge was defining right KPIs and not just model performance metrics — understanding both engineering AND business angles is critical."},
+  {q:"What does PMML stand for?",opts:["Portable Machine Model Language","Predictive Model Markup Language","Python Model Management Library","Production ML Model Language"],ans:1,exp:"PMML stands for Predictive Model Markup Language. It is an XML-based format with .pmml extension, standardized by the Data Mining Group (DMG). Limitation: doesn't support all ML algorithms and has licensing issues in open-source tools."},
+  {q:"In model training, what is 'Data Parallelism'?",opts:["The model is split across multiple GPUs","The training dataset is split into mini-batches distributed across nodes; each node trains on a fraction of total data","Multiple different datasets are used in parallel","The model is trained on different data types simultaneously"],ans:1,exp:"Data parallelism is the process of splitting the training set into mini-batches evenly distributed across nodes. Thus, each node only trains the model on a fraction of the total dataset. Used when the model fits in one GPU but data is too large."},
+  {q:"What is the role of the 'Alarm Manager' in the ML architecture?",opts:["Manages team meeting schedules","Receives monitoring alerts and triggers the model update retraining pipeline","Controls database access","Manages cloud computing resources"],ans:1,exp:"The Alarm Manager receives alerts from the model monitoring system, then publishes notifications to services that can deliver alerts to target applications. The model update re-training pipeline is one such target application — it triggers automatic retraining when violations are detected."},
+  {q:"What is PCA used for in feature engineering?",opts:["Creating new features from existing ones","Principal Component Analysis — dimensionality reduction while maintaining original data characteristics","Partitioning data into train/test splits","Predicting categorical labels"],ans:1,exp:"PCA (Principal Component Analysis) is a feature extraction technique for dimensionality reduction. It reduces the amount of data to be processed using dimensionality reduction while accurately maintaining original data characteristics. Also: ICA (Independent Component Analysis) and LDA (Linear Discriminant Analysis) serve similar purposes."},
+  {q:"What is the difference between normalization and standardization?",opts:["They are the same technique","Normalization scales to [0,1]; Standardization transforms to mean=0, std=1 (better for outliers)","Normalization is for numerical data; standardization is for categorical data","Standardization scales to [0,1]; normalization transforms to mean=0"],ans:1,exp:"Normalization scales values to the [0,1] range. Standardization transforms to mean=0, standard deviation=1 — better for handling outliers. Use normalization for neural networks and distance-based algorithms; use standardization when outliers are present."},
+  {q:"What is 'Online Learning' better called to avoid confusion?",opts:["Real-time Learning","Incremental Learning","Cloud Learning","Continuous Learning"],ans:1,exp:"Online Learning is a confusing name because the core model training is usually NOT performed on the live system. It's better called 'Incremental Learning' — the system learns incrementally as new data arrives, with the model being continuously updated."},
+  {q:"What is a key drawback of Online Learning (streaming analytics)?",opts:["It's too slow for production","If bad data enters the system, model AND system performance will increasingly decline","It requires too much storage","It can't handle real-time data"],ans:1,exp:"The key drawback of Online Learning is that if bad data is entering the system, the ML model as well as the whole system performance will increasingly decline. This is why data validation and monitoring are especially critical for streaming architectures."},
+  {q:"What does the Lineage Tracker do in ML architecture?",opts:["Tracks which users accessed the model","Enables re-creation of the ML environment at a specific point in time, reflecting versions of resources","Tracks data lineage only","Monitors model prediction accuracy"],ans:1,exp:"The Lineage Tracker enables the re-creation of the ML environment at a specific point in time, reflecting the versions of resources and environments at that time. Critical for reproducibility, debugging, and regulatory compliance."},
+  {q:"Which FOUR issues does the model monitoring phase detect?",opts:["Accuracy, Speed, Memory, Storage","Data quality, Model quality, Bias drift, Feature attribution drift","Data size, Model size, Training time, Inference time","CPU usage, Memory usage, Network latency, Storage I/O"],ans:1,exp:"The monitoring phase detects four types of issues: (1) Data quality — schema changes, null increases, (2) Model quality — accuracy/precision/recall degradation, (3) Bias drift — model becoming biased over time, (4) Feature attribution drift — changes in SHAP values showing which features matter."}
+];
+
+const FLASHCARDS = [
+  {f:"What is the ML Lifecycle?",b:"The cyclic iterative process with instructions and best practices to use across defined phases while developing an ML workload. It adds clarity and structure for making a project successful. Key: it's a LOOP, not a line."},
+  {f:"What are the 3 levels of ML Software?",b:"1. Data (Data Engineering: acquisition & preparation)\n2. Model (ML Model Engineering: training & serving)\n3. Code (Code Engineering: integrating model into final product)\nA change to one ripples through the others."},
+  {f:"What is Data Snooping Bias?",b:"Selecting a particular ML model BY USING the test set. This leads to overly optimistic model selection that will not perform well in production. Prevention: set aside test data at ingestion and NEVER look at it until final evaluation."},
+  {f:"What is Data Leakage?",b:"When information from the hold-out test dataset leaks into the training data, making model performance look better than it will be in production. Prevention: remove duplicates BEFORE splitting the data."},
+  {f:"What is Data Drift?",b:"Significant changes to the input data distribution compared to the data used for training. Example: customer demographics shift over time. Detection: statistical tests (KS test, PSI). Results in model performance degradation."},
+  {f:"What is Concept Drift?",b:"When the properties of the target variables change — the input-to-target relationship shifts. Example: fraudsters change their behavior, making old fraud patterns obsolete. Detection: monitor prediction accuracy over time."},
+  {f:"What is Model Decay?",b:"An offline (static) model that remains constant after deployment becomes stale as real-world data drifts from training data. Should be carefully monitored. Solution: scheduled retraining at business-defined intervals."},
+  {f:"What is ONNX?",b:"Open Neural Network eXchange — ML framework independent file format. Created to allow any ML tool to share a single model format. Supported by Microsoft, Facebook, Amazon. Model serialized in ONNX → consumed by onnx-enabled runtime inference engines."},
+  {f:"Scikit-Learn model format?",b:".pkl (pickled Python objects)\nH2O: POJO (.java) or MOJO (.zip)\nTensorFlow: .pb (Protocol Buffer)\nPyTorch: .pt (Torch Script)\nKeras: .h5 (HDF5 — Hierarchical Data Format)\nApple iOS: .mlmodel (Core ML)"},
+  {f:"What is Federated Learning?",b:"Also called Hybrid Serving. A model serving pattern where: (1) Central server sends model to all devices, (2) Each device trains locally on its own data, (3) Devices send ONLY model weights/updates back (not raw data), (4) Server aggregates updates → new global model. Key benefit: personal data never leaves the device."},
+  {f:"Federated Learning vs Reinforcement Learning?",b:"Federated Learning: multiple devices train locally, share only model weights with central server. Privacy-preserving, distributed training.\n\nReinforcement Learning: agent learns by receiving immediate reward/penalty feedback from environment. Completely different concept — a common exam trap!"},
+  {f:"What is Data Parallelism?",b:"Training dataset split into mini-batches evenly distributed across nodes. Each node trains the model on a fraction of total data. Used when: model fits in one GPU but dataset is too large.\n\nVs Model Parallelism: model itself split across multiple GPUs — used for extremely large models (GPT-scale)."},
+  {f:"What are the 4 issues detected in monitoring?",b:"1. Data quality (schema changes, null increases, value range violations)\n2. Model quality (accuracy/precision/recall degradation)\n3. Bias drift (model becomes biased over time for certain groups)\n4. Feature attribution drift (SHAP values change — different features becoming important)"},
+  {f:"What does the Alarm Manager do?",b:"Receives alerts from the model monitoring system. Publishes notifications to services that can deliver alerts to target applications. The model update re-training pipeline is one such target application. It launches the model update pipeline for a re-train when violations are identified."},
+  {f:"What is the Precompute Serving Pattern?",b:"Use an already trained model to precompute predictions for incoming batch of data. Resulting predictions persisted in database. For any input request → query the database (not the model) to get the prediction result. Related to Forecast workflow. Use case: product recommendations pre-computed nightly."},
+  {f:"What is the Web-Service Serving Pattern?",b:"Most commonly described deployment architecture. Wrap ML model as a web service (microservice) accessible via REST API or gRPC. Model trained OFFLINE on historical data but uses real-live data to make predictions. Model stays constant until retrained and redeployed."},
+  {f:"What is AutoML?",b:"Sophisticated version of online learning. Promises training ML models with minimal effort and without ML expertise. User provides data; AutoML system automatically selects an ML algorithm and configures it. Examples: Google AutoML, AWS SageMaker Autopilot, Azure AutoML, H2O Driverless AI."},
+  {f:"What is PMML?",b:"Predictive Model Markup Language. XML-based model serving format with .pmml extension. Standardized by the Data Mining Group (DMG). Limitation: doesn't support all ML algorithms; limited in open-source tools due to licensing issues."},
+  {f:"What is Feature Engineering?",b:"Process of selecting and transforming variables when creating a predictive model. Includes:\n1. Feature Creation (one-hot encoding, binning)\n2. Feature Transformation/Imputation (handle missing values)\n3. Feature Extraction (PCA, ICA, LDA — dimensionality reduction)\n4. Feature Selection (correlation matrix, feature importance scores)"},
+  {f:"Normalization vs Standardization?",b:"Normalization: scales to [0,1] range. Use for neural networks, KNN, SVM.\n\nStandardization: mean=0, std=1. Better for handling outliers. Use for algorithms assuming Gaussian distribution (Linear Regression, Logistic Regression, PCA).\n\nBoth are 'Scale' steps in data preprocessing."},
+  {f:"What are the 3 Ops in MLOps?",b:"DataOps: data quality, governance, pipelines (collecting, cleaning, prepping data)\nModelOps: model training, registry, versioning (DataOps output → trained model)\nDevOps: deployment infrastructure, Inference API (ModelOps output → production)\n\nTogether = MLOps. DevOps monitoring feeds back to DataOps = the loop."},
+  {f:"What is the Model Registry?",b:"A repository for storing ML model artifacts including trained models and related metadata (data, code, model). It enables tracking the lineage of ML models — acts as a version control system for models. Tools: MLflow Model Registry, AWS SageMaker Model Registry."},
+  {f:"What are Hyperparameters? Give examples.",b:"Settings that control the behavior of ML algorithms — NOT learned from data (set before training begins). Examples: learning rate, number of epochs, hidden layers, hidden units, activation functions.\n\nNote: Data transformation choices ARE ALSO hyperparameters. Random search is preferred over grid search for HPO."},
+  {f:"What is the difference between Online and Offline Feature Stores?",b:"Online Feature Store: low-latency retrieval for REAL-TIME inference. Serves predictions at runtime.\n\nOffline Feature Store: maintains history of feature values, designed for TRAINING and batch scoring. Reduces duplication across teams — don't rerun feature engineering code for every project."},
+  {f:"What are the 4 data pipeline steps?",b:"Step 1: Data Ingestion (collect from sources, backup, GDPR, metadata catalog, set aside test data)\nStep 2: Exploration & Validation (profiling, error detection, EDA with Jupyter)\nStep 3: Data Wrangling/Cleaning (handle outliers, missing values, restructure)\nStep 4: Data Splitting (80/10/10 train/val/test)"},
+  {f:"What is Pipeline Jungles?",b:"A common ML deployment failure pattern where data pipelines become tangled and unmaintainable — hundreds of preprocessing scripts with unclear dependencies. One change can have unpredictable downstream effects. Prevention: treat pipelines as first-class software with version control and documentation."},
+  {f:"What are Correction Cascades?",b:"A deployment failure pattern where fixing one model breaks another downstream model. Example: if a normalization model's output range changes, all downstream models trained on its output break. Prevention: define clear interface contracts between pipeline stages."},
+  {f:"What format does Keras use to save models?",b:".h5 (HDF5 — Hierarchical Data Format). Contains multidimensional arrays of data. HDF5 = Hierarchical Data Format version 5. TensorFlow uses .pb (Protocol Buffer), PyTorch uses .pt (Torch Script)."},
+  {f:"What is the Lineage Tracker?",b:"Enables re-creation of the ML environment at a specific point in time, reflecting the versions of resources and environments at that time. Critical for: debugging model degradation, regulatory compliance (financial/healthcare), reproducibility in research, audit trails for model decisions."},
+  {f:"What is Model-on-Demand Serving?",b:"Uses a message-broker architecture. Two components: (1) Broker — contains message queues where prediction requests are written, (2) Event Processor — contains model + serving runtime, reads requests from queue, generates predictions, writes to output queue. Prediction results pushed back to requesting service."}
+];
+
+const GLOSSARY_DATA = [
+  {t:"ML", f:"Machine Learning", d:"Algorithms that learn from data through iterative cycles"},
+  {t:"MLOps", f:"Machine Learning Operations", d:"Practice of applying DevOps principles to ML systems; combines DataOps, ModelOps, and DevOps"},
+  {t:"DataOps", f:"Data Operations", d:"Methodology for improving data quality, governance, and pipelines in ML workflows"},
+  {t:"ModelOps", f:"Model Operations", d:"Methodology for model training, registry, and versioning"},
+  {t:"CI/CD/CT", f:"Continuous Integration / Continuous Delivery / Continuous Training", d:"CT is ML-specific — automated model retraining on new data"},
+  {t:"ONNX", f:"Open Neural Network eXchange", d:"ML framework-independent model serialization format supported by Microsoft, Facebook, Amazon"},
+  {t:"PMML", f:"Predictive Model Markup Language", d:"XML-based model format standardized by Data Mining Group (DMG); .pmml extension"},
+  {t:"PFA", f:"Portable Format for Analytics", d:"JSON-based model format designed as PMML replacement; describes executable scoring engine"},
+  {t:"HPO", f:"Hyperparameter Optimization", d:"Process of choosing optimal hyperparameters; grows exponentially with each new parameter; random search preferred over grid search"},
+  {t:"EDA", f:"Exploratory Data Analysis", d:"Process of understanding data distributions, correlations, and quality issues before modeling"},
+  {t:"ETL", f:"Extract, Transform, Load", d:"Pipeline technology that automates and orchestrates data movement and transformations"},
+  {t:"ELT", f:"Extract, Load, Transform", d:"Modern cloud pattern — load raw data first, then transform inside the warehouse using SQL"},
+  {t:"PCA", f:"Principal Component Analysis", d:"Dimensionality reduction technique — reduces features while maintaining data variance"},
+  {t:"ICA", f:"Independent Component Analysis", d:"Dimensionality reduction for separating independent signal sources"},
+  {t:"LDA", f:"Linear Discriminant Analysis", d:"Supervised dimensionality reduction to maximize class separability"},
+  {t:"RMSE", f:"Root Mean Squared Error", d:"Regression metric; penalizes large errors more heavily than small ones"},
+  {t:"GDPR", f:"General Data Protection Regulation", d:"EU regulation requiring anonymization of sensitive personal data; relevant at data ingestion"},
+  {t:"REST", f:"Representational State Transfer", d:"API architecture standard used for Model-as-a-Service endpoints"},
+  {t:"gRPC", f:"Google Remote Procedure Call", d:"High-performance RPC framework used as alternative to REST for model serving"},
+  {t:"MaaS", f:"Model as a Service", d:"Serving pattern where ML model is wrapped as an independent web service; e.g., Gemini, Copilot"},
+  {t:"TFF", f:"TensorFlow Federated", d:"Lightweight form of TensorFlow created specifically for Federated Learning on mobile devices"},
+  {t:"SHAP", f:"SHapley Additive exPlanations", d:"Model explainability technique assigning feature importance scores to model predictions"},
+  {t:"HDF5", f:"Hierarchical Data Format version 5", d:"File format used by Keras (.h5); stores multidimensional arrays"},
+  {t:"POJO", f:"Plain Old Java Object", d:"H2O model export format; full form of POJO in ML context"},
+  {t:"MOJO", f:"Model Object Optimized", d:"H2O's optimized model export format; more efficient than POJO"},
+  {t:"CI", f:"Continuous Integration", d:"Automated testing of data quality and model code on every commit"},
+  {t:"K8s", f:"Kubernetes", d:"Container orchestration system; de-facto standard for orchestrating Docker-based ML model deployments"},
+  {t:"S3", f:"Amazon Simple Storage Service", d:"AWS object store; foundational data lake for ML pipelines; requires explicit output location for Athena queries"},
+  {t:"HPO", f:"Hyperparameter Optimization", d:"Finding optimal hyperparameter configuration; size grows exponentially with each new parameter"},
+  {t:"MOJO", f:"Model Object Optimized", d:"H2O framework's optimized model export format for deployment"},
+  {t:"POC", f:"Proof of Concept", d:"Small, focused experiment to validate assumptions before committing to a full ML approach"}
+];
+
+const CHECKLIST_DATA = [
+  {text:"Explain the ML lifecycle as cyclic and iterative (not sequential)", topic:"Introduction"},
+  {text:"Name the 3 levels of ML software and their methodologies", topic:"Three Levels"},
+  {text:"Describe all 4 steps of the Data Engineering Pipeline", topic:"Data Pipeline"},
+  {text:"Explain 'Garbage In, Garbage Out' with examples", topic:"Data Pipeline"},
+  {text:"Define Data Snooping Bias and how to prevent it", topic:"Data Ingestion"},
+  {text:"List the key activities in Data Ingestion step", topic:"Data Ingestion"},
+  {text:"Explain the difference between Exploration and Validation", topic:"Exploration"},
+  {text:"Name the 5 techniques in Data Wrangling", topic:"Data Wrangling"},
+  {text:"State the typical 80/10/10 split ratio and why it matters", topic:"Data Splitting"},
+  {text:"Define Data Leakage and how to prevent it", topic:"Data Splitting"},
+  {text:"Describe all 6 ML lifecycle phases", topic:"ML Lifecycle"},
+  {text:"List the 8 components of ML lifecycle architecture", topic:"ML Lifecycle"},
+  {text:"Distinguish online vs offline feature stores", topic:"ML Architecture"},
+  {text:"Explain the role of Model Registry", topic:"ML Architecture"},
+  {text:"Explain the role of Alarm Manager and Scheduler", topic:"ML Architecture"},
+  {text:"List all 4 Feature Engineering sub-processes", topic:"Feature Engineering"},
+  {text:"Distinguish Normalization vs Standardization (with formulas)", topic:"Preprocessing"},
+  {text:"Explain Data Augmentation and its benefits", topic:"Preprocessing"},
+  {text:"Describe Data Parallelism vs Model Parallelism", topic:"Model Training"},
+  {text:"List common hyperparameters and why random search > grid search", topic:"Model Training"},
+  {text:"Explain the Model Acceptance Test", topic:"Model Evaluation"},
+  {text:"Compare ONNX, PMML, and PFA (language-agnostic formats)", topic:"Serialization"},
+  {text:"Match each ML framework to its serialization format (.pkl, .pb, .pt, .h5, .mlmodel)", topic:"Serialization"},
+  {text:"Define Data Drift and Concept Drift with examples", topic:"Monitoring"},
+  {text:"List the 4 issue types detected in monitoring phase", topic:"Monitoring"},
+  {text:"Describe the model update pipeline flow", topic:"Monitoring"},
+  {text:"Compare Offline Learning vs Online Learning", topic:"Workflows"},
+  {text:"Compare Batch Prediction vs Real-time Prediction", topic:"Workflows"},
+  {text:"Explain why Online Learning is better called Incremental Learning", topic:"Workflows"},
+  {text:"Describe the drawback of streaming architectures (bad data problem)", topic:"Workflows"},
+  {text:"Explain the 5 model serving patterns", topic:"Serving Patterns"},
+  {text:"Explain Federated Learning step-by-step (7 steps)", topic:"Federated Learning"},
+  {text:"Distinguish Federated Learning from Reinforcement Learning", topic:"Federated Learning"},
+  {text:"Explain Docker container deployment and why it's the de-facto standard", topic:"Deployment"},
+  {text:"Explain serverless ML deployment and its size constraints", topic:"Deployment"},
+  {text:"Define DataOps → ModelOps → DevOps cycle", topic:"MLOps"},
+  {text:"Explain the DevOps → DataOps feedback loop", topic:"MLOps"},
+  {text:"Describe the Twitter data discovery challenge", topic:"Case Studies"},
+  {text:"Describe the Booking.com 150-models KPI challenge", topic:"Case Studies"},
+  {text:"Explain the 4 deployment failure patterns (abstraction erosion, correction cascades, pipeline jungles, concept drift)", topic:"Case Studies"}
+];
+
+// ===================== NAVIGATION =====================
+let visitedPages = new Set();
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  visitedPages.add(id);
+  const allPages = document.querySelectorAll('.nav-item[data-page]');
+  allPages.forEach(n => { if (visitedPages.has(n.dataset.page)) n.classList.add('visited'); });
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = document.querySelectorAll('.nav-item[data-page]').length;
+  const pct = Math.round((visitedPages.size / total) * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = pct + '%';
+}
+
+function switchMode(mode) {
+  ['study','quiz','flash','glossary','checklist'].forEach(m => {
+    const el = document.getElementById(m + '-mode');
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  const modeEl = document.getElementById(mode + '-mode');
+  if (modeEl) modeEl.style.display = 'block';
+  if (mode === 'study') {
+    document.querySelectorAll('.mode-tab')[0].classList.add('active');
+    document.getElementById('study-nav').style.display = 'block';
+  } else if (mode === 'quiz') {
+    document.querySelectorAll('.mode-tab')[1].classList.add('active');
+    document.getElementById('study-nav').style.display = 'none';
+    initQuiz();
+  } else if (mode === 'flash') {
+    document.querySelectorAll('.mode-tab')[2].classList.add('active');
+    document.getElementById('study-nav').style.display = 'none';
+    initFlash();
+  } else if (mode === 'glossary') {
+    document.getElementById('study-nav').style.display = 'none';
+    buildGlossary();
+  } else if (mode === 'checklist') {
+    document.getElementById('study-nav').style.display = 'none';
+    buildChecklist();
+  }
+}
+
+// ===================== EXPAND CARDS =====================
+function toggleCard(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+
+// ===================== TABS =====================
+function switchTab(btn, panelId, group) {
+  const wrap = btn.closest('.tabs-wrap');
+  wrap.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  wrap.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(group + '-' + panelId).classList.add('active');
+}
+
+// ===================== QUIZ =====================
+let qIndex = 0, qScore = 0, qAnswered = false, qResults = [];
+
+function initQuiz() {
+  qIndex = 0; qScore = 0; qAnswered = false; qResults = [];
+  document.getElementById('score-screen').style.display = 'none';
+  document.getElementById('quiz-card').style.display = 'block';
+  buildDots();
+  showQuestion();
+}
+
+function buildDots() {
+  const wrap = document.getElementById('quiz-dots');
+  wrap.innerHTML = '';
+  QUIZ_DATA.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'qp-dot' + (i === 0 ? ' current' : '');
+    d.id = 'dot-' + i;
+    wrap.appendChild(d);
+  });
+}
+
+function showQuestion() {
+  const q = QUIZ_DATA[qIndex];
+  document.getElementById('q-num').textContent = `Question ${qIndex+1} of ${QUIZ_DATA.length}`;
+  document.getElementById('q-text').textContent = q.q;
+  const opts = document.getElementById('q-opts');
+  opts.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const div = document.createElement('div');
+    div.className = 'quiz-opt';
+    div.textContent = String.fromCharCode(65+i) + '. ' + o;
+    div.onclick = () => answerQuestion(i);
+    opts.appendChild(div);
+  });
+  document.getElementById('q-feedback').className = 'quiz-feedback';
+  document.getElementById('q-feedback').innerHTML = '';
+  document.getElementById('q-next').disabled = true;
+  qAnswered = false;
+  document.getElementById('q-score-live').textContent = `Score: ${qScore}/${qIndex}`;
+}
+
+function answerQuestion(chosen) {
+  if (qAnswered) return;
+  qAnswered = true;
+  const q = QUIZ_DATA[qIndex];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach((o, i) => {
+    o.classList.add('answered');
+    if (i === q.ans) o.classList.add('correct');
+    else if (i === chosen && chosen !== q.ans) o.classList.add('wrong');
+  });
+  const correct = chosen === q.ans;
+  if (correct) qScore++;
+  qResults[qIndex] = correct;
+  const fb = document.getElementById('q-feedback');
+  fb.innerHTML = `<strong>${correct ? '✅ Correct!' : '❌ Incorrect.'}</strong> ${q.exp}`;
+  fb.className = 'quiz-feedback show';
+  document.getElementById('q-next').disabled = false;
+  document.getElementById('q-score-live').textContent = `Score: ${qScore}/${qIndex+1}`;
+  const dot = document.getElementById('dot-' + qIndex);
+  if (dot) dot.className = 'qp-dot ' + (correct ? 'correct' : 'wrong');
+}
+
+function nextQuestion() {
+  qIndex++;
+  if (qIndex >= QUIZ_DATA.length) { showScore(); return; }
+  const dot = document.getElementById('dot-' + qIndex);
+  if (dot) dot.classList.add('current');
+  showQuestion();
+}
+
+function showScore() {
+  document.getElementById('quiz-card').style.display = 'none';
+  document.getElementById('score-screen').style.display = 'block';
+  const pct = Math.round((qScore / QUIZ_DATA.length) * 100);
+  document.getElementById('final-pct').textContent = pct + '%';
+  let msg, detail;
+  if (pct >= 90) { msg = '🏆 Excellent! Ready for the exam!'; detail = `You scored ${qScore}/${QUIZ_DATA.length}. Outstanding performance!`; }
+  else if (pct >= 70) { msg = '👍 Good work! Review a few more topics.'; detail = `You scored ${qScore}/${QUIZ_DATA.length}. Focus on your incorrect answers.`; }
+  else if (pct >= 50) { msg = '📖 Keep studying! You\'re getting there.'; detail = `You scored ${qScore}/${QUIZ_DATA.length}. Review the lecture notes for missed topics.`; }
+  else { msg = '💪 More practice needed!'; detail = `You scored ${qScore}/${QUIZ_DATA.length}. Go through each topic section carefully.`; }
+  document.getElementById('score-msg').textContent = msg;
+  document.getElementById('score-detail').textContent = detail;
+}
+
+function restartQuiz() { initQuiz(); }
+
+// ===================== FLASHCARDS =====================
+let fcIndex = 0, fcFlipped = false, fcRatings = {easy:0, good:0, hard:0};
+let fcCards = [...FLASHCARDS];
+
+function initFlash() {
+  fcIndex = 0; fcFlipped = false;
+  showCard();
+}
+
+function showCard() {
+  fcFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('fc-front').textContent = fcCards[fcIndex].f;
+  document.getElementById('fc-back').textContent = fcCards[fcIndex].b;
+  document.getElementById('fc-counter').textContent = `Card ${fcIndex+1} of ${fcCards.length}`;
+  document.getElementById('fc-rating').style.display = 'none';
+}
+
+function flipCard() {
+  fcFlipped = !fcFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', fcFlipped);
+  if (fcFlipped) document.getElementById('fc-rating').style.display = 'flex';
+}
+
+function rateCard(rating) {
+  fcRatings[rating]++;
+  document.getElementById('fc-' + rating).textContent = fcRatings[rating];
+  nextCard();
+}
+
+function nextCard() {
+  fcIndex = (fcIndex + 1) % fcCards.length;
+  showCard();
+}
+
+function prevCard() {
+  fcIndex = (fcIndex - 1 + fcCards.length) % fcCards.length;
+  showCard();
+}
+
+function shuffleCards() {
+  for (let i = fcCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [fcCards[i], fcCards[j]] = [fcCards[j], fcCards[i]];
+  }
+  fcIndex = 0;
+  showCard();
+}
+
+// ===================== GLOSSARY =====================
+function buildGlossary() {
+  const t = document.getElementById('g-table');
+  t.innerHTML = '<tr><th>Term / Abbrev.</th><th>Full Form</th><th>Definition</th></tr>';
+  GLOSSARY_DATA.forEach(g => {
+    const tr = document.createElement('tr');
+    tr.className = 'g-row';
+    tr.dataset.text = (g.t + ' ' + g.f + ' ' + g.d).toLowerCase();
+    tr.innerHTML = `<td><code>${g.t}</code></td><td>${g.f}</td><td>${g.d}</td>`;
+    t.appendChild(tr);
+  });
+}
+
+function filterGlossary(val) {
+  const v = val.toLowerCase();
+  document.querySelectorAll('.g-row').forEach(r => {
+    r.style.display = r.dataset.text.includes(v) ? '' : 'none';
+  });
+}
+
+// ===================== CHECKLIST =====================
+function buildChecklist() {
+  const wrap = document.getElementById('checklist-items');
+  wrap.innerHTML = '';
+  const saved = JSON.parse(localStorage.getItem('ml_checklist') || '{}');
+  CHECKLIST_DATA.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'checklist-item';
+    const checked = saved[i] || false;
+    div.innerHTML = `
+      <input type="checkbox" id="chk-${i}" ${checked ? 'checked' : ''} onchange="saveChecklist(${i}, this.checked)">
+      <div>
+        <div class="checklist-text ${checked ? 'done' : ''}" id="cht-${i}">${item.text}</div>
+        <div class="checklist-topic">${item.topic}</div>
+      </div>`;
+    wrap.appendChild(div);
+  });
+  updateCheckCount();
+}
+
+function saveChecklist(i, checked) {
+  const saved = JSON.parse(localStorage.getItem('ml_checklist') || '{}');
+  saved[i] = checked;
+  localStorage.setItem('ml_checklist', JSON.stringify(saved));
+  const t = document.getElementById('cht-' + i);
+  if (t) t.className = 'checklist-text ' + (checked ? 'done' : '');
+  updateCheckCount();
+}
+
+function updateCheckCount() {
+  const saved = JSON.parse(localStorage.getItem('ml_checklist') || '{}');
+  const done = Object.values(saved).filter(Boolean).length;
+  const el = document.getElementById('check-count');
+  if (el) el.textContent = `${done} / ${CHECKLIST_DATA.length}`;
+}
+
+function resetChecklist() {
+  if (!confirm('Reset all checklist items?')) return;
+  localStorage.removeItem('ml_checklist');
+  buildChecklist();
+}
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', () => {
+  showPage('intro', document.querySelector('.nav-item[data-page="intro"]'));
+  buildGlossary();
+  buildChecklist();
+  // auto-open first quiz dots
+  buildDots();
+  showQuestion();
+});
+</script>
+</body>
+</html>
