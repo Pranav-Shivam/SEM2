@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS8 - Data Profiling & Validation | DMML Study Tool</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1117;--bg2:#161822;--bg3:#1e2030;--bg4:#252840;--sidebar:#12141f;--text:#e0e0e0;--text2:#a0a4b8;--purple:#a78bfa;--purple2:#7c3aed;--teal:#2dd4bf;--teal2:#0d9488;--amber:#fbbf24;--amber2:#d97706;--coral:#fb7185;--coral2:#e11d48;--sky:#38bdf8;--sky2:#0284c7;--green:#4ade80;--red:#f87171;--orange:#fb923c;--border:#2a2d3e}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;line-height:1.6}
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+/* Sidebar */
+#sidebar{width:280px;min-width:280px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform .3s}
+#sidebar .logo{padding:20px;border-bottom:1px solid var(--border)}
+#sidebar .logo h2{color:var(--purple);font-size:1.1rem}
+#sidebar .logo p{color:var(--text2);font-size:.75rem;margin-top:4px}
+.progress-bar-wrap{padding:12px 20px;border-bottom:1px solid var(--border)}
+.progress-bar-wrap label{font-size:.7rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.progress-track{height:6px;background:var(--bg4);border-radius:3px;margin-top:6px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--purple2),var(--teal));border-radius:3px;transition:width .5s;width:0%}
+.nav-list{flex:1;overflow-y:auto;padding:10px 0}
+.nav-item{display:flex;align-items:center;padding:10px 20px;cursor:pointer;border-left:3px solid transparent;transition:all .2s;font-size:.85rem;color:var(--text2);gap:10px}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--purple);border-left-color:var(--purple)}
+.nav-item.visited::after{content:'✓';margin-left:auto;color:var(--green);font-size:.7rem}
+.nav-item .icon{width:20px;text-align:center;font-size:1rem}
+.mode-tabs{display:flex;border-top:1px solid var(--border);padding:6px}
+.mode-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-size:.75rem;font-weight:600;border-radius:6px;transition:all .2s;color:var(--text2)}
+.mode-tab:hover{background:var(--bg3)}
+.mode-tab.active{background:var(--purple2);color:#fff}
+#menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:1.2rem}
+/* Main */
+#main{margin-left:280px;flex:1;padding:30px 40px;max-width:1000px;min-height:100vh}
+/* Cards & Callouts */
+.callout{padding:16px 20px;border-radius:8px;margin:14px 0;border-left:4px solid}
+.callout-def{background:rgba(167,139,250,.1);border-color:var(--purple)}
+.callout-def .callout-title{color:var(--purple)}
+.callout-insight{background:rgba(45,212,191,.1);border-color:var(--teal)}
+.callout-insight .callout-title{color:var(--teal)}
+.callout-exam{background:rgba(251,191,36,.1);border-color:var(--amber)}
+.callout-exam .callout-title{color:var(--amber)}
+.callout-research{background:rgba(56,189,248,.1);border-color:var(--sky)}
+.callout-research .callout-title{color:var(--sky)}
+.callout-warn{background:rgba(251,146,60,.1);border-color:var(--orange)}
+.callout-warn .callout-title{color:var(--orange)}
+.callout-title{font-weight:700;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.callout p,.callout li{font-size:.9rem;color:var(--text)}
+/* Expand card */
+.expand-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin:12px 0;overflow:hidden}
+.expand-header{padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.9rem;transition:background .2s}
+.expand-header:hover{background:var(--bg4)}
+.expand-header::after{content:'▸';transition:transform .3s;font-size:.8rem}
+.expand-card.open .expand-header::after{transform:rotate(90deg)}
+.expand-body{max-height:0;overflow:hidden;transition:max-height .4s ease;padding:0 18px}
+.expand-card.open .expand-body{max-height:3000px;padding:0 18px 16px}
+/* Tables */
+.cmp-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.85rem}
+.cmp-table th{background:var(--bg4);padding:10px 14px;text-align:left;color:var(--purple);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
+.cmp-table td{padding:10px 14px;border-bottom:1px solid var(--border)}
+.cmp-table tr:hover td{background:var(--bg3)}
+/* Tabs */
+.tab-group{margin:14px 0}
+.tab-headers{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:12px}
+.tab-btn{padding:8px 16px;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+.tab-btn.active{color:var(--purple);border-bottom-color:var(--purple)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+/* Flow diagram */
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:14px 0;padding:14px;background:var(--bg3);border-radius:8px}
+.flow-step{background:var(--bg4);padding:10px 16px;border-radius:6px;font-size:.82rem;font-weight:600;border:1px solid var(--border)}
+.flow-arrow{color:var(--purple);font-weight:700;font-size:1.1rem}
+/* Code */
+.code-block{background:#1a1b2e;padding:16px;border-radius:8px;font-family:'Cascadia Code','Fira Code',monospace;font-size:.82rem;overflow-x:auto;margin:12px 0;border:1px solid var(--border);white-space:pre;line-height:1.5}
+/* Bar chart */
+.bar-chart{display:flex;align-items:flex-end;gap:12px;padding:20px;background:var(--bg3);border-radius:8px;margin:14px 0;min-height:180px}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:6px}
+.bar{width:100%;border-radius:4px 4px 0 0;transition:height .5s;min-height:4px}
+.bar-label{font-size:.7rem;color:var(--text2);text-align:center;writing-mode:horizontal-tb}
+.bar-val{font-size:.72rem;font-weight:700;color:var(--text)}
+/* Section heading */
+.topic-title{font-size:1.6rem;font-weight:700;margin-bottom:6px;background:linear-gradient(90deg,var(--purple),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topic-sub{color:var(--text2);font-size:.9rem;margin-bottom:24px}
+h3{color:var(--purple);font-size:1.1rem;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+h4{color:var(--teal);font-size:.95rem;margin:14px 0 8px}
+p{font-size:.9rem;margin:8px 0;color:var(--text)}
+ul,ol{margin:8px 0 8px 20px;font-size:.9rem}
+li{margin:4px 0}
+/* Page container */
+.page{display:none}
+.page.active{display:block}
+/* QUIZ */
+.quiz-container{max-width:700px}
+.quiz-progress{display:flex;gap:4px;flex-wrap:wrap;margin:16px 0}
+.quiz-dot{width:14px;height:14px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);transition:all .3s}
+.quiz-dot.correct{background:var(--green);border-color:var(--green)}
+.quiz-dot.wrong{background:var(--red);border-color:var(--red)}
+.quiz-dot.current{border-color:var(--purple);box-shadow:0 0 0 2px var(--purple)}
+.quiz-q{font-size:1rem;font-weight:600;margin:20px 0 16px}
+.quiz-opt{display:block;width:100%;padding:12px 16px;margin:8px 0;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.88rem;cursor:pointer;text-align:left;transition:all .2s}
+.quiz-opt:hover:not(.disabled){background:var(--bg4);border-color:var(--purple)}
+.quiz-opt.selected{border-color:var(--purple);background:var(--bg4)}
+.quiz-opt.correct-ans{border-color:var(--green);background:rgba(74,222,128,.12)}
+.quiz-opt.wrong-ans{border-color:var(--red);background:rgba(248,113,113,.12)}
+.quiz-opt.disabled{cursor:default;opacity:.85}
+.quiz-explain{background:var(--bg3);padding:14px 18px;border-radius:8px;margin:12px 0;border-left:3px solid var(--teal);font-size:.88rem;display:none}
+.quiz-explain.show{display:block}
+.quiz-btn{padding:10px 24px;border-radius:8px;font-weight:600;font-size:.88rem;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--purple2);color:#fff}.btn-primary:hover{background:var(--purple)}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--bg4)}
+.quiz-score{text-align:center;padding:40px}
+.quiz-score .score-num{font-size:3rem;font-weight:700;background:linear-gradient(90deg,var(--purple),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+/* FLASHCARD */
+.fc-container{display:flex;flex-direction:column;align-items:center;gap:20px;padding:20px 0}
+.fc-card{width:100%;max-width:560px;min-height:280px;perspective:1000px;cursor:pointer}
+.fc-inner{position:relative;width:100%;min-height:280px;transition:transform .6s;transform-style:preserve-3d}
+.fc-card.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;width:100%;min-height:280px;backface-visibility:hidden;border-radius:12px;padding:30px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.fc-front{background:linear-gradient(135deg,var(--bg3),var(--bg4));border:1px solid var(--border)}
+.fc-back{background:linear-gradient(135deg,#1a1040,#0f2027);border:1px solid var(--purple2);transform:rotateY(180deg)}
+.fc-front p{font-size:1.05rem;font-weight:600}.fc-back p{font-size:.9rem;text-align:left;width:100%}
+.fc-tag{font-size:.7rem;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.fc-rating{display:flex;gap:10px;margin-top:10px}
+.fc-rate-btn{padding:8px 20px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-weight:600;font-size:.82rem;transition:all .2s}
+.fc-rate-btn.hard{border-color:var(--red);color:var(--red)}.fc-rate-btn.hard:hover{background:rgba(248,113,113,.15)}
+.fc-rate-btn.good{border-color:var(--amber);color:var(--amber)}.fc-rate-btn.good:hover{background:rgba(251,191,36,.15)}
+.fc-rate-btn.easy{border-color:var(--green);color:var(--green)}.fc-rate-btn.easy:hover{background:rgba(74,222,128,.15)}
+.fc-counter{font-size:.8rem;color:var(--text2);display:flex;gap:16px}
+.fc-nav{display:flex;gap:10px}
+/* GLOSSARY */
+.glossary-search{width:100%;padding:10px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;margin-bottom:16px}
+.glossary-search:focus{outline:none;border-color:var(--purple)}
+/* CHECKLIST */
+.chk-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.88rem}
+.chk-item input{accent-color:var(--purple);width:16px;height:16px;cursor:pointer}
+.chk-item.checked label{color:var(--text2);text-decoration:line-through}
+.chk-stats{padding:14px 0;font-size:.9rem;color:var(--text2)}
+.chk-reset{padding:8px 16px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--coral);cursor:pointer;font-size:.82rem;font-weight:600}
+.chk-reset:hover{background:rgba(251,113,133,.1)}
+/* Mobile */
+@media(max-width:768px){
+#sidebar{transform:translateX(-100%)}
+#sidebar.open{transform:translateX(0)}
+#menu-toggle{display:block}
+#main{margin-left:0;padding:20px 16px;padding-top:50px}
+.flow{flex-direction:column}
+.bar-chart{overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<button id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+<nav id="sidebar">
+  <div class="logo">
+    <h2>CS8 — Data Profiling &amp; Validation</h2>
+    <p>DMML • Dr D Venkata Subramanian</p>
+  </div>
+  <div class="progress-bar-wrap">
+    <label>Study Progress</label>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+  <div class="nav-list" id="navList"></div>
+  <div class="mode-tabs">
+    <div class="mode-tab active" data-mode="study" onclick="switchMode('study')">📖 Study</div>
+    <div class="mode-tab" data-mode="quiz" onclick="switchMode('quiz')">❓ Quiz</div>
+    <div class="mode-tab" data-mode="flash" onclick="switchMode('flash')">🃏 Flash</div>
+  </div>
+</nav>
+
+<div id="main">
+
+<!-- ===================== STUDY MODE ===================== -->
+<div id="study-mode">
+
+<!-- PAGE 0: Data Quality Dimensions -->
+<div class="page" id="page-0">
+<div class="topic-title">Data Quality Dimensions</div>
+<div class="topic-sub">Core measurement attributes of data — assess, interpret, improve individually</div>
+
+<div class="callout callout-def">
+<div class="callout-title">📘 Definition</div>
+<p>Data quality dimensions are measurement attributes of data that can be individually assessed, interpreted, and improved. Their aggregated scores represent overall data quality in a specific context and indicate fitness of data for use.</p>
+</div>
+
+<div class="callout callout-insight">
+<div class="callout-title">💡 Healthcare Domain Examples</div>
+<ul>
+<li><b>Accuracy:</b> Wrong blood group recorded (A+ instead of O−) → risk of wrong transfusion</li>
+<li><b>Completeness:</b> Allergy info missing → risk of adverse drug reaction</li>
+<li><b>Consistency:</b> Patient weight 68 kg in EMR but 75 kg in lab → incorrect dosage</li>
+<li><b>Timeliness:</b> ICU vitals updated 2 hours late → delayed intervention</li>
+<li><b>Validity:</b> Heart rate 400 bpm or invalid ICD code → violates business rules</li>
+<li><b>Uniqueness:</b> Duplicate profiles ("Rajesh Kumar" vs "R. Kumar") → fragmented history</li>
+<li><b>Integrity:</b> Prescription references nonexistent doctor ID → compliance issue</li>
+<li><b>Traceability:</b> Medication changed with no audit trail → unclear accountability</li>
+<li><b>Reliability:</b> Multiple systems show different SpO₂ readings → untrustworthy data</li>
+<li><b>Accessibility:</b> MRI scans not retrievable during ER emergency → delayed diagnosis</li>
+</ul>
+</div>
+
+<h3>The 10 Core Dimensions</h3>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">1. Accuracy</div><div class="expand-body">
+<p>Measures how well data represents real-world entities and whether it can be validated against trusted sources. Critical for predictive analytics and customer segmentation. Inaccuracies cause flawed forecasts, misaligned marketing, compliance risks.</p>
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>Accuracy ≠ Validity. Accuracy = matches real world. Validity = conforms to format rules. A date "2025-02-30" is valid format but inaccurate (Feb has no 30th).</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">2. Completeness</div><div class="expand-body">
+<p>Whether all required data values are present. Missing data = unreliable analytics. Signals weaknesses in data collection or system integration. Fix: automated alerts for missing fields, third-party data enrichment, governance policies.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">3. Consistency</div><div class="expand-body">
+<p>Data must be consistent across systems and sources. Example: customer phone number differs between CRM and order management. Inconsistency causes audit failures and misinterpretation of financial results. Fix: centralized governance frameworks and data integration tools.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">4. Timeliness</div><div class="expand-body">
+<p>Data available when needed, reflecting current state. Critical in finance, healthcare, e-commerce. Example: real-time stock prices for trading. Fix: regular data refreshes, real-time feeds, event-driven architectures, streaming analytics, SLAs for data delivery.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">5. Validity</div><div class="expand-body">
+<p>Whether data conforms to predefined rules, formats, and standards. Beyond format compliance: birth date should not be future, product codes should match catalog. Enforce via rules during data entry, automated anomaly detection, industry-aligned standards.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">6. Uniqueness</div><div class="expand-body">
+<p>Each record must be distinct and non-duplicated. Duplicates cause inflated metrics, distorted analytics, wasted resources. Often arises from migrations, manual errors, or lack of integration. Fix: data matching algorithms, strict identity policies, quality dashboards.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">7. Integrity</div><div class="expand-body">
+<p>Data being accurate, consistent, and reliable <b>over time</b>. Integrity can degrade as data is added, modified, deleted. Requires ongoing validation rules + <b>referential integrity checks</b> (changes in one place reflected in all other places).</p>
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>Integrity encompasses accuracy + consistency + reliability over time. Think of it as "long-term data health."</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">8. Lineage / Traceability</div><div class="expand-body">
+<p><b>Lineage</b> = where data came from and how it evolved. <b>Traceability</b> = ability to verify accuracy through audit trail. Regulations require clear documentation (e.g., BCBS 239 for financial services — risk data aggregation and reporting practices).</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">9. Reliability</div><div class="expand-body">
+<p>Accurately reflects reality AND ensures continuous availability/uptime = business confidence. Example: sales performance reporting needs accurate metrics delivered on time.</p>
+<div class="callout callout-warn"><div class="callout-title">⚠️ Common Mistake</div><p>Assuming reliability is purely a technical problem. Non-technical factors — organizational processes, governance, culture — play a major part.</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">10. Accessibility</div><div class="expand-body">
+<p>Data must be easy for authorized users to find, retrieve, understand, and use. Involves: clear organization (catalogs), consistent access methods (APIs), affordability, and often multi-language support.</p>
+</div></div>
+
+<h3>Measuring Quality — Ratio + Threshold Pattern</h3>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: learning.bansal-ai.in (2026)</div>
+<p>Most dimensions reduce to a <b>ratio against a threshold</b>. This turns "data quality" into concrete, automatable tests.</p></div>
+
+<div class="callout callout-insight"><div class="callout-title">💡 Worked Example — Completeness Check</div>
+<p>An email column has <b>9,200 non-null values out of 10,000 rows</b>.</p>
+<p>Completeness = 9,200 / 10,000 = <b>92%</b></p>
+<p>Threshold set at ≥ 98% → <span style="color:var(--red);font-weight:700">FAIL</span> → Pipeline alerts/blocks. Bad data stopped before training.</p>
+</div>
+
+<table class="cmp-table">
+<tr><th>Dimension</th><th>Ratio Formula</th><th>Example Threshold</th></tr>
+<tr><td>Completeness</td><td>non-null / total</td><td>≥ 98%</td></tr>
+<tr><td>Validity</td><td>conforming values / total</td><td>≥ 99%</td></tr>
+<tr><td>Uniqueness</td><td>distinct records / total</td><td>≥ 99.5%</td></tr>
+<tr><td>Accuracy</td><td>correct values / total (vs trusted source)</td><td>≥ 95%</td></tr>
+</table>
+
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>Quality as "ratio + threshold" is the key formula pattern. Any dimension can be automated this way — completeness, validity, uniqueness each become a measurable percentage compared to an acceptance threshold.</p></div>
+
+<h3>Profiling vs Validation</h3>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: learning.bansal-ai.in (2026)</div>
+<p><b>Profiling</b> = explores data to understand it (distributions, nulls, ranges, distinct values) — learns the baseline.<br>
+<b>Validation</b> = checks data against explicit expectations (rules, schema, thresholds) and flags/blocks violations.<br>
+<b>Principle:</b> Profile to set expectations; validate continuously to enforce them. "Examine, then enforce."</p></div>
+
+<div class="callout callout-research">
+<div class="callout-title">🔬 Research Addition — Industry Impact (Gartner/IBM, 2024)</div>
+<p>Organizations lose <b>$12.9 million/year on average</b> due to poor data quality (Gartner). IBM estimated the US economy loses $3.1 trillion/year to bad data. Modern tools: <b>Monte Carlo</b> (data observability), <b>Atlan</b> (active metadata platform), <b>Great Expectations</b> (validation framework).</p>
+</div>
+
+<table class="cmp-table">
+<tr><th>Dimension</th><th>Question It Answers</th><th>Key Risk</th></tr>
+<tr><td>Accuracy</td><td>Does it match reality?</td><td>Wrong decisions</td></tr>
+<tr><td>Completeness</td><td>Is everything present?</td><td>Unreliable analytics</td></tr>
+<tr><td>Consistency</td><td>Same across systems?</td><td>Audit failures</td></tr>
+<tr><td>Timeliness</td><td>Current and available?</td><td>Missed opportunities</td></tr>
+<tr><td>Validity</td><td>Conforms to rules?</td><td>Process failures</td></tr>
+<tr><td>Uniqueness</td><td>No duplicates?</td><td>Inflated metrics</td></tr>
+<tr><td>Integrity</td><td>Healthy over time?</td><td>Decision decay</td></tr>
+<tr><td>Lineage</td><td>Where did it come from?</td><td>Compliance risk</td></tr>
+<tr><td>Reliability</td><td>Trustworthy + available?</td><td>Lost confidence</td></tr>
+<tr><td>Accessibility</td><td>Can users get it?</td><td>Delayed decisions</td></tr>
+</table>
+</div>
+
+<!-- PAGE 1: DQ Dimensions Extension (ML) -->
+<div class="page" id="page-1">
+<div class="topic-title">Data Quality Dimensions — ML Extension</div>
+<div class="topic-sub">Additional dimensions critical for machine learning data readiness</div>
+
+<div class="callout callout-def">
+<div class="callout-title">📘 Definition</div>
+<p>Beyond the 10 core dimensions, ML workloads require data that is informative, has good coverage, reflects real inputs, is unbiased, avoids feedback loops, has consistent labels, and is big enough to generalize.</p>
+</div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Informative → maps to Completeness/Usage</div><div class="expand-body">
+<p>Contains enough information for modeling. Example: predicting if customer buys product — need both product properties AND customer purchase history. With only product properties + location/name, predictions are same for all users from same location.</p>
+<div class="callout callout-warn"><div class="callout-title">⚠️ Warning</div><p>Model may derive gender/ethnicity from name and make biased predictions — technically "working" but ethically problematic.</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Coverage → maps to Completeness/Coverage</div><div class="expand-body">
+<p>Data must cover what you want the model to do. Example: classifying 1000 topics — need sufficient examples per topic. If only 1-2 docs per topic, algorithm may use unique IDs as differentiators → won't generalize.</p>
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>Insufficient coverage per class is a common reason models fail in production but appear to work in testing.</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Real Inputs → maps to Accuracy</div><div class="expand-body">
+<p>Training data must reflect production inputs. Example: car recognition trained only on daytime photos — fails on night pictures in production. Distribution of inputs at training time must match serving time.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Unbiased → maps to Integrity</div><div class="expand-body">
+<p>Bias can exist in both training data and production data. UI can be a source of bias. Example: predicting news popularity using click rate — top-of-page placement inflates clicks regardless of content quality (position bias).</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Not a Feedback Loop → maps to Integrity</div><div class="expand-body">
+<p>Don't use model's own predictions as training labels. Examples:</p>
+<ul>
+<li>Can't train gender-prediction model, then use its predictions to label new training data</li>
+<li>Email importance model highlights messages → users click highlighted ones → using those clicks as "important" signal is circular</li>
+</ul>
+<div class="callout callout-warn"><div class="callout-title">⚠️ Common Mistake</div><p>Feedback loops are subtle and self-reinforcing. Model amplifies its own biases over time.</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Consistent Labels → maps to Consistency</div><div class="expand-body">
+<p>Inconsistent labeling sources: different criteria per labeler, class definitions evolving over time, misinterpreting user motives (user ignored recommendation because they already knew the story, not because they're uninterested).</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Big Enough → maps to Completeness</div><div class="expand-body">
+<p>Must allow generalization. Sometimes data has low predictive power — no amount helps. But often, going from thousands to millions/hundreds of millions dramatically improves accuracy. Can't know how much is needed before starting.</p>
+<div class="callout callout-research"><div class="callout-title">🔬 Research — Andrew Ng's Data-Centric AI (2021–present)</div>
+<p>Improving 1,000 labels often outperforms adding 10,000 noisy examples. Quality over quantity for small/medium datasets.</p>
+</div>
+</div></div>
+
+<table class="cmp-table">
+<tr><th>ML Extension</th><th>Core Dimension</th><th>Key Question</th></tr>
+<tr><td>Informative</td><td>Completeness</td><td>Enough features for the task?</td></tr>
+<tr><td>Coverage</td><td>Completeness</td><td>Enough examples per class?</td></tr>
+<tr><td>Real Inputs</td><td>Accuracy</td><td>Matches production distribution?</td></tr>
+<tr><td>Unbiased</td><td>Integrity</td><td>Free from systematic distortion?</td></tr>
+<tr><td>No Feedback Loop</td><td>Integrity</td><td>Labels independent of model?</td></tr>
+<tr><td>Consistent Labels</td><td>Consistency</td><td>Same criteria across labelers?</td></tr>
+<tr><td>Big Enough</td><td>Completeness</td><td>Sufficient for generalization?</td></tr>
+</table>
+</div>
+
+<!-- PAGE 2: Common Problems with Data -->
+<div class="page" id="page-2">
+<div class="topic-title">Common Problems with Data</div>
+<div class="topic-sub">Cost, Noise, Low Predictive Power, Outliers</div>
+
+<div class="flow">
+<div class="flow-step">Cost</div><span class="flow-arrow">→</span>
+<div class="flow-step">Noise</div><span class="flow-arrow">→</span>
+<div class="flow-step">Low Predictive Power</div><span class="flow-arrow">→</span>
+<div class="flow-step">Outliers</div><span class="flow-arrow">→</span>
+<div class="flow-step">Bias</div><span class="flow-arrow">→</span>
+<div class="flow-step">Leakage</div><span class="flow-arrow">→</span>
+<div class="flow-step">Outdated</div>
+</div>
+
+<h3>Cost</h3>
+<p>Getting unlabeled data can be expensive, but <b>labeling is the most expensive</b> — especially manual labeling for specific problems.</p>
+<div class="callout callout-insight"><div class="callout-title">💡 Clever Solution</div><p>Google's reCAPTCHA: outsources labeling to random users for free. Solves two problems: reduces spam + provides cheap labeled data to Google.</p></div>
+
+<h3>Noise</h3>
+<p>Random process corrupting examples independently: blurry images, lost text formatting, background audio noise, missing poll attributes.</p>
+<div class="tab-group">
+<div class="tab-headers">
+<button class="tab-btn active" onclick="switchTab(this,'noise')">Mitigation</button>
+<button class="tab-btn" onclick="switchTab(this,'noise')">Impact by Scale</button>
+</div>
+<div class="tab-content active" data-group="noise">
+<ul>
+<li>Missing attributes → data imputation techniques</li>
+<li>Blurred images → image deblurring algorithms</li>
+<li>Audio noise → algorithmic suppression</li>
+</ul>
+</div>
+<div class="tab-content" data-group="noise">
+<p><b>Small datasets (thousands):</b> Noise causes overfitting — algorithm models the noise itself.</p>
+<p><b>Big data:</b> Noise typically "averaged out" over multiple examples.</p>
+</div>
+</div>
+
+<h3>Low Predictive Power</h3>
+<p>Example: Predicting if listener likes a song. Data: artist name, title, lyrics, playlist status. Problem: musical preferences depend on arrangement, instruments, sound effects, tone — none extractable from text data.</p>
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>Low predictive power is often not considered until fruitless energy is spent training. Hard to distinguish: is model not expressive enough, or does data lack information?</p></div>
+
+<h3>Outliers</h3>
+<p>Examples dissimilar to majority, measured by distance metrics (e.g., Euclidean). Shallow algorithms especially sensitive: linear/logistic regression, AdaBoost.</p>
+<div class="callout callout-warn"><div class="callout-title">⚠️ Debate</div><p>Deleting outliers is not scientifically sound for small datasets. In big data, outliers typically don't influence model significantly. Exclusion may be justified if holdout performance improves.</p></div>
+</div>
+
+<!-- PAGE 3: Bias & Fairness -->
+<div class="page" id="page-3">
+<div class="topic-title">Bias &amp; Fairness</div>
+<div class="topic-sub">12 types of bias and identifying them in ML data</div>
+
+<div class="callout callout-def"><div class="callout-title">📘 Definition</div>
+<p>Bias in data is an inconsistency with the phenomenon that data represents. Can occur for multiple non-mutually-exclusive reasons.</p></div>
+
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com — The Scale Analogy</div>
+<p><b>Bias is systematic, not random.</b> Think of a weighing scale that always reads 2 kg heavy. Every measurement is wrong in the same direction — that's bias. Random noise would scatter readings above and below; bias shifts them consistently. In ML: biased data doesn't produce random errors, it produces <em>consistently wrong</em> predictions for specific groups or scenarios.</p></div>
+
+<h3>12 Types of Bias</h3>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">1. Omitted Variable Bias</div><div class="expand-body">
+<p>Featurized data lacks a necessary feature for accurate prediction. Key feature wasn't available, so important information was missing.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">2. Sponsorship / Funding Bias</div><div class="expand-body">
+<p>Data from sponsored agency is biased. Sponsored news agencies suppress bad news about sponsor, exaggerate achievements → suboptimal model.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">3. Prejudice / Stereotype Bias</div><div class="expand-body">
+<p>Often in historical data. Photo archives show men at work/outdoors, women at home. Word2vec: king − man + woman ≈ queen, but programmer − man + woman ≈ homemaker.</p>
+<div class="callout callout-research"><div class="callout-title">🔬 Research — Amazon Hiring Tool (Reuters, 2018)</div>
+<p>Amazon's recruiting tool trained on 10 years of resumes (predominantly male). Penalized "women's" in text, downgraded all-women's colleges. Amazon scrapped the tool.</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">4. Systematic Value Distortion</div><div class="expand-body">
+<p>Constant errors from measurement devices. Training on low-quality camera with yellowish white → fails with high-quality camera that sees true white.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">5. Experimenter Bias</div><div class="expand-body">
+<p>Tendency to search/interpret/favor info that affirms prior beliefs. In ML: each dataset example from survey answers by a particular person.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">6. Labeling Bias</div><div class="expand-body">
+<p>Labels assigned by biased process/person. Some labelers read fully vs. scanning keyphrases. Brain pays attention to specific domains → biased labels. Some skip uninteresting documents → underrepresented classes.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">7. Reporting Bias</div><div class="expand-body">
+<p>Documented frequency doesn't match real-world frequency. People record unusual/memorable events, assume ordinary needs no recording. Book reviews skew extreme — people with mild opinions don't submit.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">8. Automation Bias</div><div class="expand-body">
+<p>Favoring automated results over non-automated, irrespective of error rates. Example: "groundbreaking" defect model had 15% lower precision and recall than human inspectors.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">9. Selection Bias (3 subtypes)</div><div class="expand-body">
+<p><b>Coverage bias:</b> Non-representative selection. Model trained on buyers only, ignoring competing-product buyers.</p>
+<p><b>Non-response / Participation bias:</b> Competing product buyers 80% more likely to refuse survey → underrepresented.</p>
+<p><b>Sampling bias:</b> First 200 email respondents chosen instead of random → more enthusiastic than average.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">10. Group Attribution Bias</div><div class="expand-body">
+<p><b>In-group bias:</b> Preference for your own group. Engineers favor applicants from their own academy.</p>
+<p><b>Out-group homogeneity:</b> Stereotyping non-group members. "All non-CS-academy applicants lack expertise."</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">11. Implicit Bias</div><div class="expand-body">
+<p>Assumptions from personal experience that don't generalize. Head shake = "no" in some cultures but "yes" in others.</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">12. Confirmation Bias</div><div class="expand-body">
+<p>Unconsciously processing data to affirm pre-existing beliefs. ML practitioner who feared toy poodles discarded evidence of docility in small dogs.</p>
+</div></div>
+
+<h3>Identifying Bias — Red Flags</h3>
+<div class="flow">
+<div class="flow-step">Missing Feature Values</div><span class="flow-arrow">→</span>
+<div class="flow-step">Unexpected Feature Values</div><span class="flow-arrow">→</span>
+<div class="flow-step">Data Skew</div>
+</div>
+<p><b>Missing features:</b> 14,000 missing values for income/population makes it hard to correlate income with house prices.</p>
+<p><b>Unexpected values:</b> Uncharacteristic or unusual feature values indicate collection problems.</p>
+<p><b>Skew:</b> Under/over-representation. Training only on NW California housing data → fails statewide.</p>
+
+<h3>Fairness</h3>
+<div class="callout callout-research"><div class="callout-title">🔬 Research — COMPAS Recidivism (ProPublica, 2016)</div>
+<p>COMPAS tool used in US courts: false positive rate for Black defendants nearly 2× that for white defendants (45% vs 24%). Illustrates the <b>impossibility theorem</b> — cannot simultaneously satisfy all fairness metrics.</p></div>
+
+<div class="callout callout-research"><div class="callout-title">🔬 Research — EU AI Act (2024)</div>
+<p>Entered into force Aug 2024. Risk tiers: unacceptable (banned), high-risk (hiring, credit, justice — requires bias audits), limited risk (disclosure), minimal risk. Penalties: up to €35M or 7% global turnover.</p></div>
+
+<div class="callout callout-warn"><div class="callout-title">⚠️ Common Misconception</div>
+<p>"Removing protected attributes (race, gender) eliminates bias." WRONG. Proxy variables (zip code, name patterns) encode protected attributes. This is "fairness through unawareness" — widely considered insufficient.</p></div>
+</div>
+
+<!-- PAGE 4: Data Leakage -->
+<div class="page" id="page-4">
+<div class="topic-title">Data Leakage</div>
+<div class="topic-sub">Target leakage — contamination affecting multiple ML lifecycle stages</div>
+
+<div class="callout callout-def"><div class="callout-title">📘 Definition</div>
+<p>Data leakage (target leakage) = unintentional introduction of information about the target that should not be available. Training on contaminated data → overly optimistic performance expectations.</p></div>
+
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com — The Food Analogies for Leakage</div>
+<p><b>Idli-Chutney Analogy:</b> Imagine tasting idli with chutney during training, then being asked to identify the taste of plain idli alone in production. The chutney (leaked info) made it taste great — but it was never the idli alone. Your model learned the "chutney" (leaked feature), not the actual signal.</p>
+<p><b>Aloo Paratha Analogy:</b> If someone always serves aloo paratha with pickle, and you learn to predict "aloo paratha" by tasting pickle — you'll fail when the pickle isn't there. The pickle is the feature from the future or the target-derived feature that won't exist at inference time.</p></div>
+
+<h3>3 Causes of Leakage</h3>
+
+<div class="flow">
+<div class="flow-step">Target = f(feature)</div><span class="flow-arrow">→</span>
+<div class="flow-step">Feature hides target</div><span class="flow-arrow">→</span>
+<div class="flow-step">Feature from future</div>
+</div>
+
+<h4>1. Target Being a Function of a Feature</h4>
+<p><b>Example 1:</b> Predicting GDP. Dataset has Population and GDP per capita columns. Population × GDP per capita = GDP. Model perfectly predicts by multiplying two columns.</p>
+<p><b>Example 2:</b> Predicting yearly salary when monthly salary is a feature. Monthly salary alone predicts perfectly. In production, monthly salary won't be available.</p>
+
+<h4>2. Feature Hiding the Target</h4>
+<p>Predicting customer gender — "Group" column contains demographic value encoding gender+age info. The target is "hidden" inside a feature.</p>
+<div class="callout callout-insight"><div class="callout-title">💡 Exception</div><p>If Group values are predictions from another less-accurate model, using them to build a stronger model = legitimate model stacking.</p></div>
+
+<h4>3. Feature Coming from the Future</h4>
+<p>Predicting loan repayment — using "Late Payment Reminders" as feature. In production, this value is always 0 (model is used BEFORE credit is given). Model learned to predict "No" when reminders ≥ 1 → useless in production.</p>
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>Feature from future is HARDEST to catch. Requires clear understanding of business context and when the model will be used.</p></div>
+
+<div class="callout callout-research"><div class="callout-title">🔬 Research — Kaggle Leaky Competitions</div>
+<p><b>KDD Cup 2014:</b> Target leakage via an inadvertent feature. Competitors who exploited the leak dominated. <b>COVID-19 X-ray models (2020-21):</b> Models learned hospital-specific markers (text annotations, positioning artifacts) instead of pathology — a textbook confounding metadata leakage (Nature Machine Intelligence, 2021).</p></div>
+
+<h3>Prevention</h3>
+<ul>
+<li>Strict temporal splits (no random splitting for time-series)</li>
+<li>Feature computation audits — no future information used</li>
+<li><b>Adversarial validation:</b> train model to distinguish train from test. If AUC >> 0.5, leakage likely</li>
+</ul>
+
+<div class="callout callout-warn"><div class="callout-title">⚠️ Misconception</div>
+<p>"Cross-validation prevents leakage." CV only prevents train-test contamination. Does NOT catch feature leakage where feature itself encodes target. Preprocessing (scaling, imputation) before CV split also leaks info.</p></div>
+</div>
+
+<!-- PAGE 5: Data Skew & Drift -->
+<div class="page" id="page-5">
+<div class="topic-title">Data Skew &amp; Drift</div>
+<div class="topic-sub">Why models decay in production — schema skew, distribution skew, concept drift</div>
+
+<div class="callout callout-def"><div class="callout-title">📘 Definition</div>
+<p>Model decay/drift = ML models in production experience reduced performance over time, not only from bad data but from constantly evolving datasets and profiles. Speed varies: years in some models, days in others.</p></div>
+
+<h3>Kaggle vs Production</h3>
+<table class="cmp-table">
+<tr><th>Aspect</th><th>Kaggle</th><th>Production</th></tr>
+<tr><td>Dataset</td><td>Static, fixed</td><td>Constantly changing</td></tr>
+<tr><td>Evaluation</td><td>Fixed test set</td><td>Evolving user behavior</td></tr>
+<tr><td>Monitoring</td><td>Leaderboard</td><td>MLOps pipelines</td></tr>
+</table>
+
+<h3>Causes of Performance Decay</h3>
+
+<div class="flow">
+<div class="flow-step">Data Drift</div><span class="flow-arrow">→</span>
+<div class="flow-step">Schema Skew</div><span class="flow-arrow">+</span>
+<div class="flow-step">Distribution Skew</div><span class="flow-arrow">→</span>
+<div class="flow-step">Concept Drift</div><span class="flow-arrow">→</span>
+<div class="flow-step">Training-Serving Skew</div>
+</div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Data Drift — Schema Skew</div><div class="expand-body">
+<p>Training and serving data don't conform to same schema. Caused by changes in upstream process.</p>
+<ul>
+<li><b>Inconsistent features:</b> new feature added to serving data</li>
+<li><b>Inconsistent feature types:</b> integer in training → real number in serving</li>
+<li><b>Inconsistent feature domains:</b> categorical value disappears or numerical range changes</li>
+</ul>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Data Drift — Distribution Skew</div><div class="expand-body">
+<p>Distribution of feature values significantly different between training and serving. Can result from wrong training dataset choice or natural trends (real estate prices change, fashion popularity shifts).</p>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Concept Drift</div><div class="expand-body">
+<p>Interpretation of data has changed. Mapping of input features to labels no longer valid, or novel class/range has appeared. Result of change in the process being modeled or evolution of understanding.</p>
+<div class="callout callout-insight"><div class="callout-title">💡 Example</div><p>User content preferences change over aging or new discoveries → historical training examples start HURTING performance instead of helping.</p></div>
+</div></div>
+
+<div class="expand-card"><div class="expand-header" onclick="toggleExpand(this)">Training-Serving Skew</div><div class="expand-body">
+<p>Discrepancy between model's feature engineering code during training vs deployment. Causes: different data handling in training/serving pipelines, data changes between phases, feedback loops, bugs, computational resource mismatches.</p>
+<p><b>Fix:</b> Reuse same feature engineering code for training and serving. Use feature stores.</p>
+</div></div>
+
+<div class="callout callout-research"><div class="callout-title">🔬 Research — Feature Stores (2024-2025)</div>
+<p><b>Feast</b> (open-source, v0.38+): registry + offline/online stores. <b>Tecton</b> (commercial, by Feast creators): real-time feature computation, used by Plaid, Coinbase. <b>Uber's Michelangelo</b> feature store reduced model debugging time ~50%. <b>Databricks Feature Store</b>: integrated with MLflow.</p></div>
+
+<div class="callout callout-warn"><div class="callout-title">⚠️ Misconception</div>
+<p>"Good offline evaluation = good production performance." Training-serving skew means offline metrics can be misleadingly optimistic. Even small differences in feature computation (timezone handling, null imputation) cause meaningful drops.</p></div>
+</div>
+
+<!-- PAGE 6: Drift Detection Metrics -->
+<div class="page" id="page-6">
+<div class="topic-title">Data Drift Detection Metrics</div>
+<div class="topic-sub">PSI, KL Divergence — measuring and detecting drift</div>
+
+<div class="callout callout-def"><div class="callout-title">📘 Definition</div>
+<p>Measuring data drift for large datasets is hard. System must log all incoming features, predictions, and ground truth. Three approaches: model-based, statistical, algorithm-based.</p></div>
+
+<h3>Detection Approaches</h3>
+<div class="tab-group">
+<div class="tab-headers">
+<button class="tab-btn active" onclick="switchTab(this,'drift')">Statistical</button>
+<button class="tab-btn" onclick="switchTab(this,'drift')">Algorithm-Based</button>
+<button class="tab-btn" onclick="switchTab(this,'drift')">Model-Based</button>
+</div>
+<div class="tab-content active" data-group="drift">
+<p><b>Supervised:</b> Statistical Process Control, Sequential Analysis, Adaptive Windowing</p>
+<p><b>Unsupervised:</b> Clustering/novelty detection, Feature distribution monitoring</p>
+<p><b>Model-dependent:</b> MD3 (Margin Density Drift Detection)</p>
+</div>
+<div class="tab-content" data-group="drift">
+<ul><li>PSI (Population Stability Index)</li><li>KL Divergence (Kullback-Leibler)</li></ul>
+</div>
+<div class="tab-content" data-group="drift">
+<p>Creating dedicated models specifically to detect drift in data distributions.</p>
+</div>
+</div>
+
+<h3>PSI (Population Stability Index)</h3>
+<div class="callout callout-def"><div class="callout-title">📘 Formula</div>
+<div class="code-block">PSI = Σ (Actual% − Expected%) × ln(Actual% / Expected%)</div>
+</div>
+
+<p>Measures how much distribution changes between training dataset and new dataset.</p>
+
+<table class="cmp-table">
+<tr><th>PSI Value</th><th>Interpretation</th><th>Action</th></tr>
+<tr><td style="color:var(--green)">< 0.1</td><td>No significant change</td><td>No action needed</td></tr>
+<tr><td style="color:var(--amber)">0.1 – 0.25</td><td>Moderate shift</td><td>Investigate</td></tr>
+<tr><td style="color:var(--red)">≥ 0.25</td><td>Significant shift</td><td>Action required</td></tr>
+</table>
+
+<h4>Applications</h4>
+<ul>
+<li><b>Credit Scoring:</b> Ensure model still works after economic changes</li>
+<li><b>Risk Assessment:</b> Check if borrower income shifts affect lending models</li>
+<li><b>Customer Segmentation:</b> Verify segments still relevant over time</li>
+<li><b>Fraud Detection:</b> Spot changes in fraudulent behavior patterns</li>
+</ul>
+
+<h4>PSI Worked Example</h4>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com — Retail Monthly Sales</div>
+<p>A retail model uses "monthly_spend" feature. We bin into 5 buckets and compare training vs current month:</p></div>
+<table class="cmp-table">
+<tr><th>Bin</th><th>Training %</th><th>Current %</th><th>(A−E) × ln(A/E)</th></tr>
+<tr><td>₹0–500</td><td>30%</td><td>25%</td><td>(−0.05) × ln(0.25/0.30) = 0.0091</td></tr>
+<tr><td>₹500–1000</td><td>25%</td><td>20%</td><td>(−0.05) × ln(0.20/0.25) = 0.0112</td></tr>
+<tr><td>₹1000–2000</td><td>20%</td><td>22%</td><td>(+0.02) × ln(0.22/0.20) = 0.0019</td></tr>
+<tr><td>₹2000–5000</td><td>15%</td><td>18%</td><td>(+0.03) × ln(0.18/0.15) = 0.0055</td></tr>
+<tr><td>₹5000+</td><td>10%</td><td>15%</td><td>(+0.05) × ln(0.15/0.10) = 0.0203</td></tr>
+<tr style="font-weight:700"><td colspan="3">Total PSI</td><td style="color:var(--amber)">0.048 → &lt; 0.1 = Stable ✓</td></tr>
+</table>
+
+<div class="callout callout-warn"><div class="callout-title">⚠️ PSI Limitation</div><p>PSI can miss multivariate drift — features individually stable but joint distribution shifts. Also sensitive to binning strategy for continuous variables.</p></div>
+
+<h3>KL Divergence (Kullback-Leibler)</h3>
+<div class="callout callout-def"><div class="callout-title">📘 Definition</div>
+<p>Relative entropy — quantifies difference between one probability distribution and a reference distribution. Applied to each feature independently (not a covariant measure).</p></div>
+
+<h4>Applications</h4>
+<ul>
+<li><b>Model evaluation:</b> measuring prediction-to-label distance</li>
+<li><b>Variational Inference:</b> minimizing D_KL in VAEs</li>
+<li><b>Reinforcement Learning:</b> TRPO uses KL constraints</li>
+<li><b>Language Modeling:</b> comparing token predictions to ground truth</li>
+</ul>
+
+<h4>KL Divergence Worked Example</h4>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com</div>
+<p>Consider a categorical feature "payment_method" with 3 values:</p></div>
+<table class="cmp-table">
+<tr><th>Payment Method</th><th>Training P(x)</th><th>Current Q(x)</th><th>P(x) × ln(P/Q)</th></tr>
+<tr><td>Cash</td><td>0.50</td><td>0.30</td><td>0.50 × ln(0.50/0.30) = 0.2554</td></tr>
+<tr><td>Card</td><td>0.30</td><td>0.40</td><td>0.30 × ln(0.30/0.40) = −0.0863</td></tr>
+<tr><td>UPI</td><td>0.20</td><td>0.30</td><td>0.20 × ln(0.20/0.30) = −0.0811</td></tr>
+<tr style="font-weight:700"><td colspan="3">KL(P||Q)</td><td style="color:var(--amber)">0.088 nats</td></tr>
+</table>
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>KL = 0 means identical distributions. Higher = more divergence. Note: if we computed KL(Q||P) instead, we'd get a DIFFERENT value — that's the asymmetry problem. For this reason, Jensen-Shannon Divergence (average of both directions) is often preferred.</p></div>
+
+<div class="callout callout-warn"><div class="callout-title">⚠️ KL Limitation</div><p>KL divergence is undefined when Q(x) = 0 but P(x) > 0 (requires smoothing). It is asymmetric: KL(P||Q) ≠ KL(Q||P). Jensen-Shannon Divergence (symmetric) often preferred in practice.</p></div>
+
+<div class="callout callout-research"><div class="callout-title">🔬 Research — Modern Drift Tools (2024-2025)</div>
+<p><b>Evidently AI</b> (open-source): dashboards for data/prediction drift. Supports PSI, KL, Wasserstein, KS, chi-squared. <b>NannyML:</b> performance estimation without ground truth (CBPE algorithm). <b>WhyLabs:</b> lightweight profiling via WhyLogs. <b>Arize AI:</b> embedding drift for NLP/LLM apps.</p></div>
+
+<div class="bar-chart">
+<div class="bar-col"><div class="bar-val">High</div><div class="bar" style="height:140px;background:var(--purple)"></div><div class="bar-label">Evidently AI<br>Flexibility</div></div>
+<div class="bar-col"><div class="bar-val">High</div><div class="bar" style="height:130px;background:var(--teal)"></div><div class="bar-label">NannyML<br>No-Label</div></div>
+<div class="bar-col"><div class="bar-val">Med</div><div class="bar" style="height:100px;background:var(--amber)"></div><div class="bar-label">WhyLabs<br>Lightweight</div></div>
+<div class="bar-col"><div class="bar-val">High</div><div class="bar" style="height:135px;background:var(--sky)"></div><div class="bar-label">Arize AI<br>LLM Focus</div></div>
+</div>
+</div>
+
+<!-- PAGE 7: Data Profiling -->
+<div class="page" id="page-7">
+<div class="topic-title">ML Data Readiness 1 — Data Profiling</div>
+<div class="topic-sub">Analyzing datasets systematically before ML projects begin</div>
+
+<div class="callout callout-def"><div class="callout-title">📘 Definition</div>
+<p>Data profiling = systematically analyzing datasets to evaluate quality, structure, and content. Identifies anomalies, missing values, patterns. Supports data governance, standardization, and compliance.</p></div>
+
+<div class="callout callout-exam"><div class="callout-title">⚡ When to Profile</div>
+<p>Right at the BEGINNING of a data project. Evaluate viability early. Catching problems early saves significant time. Spot data transformations, identify unexpected behavior, predict ETL issues.</p></div>
+
+<h3>Techniques</h3>
+
+<div class="tab-group">
+<div class="tab-headers">
+<button class="tab-btn active" onclick="switchTab(this,'prof')">Single-Field Profiling</button>
+<button class="tab-btn" onclick="switchTab(this,'prof')">Multi-Field Profiling</button>
+</div>
+<div class="tab-content active" data-group="prof">
+<h4>Summary Statistics</h4><p>Count, max, min, mean values.</p>
+<h4>Data Types</h4><p>Categorical vs continuous, patterns. Simple types: strings, numbers, timestamps. Complex: XML, JSON.</p>
+<h4>Data Values</h4><p>Identify characteristics/patterns: addresses, cities, ID strings. Assess against business rules (e.g., only South American students eligible for specific funding).</p>
+<h4>Distributions</h4><p>Categorical: counts per category. Numerical: histograms, skewness, modes, outliers.</p>
+</div>
+<div class="tab-content" data-group="prof">
+<h4>Inclusion Dependencies, Keys, and Functional Dependencies</h4>
+<p>Find if values in one field are subset of another → adds dimensions to dataset.</p>
+<h4>Visualize Numerical Relationships</h4>
+<p>Pair plots, cross-correlation heat maps, correlation tables. Quick overview of relationships between data assets.</p>
+</div>
+</div>
+
+<div class="flow">
+<div class="flow-step">Data Collection</div><span class="flow-arrow">→</span>
+<div class="flow-step">Profiling</div><span class="flow-arrow">→</span>
+<div class="flow-step">Quality Assessment</div><span class="flow-arrow">→</span>
+<div class="flow-step">Transformation Planning</div><span class="flow-arrow">→</span>
+<div class="flow-step">ETL Design</div>
+</div>
+</div>
+
+<!-- PAGE 8: Filter/Selection/Sampling & Validation -->
+<div class="page" id="page-8">
+<div class="topic-title">ML Data Readiness 2 — Filter, Sampling &amp; Validation</div>
+<div class="topic-sub">Getting data ready before training begins</div>
+
+<h3>Filter / Selection / Sampling</h3>
+<p>Not all created data is ingested — filtering/selection step is necessary. Sampling reduces cost of intermediate processing and training.</p>
+<div class="callout callout-warn"><div class="callout-title">⚠️ Trade-off</div>
+<p>ML systems generally perform better with more data. Any reduction may impact quality. Must measure quality cost of sampling vs savings. Some detail loss is unavoidable.</p></div>
+
+<h3>Data Validation</h3>
+<div class="callout callout-def"><div class="callout-title">📘 Definition</div>
+<p>Checking accuracy and quality of source data before training a new model version. Ensures anomalies in incremental data aren't silently ignored. Checks statistics match expectations (feature distribution, number of categories, etc.).</p></div>
+
+<h4>Key Validation Questions</h4>
+<ul>
+<li>Are there anomalies/errors in incremental data?</li>
+<li>Are training-time assumptions violated during serving?</li>
+<li>Significant differences between training and serving data?</li>
+<li>Differences between successive training data additions?</li>
+</ul>
+
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div>
+<p>Validation output must be <b>informative enough for data engineers to take action</b> and have <b>high precision</b> (too many false alarms = lost credibility).</p></div>
+
+<h3>Challenges</h3>
+<p>Few columns = simple. Many columns = humongous task. Tracking/comparing metrics across historical datasets for each column needs recurring data scientist time. Modern applications should auto-refresh validation rules.</p>
+
+<div class="flow">
+<div class="flow-step">Receive Data</div><span class="flow-arrow">→</span>
+<div class="flow-step">Filter/Sample</div><span class="flow-arrow">→</span>
+<div class="flow-step">Calculate Stats</div><span class="flow-arrow">→</span>
+<div class="flow-step">Compare to Training</div><span class="flow-arrow">→</span>
+<div class="flow-step">Store Results</div><span class="flow-arrow">→</span>
+<div class="flow-step">Alert/Act</div>
+</div>
+</div>
+
+<!-- PAGE 9: Data Validation Frameworks -->
+<div class="page" id="page-9">
+<div class="topic-title">Data Validation Frameworks</div>
+<div class="topic-sub">Great Expectations, Soda Core, Deequ</div>
+
+<h3>Framework Comparison</h3>
+<table class="cmp-table">
+<tr><th>Aspect</th><th>Great Expectations</th><th>Soda Core</th><th>Deequ</th></tr>
+<tr><td>Language</td><td>Python</td><td>Python (YAML config)</td><td>Scala/JVM (Spark)</td></tr>
+<tr><td>Version (2024-25)</td><td>GX 0.18+ / GX Cloud GA</td><td>Soda Core 3.x / Cloud</td><td>Deequ 2.x (AWS Labs)</td></tr>
+<tr><td>Best For</td><td>Python teams, custom validations</td><td>Quick setup, analyst-friendly</td><td>Spark-scale, billions of rows</td></tr>
+<tr><td>Integrations</td><td>Pandas, Spark, SQL, Airflow, dbt</td><td>dbt, Airflow, Dagster, any SQL</td><td>Spark, AWS Glue, EMR</td></tr>
+<tr><td>Philosophy</td><td>"Test data, not just code"</td><td>SodaCL domain-specific language</td><td>Constraint suggestion + verification</td></tr>
+<tr><td>Commercial</td><td>GX Cloud (hosted)</td><td>Soda Cloud (SaaS)</td><td>Open-source only</td></tr>
+</table>
+
+<h3>Great Expectations</h3>
+<p>Core idea: "We should test data, not just code." Expectations prescribe expected state of data, checked in-place (no data movement).</p>
+<ul>
+<li>Exhaustive list of Expectations (pre-defined + templated)</li>
+<li>Supports data contracts with automated checks and human-readable summaries</li>
+<li>Connects to databases, data warehouses, catalogs (Airflow, Meltano, Dagster)</li>
+<li>Flexible storage: S3, Azure Blob, GCS, PostgreSQL, filesystem</li>
+</ul>
+
+<h3>Soda Core</h3>
+<p>Open-source Python library with CLI. Uses SodaCL (YAML-compatible DSL). Connects to data sources and workflows.</p>
+<ul>
+<li>Find insufficient data by running checks inside data sources</li>
+<li>Programmatic or orchestrated scans (Airflow, Dagster, dbt Core)</li>
+<li>Pass YAML config + Soda checks → run validation</li>
+</ul>
+
+<h3>Deequ</h3>
+<p>AWS Labs open-source, built on Spark. Good for testing massive data. Anything in a Spark DataFrame can be tested.</p>
+<div class="flow">
+<div class="flow-step">Declare Constraints</div><span class="flow-arrow">→</span>
+<div class="flow-step">Compute Metrics</div><span class="flow-arrow">→</span>
+<div class="flow-step">Analyze &amp; Report</div>
+</div>
+<p>Warning if metric > 3 standard deviations from mean, error if > 4 standard deviations.</p>
+
+<div class="callout callout-research"><div class="callout-title">🔬 Research — When to Use Which (2024-2025)</div>
+<p><b>GX:</b> Max flexibility, code-first, Python-native. <b>Soda Core:</b> Fast adoption, YAML config accessible to analysts, built-in anomaly detection. <b>Deequ:</b> Billion-row Spark datasets, AWS ecosystem. Teams often combine: Soda for lightweight pipeline checks + GX for deeper ML-specific validation.</p></div>
+
+<div class="callout callout-warn"><div class="callout-title">⚠️ Known Issues</div>
+<p>GX: steep learning curve, frequently changing API (v0.15→v0.18 migration was disruptive). Deequ: Spark-only. Soda Core: open-source version has fewer features than paid Cloud tier.</p></div>
+</div>
+
+<!-- PAGE 10: Automated DQ Testing in Pipelines -->
+<div class="page" id="page-10">
+<div class="topic-title">Automated Data Quality Testing in Pipelines</div>
+<div class="topic-sub">Integrating validation across the Medallion architecture</div>
+
+<p>Data sources produce incorrect data. Transformation rules need updates over time. Quality validation starts during initial development — check correct patterns in each layer (Medallion architecture), correct data types, proper documentation.</p>
+
+<h3>The Quality Gate Pattern</h3>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: learning.bansal-ai.in</div>
+<p>Validation runs at ingestion and between stages. Define expectations → run on every batch → on failure, <b>stop or quarantine</b> data rather than let it reach the model. The gate stands between bad data and the model.</p></div>
+<div class="flow">
+<div class="flow-step">Data Batch</div><span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:var(--purple)">Quality Gate</div><span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:var(--green)">✓ Pass → Training</div>
+</div>
+<div class="flow" style="margin-top:4px">
+<div class="flow-step">Data Batch</div><span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:var(--purple)">Quality Gate</div><span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:var(--red)">✗ Fail → Quarantine + Alert</div>
+</div>
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div><p>Validate <b>continuously</b> — sources drift, so a check that passed last month can fail today. Validation must run on every batch and be versioned with the data.</p></div>
+
+<h3>Case Study: Retail Monthly Sales Pipeline</h3>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com — Integrated Case Study</div>
+<p>A retail chain receives monthly sales data from 50 stores. The validation pipeline integrates all concepts:</p></div>
+<table class="cmp-table">
+<tr><th>Stage</th><th>Validation Applied</th><th>Example Check</th></tr>
+<tr><td>Pre-Ingestion</td><td>Presence + Format + Range</td><td>store_id not null, date is YYYY-MM-DD, quantity > 0</td></tr>
+<tr><td>Post-Ingestion</td><td>Consistency + Business Rules</td><td>total = price × quantity, no sales on store closure dates</td></tr>
+<tr><td>Pre-Training</td><td>Distribution + Drift + Leakage</td><td>PSI on monthly_spend < 0.1, no future revenue features</td></tr>
+<tr><td>Continuous</td><td>Quality Gate</td><td>Block batch if completeness < 95% or uniqueness < 99%</td></tr>
+</table>
+
+<h3>GX — Use Cases &amp; Integration</h3>
+<ul>
+<li><b>Pipeline Validation:</b> Define/enforce expectations at any pipeline point — input, transformations, output</li>
+<li><b>Automated Quality Checks:</b> "Shift-left" — integrate quality proactively, not reactively</li>
+<li><b>dbt Integration:</b> Validate raw CSV → check DB load → validate post-dbt transformations</li>
+<li><b>Ensuring Accuracy:</b> Automated validation minimizes manual intervention</li>
+<li><b>Troubleshooting:</b> Detailed reports for rapid issue identification</li>
+<li><b>Orchestrator Integration:</b> GreatExpectationsOperator in Airflow DAGs</li>
+</ul>
+
+<h3>Soda Core — Use Cases &amp; Integration</h3>
+<ul>
+<li><b>Production Monitoring:</b> Continuous monitoring for freshness, completeness, consistency</li>
+<li><b>External Data Validation:</b> Validate before ingestion</li>
+<li><b>Anomaly Detection:</b> Identify unexpected patterns in live data</li>
+<li><b>Pipeline Embedding:</b> After ingestion/transformation steps → early warnings</li>
+<li><b>Centralized Reporting:</b> Integrate dbt test results into Soda Cloud</li>
+</ul>
+
+<h3>Deequ — Use Cases &amp; Integration</h3>
+<ul>
+<li><b>Large-Scale Checks:</b> Billions of rows in Spark environments</li>
+<li><b>"Unit Tests for Data":</b> Identify errors before downstream consumption</li>
+<li><b>Auto Profiling:</b> Profile datasets and suggest constraint baselines</li>
+<li><b>Metrics Repository:</b> Track computed metrics over time for anomaly detection</li>
+<li><b>AWS Integration:</b> EMR apps, S3/DynamoDB metrics, QuickSight visualization</li>
+</ul>
+</div>
+
+<!-- PAGE 11: Pre-Ingestion vs Pre-Training Validation -->
+<div class="page" id="page-11">
+<div class="topic-title">Pre-Ingestion vs Pre-Training Validation</div>
+<div class="topic-sub">Strategic placement of validation in ML pipelines</div>
+
+<div class="callout callout-def"><div class="callout-title">📘 Key Principle</div>
+<p>Data quality issues can be introduced anywhere. Identify hotspots and deploy validation strategically. Following shift-left principle: first check ingestion, then each transformation step before training.</p></div>
+
+<h3>Pre-Ingestion Validation</h3>
+<p>Example: Card transaction validated via API to bank. Card info validated AND verified. Result sent back immediately (valid/invalid). If invalid → client alerted before ingestion, failed payment logged.</p>
+
+<h4>What's Validated — 4 Core Check Types</h4>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com</div>
+<p>Pre-ingestion validation performs four types of checks:</p></div>
+<table class="cmp-table">
+<tr><th>Check Type</th><th>What It Does</th><th>Example</th></tr>
+<tr><td><b>Presence</b></td><td>Required fields exist and are non-null</td><td>Customer ID must not be empty</td></tr>
+<tr><td><b>Range</b></td><td>Values within acceptable bounds</td><td>Age between 0–150, price > 0</td></tr>
+<tr><td><b>Format</b></td><td>Values match expected patterns</td><td>Email matches regex, date is YYYY-MM-DD</td></tr>
+<tr><td><b>Data Type</b></td><td>Fields have correct types</td><td>Quantity is integer, amount is decimal</td></tr>
+</table>
+
+<h4>Post-Ingestion Validation — 3 Additional Check Types</h4>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com</div>
+<p>After data is ingested, additional validation runs:</p></div>
+<table class="cmp-table">
+<tr><th>Check Type</th><th>What It Does</th><th>Example</th></tr>
+<tr><td><b>Consistency</b></td><td>Cross-field and cross-system agreement</td><td>Order total = sum of line items</td></tr>
+<tr><td><b>Business Rules</b></td><td>Domain-specific logical constraints</td><td>End date must be after start date</td></tr>
+<tr><td><b>Statistical</b></td><td>Distribution and anomaly checks</td><td>Mean order value within 2σ of historical mean</td></tr>
+</table>
+
+<h4>Header File &amp; Audit Table Patterns</h4>
+<div class="callout callout-insight"><div class="callout-title">💡 Validation Design Patterns (bitsnotes.com)</div>
+<p><b>Header File Pattern:</b> Each data batch arrives with a header file containing expected record count, checksum, and schema version. Ingestion compares actual data against header before accepting.</p>
+<p><b>Audit Table Pattern:</b> Every validation result (pass/fail, metric values, timestamp) is logged to an audit table. Enables historical trend analysis and compliance reporting.</p></div>
+
+<h4>Data Governance Context</h4>
+<div class="callout callout-research"><div class="callout-title">🔬 Source: bitsnotes.com — Governance Frameworks</div>
+<p>Pre-ingestion validation must align with governance frameworks: <b>GDPR</b> (EU data privacy), <b>HIPAA</b> (US healthcare), <b>PII</b> handling rules (personally identifiable information), <b>PCI DSS</b> (payment card industry security). Data contracts serve as "handshake agreements" between data producers and consumers — formalizing schema, quality expectations, and SLAs before data exchange.</p></div>
+
+<h3>Pre-Training Validation</h3>
+<table class="cmp-table">
+<tr><th>Category</th><th>What You Validate</th><th>Why It Matters</th></tr>
+<tr><td>Schema</td><td>Structure, types</td><td>Prevent training failures</td></tr>
+<tr><td>Distributions</td><td>Stats, drift</td><td>Prevent silent degradation</td></tr>
+<tr><td>Labels</td><td>Correctness, balance</td><td>Ensure usable target</td></tr>
+<tr><td>Feature Values</td><td>Ranges, validity</td><td>Prevent invalid semantics</td></tr>
+<tr><td>Missingness</td><td>NaN, INF, null explosion</td><td>Ensure clean input</td></tr>
+<tr><td>Outliers</td><td>Extreme values</td><td>Stable gradients</td></tr>
+<tr><td>Leakage</td><td>Temporal leakage, contamination</td><td>Model generalizability</td></tr>
+<tr><td>Split validation</td><td>Train/test integrity</td><td>Avoid fake accuracy</td></tr>
+<tr><td>Fairness</td><td>Representation, bias</td><td>Ethical/regulatory compliance</td></tr>
+</table>
+
+<h3>Comparison</h3>
+<table class="cmp-table">
+<tr><th>Feature</th><th>Pre-Ingestion</th><th>Pre-Training</th></tr>
+<tr><td>Pipeline Stage</td><td>Data ingestion/preparation</td><td>Model training</td></tr>
+<tr><td>Primary Goal</td><td>Raw data quality + schema compliance</td><td>Tune hyperparameters + evaluate generalization</td></tr>
+<tr><td>Data Used</td><td>Raw, incoming source data</td><td>Held-back subset of clean, prepared data</td></tr>
+</table>
+
+<div class="callout callout-exam"><div class="callout-title">⚡ Exam Tip</div>
+<p>Schema validation alone catches a significant source of quality errors — this is why data contracts gained traction quickly. Think of pre-ingestion as "gatekeeping" and pre-training as "quality assurance."</p></div>
+</div>
+
+<!-- ============ GLOSSARY PAGE ============ -->
+<div class="page" id="page-glossary">
+<div class="topic-title">Glossary</div>
+<div class="topic-sub">Searchable reference of all terms and abbreviations</div>
+<input type="text" class="glossary-search" id="glossarySearch" placeholder="Search terms..." oninput="filterGlossary()">
+<table class="cmp-table" id="glossaryTable">
+<thead><tr><th>Term</th><th>Full Form / Definition</th><th>Usage Notes</th></tr></thead>
+<tbody>
+<tr><td>PSI</td><td>Population Stability Index</td><td>Measures distribution shift between datasets. &lt;0.1 stable, ≥0.25 significant.</td></tr>
+<tr><td>KL Divergence</td><td>Kullback-Leibler Divergence (Relative Entropy)</td><td>Asymmetric measure of distribution difference. Undefined when Q(x)=0.</td></tr>
+<tr><td>SLA</td><td>Service Level Agreement</td><td>Contract for data delivery timeliness expectations.</td></tr>
+<tr><td>BCBS 239</td><td>Basel Committee on Banking Supervision Standard 239</td><td>Requires clear data lineage for risk reporting in financial services.</td></tr>
+<tr><td>ETL</td><td>Extract, Transform, Load</td><td>Data pipeline pattern for moving data between systems.</td></tr>
+<tr><td>CRM</td><td>Customer Relationship Management</td><td>System managing customer interactions and data.</td></tr>
+<tr><td>ICD Code</td><td>International Classification of Diseases</td><td>Standardized diagnostic codes used in healthcare.</td></tr>
+<tr><td>EMR</td><td>Electronic Medical Record</td><td>Digital patient health record within one organization.</td></tr>
+<tr><td>GX</td><td>Great Expectations</td><td>Open-source data validation framework. Tests data expectations.</td></tr>
+<tr><td>SodaCL</td><td>Soda Checks Language</td><td>YAML-compatible DSL for defining data quality checks.</td></tr>
+<tr><td>Deequ</td><td>AWS Labs Data Quality Library</td><td>Spark-based. Constraint suggestion + verification pattern.</td></tr>
+<tr><td>MLOps</td><td>Machine Learning Operations</td><td>Practices for deploying and maintaining ML models in production.</td></tr>
+<tr><td>Data Drift</td><td>Divergence between training and serving data</td><td>Subcategories: schema skew, distribution skew.</td></tr>
+<tr><td>Concept Drift</td><td>Change in the relationship between input and target</td><td>Interpretation of data changes over time.</td></tr>
+<tr><td>Schema Skew</td><td>Training/serving data don't share same schema</td><td>Types: inconsistent features, types, or domains.</td></tr>
+<tr><td>Distribution Skew</td><td>Feature value distributions differ between training/serving</td><td>Natural or artificial causes.</td></tr>
+<tr><td>Training-Serving Skew</td><td>Difference in ML outputs between training and deployment</td><td>Often caused by different feature engineering code.</td></tr>
+<tr><td>Data Leakage</td><td>Target info improperly available during training</td><td>Also called target leakage or contamination.</td></tr>
+<tr><td>Adversarial Validation</td><td>Model trained to distinguish train from test sets</td><td>AUC >> 0.5 indicates leakage.</td></tr>
+<tr><td>COMPAS</td><td>Correctional Offender Management Profiling</td><td>Recidivism prediction tool showing racial bias.</td></tr>
+<tr><td>EU AI Act</td><td>European Union Artificial Intelligence Act (2024)</td><td>Risk-tiered regulation. Penalties up to €35M or 7% turnover.</td></tr>
+<tr><td>AIF360</td><td>AI Fairness 360 (IBM)</td><td>70+ fairness metrics and bias mitigation algorithms.</td></tr>
+<tr><td>Fairlearn</td><td>Microsoft Fairness Assessment Library</td><td>sklearn-compatible fairness toolkit.</td></tr>
+<tr><td>Feature Store</td><td>Central repository for ML features</td><td>Ensures consistent features in training and serving. E.g., Feast, Tecton.</td></tr>
+<tr><td>Feast</td><td>Feature Store (open-source, v0.38+)</td><td>Registry + offline/online stores. BigQuery, Redshift, Redis backends.</td></tr>
+<tr><td>Tecton</td><td>Managed Feature Store Platform</td><td>By Feast creators. Real-time feature computation. Used by Plaid, Coinbase.</td></tr>
+<tr><td>CBPE</td><td>Confidence-Based Performance Estimation</td><td>NannyML's algorithm for estimating model performance without labels.</td></tr>
+<tr><td>VAE</td><td>Variational Autoencoder</td><td>Generative model that minimizes KL divergence in latent space.</td></tr>
+<tr><td>TRPO</td><td>Trust Region Policy Optimization</td><td>RL algorithm using KL constraints for stable policy updates.</td></tr>
+<tr><td>Medallion Architecture</td><td>Bronze/Silver/Gold layered data pipeline</td><td>Each layer refines data quality. Validate at each layer transition.</td></tr>
+<tr><td>Data Contract</td><td>Formal agreement on data schema and quality</td><td>Pre-ingestion guarantee between producer and consumer.</td></tr>
+<tr><td>reCAPTCHA</td><td>Google's free bot detection + data labeling</td><td>Crowdsources labeling while preventing spam.</td></tr>
+<tr><td>word2vec</td><td>Word embedding algorithm</td><td>Exposed stereotype bias: programmer−man+woman ≈ homemaker.</td></tr>
+<tr><td>Model Stacking</td><td>Using predictions from one model as features in another</td><td>Legitimate if source model is less accurate. Not leakage.</td></tr>
+<tr><td>Quality Gate</td><td>Validation checkpoint in a data pipeline</td><td>Pass = data proceeds. Fail = data quarantined + alert fired. Runs every batch.</td></tr>
+<tr><td>Data Contract</td><td>Formal agreement between data producer and consumer</td><td>Specifies schema, quality expectations, SLAs. Pre-ingestion guarantee.</td></tr>
+<tr><td>GDPR</td><td>General Data Protection Regulation (EU)</td><td>EU data privacy: right to erasure, consent, data protection officer required.</td></tr>
+<tr><td>HIPAA</td><td>Health Insurance Portability and Accountability Act (US)</td><td>US healthcare data privacy and security standard.</td></tr>
+<tr><td>PCI DSS</td><td>Payment Card Industry Data Security Standard</td><td>Security standard for handling credit/debit card data.</td></tr>
+<tr><td>PII</td><td>Personally Identifiable Information</td><td>Data that can identify an individual (name, SSN, email). Requires special handling.</td></tr>
+<tr><td>Header File Pattern</td><td>Validation design pattern for batch data</td><td>Batch arrives with header: expected record count, checksum, schema version.</td></tr>
+<tr><td>Audit Table</td><td>Log of all validation results</td><td>Records pass/fail, metrics, timestamps for trend analysis and compliance.</td></tr>
+<tr><td>Shift-Left</td><td>Integrating quality checks early in the pipeline</td><td>Proactive not reactive. Catch errors at ingestion, not after model training.</td></tr>
+<tr><td>JSD</td><td>Jensen-Shannon Divergence</td><td>Symmetric variant of KL divergence. JSD = (KL(P||M) + KL(Q||M))/2 where M=(P+Q)/2.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- ============ CHECKLIST PAGE ============ -->
+<div class="page" id="page-checklist">
+<div class="topic-title">Revision Checklist</div>
+<div class="topic-sub">Track your exam preparation progress</div>
+<div class="chk-stats" id="chkStats">0 / 0 completed</div>
+<button class="chk-reset" onclick="resetChecklist()">Reset All</button>
+<div id="checklistItems" style="margin-top:16px"></div>
+</div>
+
+</div><!-- end study-mode -->
+
+<!-- ===================== QUIZ MODE ===================== -->
+<div id="quiz-mode" style="display:none">
+<div class="topic-title">Quiz Mode</div>
+<div class="topic-sub">Test your knowledge — 30 questions covering all topics</div>
+<div class="quiz-progress" id="quizProgress"></div>
+<div class="quiz-container" id="quizContainer"></div>
+</div>
+
+<!-- ===================== FLASHCARD MODE ===================== -->
+<div id="flash-mode" style="display:none">
+<div class="topic-title">Flashcard Mode</div>
+<div class="topic-sub">Click card to flip • Rate your recall</div>
+<div class="fc-container">
+<div class="fc-counter" id="fcCounter">Card 1 / 30 &nbsp;|&nbsp; Hard: 0 &nbsp; Good: 0 &nbsp; Easy: 0</div>
+<div class="fc-card" id="fcCard" onclick="flipCard()">
+<div class="fc-inner" id="fcInner">
+<div class="fc-front"><div class="fc-tag" id="fcTag"></div><p id="fcFront"></p></div>
+<div class="fc-back"><div class="fc-tag">Answer</div><p id="fcBack"></p></div>
+</div>
+</div>
+<div class="fc-rating" id="fcRating" style="display:none">
+<button class="fc-rate-btn hard" onclick="rateCard('hard')">Hard</button>
+<button class="fc-rate-btn good" onclick="rateCard('good')">Good</button>
+<button class="fc-rate-btn easy" onclick="rateCard('easy')">Easy</button>
+</div>
+<div class="fc-nav">
+<button class="quiz-btn btn-secondary" onclick="prevCard()">← Prev</button>
+<button class="quiz-btn btn-primary" onclick="nextCard()">Next →</button>
+</div>
+</div>
+</div>
+
+</div><!-- end main -->
+
+<script>
+// ===== NAV DATA =====
+const topics = [
+  {id:'page-0', title:'Data Quality Dimensions', icon:'📊'},
+  {id:'page-1', title:'DQ Dimensions — ML Extension', icon:'🤖'},
+  {id:'page-2', title:'Common Data Problems', icon:'⚠️'},
+  {id:'page-3', title:'Bias & Fairness', icon:'⚖️'},
+  {id:'page-4', title:'Data Leakage', icon:'💧'},
+  {id:'page-5', title:'Data Skew & Drift', icon:'📉'},
+  {id:'page-6', title:'Drift Detection Metrics', icon:'📐'},
+  {id:'page-7', title:'Data Profiling', icon:'🔍'},
+  {id:'page-8', title:'Filter, Sampling & Validation', icon:'🎯'},
+  {id:'page-9', title:'Validation Frameworks', icon:'🛠️'},
+  {id:'page-10', title:'Automated DQ in Pipelines', icon:'⚙️'},
+  {id:'page-11', title:'Pre-Ingestion vs Pre-Training', icon:'🔄'},
+  {id:'page-glossary', title:'Glossary', icon:'📖'},
+  {id:'page-checklist', title:'Revision Checklist', icon:'✅'}
+];
+
+let visitedPages = JSON.parse(localStorage.getItem('cs8_visited') || '[]');
+let currentPage = 0;
+
+function buildNav() {
+  const nav = document.getElementById('navList');
+  nav.innerHTML = '';
+  topics.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'nav-item' + (i === currentPage ? ' active' : '') + (visitedPages.includes(t.id) ? ' visited' : '');
+    div.innerHTML = `<span class="icon">${t.icon}</span>${t.title}`;
+    div.onclick = () => goToPage(i);
+    nav.appendChild(div);
+  });
+  updateProgress();
+}
+
+function goToPage(idx) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  currentPage = idx;
+  const page = document.getElementById(topics[idx].id);
+  if (page) page.classList.add('active');
+  if (!visitedPages.includes(topics[idx].id)) {
+    visitedPages.push(topics[idx].id);
+    localStorage.setItem('cs8_visited', JSON.stringify(visitedPages));
+  }
+  buildNav();
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo(0, 0);
+}
+
+function updateProgress() {
+  const studyPages = topics.filter(t => !t.id.includes('glossary') && !t.id.includes('checklist'));
+  const visited = studyPages.filter(t => visitedPages.includes(t.id)).length;
+  const pct = Math.round((visited / studyPages.length) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+  document.getElementById('study-mode').style.display = mode === 'study' ? '' : 'none';
+  document.getElementById('quiz-mode').style.display = mode === 'quiz' ? '' : 'none';
+  document.getElementById('flash-mode').style.display = mode === 'flash' ? '' : 'none';
+  if (mode === 'quiz') initQuiz();
+  if (mode === 'flash') initFlashcards();
+}
+
+// ===== EXPAND CARDS =====
+function toggleExpand(el) { el.parentElement.classList.toggle('open'); }
+
+// ===== TABS =====
+function switchTab(btn, group) {
+  const parent = btn.closest('.tab-group');
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const contents = parent.querySelectorAll('.tab-content');
+  const idx = Array.from(parent.querySelectorAll('.tab-btn')).indexOf(btn);
+  contents.forEach((c, i) => c.classList.toggle('active', i === idx));
+}
+
+// ===== GLOSSARY FILTER =====
+function filterGlossary() {
+  const q = document.getElementById('glossarySearch').value.toLowerCase();
+  document.querySelectorAll('#glossaryTable tbody tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ===== CHECKLIST =====
+const checklistTopics = [
+  '10 Core Data Quality Dimensions (define each)',
+  'Healthcare domain examples for each dimension',
+  'ML Extension Dimensions (7 types + mapping to core)',
+  'Data Cost — labeling challenges, reCAPTCHA example',
+  'Noise — types, mitigation, scale impact',
+  'Low Predictive Power — music example, identification challenge',
+  'Outliers — handling debate, algorithm sensitivity',
+  '12 Types of Bias (name and define each)',
+  'Selection Bias — 3 subtypes (coverage, non-response, sampling)',
+  'Group Attribution Bias — in-group vs out-group',
+  'Fairness — identifying bias: missing values, unexpected values, skew',
+  'Amazon Hiring Tool case study',
+  'COMPAS Recidivism case + impossibility theorem',
+  'EU AI Act 2024 — risk tiers and penalties',
+  'Data Leakage — 3 causes',
+  'Target as function of feature — GDP and salary examples',
+  'Feature hiding target — Group column example',
+  'Feature from future — loan/late payment example',
+  'Adversarial validation for leakage detection',
+  'Data Drift — Schema Skew vs Distribution Skew',
+  'Concept Drift — definition and examples',
+  'Training-Serving Skew — causes and feature store solution',
+  'PSI — formula, thresholds (<0.1, 0.1-0.25, ≥0.25), applications',
+  'KL Divergence — definition, asymmetry, limitations',
+  'PSI vs KL Divergence comparison',
+  'Data Profiling — single-field vs multi-field techniques',
+  'When to profile — beginning of project, benefits',
+  'Data Validation — definition, key questions, precision requirement',
+  'Great Expectations — features, philosophy, integrations',
+  'Soda Core — SodaCL, features, use cases',
+  'Deequ — Spark-based, 3-step process, AWS integration',
+  'Framework comparison: GX vs Soda vs Deequ (when to use which)',
+  'Automated DQ in pipelines — Medallion architecture, shift-left',
+  'Pre-Ingestion Validation — what is validated, card transaction example',
+  'Pre-Training Validation — 9 categories table',
+  'Pre-Ingestion vs Pre-Training — stage, goal, data used comparison',
+  'Feature Stores — Feast, Tecton, purpose',
+  'Modern drift detection tools — Evidently AI, NannyML, WhyLabs',
+  'Data-centric AI — Andrew Ng, quality over quantity',
+  'Quality = Ratio + Threshold pattern — completeness 92% example',
+  'Profiling vs Validation — examine then enforce distinction',
+  'Quality Gate pattern — pass/fail → proceed/quarantine',
+  'Pre-Ingestion 4 check types: presence, range, format, data type',
+  'Post-Ingestion checks: consistency, business rules, statistical',
+  'Header File + Audit Table validation patterns',
+  'Data Contracts — handshake agreements, schema guarantees',
+  'Governance: GDPR, HIPAA, PCI DSS, BCBS 239 — which covers what',
+  'Bias Scale Analogy — systematic not random',
+  'Leakage Food Analogies — idli-chutney, aloo paratha',
+  'PSI Worked Example — retail monthly_spend binning calculation',
+  'KL Divergence Worked Example — payment_method distribution',
+  'Retail Monthly Sales Case Study — integrated validation pipeline'
+];
+
+function buildChecklist() {
+  const saved = JSON.parse(localStorage.getItem('cs8_checklist') || '{}');
+  const container = document.getElementById('checklistItems');
+  container.innerHTML = '';
+  checklistTopics.forEach((topic, i) => {
+    const div = document.createElement('div');
+    div.className = 'chk-item' + (saved[i] ? ' checked' : '');
+    div.innerHTML = `<input type="checkbox" id="chk${i}" ${saved[i] ? 'checked' : ''} onchange="toggleCheck(${i})"><label for="chk${i}">${topic}</label>`;
+    container.appendChild(div);
+  });
+  updateCheckStats();
+}
+
+function toggleCheck(i) {
+  const saved = JSON.parse(localStorage.getItem('cs8_checklist') || '{}');
+  saved[i] = !saved[i];
+  if (!saved[i]) delete saved[i];
+  localStorage.setItem('cs8_checklist', JSON.stringify(saved));
+  buildChecklist();
+}
+
+function updateCheckStats() {
+  const saved = JSON.parse(localStorage.getItem('cs8_checklist') || '{}');
+  const done = Object.keys(saved).length;
+  document.getElementById('chkStats').textContent = `${done} / ${checklistTopics.length} completed`;
+}
+
+function resetChecklist() {
+  localStorage.removeItem('cs8_checklist');
+  buildChecklist();
+}
+
+// ===== QUIZ DATA =====
+const quizData = [
+  {q:"Which data quality dimension ensures data represents real-world entities accurately?",
+   opts:["Accuracy","Validity","Completeness","Reliability"],correct:0,
+   explain:"Accuracy measures how well data represents real-world entities. Validity is about format conformance, not real-world correctness."},
+  {q:"A date field containing '2025-02-30' violates which dimension?",
+   opts:["Validity","Accuracy","Consistency","Timeliness"],correct:0,
+   explain:"'2025-02-30' is a correctly formatted date (YYYY-MM-DD) that doesn't exist. It violates validity (business rules), though also accuracy."},
+  {q:"Duplicate patient profiles ('Rajesh Kumar' vs 'R. Kumar') primarily violate which dimension?",
+   opts:["Uniqueness","Consistency","Accuracy","Integrity"],correct:0,
+   explain:"Uniqueness determines whether each record is distinct and not duplicated. This creates fragmented clinical history."},
+  {q:"What does referential integrity check ensure?",
+   opts:["Changes in one place are reflected everywhere","Data conforms to format rules","Data is available on time","Data is free of duplicates"],correct:0,
+   explain:"Referential integrity checks ensure that changes made to data in one place are carried on and reflected in other places. Part of the Integrity dimension."},
+  {q:"BCBS 239 compliance is related to which dimension?",
+   opts:["Lineage / Traceability","Validity","Reliability","Accessibility"],correct:0,
+   explain:"BCBS 239 for financial services requires clear data lineage for risk data aggregation and risk reporting practices."},
+  {q:"In ML extensions, 'position bias' (top-of-page clicks inflated) maps to which core dimension?",
+   opts:["Integrity","Accuracy","Completeness","Validity"],correct:0,
+   explain:"Unbiased data maps to Integrity. Position bias in UI (news article placement affecting click rates) is a form of systematic distortion."},
+  {q:"A model trained to predict article popularity uses clicks, but highlighted articles get more clicks regardless. This is an example of:",
+   opts:["Feedback loop","Data leakage","Concept drift","Selection bias"],correct:0,
+   explain:"The model's own predictions (highlighting) influence user behavior (clicks), which then feeds back as training signal — a feedback loop."},
+  {q:"Google's reCAPTCHA cleverly solves which data problem?",
+   opts:["Cost of labeling","Noise in data","Low predictive power","Outlier detection"],correct:0,
+   explain:"reCAPTCHA outsources labeling to users for free while reducing spam — solving the high cost of manual data labeling."},
+  {q:"In small datasets, noise primarily causes:",
+   opts:["Overfitting","Underfitting","Data drift","Concept drift"],correct:0,
+   explain:"With small datasets, noise causes overfitting — the algorithm learns to model the noise itself rather than the true pattern."},
+  {q:"Which algorithms are MOST sensitive to outliers?",
+   opts:["Linear/logistic regression and AdaBoost","Random Forest and XGBoost","Neural networks and SVMs","K-means and DBSCAN"],correct:0,
+   explain:"Shallow algorithms like linear regression, logistic regression, and AdaBoost are particularly sensitive to outliers."},
+  {q:"A word2vec model predicting 'programmer − man + woman ≈ homemaker' demonstrates which bias?",
+   opts:["Prejudice / Stereotype bias","Automation bias","Confirmation bias","Omitted variable bias"],correct:0,
+   explain:"This is prejudice/stereotype bias from historical data reflecting societal stereotypes encoded in text corpora."},
+  {q:"Amazon's hiring tool was scrapped because it exhibited which type of bias?",
+   opts:["Prejudice / Stereotype bias","Selection bias","Reporting bias","Experimenter bias"],correct:0,
+   explain:"Trained on 10 years of predominantly male resumes, it encoded historical gender stereotypes — penalizing 'women's' in text."},
+  {q:"A model for predicting loan repayment uses 'Late Payment Reminders' as a feature. This is:",
+   opts:["Feature from the future","Feature hiding the target","Target as function of feature","Concept drift"],correct:0,
+   explain:"In production, Late Payment Reminders is always 0 (model used before credit given). This feature contains future information not available at prediction time."},
+  {q:"What is adversarial validation used for?",
+   opts:["Detecting data leakage","Preventing bias","Measuring drift","Improving accuracy"],correct:0,
+   explain:"Train a model to distinguish train from test sets. If AUC >> 0.5, distributions differ significantly — indicating potential leakage."},
+  {q:"'Cross-validation prevents data leakage' is:",
+   opts:["A misconception — CV only prevents train-test contamination","Completely true for all cases","True only for time-series data","True when using k>10 folds"],correct:0,
+   explain:"CV only prevents train-test contamination. It doesn't catch feature leakage where the feature itself encodes the target. Preprocessing before CV split also leaks."},
+  {q:"A new feature added to serving data that wasn't in training data is an example of:",
+   opts:["Schema skew","Distribution skew","Concept drift","Training-serving skew"],correct:0,
+   explain:"Schema skew = training and serving data don't conform to same schema. Inconsistent features (new feature in serving) is a type of schema skew."},
+  {q:"When a categorical feature value disappears in serving data, this is:",
+   opts:["Inconsistent feature domains (schema skew)","Distribution skew","Concept drift","Data leakage"],correct:0,
+   explain:"Inconsistent feature domains — a value in a categorical feature disappears — is a subtype of schema skew."},
+  {q:"Fashion popularity changing over time causing model degradation is an example of:",
+   opts:["Distribution skew","Schema skew","Data leakage","Noise"],correct:0,
+   explain:"Distribution skew occurs when feature distributions change naturally due to new trends and patterns (fashion popularity, real estate prices)."},
+  {q:"The mapping of input features to labels becomes invalid due to process changes. This is:",
+   opts:["Concept drift","Data drift","Schema skew","Training-serving skew"],correct:0,
+   explain:"Concept drift = interpretation of data has changed. The relationship between inputs and targets that was valid during training is no longer valid."},
+  {q:"What is the PRIMARY purpose of a feature store?",
+   opts:["Ensure consistent features in training and serving","Store training datasets","Version control models","Monitor model performance"],correct:0,
+   explain:"Feature stores solve training-serving skew by computing features once and serving them to both training and inference pipelines consistently."},
+  {q:"A PSI value of 0.18 indicates:",
+   opts:["Moderate shift — investigate","No significant change","Significant shift — action required","Invalid measurement"],correct:0,
+   explain:"PSI between 0.1 and 0.25 = moderate shift, needs investigation. <0.1 = stable, ≥0.25 = significant action needed."},
+  {q:"KL Divergence is undefined when:",
+   opts:["Q(x) = 0 but P(x) > 0","P(x) = Q(x)","Both distributions are normal","Sample size is small"],correct:0,
+   explain:"KL divergence involves ln(P/Q). When Q(x) = 0 but P(x) > 0, division by zero occurs. Requires smoothing to handle."},
+  {q:"Which property makes KL Divergence problematic for some applications?",
+   opts:["Asymmetry — KL(P||Q) ≠ KL(Q||P)","It requires labeled data","It only works for continuous data","It can't detect multivariate drift"],correct:0,
+   explain:"KL divergence is asymmetric. Jensen-Shannon Divergence (symmetric variant) is often preferred in practice."},
+  {q:"In Deequ, an 'error' is raised when a metric deviates by more than __ standard deviations from the mean:",
+   opts:["4","3","2","5"],correct:0,
+   explain:"Deequ: 'warning' if >3 standard deviations, 'error' if >4 standard deviations from the previous mean."},
+  {q:"Which framework uses SodaCL (a YAML-compatible DSL)?",
+   opts:["Soda Core","Great Expectations","Deequ","MLflow"],correct:0,
+   explain:"Soda Core uses SodaCL (Soda Checks Language), a domain-specific, YAML-compatible language for defining data quality checks."},
+  {q:"For billion-row Spark datasets, the best validation framework is:",
+   opts:["Deequ","Great Expectations","Soda Core","dbt tests"],correct:0,
+   explain:"Deequ is built on Apache Spark specifically for testing large amounts of data. Anything in a Spark DataFrame can be tested."},
+  {q:"Great Expectations' core philosophy is:",
+   opts:["Test data, not just code","Schema-first validation","YAML-driven checks","Spark-native testing"],correct:0,
+   explain:"GX was built on the idea: 'instead of just testing code, we should be testing data. That's where the complexity lives.'"},
+  {q:"The 'shift-left' principle in data quality means:",
+   opts:["Integrate quality checks proactively/early, not reactively","Shift data processing to the left side of the pipeline","Use left joins instead of right joins","Move validation to pre-production only"],correct:0,
+   explain:"Shift-left = integrate quality assurance proactively and early in the process rather than reactively discovering issues later."},
+  {q:"Pre-ingestion validation uses ___ data, while pre-training validation uses ___.",
+   opts:["Raw incoming data; held-back subset of clean prepared data","Clean data; raw data","Training data; test data","Labeled data; unlabeled data"],correct:0,
+   explain:"Pre-ingestion validates raw incoming source data. Pre-training validates a held-back subset of the clean, prepared data for generalization evaluation."},
+  {q:"Which is NOT validated during pre-training validation?",
+   opts:["API authentication","Schema structure","Label balance","Feature distributions"],correct:0,
+   explain:"API authentication is a pre-ingestion concern. Pre-training validates schema, distributions, labels, features, missingness, outliers, leakage, splits, and fairness."},
+  {q:"Completeness of an email column: 9,200 non-null out of 10,000 rows. Threshold is 98%. What happens?",
+   opts:["Validation FAILS (92% < 98%) — pipeline alerts/blocks","Validation PASSES — 92% is acceptable","Need more data to decide","Only fails if below 90%"],correct:0,
+   explain:"Completeness = 9200/10000 = 92%. Since 92% < 98% threshold, the validation check FAILS and the pipeline alerts or blocks the data. Quality = ratio vs threshold."},
+  {q:"The 'quality gate' pattern in pipelines does what on validation failure?",
+   opts:["Stops or quarantines data and fires an alert","Automatically fixes the data and proceeds","Logs the error and continues training","Rolls back to previous data version"],correct:0,
+   explain:"Quality gates stop or quarantine data on failure rather than letting it reach the model. Bad data is blocked and an alert fires. Source: learning.bansal-ai.in."},
+  {q:"Which of these is a pre-ingestion validation check type?",
+   opts:["Presence (required fields not null)","Distribution drift check","Label balance verification","Train/test split validation"],correct:0,
+   explain:"Pre-ingestion validates 4 types: presence, range, format, data type. Distribution, label, and split checks are pre-training validation concerns."},
+  {q:"The header file pattern in data validation involves:",
+   opts:["Each batch arrives with expected record count and checksum","Each record has a header row with metadata","Files are named with date headers","Schema is stored in file headers"],correct:0,
+   explain:"Header File Pattern: each data batch arrives with a header file containing expected record count, checksum, and schema version. Ingestion compares actual data against header before accepting."},
+  {q:"'Bias is systematic, not random' — the scale analogy means:",
+   opts:["Biased data produces consistently wrong predictions in the same direction","Bias randomly affects different groups","Bias only affects large datasets","Bias is always intentional"],correct:0,
+   explain:"Like a scale always reading 2kg heavy, bias shifts predictions consistently in one direction for specific groups. Random noise scatters; bias is systematic. Source: bitsnotes.com."},
+  {q:"In the idli-chutney leakage analogy, the 'chutney' represents:",
+   opts:["Leaked information that won't be available at inference time","The target variable","Training data noise","Model hyperparameters"],correct:0,
+   explain:"The chutney (leaked feature) made the idli taste great during training, but in production only plain idli exists. The model learned the chutney, not the idli — it learned the leaked info, not the real signal."},
+  {q:"Which governance framework specifically addresses payment card data security?",
+   opts:["PCI DSS","GDPR","HIPAA","BCBS 239"],correct:0,
+   explain:"PCI DSS (Payment Card Industry Data Security Standard). GDPR covers EU data privacy, HIPAA covers US healthcare, BCBS 239 covers banking risk data."},
+  {q:"A data contract is best described as:",
+   opts:["A handshake agreement between data producer and consumer on schema/quality/SLAs","A legal document for data ownership","An API specification only","A database constraint"],correct:0,
+   explain:"Data contracts formalize expectations between producers and consumers: schema, quality thresholds, SLAs. They act as pre-ingestion guarantees and are key to why schema validation gained traction."},
+  {q:"In a PSI calculation, if total PSI = 0.048, the interpretation is:",
+   opts:["No significant change (< 0.1) — model is stable","Moderate shift — needs investigation","Significant shift — retrain model","Cannot interpret without more context"],correct:0,
+   explain:"PSI < 0.1 = no significant change. 0.048 falls well under 0.1, indicating stable population distribution. No action needed."}
+];
+
+let quizState = {current:0, answers:[], score:0, total:quizData.length};
+
+function initQuiz() {
+  quizState = {current:0, answers:new Array(quizData.length).fill(null), score:0, total:quizData.length};
+  renderQuizDots();
+  renderQuestion();
+}
+
+function renderQuizDots() {
+  const el = document.getElementById('quizProgress');
+  el.innerHTML = '';
+  quizData.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'quiz-dot' + (i === quizState.current ? ' current' : '') +
+      (quizState.answers[i] === true ? ' correct' : '') +
+      (quizState.answers[i] === false ? ' wrong' : '');
+    dot.onclick = () => { quizState.current = i; renderQuizDots(); renderQuestion(); };
+    el.appendChild(dot);
+  });
+}
+
+function renderQuestion() {
+  const c = document.getElementById('quizContainer');
+  if (quizState.current >= quizData.length) { showScore(); return; }
+  const q = quizData[quizState.current];
+  const answered = quizState.answers[quizState.current] !== null;
+  let html = `<div class="quiz-q">Q${quizState.current+1}. ${q.q}</div>`;
+  // Shuffle options with seeded order
+  const indices = [0,1,2,3];
+  q._order = q._order || indices.sort(() => Math.random() - 0.5);
+  q._order.forEach(oi => {
+    let cls = 'quiz-opt';
+    if (answered) {
+      cls += ' disabled';
+      if (oi === q.correct) cls += ' correct-ans';
+      else if (oi === q._selected) cls += ' wrong-ans';
+    }
+    html += `<button class="${cls}" onclick="answerQuiz(${oi})" ${answered?'disabled':''}>${q.opts[oi]}</button>`;
+  });
+  html += `<div class="quiz-explain ${answered?'show':''}">${q.explain}</div>`;
+  if (answered || quizState.current < quizData.length - 1) {
+    html += `<div style="margin-top:16px;display:flex;gap:10px">`;
+    if (quizState.current > 0) html += `<button class="quiz-btn btn-secondary" onclick="quizState.current--;renderQuizDots();renderQuestion()">← Previous</button>`;
+    if (quizState.current < quizData.length - 1) html += `<button class="quiz-btn btn-primary" onclick="quizState.current++;renderQuizDots();renderQuestion()">Next →</button>`;
+    else if (answered) html += `<button class="quiz-btn btn-primary" onclick="showScore()">See Score</button>`;
+    html += `</div>`;
+  }
+  c.innerHTML = html;
+}
+
+function answerQuiz(selected) {
+  const q = quizData[quizState.current];
+  q._selected = selected;
+  quizState.answers[quizState.current] = (selected === q.correct);
+  if (selected === q.correct) quizState.score++;
+  renderQuizDots();
+  renderQuestion();
+}
+
+function showScore() {
+  const pct = Math.round((quizState.score / quizState.total) * 100);
+  let msg = pct >= 90 ? 'Excellent! You have mastered this topic.' : pct >= 70 ? 'Good job! Review the topics you missed.' : pct >= 50 ? 'Decent effort. Focus on weak areas.' : 'Keep studying! Review all topics carefully.';
+  document.getElementById('quizContainer').innerHTML = `
+    <div class="quiz-score">
+      <div class="score-num">${pct}%</div>
+      <p style="font-size:1.2rem;margin:10px 0">${quizState.score} / ${quizState.total} correct</p>
+      <p style="color:var(--text2)">${msg}</p>
+      <button class="quiz-btn btn-primary" style="margin-top:20px" onclick="initQuiz()">Retry Quiz</button>
+    </div>`;
+}
+
+// ===== FLASHCARD DATA =====
+const flashcards = [
+  {front:"What are Data Quality Dimensions?",back:"Measurement attributes of data that can be individually assessed, interpreted, and improved. Aggregated scores represent overall data quality and indicate fitness for use. Core 10: Accuracy, Completeness, Consistency, Timeliness, Validity, Uniqueness, Integrity, Lineage, Reliability, Accessibility.",tag:"Data Quality"},
+  {front:"Accuracy vs Validity — what's the difference?",back:"<b>Accuracy</b> = data matches real-world truth (correct values).<br><b>Validity</b> = data conforms to predefined rules/formats.<br>Example: '2025-02-30' is valid format (YYYY-MM-DD) but inaccurate (Feb doesn't have 30 days).",tag:"Data Quality"},
+  {front:"What is Referential Integrity?",back:"Ensuring changes made to data in one place are carried on and reflected in all other places. Part of the Integrity dimension. Integrity = accuracy + consistency + reliability OVER TIME.",tag:"Data Quality"},
+  {front:"What does BCBS 239 require?",back:"Basel Committee on Banking Supervision Standard 239 requires clear documentation of data lineage for risk data aggregation and risk reporting in financial services. Related to Lineage/Traceability dimension.",tag:"Lineage"},
+  {front:"Name the 7 ML Extension dimensions and their core mappings.",back:"1. Informative → Completeness<br>2. Coverage → Completeness<br>3. Real Inputs → Accuracy<br>4. Unbiased → Integrity<br>5. No Feedback Loop → Integrity<br>6. Consistent Labels → Consistency<br>7. Big Enough → Completeness",tag:"ML Extension"},
+  {front:"What is a feedback loop in ML data?",back:"Using model's own predictions as training labels. Example: email importance model highlights messages → users click highlighted → clicks used as 'important' signal. Model amplifies its own biases. Maps to Integrity.",tag:"ML Extension"},
+  {front:"How does noise affect small vs large datasets differently?",back:"<b>Small datasets:</b> Noise causes overfitting — algorithm models the noise itself.<br><b>Big data:</b> Noise is typically 'averaged out' over multiple examples.",tag:"Data Problems"},
+  {front:"What is Low Predictive Power?",back:"Data lacks information needed for prediction. Music example: artist name, title, lyrics can't capture arrangement, instruments, sound effects. Often not considered until fruitless training attempts. Hard to distinguish from model inadequacy.",tag:"Data Problems"},
+  {front:"Name all 12 types of bias.",back:"1. Omitted Variable<br>2. Sponsorship/Funding<br>3. Prejudice/Stereotype<br>4. Systematic Value Distortion<br>5. Experimenter<br>6. Labeling<br>7. Reporting<br>8. Automation<br>9. Selection (Coverage + Non-response + Sampling)<br>10. Group Attribution (In-group + Out-group)<br>11. Implicit<br>12. Confirmation",tag:"Bias"},
+  {front:"What are the 3 subtypes of Selection Bias?",back:"<b>Coverage bias:</b> Non-representative data selection (surveyed buyers only, not competitor's buyers).<br><b>Non-response/Participation bias:</b> Unrepresentative due to participation gaps (competing product buyers 80% more likely to refuse).<br><b>Sampling bias:</b> No proper randomization (first 200 respondents instead of random).",tag:"Bias"},
+  {front:"What is the Impossibility Theorem in fairness?",back:"You CANNOT simultaneously satisfy all fairness metrics (false positive rate, false negative rate, and predictive values) when base rates differ between groups. Demonstrated by COMPAS: equal PPV across groups ≠ equal false positive rates. Chouldechova, 2017.",tag:"Fairness"},
+  {front:"What happened with Amazon's hiring tool?",back:"Trained on 10 years of resumes (predominantly male). Systematically penalized 'women's' in text and downgraded all-women's colleges. Amazon scrapped the tool. Example of prejudice/stereotype bias from historical data.",tag:"Fairness"},
+  {front:"What are the EU AI Act (2024) risk tiers?",back:"<b>Unacceptable:</b> Banned (social scoring).<br><b>High-risk:</b> Hiring, credit, justice — requires bias audits, transparency, human oversight.<br><b>Limited risk:</b> Disclosure requirements.<br><b>Minimal risk:</b> No specific obligations.<br>Penalties: up to €35M or 7% global turnover.",tag:"Fairness"},
+  {front:"Why is 'fairness through unawareness' insufficient?",back:"Removing protected attributes (race, gender) doesn't eliminate bias. Proxy variables (zip code, name patterns, purchasing behavior) can encode protected attributes. Must actively detect and mitigate proxy-based discrimination.",tag:"Fairness"},
+  {front:"What are the 3 causes of Data Leakage?",back:"1. <b>Target = f(feature):</b> GDP predicted from Population × GDP-per-capita.<br>2. <b>Feature hides target:</b> 'Group' column encodes gender being predicted.<br>3. <b>Feature from future:</b> 'Late Payment Reminders' used to predict loan repayment (always 0 in production).",tag:"Leakage"},
+  {front:"How does adversarial validation detect leakage?",back:"Train a model to distinguish train from test sets. If AUC >> 0.5, the distributions differ significantly, indicating potential leakage or data quality issues. Simple and effective detection technique.",tag:"Leakage"},
+  {front:"Schema Skew — 3 types of inconsistencies",back:"1. <b>Inconsistent features:</b> New feature added to serving data.<br>2. <b>Inconsistent feature types:</b> Integer in training → real number in serving.<br>3. <b>Inconsistent feature domains:</b> Categorical value disappears or numerical range changes.",tag:"Drift"},
+  {front:"Data Drift vs Concept Drift",back:"<b>Data Drift:</b> Distribution of INPUT features changes (schema or distribution skew). The world changes.<br><b>Concept Drift:</b> The RELATIONSHIP between inputs and outputs changes. The mapping becomes invalid. Process being modeled evolves.",tag:"Drift"},
+  {front:"What is Training-Serving Skew?",back:"Discrepancy between ML model's feature engineering code during training vs deployment. Causes: different data handling, data changes, feedback loops, bugs, computational resource mismatches. Fix: feature stores (Feast, Tecton) to ensure consistent features.",tag:"Drift"},
+  {front:"PSI formula and thresholds",back:"PSI = Σ (Actual% − Expected%) × ln(Actual%/Expected%)<br><br><b>&lt;0.1:</b> No significant change<br><b>0.1–0.25:</b> Moderate shift, investigate<br><b>≥0.25:</b> Significant shift, action required<br><br>Originally from credit risk modeling. Sensitive to binning strategy.",tag:"Metrics"},
+  {front:"KL Divergence — key properties",back:"Measures how one probability distribution diverges from a reference.<br><b>Asymmetric:</b> KL(P||Q) ≠ KL(Q||P).<br><b>Undefined:</b> When Q(x)=0 but P(x)>0 (requires smoothing).<br><b>Applied independently</b> per feature, not covariant.<br>Jensen-Shannon (symmetric) often preferred.",tag:"Metrics"},
+  {front:"Single-field vs Multi-field Profiling",back:"<b>Single-field:</b> Summary statistics (count, max, min, mean), data types (categorical/continuous), data values (patterns, business rules), distributions (histograms, skewness, outliers).<br><b>Multi-field:</b> Inclusion dependencies, keys, functional dependencies, pair plots, cross-correlation heat maps.",tag:"Profiling"},
+  {front:"When should data profiling happen?",back:"Right at the BEGINNING of a data project. Benefits: evaluate project viability early, get early view of problems, find dirty data, spot transformation needs, identify unexpected behavior, predict ETL issues. Catching problems early = significant time savings.",tag:"Profiling"},
+  {front:"Great Expectations vs Soda Core vs Deequ",back:"<b>GX:</b> Python, code-first, max flexibility, 0.18+/Cloud GA.<br><b>Soda Core:</b> YAML-based (SodaCL), analyst-friendly, quick setup, Soda Cloud.<br><b>Deequ:</b> Scala/Spark, billion-row scale, AWS ecosystem, constraint suggestion→verification.<br>Teams often combine them.",tag:"Frameworks"},
+  {front:"Deequ's 3-step validation process",back:"1. <b>Declare constraints:</b> Define how data should look by composing column constraints.<br>2. <b>Compute metrics:</b> Translate constraints to measurable metrics, compare between datasets.<br>3. <b>Analyze & report:</b> Predict anomalies over time. Warning >3σ, Error >4σ from mean.",tag:"Frameworks"},
+  {front:"What is the 'shift-left' principle?",back:"Integrate data quality checks proactively and EARLY in the pipeline, not reactively after issues occur. Schema validation at ingestion catches significant errors. This is why data contracts gained traction quickly.",tag:"Validation"},
+  {front:"Pre-Ingestion vs Pre-Training Validation",back:"<b>Pre-Ingestion:</b> Data ingestion stage. Raw incoming data. Goal: schema compliance + raw quality.<br><b>Pre-Training:</b> Model training stage. Held-back clean data subset. Goal: tune hyperparameters + evaluate generalization.<br>9 pre-training categories: schema, distributions, labels, features, missingness, outliers, leakage, splits, fairness.",tag:"Validation"},
+  {front:"What are Feature Stores and why do they matter?",back:"Central repositories for ML features. Ensure consistent feature computation in training AND serving. Key tools: <b>Feast</b> (open-source, v0.38+), <b>Tecton</b> (managed, by Feast creators), <b>Databricks Feature Store</b>, <b>SageMaker Feature Store</b>. Uber's Michelangelo reduced debugging time ~50%.",tag:"Tools"},
+  {front:"Name 4 modern drift detection tools (2024-2025)",back:"1. <b>Evidently AI:</b> Open-source dashboards, PSI/KL/Wasserstein/KS/chi-squared.<br>2. <b>NannyML:</b> Performance estimation without ground truth (CBPE algorithm).<br>3. <b>WhyLabs:</b> Lightweight profiling via WhyLogs, integrates MLflow/Airflow.<br>4. <b>Arize AI:</b> Embedding drift for NLP/LLM applications.",tag:"Tools"},
+  {front:"COVID-19 X-ray models — what went wrong?",back:"Multiple studies found models learned hospital-specific markers (text annotations, positioning artifacts) rather than actual pathology. Models couldn't generalize across hospitals. Textbook case of leakage through confounding metadata. (Nature Machine Intelligence, 2021)",tag:"Leakage"},
+  {front:"Andrew Ng's Data-Centric AI insight",back:"Improving 1,000 labels often outperforms adding 10,000 noisy examples. Quality over quantity, especially for small/medium datasets. Focus on fixing data quality rather than increasing data volume or model complexity.",tag:"Data Quality"},
+  {front:"Quality = Ratio + Threshold — explain the pattern",back:"Most quality dimensions reduce to:<br><b>Ratio:</b> metric / total (e.g., non-null / total rows)<br><b>Threshold:</b> acceptance level (e.g., ≥ 98%)<br><b>Example:</b> Completeness = 9200/10000 = 92%. Threshold 98% → FAIL → pipeline alerts.<br>This pattern makes quality concrete and automatable. Works for completeness, validity, uniqueness, accuracy.",tag:"Data Quality"},
+  {front:"Profiling vs Validation — what's the difference?",back:"<b>Profiling</b> = EXPLORES data to understand it (distributions, nulls, ranges, distinct values). Learns the baseline. One-time or periodic.<br><b>Validation</b> = CHECKS data against explicit expectations and flags/blocks violations. Continuous enforcement.<br><b>Principle:</b> Profile to set expectations; validate continuously to enforce them. 'Examine, then enforce.'",tag:"Profiling"},
+  {front:"What is the Quality Gate pattern?",back:"Validation runs at ingestion and between stages. On PASS → data proceeds to training. On FAIL → data is stopped/quarantined and an alert fires.<br>The gate stands between bad data and the model. Must run on every batch because sources drift — yesterday's passing check can fail today.",tag:"Validation"},
+  {front:"4 Pre-Ingestion Check Types",back:"1. <b>Presence:</b> Required fields exist and are non-null<br>2. <b>Range:</b> Values within acceptable bounds (age 0-150)<br>3. <b>Format:</b> Values match patterns (email regex, YYYY-MM-DD)<br>4. <b>Data Type:</b> Fields have correct types (integer, decimal)<br>+ Post-ingestion adds: consistency, business rules, statistical checks.",tag:"Validation"},
+  {front:"Header File and Audit Table patterns",back:"<b>Header File:</b> Each data batch arrives with a header containing expected record count, checksum, and schema version. Ingestion compares actual vs header before accepting.<br><b>Audit Table:</b> Every validation result (pass/fail, metric values, timestamp) logged. Enables historical trend analysis and compliance reporting.",tag:"Validation"},
+  {front:"Data Contracts — what are they?",back:"Formal 'handshake agreements' between data producers and consumers. Specify: schema, quality expectations, SLAs for delivery. Act as pre-ingestion guarantees.<br>Why they matter: schema validation catches a significant source of quality errors — this is why data contracts gained traction quickly.",tag:"Governance"},
+  {front:"GDPR vs HIPAA vs PCI DSS vs BCBS 239",back:"<b>GDPR:</b> EU data privacy — right to erasure, consent, data protection<br><b>HIPAA:</b> US healthcare data privacy and security<br><b>PCI DSS:</b> Payment card industry data security standard<br><b>BCBS 239:</b> Banking risk data aggregation and reporting<br>All require data governance frameworks with validation and lineage.",tag:"Governance"},
+  {front:"The Scale Analogy for Bias",back:"Bias is SYSTEMATIC, not random. Like a weighing scale always reading 2kg heavy — every measurement is wrong in the same direction. Random noise scatters readings above and below; bias shifts them consistently.<br>In ML: biased data doesn't produce random errors, it produces consistently wrong predictions for specific groups.",tag:"Bias"},
+  {front:"Idli-Chutney and Aloo Paratha Leakage Analogies",back:"<b>Idli-Chutney:</b> Tasting idli WITH chutney during training, then asked to identify plain idli in production. Model learned the chutney (leaked info), not the idli (real signal).<br><b>Aloo Paratha:</b> Always served with pickle → learn to predict paratha by tasting pickle → fail when pickle absent. Pickle = feature from the future.",tag:"Leakage"},
+  {front:"Retail Monthly Sales — Integrated Case Study",back:"50 stores send monthly data. Pipeline validates at every stage:<br><b>Pre-Ingestion:</b> store_id not null, date YYYY-MM-DD, quantity > 0<br><b>Post-Ingestion:</b> total = price × quantity, no sales on closure dates<br><b>Pre-Training:</b> PSI on monthly_spend < 0.1, no future revenue features<br><b>Continuous:</b> Block if completeness < 95% or uniqueness < 99%",tag:"Validation"}
+];
+
+let fcState = {current:0, hard:0, good:0, easy:0};
+
+function initFlashcards() {
+  fcState = {current:0, hard:0, good:0, easy:0};
+  renderFlashcard();
+}
+
+function renderFlashcard() {
+  const fc = flashcards[fcState.current];
+  document.getElementById('fcTag').textContent = fc.tag;
+  document.getElementById('fcFront').textContent = fc.front;
+  document.getElementById('fcBack').innerHTML = fc.back;
+  document.getElementById('fcCard').classList.remove('flipped');
+  document.getElementById('fcRating').style.display = 'none';
+  document.getElementById('fcCounter').textContent =
+    `Card ${fcState.current+1} / ${flashcards.length}  |  Hard: ${fcState.hard}   Good: ${fcState.good}   Easy: ${fcState.easy}`;
+}
+
+function flipCard() {
+  document.getElementById('fcCard').classList.toggle('flipped');
+  document.getElementById('fcRating').style.display = 'flex';
+}
+
+function rateCard(rating) {
+  fcState[rating]++;
+  nextCard();
+}
+
+function nextCard() {
+  if (fcState.current < flashcards.length - 1) { fcState.current++; renderFlashcard(); }
+}
+
+function prevCard() {
+  if (fcState.current > 0) { fcState.current--; renderFlashcard(); }
+}
+
+// ===== INIT =====
+buildNav();
+buildChecklist();
+goToPage(0);
+</script>
+</body>
+</html>
