@@ -1,0 +1,1617 @@
+Computer Vision (S2-25_AIMLCZG525) - Prof. Dhruba Adhikary-20260516_102914-Meeting Recording
+May 16, 2026, 4:59AM
+2h 2m 19s
+
+Dhruba Adhikary . started transcription
+
+Dhruba Adhikary .   0:03
+But.
+
+DESHMUKH HRISHIKESH ACHYUT .   0:07
+Still.
+Yes, sir, good morning.
+
+Dhruba Adhikary .   0:11
+Good morning. Hi.
+Strings.
+Okay, so we'll wait for 5 minutes before we are at strength and then we will start today's lecture.
+In the meanwhile, if anyone has any questions, queries, doubts, anything regarding the assignments or anything.
+
+A SANDEEP .   0:42
+Sir, I am Sandeep.
+
+Dhruba Adhikary .   0:44
+Hi, Sandeep.
+
+A SANDEEP .   0:45
+I, sir, I had sent an e-mail to you regarding my.
+Teams and other issues, the login access issue. I was not able to update the assignment sheet.
+
+Dhruba Adhikary .   0:53
+Okay.
+Yes.
+Okay, okay, Sandeep, what we will do is like you can mail the TS. I've already seen that e-mail. So I believe there are multiple people who have written to me like they have enrolled late, right? I believe. So that is an ops issue. We are following up with the ops team. They will resolve it. However, in case like it is not resolved by like by Monday.
+We will make special arrangements for you, Sandeep, in that particular case, given that you are not able to edit. So I hope you have access to Takshila portal at least, right?
+
+A SANDEEP .   1:31
+Yes, sir. Now, now I got the access, like this last week, last week Friday, I got the access.
+
+Dhruba Adhikary .   1:33
+Okay, yeah.
+Okay, so I'll open the edit just in case, like giving you a heads up, like in case we are not able to allocate a group because most of the groups are allocated. So in that case, you will have to submit it as an individual. I hope that is fine, right? And in case like we have multiple other members also who are enrolling.
+We'll group you all together. That's fine with you, right?
+
+A SANDEEP .   2:00
+Yes, sir, that will work, sir.
+
+Dhruba Adhikary .   2:02
+Okay, great. Okay, Shubham, your question.
+
+A SANDEEP .   2:03
+Thanks.
+
+AYUSH KUMAR GUPTA .   2:04
+Yeah, good morning.
+
+SHUBHAM PATRA .   2:06
+Yes, sir. Just one question I have that I have. I was checking the lab ware in Kachila. I have not seen any lab ware dedicated for the Computer Vision, so I sent an e-mail to you.
+
+Dhruba Adhikary .   2:06
+Good one.
+Ohh, mhm.
+Okay.
+Ha ha ha.
+
+SHUBHAM PATRA .   2:19
+So, so, as yeah, please take it.
+
+Dhruba Adhikary .   2:20
+Yeah.
+Yeah, so basically the lab is currently under deployment, so I will cheque with the relevant people in bits. So I believe like Seetha is looking at it. I will all cheque with her again today. Like what is the status of the lab and also like every code file that we study after the end of the session, like after end of every session, right?
+That is also being pushed into your lab there so that you have access to it. So I'll get it done, Shubham.
+
+SHUBHAM PATRA .   2:52
+Yeah, I think that will be helpful. The reason why I am saying a lot of codes are there, so that will be helpful to understand how to code what our assignment as well. Because our previous semester also I have seen that both codes which are present in LANJEWAR, although we are not copying them, but those are helpful to understand the approach.
+
+Dhruba Adhikary .   2:56
+Mhm.
+Okay, bye.
+Sure, sure.
+Mm-hmm.
+Got it, got it. Perfectly makes sense. Yeah, yeah. And also while the lab wear to everyone, right, while the lab wear is coming up, right, in your Takshila, right, there is a collab link. I always post a collab link of the demo that we are covering during that session.
+
+SHUBHAM PATRA .   3:14
+Thank you.
+Thanks.
+
+SYED MOHAMMED HASAN SHOEB .   3:20
+Okay.
+
+Dhruba Adhikary .   3:30
+So you can also in the meanwhile access it and leverage that. Okay. Are you sure question? Very.
+
+AYUSH KUMAR GUPTA .   3:40
+Yeah, sir, this is in the follow-up regarding the e-mail which I have sent you.
+
+Dhruba Adhikary .   3:47
+Okay, I'm still going through a lot of emails, AYUSH, because I'll get to it today.
+
+AYUSH KUMAR GUPTA .   3:48
+Ohh.
+Okay, so I'll speak out here. So basically, my query was regarding the examination pattern in makeup and regular exams. So usually, like we have observed in the previous semester as well, usually the makeup exam was on a difficult side compared to the
+
+Dhruba Adhikary .   3:55
+Huh.
+In.
+
+AYUSH KUMAR GUPTA .   4:15
+regular one. So is that the same pattern we are following for Computer Vision subject as well?
+
+SYED MOHAMMED HASAN SHOEB .   4:22
+What?
+
+Dhruba Adhikary .   4:22
+So as such there is no pattern, AYUSH. Like we generally see people who appear for regular and people who appear for makeup, right? Makeup people have two weeks additional or one week additional, right, to prepare, right? Ideally it is 2 weeks, right? So.
+
+AYUSH KUMAR GUPTA .   4:37
+Right.
+
+Dhruba Adhikary .   4:40
+It gives, as per us professors, like when we are setting the paper, it gives an unfair advantage to the makeup people, right? Like they know better. Also, the thing is like during the first draft, right, the questions that go into regular, we cannot give that same question, right? So obviously a little bit complexity increases, but.
+
+SYED MOHAMMED HASAN SHOEB .   4:42
+Yeah.
+Okay.
+
+Dhruba Adhikary .   4:59
+At the same time, the format, if you go to session 8, wherein I will have the revision session, the format approximately remains the same. It is the same sort of numerical, same concepts. It is just formatted or formulated a bit differently in terms of verbiage, right? Like say for instance, rather than asking like perform a 4 cross 4 histogram equalization.
+
+AYUSH KUMAR GUPTA .   5:05
+P.
+
+Dhruba Adhikary .   5:22
+Maybe my question to you will be like, given this image, what is the image transformation that you can perform to improve contrast? So that's the only difference I would say AYUSH like, but I do not expect the complexity to be.
+
+SYED MOHAMMED HASAN SHOEB .   5:25
+Play.
+Oh.
+Yes.
+
+Dhruba Adhikary .   5:38
+make up have scored in the past really well if you are well prepared, Ayush. So there is no pattern as such like it is obviously going to be tougher or easier than the regular paper.
+
+SYED MOHAMMED HASAN SHOEB .   5:39
+Yeah.
+
+AYUSH KUMAR GUPTA .   5:48
+Okay, okay, got it. Thanks.
+
+Dhruba Adhikary .   5:51
+Okay.
+
+AYUSH KUMAR GUPTA .   5:52
+Yeah.
+
+Dhruba Adhikary .   5:54
+Okay, any other questions, queries?
+OK, so one critical thing. OK, Mahinder, please.
+And you have a question, Mahinder?
+Hello!
+Okay, so one thing that I wanted to announce was like, and I think the TAs have been posting regular updates about it, that even though we have given such a long duration for formulation of the groups, right, a lot of you have still not completed the Excel sheet based on which the TAs do the work like.
+
+SYED MOHAMMED HASAN SHOEB .   6:28
+Even though I.
+
+Dhruba Adhikary .   6:38
+put you into groups and everything. So that is still not completed, right? So I think like the TAs and me, we have decided like, okay, we will show leniency up until Monday. There are certain edge cases like Sandeep's edge case, like wherein he had issues with Takshila and all those things. We understand that.
+
+SYED MOHAMMED HASAN SHOEB .   6:39
+Okay.
+OK.
+Okay.
+Yeah.
+
+Dhruba Adhikary .   6:58
+But, come Monday.
+The sheet will be closed and if you are not grouped, there is no way to submit the assignments. So please fill in the sheets. Okay. Everyone, there are announcements being posted. Please help us to put you into proper groups. Okay. With that being said, I do not have any other announcements or anything.
+
+SYED MOHAMMED HASAN SHOEB .   7:05
+Yes.
+Office.
+Yeah.
+
+MAHENDER SINGH .   7:21
+Professor, sorry, I think I was not able to unmute myself. Yeah, so I've been assigned to two groups. One is a five group member, which I think is correct, but another one also is there where I think in the section I say it says section Professor Sugata Ghoshal.
+
+Dhruba Adhikary .   7:23
+Yeah, my.
+Okay.
+
+SYED MOHAMMED HASAN SHOEB .   7:28
+Hello.
+
+Dhruba Adhikary .   7:29
+Okay.
+
+SYED MOHAMMED HASAN SHOEB .   7:30
+Hi.
+Okay.
+
+Dhruba Adhikary .   7:36
+Thank you.
+
+SYED MOHAMMED HASAN SHOEB .   7:38
+Six.
+
+MAHENDER SINGH .   7:41
+And count is 122, so I am also part of that.
+
+Dhruba Adhikary .   7:42
+Yeah.
+So by default, everyone is part of certain groups like Professor Sugata Ghoshal's group or by my group, right? So it's a technicality. We will take care of it. Like I think the TAs are already on that. Like they already are aware of this particular problem. I think not just you, everyone will face that issue.
+
+SYED MOHAMMED HASAN SHOEB .   7:52
+I said.
+
+Dhruba Adhikary .   8:05
+Like, once they are trying to upload the assignment, like, because it won't allow you to upload it, so there's just a small configuration that needs to be done on Takshila. We will take care of that, Mahinder.
+
+SYED MOHAMMED HASAN SHOEB .   8:17
+Okay.
+
+MAHENDER SINGH .   8:17
+And Professor, one last question. So given the group formation is still kind of materialising rate, so will there be extension on the assignment date also?
+
+SYED MOHAMMED HASAN SHOEB .   8:20
+No.
+
+Dhruba Adhikary .   8:29
+No extensions for the people who have already been placed, but as I said, edge cases like Sandeep and all, who still do not know their group members or who did not have access to Takshila till Friday, they will probably get some sort of a lenience. But...
+
+MAHENDER SINGH .   8:47
+It.
+
+Dhruba Adhikary .   8:47
+People who have been put into group, the Excel sheet was already published the day the assignment was released, I believe. So there will be no extension as such.
+
+SYED MOHAMMED HASAN SHOEB .   8:49
+Yes.
+Ohh.
+
+MAHENDER SINGH .   8:54
+Yeah.
+Understood. So I think the group which we have to refer to is a group where only five members are there and your name is there, correct? Yeah. Okay.
+
+Dhruba Adhikary .   9:01
+Five, 5, 5 members. Yes, no, my name is irrelevant. So your name, so wherever your name is there within five member group, that is your assignment group for the semester.
+
+MAHENDER SINGH .   9:07
+No, no, mine, everything mine, I was like, you correct, correct.
+
+SYED MOHAMMED HASAN SHOEB .   9:08
+Hello.
+
+MAHENDER SINGH .   9:16
+Understood. Thank you, Professor.
+
+Dhruba Adhikary .   9:18
+OK, great. OK, let me put my screen on slide show and let's start with the session at hand today, right? OK, and this is a paper that I was writing. OK, so before we start today, we are gonna start with where did my pen go?
+
+SYED MOHAMMED HASAN SHOEB .   9:25
+Excellent.
+Just.
+
+Dhruba Adhikary .   9:37
+Just one second. Just a second, please. Let me put it in writing.
+
+PRANAV SHIVAM .   9:37
+Thank you.
+
+Dhruba Adhikary .   9:44
+Okay.
+XP pen, just one second, please. This should be set up.
+Okay.
+Just one second.
+Just one second.
+
+PRANAV SHIVAM .   10:10
+Thank you.
+
+Dhruba Adhikary .   10:13
+Okay, it is working now. Okay, so today we are going to start with edge detection. Okay, so it is one of the most fundamental techniques within computer vision and within this session, right? Not within this session. Can everyone please go on mute? I really don't like muting you guys.
+
+PRANAV SHIVAM .   10:19
+No.
+
+SYED MOHAMMED HASAN SHOEB .   10:26
+All right.
+
+Dhruba Adhikary .   10:34
+OK, so we are going to start with something called as low level vision. OK, this forms the basis of all image processing techniques that is taking place since 1960s all the way till date, right? Even today, we decipher and use all of these techniques, right? So as part of today's session, we are going to cover.
+edge detection. I don't think we will be able to cover line detection because edge detection in itself is a huge topic, right? So we are going to study a lot about edge models today and the different approaches for edge detection. And we are going to cover in-depth mathematical concepts that are associated with it.
+Okay, so we are going to see that. But before we go to it, right, I wanted to understand with you, right? You guys have had your deep learning sessions so far?
+Image processing using deep learning? Yes, no, anything.
+Sorry.
+
+SUBRAMONY M .   11:36
+So you mean a convolutional neural network that we did last time?
+
+KADRE UPENDRA SUNIL .   11:36
+No, sir.
+
+DESHMUKH HRISHIKESH ACHYUT .   11:37
+Ohh.
+
+Dhruba Adhikary .   11:40
+Convolutions, yeah, convolutional neural network or anything, any deep learning algorithm for image processing.
+
+DESHMUKH HRISHIKESH ACHYUT .   11:42
+But...
+Yeah, actually it was it was image classification algorithm we had in our assignment also, sir.
+
+Dhruba Adhikary .   11:52
+Okay.
+Okay, so...
+Assuming that everyone has done image classification, right? So you have probably used some sort of a deep learning network, right? Either you have used ResNet or you have used VGG or Inception or anything, right? That is my assumption, okay, that all of you have done. So if I...
+ask you what is a commonality between these algorithms and any algorithm that you have worked so far with? What is a commonality?
+Apart from the fact that they all use convolutional neural networks.
+What is the commonality between all of these algorithms?
+
+B. KRISHNA MOHAN .   12:40
+Features would have already understood with our ResNet, VGG and all.
+
+Dhruba Adhikary .   12:40
+Anyone want to?
+Okay.
+
+B. KRISHNA MOHAN .   12:47
+So we can straight away use them instead of writing separate programs.
+
+Dhruba Adhikary .   12:51
+OK, OK, so that is one way of seeing it, but the other way is all of them have 4 distinct.
+units, right? In fact, every CNN or every transformer that is written for, like say for instance for image processing, has four distinct units to it. So if you ever go to the architectures of any of this, like ResNet 50.
+Architecture.
+Okay, so if you ever go into this, yeah, so you will count there is block one, block two, block 3, block 4.
+Most architectures, right? Almost every CNN architecture that you see, one, two, three, 4. If you go for VIJAY, all of them have.
+four layers only. So VGG one, two, three, 4. Why is that?
+Within each of these units, there can be N number of convolutions, as you see, but every convolutional unit or layer is dedicated to something. OK, so...
+If you see how they extract features, feature extra feature visualisation distant.
+Okay.
+So.
+When we take image processing as a functionality, right? Every layer that you see in any modern day architecture or in any of the older architecture, right? They construct an image basically using 4 by breaking down the image into four distinct parts, okay?
+The first part is edge detection, okay? Edge detection, line detection, basically low level vision. So within your layer one of your CNNs, you're basically doing edge detection. Now, in layer two, once you go to block two, say let's say block two, you basically combine all of these edges to form.
+textures. Within your block 3, from this textures, you form patterns. And within your block 4, from this patterns, you create parts of object. And in your final layer, you create the objects themselves. This is basically how your brain also sees this, right? So the derivative of this is...
+This is just a tidbit.
+from Strodinger's cat experiment, right? So what Strodinger did was that it's basically, he basically took a cat, okay, exposed that cat to radioactive material and immediately killed the cat. And then when he dissected the brain, right, within the cat's brain, right, there were distinct
+pieces seen, like how a particular cat sees, like what are the edges being detected, right? So I don't see the proper image. Experiment, brain, edge.
+Okay, so something like this. So basically what Schrodinger did in 50s was basically he exposed a cat to radioactive material and then immediately killed the cat without giving him too much of a time. And within the cat's brain, right, he was able to see neurons.
+that detected edges. This forms a fundamental basis of entire image processing. So any image processing algorithm, in order to understand a scene or an image, has to perform 5 steps or four steps. First is edges and corner detection, edges and line detection, sorry.
+edges and line detection. Basically, it will detect like different kinds of edges, like edges at 90 degree, edges at 180 degree, 0 degree, 45 degree, 47 degrees, so on and so forth. The second block will basically combine all of these edges to form textures that you see in and around you. From those textures, you form
+patterns. Like say for instance, my eye has a distinct texture, right? It is always horizontal to my face, right? There are two eyes. The texture of it, you know how an eye looks like. Then it formulates those patterns like, okay, this is an eye. Then it creates an eye is a part of a human face.
+OK, and then it constructs the entire image as such. OK, so today's topic dives into that particular aspect of image processing. OK, so always remember this: whenever you are designing a computer vision or an image processing algorithm, you should have four blocks.
+at minimum. And each of those blocks will have a distinct functionality. Always remember that, right? So today we are going to start with edge models and their approach. We are going to do low level vision. We are going to detect edges. OK. In our next lecture, we are going to deal with something called as Hough transform. We'll detect lines.
+Okay, we'll see how that is important. Okay, so now let's take an artist rendition. Yeah, Rishikesh.
+Yeah.
+
+DESHMUKH HRISHIKESH ACHYUT .   18:07
+Yeah, sir, you just told that we should have at least four blocks, right? So, so what does this mean that at least if we have, do we have more than four or and if we have then what are those blocks like AJS?
+
+Dhruba Adhikary .   18:14
+Yeah.
+
+DESHMUKH HRISHIKESH ACHYUT .   18:28
+Then, texture pattern parts, and what are the other other than four?
+
+Dhruba Adhikary .   18:33
+So say for instance, you are only thinking of RGB image. What if it is an ultrasonic image? You also need another dimension for capturing depth, right? Edges, then you have textures. Textures means ultrasonic patterns. And then from those textures, you will create ultrasonic patterns.
+you also need a depth component. So depending on problem statement to problem statement, you will have specialised neural networks. Like say for instance, if you are dealing with MRI as a modality, right, you will use something called as NN unit.
+
+DESHMUKH HRISHIKESH ACHYUT .   19:00
+Okay.
+Yes.
+Mm.
+
+Dhruba Adhikary .   19:07
+Okay, so depending on like if you are doing density based measurements, right, you will use a different thing. If you are doing like a 3D point map, you will use Gaussian 3D splatter or you will use NeRF, neural radiating field convolutional neural networks. So it depends.
+But at minimum you need 4 blocks. So fundamental image analysis need 4 blocks at minimum.
+Does that answer?
+
+DESHMUKH HRISHIKESH ACHYUT .   19:35
+Yes, sir. Understood. Yes, sir. Understood. Thank you.
+
+Dhruba Adhikary .   19:36
+K.
+Okay, so let's start with edge detection. Okay, so on your left hand side, you have an image, right? An image or a sculpture, as you say, right? Now, the artist decides, so this is a 3D image, right? So what does the artist do? The artist draws a 2D rendition of the 3D object.
+And you can see within this 3D or when we are transforming this 3D to a 2D drawing, right? The artist is able to capture almost every single aspect or curve within the 3D image. He is able to represent a 3D image in
+2D image accurately by transforming something that is showing edges, like different kinds of edges. We are able to capture all the relevant information about the structure of a 3D image by just detecting edges. Okay, now edges can be of different types.
+But before we go to that, right, from this image, what can you tell me about an edge?
+How do you define an edge?
+So if you look closely in this image, right? So this is a drawn edge, correct?
+
+RAGHAVENDRA S P .   20:57
+Yes.
+
+Dhruba Adhikary .   20:57
+Now, if you see over here, this is the relevant edge. What is happening over here? The intensity is changing for black to white, correct? So edges are areas where the intensity changes. It abruptly changes. So everywhere you see an edge, right, you can clearly see the intensity is suddenly changing. Now.
+
+RAGHAVENDRA S P .   21:02
+Intensity.
+
+Dhruba Adhikary .   21:20
+This is 1 paradigm to it. There are other things also that you have to deal with, like shadow reflection and other things, but that is scope for different lectures, right? But by just detecting intensity variations, which we will call as edges, we are able to accurately transform a 3D object into our 2D world.
+we are able to transform it. Okay, so edges are nothing but abrupt changes in intensity value. Now, based on that definition, right, there can be multiple types of edges, right? So say, for instance, you have suddenly an intensity changing between one side to another.
+Like it abruptly goes from 0 to 255. What does it mean? It goes from black to white. Okay, so the intensity suddenly changes. We call them as step edges. Okay, however, if the intensity does not abruptly change, as is often the case, it gradually changes.
+So say for instance, over here, intensity was 0, over here it was 25, 26, 27, 28, 29.
+and all the way till 100, right? So the intensity is gradually changing. We call such changes as rampage, okay? And in case the intensity suddenly spikes and then comes back down, like say for instance, you have zero, then you have 255, and then back again zero, right?
+We call them as roof edge.
+Every edge that we detect in images are something of this sort, right? When you combine multiple of this, you get an able detection. So let's say for example, we take this brain MRI, right? This brain MRI, if you can see in different places, right, we are detecting different kinds of edges. So say for instance, I take a small cross section over here.
+What do I see? I see a rampage.
+Okay, I see a ramp edge. Okay, so say for instance, I take this like near the ear or something like this, right? So what does it denote?
+It detects a roof edge. Okay. And this one is basically a step edge. So you can see within your image, right? If you take multiple cross sections of it, like say for instance, over here, over here, right? You can detect different kinds of edges. So an edge detector algorithm basically goes pixel by pixel.
+and it will detect intensity variations, intensity variations, which are in turn like representative of an edge. Okay, so say for instance, your edge detection algorithm is running over here. It is gradually going right. So over here, it suddenly gets.
+are like a step edge, right? You can clearly see, okay, this is the background and this is the brain.
+This is a skull. OK, so you can clearly see how important edge detection is, and it is one of the lowest and the most fundamental unit contributing to an image processing algorithms.
+OK.
+Is this clear, everyone?
+what edges are and how many different types of edges there are.
+Okay, great. So let me move ahead.
+
+VAISHALI THAKUR .   24:43
+I have a question. What if there are local edges too inside the image?
+
+Dhruba Adhikary .   24:45
+Okay.
+Local edges as like what mom?
+
+VAISHALI THAKUR .   24:55
+So highly concentrated area inside the image. Also suppose I have squares inside this, not these rounded off images.
+
+Dhruba Adhikary .   25:03
+So this is a tumor, say for instance, right? So in tumour also, like when it is in digital image format, right? So say for instance, over here, this one is greyish in color, right? So this pixel is greyish in color, right? So say for instance, somewhere around 255. Now, a cancerous mass.
+right? It is blackish in color, right? So you can clearly say this is a local edge. It goes to 50, right? So you can see an intensity variation, right? So this is an edge for me.
+
+VAISHALI THAKUR .   25:31
+Yeah.
+Mm.
+
+Dhruba Adhikary .   25:36
+Okay, this is an edge of the tumor.
+
+VAISHALI THAKUR .   25:38
+And.
+
+Dhruba Adhikary .   25:39
+I hope that is what you mean by local ed, right?
+
+VAISHALI THAKUR .   25:40
+Okay.
+Yes, right. Correct. Yep.
+Yep. Thank you.
+
+Dhruba Adhikary .   26:03
+Okay, so when you take a digital image, right, say for instance, this is what you have, okay? This is the image that you get and you get a ramp edge, okay? Because intensity is varying from zero all the way till 255, right? It stabilises somewhere over here, right?
+So what do we do, right? We have to detect ramp edge, step edge, and say roof edge, for instance, right? These are actual image representations of that, right? So in step edge, you'll clearly see 0, 255, and 0, right? And then again, you have like, say for instance, zero.
+Over here, a small 255 and then zero.
+OK, again, zero, sorry, again, a 255, say zero and 255, right? These are examples, right? However...
+our modern day image is seldom like this, right? There are a lot of fluctuation in the intensity value because it is ultimately hardware based, right? So you have something like this. Why do you think this is the case?
+Anyone?
+There is pixelation, okay? You all know about this, right? Pixelation are nothing but noises. Okay, so this is supposed to be 255, but do we get 255 always? No, we get maybe say 254 or 253 or 250 or other values, right? So say for instance.
+This is what you actually have, right? You have some kind of intensity variation, but this is what we have.
+Okay, so when you take derivatives of it, right? When you take, say for instance, this was my ideal image, right? So how do you detect an edge like intensity variation, right? How do you get intensity variations? Can anyone tell me? So say for instance, these are two pixels, right? I have to take the intensity variation. So how do I mathematically take that?
+How do you calculate? Sorry?
+
+RAGHAVENDRA S P .   28:11
+What's not?
+
+G M AISHWARYA .   28:11
+Great.
+
+B. KRISHNA MOHAN .   28:13
+Difference of intensities.
+
+G M AISHWARYA .   28:13
+Right.
+
+Dhruba Adhikary .   28:15
+difference of intensities and what is that called as in mathematical sense.
+
+G M AISHWARYA .   28:19
+Radiant rate of change.
+
+Dhruba Adhikary .   28:21
+Gradient. OK, gradient change. OK, so difference of intensity, right? And we call it as gradient change. OK, and how do we find gradient change?
+How do we find gradient change?
+
+G M AISHWARYA .   28:44
+Partial derivatives.
+
+Dhruba Adhikary .   28:46
+We take derivatives, correct? We will be taking derivatives. So what does a derivative do? Basically, it takes a difference between 2 pixels right now. Say, for instance, I have to detect intensity variations. I decide, OK, I'm going to use derivatives, right? So when you take a first order derivative, right?
+This is my intensity profile, right? So what happens to the intensity profile? My derivatives become noisy, right? So imagine you have something like this, right? So you have zero and then you suddenly go to a ramp edge, right? 255, right? And you have a 0 over here, right? But this one is 254.
+This one is 255, this one is 254, this one is 253, and this one is, say, for instance, 252, right?
+Yes or no, everyone. Let's say that I have a one-dimensional image over here. What is a partial derivative of it?
+Can anyone tell me?
+What is a partial derivative for this?
+
+G M AISHWARYA .   29:53
+For, for which one?
+
+Dhruba Adhikary .   29:56
+For this 1D array.
+
+G M AISHWARYA .   30:00
+0 to 550, this one.
+
+Dhruba Adhikary .   30:03
+Yeah, this one.
+
+SUJOY SAHA .   30:07
+I think there might be 2 value. Either it will be 0 or it will be near 253 or 254, whatever, like in binary we will get.
+
+Dhruba Adhikary .   30:07
+So, partial, yeah.
+So no, actually we will take the difference, right? So what is derivative? Derivative is difference between two, right? This minus this, correct? So 255 minus 255, right? It is say for instance, 255 minus 0, right? It is 255, right? First intensity variation, right?
+
+RAGHAVENDRA S P .   30:18
+No.
+Vision.
+
+Dhruba Adhikary .   30:36
+So we have an edge. 254 minus 255. This is minus 1. This is again, say 255 minus 254. This is 1. Okay. This is again 254 minus 255. This is minus 1. 253 minus 254. This is again minus 1.
+255 minus 253 this is 2.
+OK, and zero. And this one was again zero. You can expect you can 0 pad it and these are the differences, right? So and this one is finally 0 minus 255. This is minus 255. OK, so it is going in the negative axis, right? So this is my first order derivative.
+Okay, so what do you see over here? Intensity is changing. Over here, intensity is changing. Correct? Yes or no, everyone.
+
+G M AISHWARYA .   31:30
+Yes.
+
+Dhruba Adhikary .   31:31
+Right, intensity is changing. This is an edge as per definition, but if you see over here, intensity is changing also over here.
+So, does that mean this become edges?
+
+RAGHAVENDRA S P .   31:46
+Mm.
+
+Dhruba Adhikary .   31:48
+Do they become edges? Anyone?
+
+G M AISHWARYA .   31:51
+No, they are their noise here. The change in intensity is quite small and can be ignored.
+
+Dhruba Adhikary .   31:53
+They are nice.
+
+SYED MOHAMMED HASAN SHOEB .   31:53
+Like.
+
+Dhruba Adhikary .   31:57
+Correct, they are noise, but computer algorithms never seldom work like that. Okay, so we know we can track intensity differences using derivatives, partial derivatives. We can take gradient change and we can find derivative of it and we can say like, okay, intensity is changing.
+However, we are left with such spikes. So these are all first order derivative. So say for instance, in ramp edge case, right, it is ideally okay. But in case of step edge or roof edge, right, this is the kind of noise, the pattern that you get. You're not able to say, okay, this is.
+accurately my edge type. So we perform something called as smoothening, image smoothening to reduce this noise, right?
+
+NIKHIL V. KAPRE .   32:46
+A quick question, sir.
+
+Dhruba Adhikary .   32:46
+Basic, yeah.
+
+NIKHIL V. KAPRE .   32:49
+gives considered certain types of edges, but they could even be curved like bevelled edges, right? So would the gradient method actually help us determine the kind of edge or is there something else to actually determine it?
+
+Dhruba Adhikary .   32:53
+Oh.
+Yeah, so no, they will help. So this is say curved edge, right? So when you break it down, right, this is how the pixels look like.
+
+NIKHIL V. KAPRE .   33:09
+Agreed, agreed, sure, sure, okay.
+
+Dhruba Adhikary .   33:10
+Right, so within this, right, so over here, this edge is say 90 degree, right? So it will be detected by a 90 degree edge detector. This edge is say, for instance, 45 degree. Sorry, this one was 0 degree. This was 45 degree. When you're coming over here, it is say, for instance, 87 degree edge.
+When you're coming over here, it is say, for instance, something like 60 degree edge, so on and so forth. Okay, so it will move accordingly. Okay, so imagine the kernel will go step by step over the entire image. Okay, so bevel or anything, unless and until the resolution is good enough, it won't matter.
+
+NIKHIL V. KAPRE .   33:38
+Thank you.
+
+Dhruba Adhikary .   33:50
+OK, so.
+
+GAURAV KANDEL .   33:51
+For one doubt, sir, the edges may vary going vertically as well, right? Not only originally.
+
+Dhruba Adhikary .   33:53
+Good.
+Correct. It might vary in X direction, Y direction, or even Z direction.
+So you will have N number of such edge captures, basically.
+It can vary in any direction and we will see. Let me come to the algorithm. You will find out more about it. That's why we will go for partial derivatives. OK, so we'll come to it. So an ideal edge detection algorithm, as we saw right, should remove this noise. OK, it should give me an accurately identifiable edge.
+Okay, that okay, this is my edge, this is my edge over here, the intensity values are uniform. Okay, it should say that, right? So for that, first and foremost, we have to do image smoothing for noise reduction. The second thing is we have to detect this edge points, right? Edge points via like, okay, what are the potential edge points? So say for instance, in our case,
+This is a potential edge point. This is a potential edge point. If we remove the noise, we will be able to say, OK, this is a potential edge point. This is a potential edge point. OK, the third thing is localization. OK, the objective of any edge detection algorithm is to localise it properly, like say, for instance.
+We have to say, okay, the edge occurs over here. It starts over here, ends over here. We shouldn't be saying like, okay, the edge is starting over here and it is ending over here. That is an inappropriate detection. Okay, so an edge detection algorithm will have 3 components attached to it. We will have a image smoothing algorithm.
+We will define like possible edge candidates. You will see within our canny edge detector algorithm that we later go through. And we have to exactly see, okay, my edge is starting from this location and it is ending at this location. Okay, so let's take a 1D image from a 2D image, right? So how do we take a 1D image? We just take a horizontal.
+map, right? And these are all the intensity values present, right? So what do you see in this intensity values, right? So if you see this image, right, over here it is bright, it starts on bright over here, it suddenly spikes, okay, at this particular point. Then again you have the white pixelation and then again you have an edge boundary over here.
+Okay, so this is the 1D histogram of this point, right? Intensity histogram. Straight off the bat, you can see two roof edges. You can see one gradual ramp edge. Okay, and you gradually see a step edge as well, right? How do you detect this?
+Same thing, right? So how do you detect intensity variation, right? So you take the next pixel and you subtract it from the previous pixel. That in turn gives you your first order derivative. So say for instance, you take this image, right? 5 minus 5 is minus 1.
+Minus one, minus one, minus one, so on and so forth. So, you have the image intensity 0 over here. Suddenly, that zero goes all the way till six.
+It is an edge candidate. OK, it's an edge candidate right now. It goes to 6. OK, then again to zero. So say, for instance, it goes from zero to six, and then again comes down to -6 level, which is again back to zero.
+So, you have detected a possible edge over here. OK, you go on and do this exercise till you come to over here, so you have zero, suddenly it goes to seven, right? And then it stays at a certain level.
+Okay, so you can clearly see this first order derivative gives me my appropriate definition of what is an edge location and possible edge candidates. Okay, now depending on your use case, you might also go for 2nd order derivative. So what does 2nd order derivative give you? It gives you cleaner rate of change of gradient.
+
+G. VIJAY .   37:52
+Yeah.
+
+Dhruba Adhikary .   37:55
+Okay, so basically what happens if you again take a difference between this and this, right? So say for instance, minus 1 plus 1, right? Cancel 2, give 0, 0, 0, 0, right? Now over here, 10, 6, 12, and 6. So you can clearly see
+the edge gets amplified. So second order derivative, you take it when you have to like, like the edges are very small and you kind of ignore it. But using second order derivative, you can pick up on those edges because it amplifies that factor. Okay. But coming back to the question.
+
+G. VIJAY .   38:34
+So, is there a question here?
+
+Dhruba Adhikary .   38:37
+Yeah.
+
+G. VIJAY .   38:38
+Can we say a single 2D image can have multiple 1D representations?
+
+Dhruba Adhikary .   38:43
+Yes, it can.
+
+G. VIJAY .   38:45
+Right, because here you are selecting Y equal, for example, if I can imagine the 2D measures X&Y axis, we can say you are choosing a point where Y equal to 10. We can choose Y equal to 20 as well, and we can have a different 1D representation as well.
+
+Dhruba Adhikary .   38:52
+Mm.
+Ha.
+Correct, correct. Yes, you can. You can help. So say for instance, if you take this right, you have X axis over here, Y axis over here. So for a Y equal to N value, right, that is a 1D array.
+
+G. VIJAY .   39:02
+Okay.
+
+Dhruba Adhikary .   39:13
+right? An image is what? A grayscale image is just a 2D array. If you have seen the digital image and if you have run the notebooks, you will know this, that any image is basically N number of 1D arrays. Any 3D image is N number of 2D arrays. Okay, that's it. Okay, coming back to the point at hand.
+
+G. VIJAY .   39:32
+Got it.
+
+Dhruba Adhikary .   39:33
+Right? You have the 1st order derivative which gives you like, okay, the edges and you have a second order derivative that also can give you the same. It amplifies and gives you better detection, right? So what were the three parameters, right? Image smoothening, we will see how to do that. Detection of edge point. First order derivative can easily do that, right?
+But a good localization, right? A second order derivative is much better at localization. So over here it says 6 minus 6 and 0. Okay, so you have 6 minus 6 and 0. Okay, you're coming back to it. But can you say appropriately, okay, this is the exact
+position where the ed starts? Probably no, but we are happy with it. Second order derivatives can give you much more nuanced information. Okay, but here comes up kicker.
+Why do we not use second order derivative? In fact, in most of your deep learning algorithms, why don't you use a second order derivative? Why do you only stick to 1st order derivative?
+
+G M AISHWARYA .   40:36
+The functions may not be differentiable.
+
+Dhruba Adhikary .   40:41
+Not really. Sigmoid, Tanage, ReLU, they're all differentiable.
+
+SYED MOHAMMED HASAN SHOEB .   40:50
+Complexity increases.
+
+Dhruba Adhikary .   40:52
+Complexity. Complexity, correct. The time complexity, right? So I can make do with a first order derivative. Okay, second order derivatives gives me a better answer, but also it increases my time complexity, right? It increases my time complexity. It takes much longer to train.
+right? Imagine with first order derivative, it takes months to train an image classification algorithm, a proper industrial based image classification algorithm. With first order derivative takes months. This is just clever optimization. We don't do second order derivative unless it is absolutely needed. We do second order derivatives in case of mid-level vision like.
+corner detection and other things. But for edges, we are happy with the 1st order derivative. Okay, so you can give it a try, like create your own edge detector with a second order derivative. That's actually one of the neatest experiment that you will do. Okay, so say for instance, the first thing that we did, coming to the algorithm back again, right?
+Now, we define edges as intensity variation.
+
+NIKHIL V. KAPRE .   41:55
+Second question though, second question though, since we're already only doing the gradient computation on successive entries in the array, right? So at the same time, in the same loops, you could actually even do the 2nd order derivative computation. It is still remain order of N.
+
+Dhruba Adhikary .   42:04
+Mm.
+
+NIKHIL V. KAPRE .   42:12
+Correct, because these are all successive computations, right?
+
+Dhruba Adhikary .   42:12
+So.
+Huh, so you're thinking only of the feed-forward network. What about the back propagation?
+
+NIKHIL V. KAPRE .   42:18
+Ohh.
+Wouldn't that also be a second order of N computation? Overall, it will remain order N and complexity only. So I thought that there are ways to tackle complexity, but if it's not, please explain.
+
+Dhruba Adhikary .   42:26
+Um...
+Mm.
+No, so you're thinking only of the time complexity. Space complexity also increases, right?
+
+NIKHIL V. KAPRE .   42:41
+Agreed, agreed, agreed. It'll be, yes.
+
+Dhruba Adhikary .   42:42
+Agreed, right? You have to do 2 passes for it, right? That is why you will specifically see in corner detection. It's a topic for later in the sessions. When you do a second order derivative, right, you don't take the difference of Gaussians. You basically go, you don't do take the Laplacian of Gaussian. You come up with difference of Gaussian.
+
+NIKHIL V. KAPRE .   42:51
+Okay.
+Okay.
+
+Dhruba Adhikary .   43:01
+So it is faster. That becomes order of N. This stays like a order of, I think, like N square or something like that. Because the time and space complexity both increases.
+
+NIKHIL V. KAPRE .   43:04
+KOMAL.
+Okay, sure.
+
+Dhruba Adhikary .   43:13
+Okay.
+
+NIKHIL V. KAPRE .   43:13
+Fair enough. Thank you.
+
+Dhruba Adhikary .   43:15
+OK, coming back right, so...
+For the first thing, right, we defined edges as what? Edges are basically something like intensity variation, places where intensity variations happen, okay?
+Now, a critical definition is also edges are basically intensity variations in one direction, OK?
+That direction can be anything. That direction can be x-axis, y-axis, or a combination of X&Y axis, a vector basically in XY space or XYZ space, but it is in one direction only. Intensity variation in one direction is called as an edge. Okay. Now, we defined in order to find this intensity variations,
+we are gonna do differentiation, right? We are gonna take the difference of the next pixel, intensity value of the next pixel, subtract it from the previous, and we are gonna see whether there is some difference or not. There is some intensity variation or not, right? So how do we define this, right? So say for instance, we take the...
+partial derivative of it, discrete derivatives, right? So we take the partial derivative for a 2D image, right? G of X of XY. We call it as dou of F of XY. What is F of XY, everyone?
+What is F of XY?
+
+B. KRISHNA MOHAN .   44:37
+The pixel mapping.
+
+Dhruba Adhikary .   44:39
+Digital image pixel map. OK, it's a digital image, right? So say, for instance, you have the digital image and you take dou of dou dou X of f of xy, right? What is it is basically doing? It is basically taking the next pixel along the x-axis, subtracting it from the previous.
+
+B. KRISHNA MOHAN .   44:40
+Yeah.
+
+Dhruba Adhikary .   44:58
+right? So when you are finding the derivative, so when you have a 2D image, right, you have an x-axis, you have a y-axis, right? So intensity is varying along this direction, right?
+x-axis, but intensity is also varying along y-axis as well. So you'll independently take the partial derivatives, right? So when you are taking the partial derivative along X, like intensity variation along x-axis, you will take this pixel and subtract it from this pixel.
+OK, so this is x + 1 and this is X, so x + 1 - f of X for a fixed value of Y, wherein Y is equal to say, for instance, one over here or zero over here. OK, now when you take the partial derivative along y-axis.
+It is dou dou Y of F of XY. In that case, you have this was basically Y, this was X comma y + 1. So you basically take F of X comma y + 1 and subtract it from F of XY, right? So this gives you the intensity changes
+At this particular position.
+Is this clear, everyone, or should I repeat?
+
+SHUBHAM PATRA .   46:20
+Please repeat, I did not get.
+
+DHILEEPAN K U .   46:21
+THAKUR.
+
+Dhruba Adhikary .   46:22
+Repeat, OK, OK, so say, for instance, this is my F of X, comma Y, right? This is my digital image, OK?
+This is my digital image. Okay, now this coordinate is X comma Y. This coordinate is x + 1, comma Y. This coordinate is X comma y + 1. If I have to calculate, okay, is the intensity changing in the next block, right? Is there an intensity variation? Is this an edge or not?
+Right, is this ed?
+Okay, I'm trying to say, is this an edge or not? What do I need to do? I need to find out the intensity variation along x-axis. Also, I need to find the intensity variation along y-axis. So how do I do that? I take the next pixel in the block, subtract it from the current pixel.
+OK, the X values of it, the intensity values of it. And I take the next pixel in y-axis and subtract it from the previous pixel at Y, right, to give me the partial derivatives for along x-axis and the y-axis.
+OK.
+Is this clear now?
+
+SHUBHAM PATRA .   47:40
+Still not OK. I will see the Lecture again.
+
+Dhruba Adhikary .   47:44
+OK, OK, maybe post a lecture we can connect again, OK?
+
+SHUBHAM PATRA .   47:48
+Yeah, sure. Thank you. Yeah, thank you.
+
+Dhruba Adhikary .   47:48
+That's fine, right? Shubham, right? OK, so once you have the partial derivatives along X&Y axis, right, you can approximate it. OK, now within your textbooks, if you will see your X axis are marked as vertical axis and your Y axis are horizontal axis, right?
+So Indians are attuned to taking x-axis as a horizontal axis and the y-axis as vertical axis, but they are basically arbitrary, right? So we'll take it accordingly, right? So say, for instance, within your textbooks, x-axis is taken as a vertical axis and y-axis is a horizontal axis, right?
+So, accordingly, say, for instance, this is your x-axis and this is your y-axis. OK, this was a pixel, right?
+This pixel position is X, comma Y, right? And its intensity value is, say, for instance, 50.
+OK, this position is say, for instance, x + 1 comma Y, and this pixel position is basically X comma. Sorry, I myself am writing it wrong. This is y + 1, this is X, this is x + 1, and this is Y, correct?
+
+DHILEEPAN K U .   48:55
+Thank you.
+
+Dhruba Adhikary .   49:01
+This is say, for instance, 200, and this is say, for instance, 250.
+OK, this is clear, everyone.
+Is the image clear? You have an F of X, Y with intensity value of 50. You have x, y + 1, which is at 200, and you have x + 1, y, which is at 250. I need to find out whether this is an edge or not. How do I do that? OK, so if I have to take...
+G of X, right? What was my definition? F of x + 1 comma y - f of XY. OK, so what will be the value over here? F of x + 1 comma Y is 250 - 50. OK, 200. OK, similarly.
+
+DHILEEPAN K U .   49:43
+Please, welcome.
+
+Dhruba Adhikary .   49:48
+Along y-axis, intensity is also varying along y-axis, right? So G of y was F of x, comma y + 1 minus F of xy, which is basically 150, I hope, right? So 200 minus 50, 150. Okay, so this is the intensity variation along x-axis.
+And this is the intensity variation along y-axis. OK, and basically we can approximate it using this particular kernel, right? Why? Because if you multiply it with -1 and this with one, right, you basically get the same result, the same stuff in.
+Y-axis also. OK, yeah, your question please, Palam.
+
+PALLAM MADHUKAR .   50:37
+Yeah, why we change the access names? Is there any reason or?
+
+Dhruba Adhikary .   50:42
+It's arbitrary. Accesses are always arbitrary, right?
+You can always call it as Z-axis also.
+
+PALLAM MADHUKAR .   50:51
+Yeah, it's naming only, so it doesn't make any difference actually.
+
+Dhruba Adhikary .   50:53
+Alright, it's leaving.
+No, no, no difference as such. I just am following what is a books convention. OK, so that when you go through it, it is easier for you to translate. Like, OK, this is why the reason we are taking the X axis as a vertical axis and the Y axis as a horizontal axis. So last year we had a lot of shocker on that. So yeah.
+
+PALLAM MADHUKAR .   50:57
+Thanks.
+Okay, slow.
+
+Dhruba Adhikary .   51:15
+Okay.
+
+PALLAM MADHUKAR .   51:16
+OK, yeah, one more thing, sir, like, so the minus 11 vertically and horizontally minus 11, could you explore, explain more on that?
+
+Dhruba Adhikary .   51:17
+Yeah, are you here? Yeah.
+Yeah, sure. So say for instance, why am I writing this as minus 1 and 1, right? So say for instance, you have F of X, Y.
+X, Y, and you have F of say, for instance, x + 1 comma Y. OK, so if you multiply with this right, so say, for instance, this is my pixel.
+OK, this is F of X, comma Y, this is F of x + 1.
+comma Y, multiply it with this particular filter.
+Minus one, one. What do you get as an answer?
+Hello, what do you get?
+
+PALLAM MADHUKAR .   52:09
+So, basically, 115 - uh, we have 50, 50 minutes.
+
+Dhruba Adhikary .   52:12
+No, I'm talking about that notation. I'm talking about the notation.
+This is what you get, right? Right? Is this form same as this?
+
+PALLAM MADHUKAR .   52:19
+Okay.
+
+Dhruba Adhikary .   52:23
+Absolutely same, right? So we can use a spatial philtre to approximate this thing. It is a smarter computation.
+We'll come to it also. Okay, but for the moment, is everyone clear on this particular aspect? Like how do we take like the intensity variation along x-axis and the y-axis to find out, okay, whether a particular item or a particular pixel or a particular cell is an edge or not? Is this clear to everyone?
+Okay. Yeah. Before we move on, I use your question.
+
+AYUSH KUMAR GUPTA .   52:56
+Sir, yeah, so not a question actually, just a small confirmation in case x + 1 or y + 1 pixel is not available, so we do padding it right.
+
+Dhruba Adhikary .   53:06
+We do padding, correct? We do padding. Yeah. Okay. Okay. Now that you have GX, right? And you have GUI, right? These are two arbitrary values. So you have one at, say, 200 and one at 150, right? So what is a, so you have GX.
+
+AYUSH KUMAR GUPTA .   53:08
+Okay, yeah, cceaf.
+
+Dhruba Adhikary .   53:27
+and GY for this particular pixel, X, comma Y, right? How do you know the overall magnitude? Intensity variation is happening across both the axes, right? And also, what is the angle? So using vector algebra, what do we do? We take...
+For magnitude, we just basically take G X square.
+plus GY square. Okay, this gives me the overall magnitude, which is 400 of, sorry, this one, 24 plus 15 squared is something like, I think like, what is 15 square? 15 multiplied with 15.
+Yeah.
+So, 1725, right?
+and you take the root over it. That is the overall value of this vector or this edge. Okay, and how do I get the angle right? Because it is in X direction, say for instance 200, and in Y direction it is 150, right? So obviously there is a resultant vector.
+A resultant vector whose magnitude is basically 200 square plus 150 square.
+Basic vector algebra, and also there is an angle associated with it, which is given by tan inverse of.
+GY by GX. OK, so basically it is tan inverse of 200 by sorry, 150 by 200.
+Tan inverse of 150 by two.
+Four, three, tan inverse, three fourth, right? So it is roughly close to, I would say, 60 degree or something like that, tan inverse. OK, so we take the gradients along X direction, gradients along Y direction, and correlates them to give us one common magnitude.
+and an angle for a particular edge. OK, so now let's see. Let's take an example. OK, so say for instance, this is my image. OK, wherein the shaded pixels are zero. OK, I'm using a different kind of convention and my whites are basically two.
+These are all tools. OK, so now say, for instance, you can clearly see there is an intensity variation, there is an angle, right? So say, for instance, you take this particular pixel, right? How do I find whether this is an edge or not?
+So, basically, I have the formulation like G of x + 1, comma y - f of xy, right? So, what is this? X is moving in vertical direction, right? So, this is what X, this is x + 1.
+And what is Y? So this is Y and this is y + 1. So basically we put it into a formula. So X + 1 is what? X + 1 is 0.
+OK, minus what is this value? Zero again. OK, now what is Y? Y is basically y + 1 is basically 2 - 0. So what is the value? Two.
+OK, so what is it? Tan inverse of GY by zero? Tan inverse of 0 is basically 90. Yeah.
+
+G. VIJAY .   56:49
+Sir, actually, I think you mean to say x + 1 is not equal to 0, F of x + 1, comma Y is 0, correct? That's what you were trying to say.
+
+Dhruba Adhikary .   56:58
+F of X plus yeah, F of x + 1, comma Y.
+
+G. VIJAY .   57:02
+Yeah, that is 0, not X plus one.
+
+Dhruba Adhikary .   57:03
+That is, so I'm just abbreviating, sorry. I'll write the complete thing. So when we are taking X, right, we assume Y as standard, right? So that is why I'm not emphasising on that. So F of x + 1, comma Y, right, in this particular case is 0, F of X, comma Y is 0.
+F of X comma y + 1 is basically 2 and F of X comma Y is basically 0 only. And what is the magnitude? Magnitude is basically 2. So this vector, this edge right over here is 2 pointing at an angle of 90 degree, right? So at 90 degree, you can clearly see.
+Right, there's an intensity variations or something like that. OK.
+So we can approximate this also using a kernel as we decided, right? So doing index by index subtraction, right? It is time consuming. So we had seen this spatial filtering can help in that particular case. So what do we bring? We bring a 2 cross 2 philtre for x-axis, a one cross two.
+Sorry, we bring a two cross one and a one cross two philtre to approximate this operation, right? So we say, OK, we will multiply this along the X axis with -1 and one. So for this place, if we have to find -1 one. So for this place, if I have to find out.
+I'll move the kernel accordingly to give me my FG of X gradient along X direction and gradient along Y direction. OK, so say, for instance, this is my annotation, right? So say, for instance, if I have to take this and I have to subtract it from this, right?
+X + 1, right? So if we are moving in this direction, the direction is wrong, I believe.
+OK, they have taken this as a positive axis. OK, so this is X comma Y, this is x + 1. So there is a mistake in the slide. And let me see why and y + y direction is correct. OK, so this is say, for instance, F of X comma Y, right? And X is moving in this direction, right? In positive axis.
+This is positive, this is negative, right? So, x + 1, right? So, what is the value? x + 1 is 2.
+Okay.
+Just once again, what are they doing? Give me one second, please. I think there is some annotation mistake in this slide.
+So, for which slide are they calculating?
+This is, for instance, just...
+
+B. KRISHNA MOHAN .   59:48
+I think the intention is clear, sir. So we need to subtract F of x + 1 Y and F of X y + 1 and the resulting we need to get the derivations, right? That should be fine. Yeah, that should be fine.
+
+Dhruba Adhikary .   59:55
+Mm.
+Ohh.
+Magnitude and the gradient, huh, magnitude and the alpha.
+
+G. VIJAY .   1:00:03
+I think, I think the slide is also correct, sir. It is like X is increasing downwards, so it's F of X, X + 1, zero, yeah.
+
+Dhruba Adhikary .   1:00:11
+No, so if it increasing downwards, it is 00, right? So how can it be minus 2?
+
+G. VIJAY .   1:00:16
+No, no, no, like they are taking the one, two, three, 4th row from the bottom is 0, 5th row is 2.
+
+Dhruba Adhikary .   1:00:27
+Both row from bottom, one, two, three, 4, huh, and 5th row.
+
+G. VIJAY .   1:00:29
+Yeah.
+Yeah, that is zero, and through is 2.
+
+Dhruba Adhikary .   1:00:34
+Whip through it.
+
+G. VIJAY .   1:00:34
+0 - 2 is equal to -2.
+
+Dhruba Adhikary .   1:00:38
+Okay, this is f of X, this is x + 1 you are saying, right?
+
+G. VIJAY .   1:00:42
+No, the other way around. Zero, 4th row is X plus one.
+
+Dhruba Adhikary .   1:00:47
+Oh, ha ha ha, got it, got it. Okay, so my bad. Sometimes I get confused over there. So, so this one is 0, right? This is F of X, comma Y. Okay, this is F of x + 1.
+
+G. VIJAY .   1:00:48
+Yeah.
+
+Dhruba Adhikary .   1:01:04
+No.
+
+G. VIJAY .   1:01:07
+I...
+
+Dhruba Adhikary .   1:01:07
+Sorry, I'm really confused today.
+
+MIKIN TYAGI .   1:01:08
+No, no, sir. This, no, no, sir. Actually, it would be other way around. Actually, it would be, it would be minus 11 is below. I mean, this, this is maybe the misrepresentation.
+
+PALLAM MADHUKAR .   1:01:08
+The other way.
+
+G. VIJAY .   1:01:09
+Other way around, other way around.
+Other way.
+
+Dhruba Adhikary .   1:01:21
+I'm also thinking of that only. So if this has to be F of X1, so this has to be minus 2, this has to be 0. So, so X plus 1 is basically, yeah, so this is what they are finding out. This is misrepresentation, right? So we are calculating the edge at this particular point.
+
+MIKIN TYAGI .   1:01:24
+Yeah, listen.
+
+PALLAM MADHUKAR .   1:01:24
+Ohh.
+
+G. VIJAY .   1:01:29
+Zero.
+
+PALLAM MADHUKAR .   1:01:38
+Correct.
+
+Dhruba Adhikary .   1:01:40
+That is what I was confused at, right? So in that case, if this is X comma Y, its value is 2 along X direction. This is x + 1, comma Y. So there is a mistake in the slide. So in that particular case, obviously it is minus 2. That is what I was saying because we just calculated it previously. So this is X comma Y. We are calculating it over here. X comma Y equal to 2.
+
+G. VIJAY .   1:01:51
+Something.
+
+Dhruba Adhikary .   1:02:03
+x + 1 is basically 0, right? So 0 - 2 is -2, right? And over here, x, y + 1, right? So this is also like, say for instance, y + 1, it is actually like F of xy is basically 2.
+And this is 2 OK along Y direction also and XY plus one Y + 1 would be.
+in this direction only, right? So 2 minus 2, so still not correct, right? So this should be 0. So there's some mistake in the slide, but hopefully the...
+
+RAGHAVENDRA S P .   1:02:43
+So the X&Y coordinates has to be interchanged. That's it.
+
+Dhruba Adhikary .   1:02:45
+K.
+I...
+
+RAGHAVENDRA S P .   1:02:48
+The vertical should be Y, the horizontal is X, and everything fits into the claim.
+
+Dhruba Adhikary .   1:02:52
+Ohh.
+Yeah, basically I think somebody made a mistake over there. Yeah, but hopefully the idea is clear.
+
+G. VIJAY .   1:02:57
+I still find it is correct, but we can take it offline, sir. I still find this log, yeah.
+
+Dhruba Adhikary .   1:03:01
+We can take it offline. Maybe I have to correct the slide back. Okay, I'll do that. But hopefully the idea is clean.
+
+G. VIJAY .   1:03:09
+You can, you can, you can focus on the arrow mark, right? There is a arrow mark from the from the grid to the minus 1 + 1 in the way axis.
+
+Dhruba Adhikary .   1:03:19
+Mhm.
+
+G. VIJAY .   1:03:21
+Right, maybe hold the column from them.
+
+Dhruba Adhikary .   1:03:22
+Yeah, but both the values are two, two and two, right? So 2 - 2 is basically zero, right? If I'm taking this, and even if I'm taking...
+
+G. VIJAY .   1:03:26
+No, no.
+No, it's not it's not actually 2 - 2, it is 2 - 0. If you can consider that one, two, three, 4, 4th column, 4th row from the bottom.
+
+Dhruba Adhikary .   1:03:36
+Ohh.
+Ohh.
+
+G. VIJAY .   1:03:44
+Under the third column.
+
+Dhruba Adhikary .   1:03:46
+Third column, yes.
+
+G. VIJAY .   1:03:47
+Yeah, that is true. That is true. That is X, comma, X.
+
+Dhruba Adhikary .   1:03:49
+Like that is 0, right? Shaded pixels are zero.
+
+G. VIJAY .   1:03:54
+Okay, okay, okay. Got it, got it, got it, got it, got it, got it, got it.
+
+Dhruba Adhikary .   1:03:54
+The intensity value of is 0, right? That is what. So the slide back is wrong, right? But let's go back to this slide, okay, which was correct. So this is how we calculate it, right? So whenever you have a value, right, at a particular point, right, you have, like, say, for instance, this is X.
+OK, this is Y, right? So, in order to calculate G of X gradient along X direction, you will take F of x + 1, OK, comma Y, and minus it with F of XY, right? So, say, for instance, this is where I have to calculate the gradient. Let me change the pen color.
+I have to calculate the gradient at this particular point, right? So this is my F of XY.
+OK, and this is my X direction, right? Assuming X increases in downward direction, right? This is positive, this is negative, right? So, what will be this? This will be F of...
+X + 1 comma Y.
+OK, so what do you do? You take the subtraction of this from this, right? That gives you the gradient along X direction. Now, changing pen colours again. Now, say, for instance, you have to find out G of Y. G of Y is basically F of X, comma Y plus one minus.
+F of X, Y, so Y is positive in this direction, negative in this, right? So, say, for instance, this is...
+This particular pixel is F of X, comma y + 1.
+OK, so this is my representation, so I'll take this difference along with this right to give me intensity difference between.
+like Y gradient. And then what I will do is that I will combine them.
+Give me my gradient and my overall alpha value. OK, how will I do that? I'll take the magnitude as GX square plus GY square. OK, and alpha as equal to tan inverse of.
+GY by GX. OK, is this clear everyone?
+Yes or no?
+
+SUBRAMONY M .   1:06:17
+Sir, I understood that the GY and GX how we computed and and what I'm trying to understand is like the reason was finding the tan inverse of GY by G. Can you just repeat it once more?
+
+Dhruba Adhikary .   1:06:22
+Mm.
+Okay, so you have gradients moving in both the direction, right? So along Y direction, you have a gradient value. Along X direction also, you have a gradient value, right? So how do you denote it in vector format? This is GX. This is GY, right?
+
+SUBRAMONY M .   1:06:42
+Yeah, yeah.
+Okay.
+
+Dhruba Adhikary .   1:06:49
+Correct. These are two vectors. Now, these two vectors have say a certain value, right? This one had 200 and this one had 150, right? These are vectors, right? So there should be a resultant vector right out of it.
+
+SUBRAMONY M .   1:06:51
+Yeah.
+Mm-hmm.
+
+Dhruba Adhikary .   1:07:03
+which is the actual direction of the gradient in which it is moving. It is not moving in along 90 degrees along Y direction or along X direction. We have just taken partial derivatives. So there is a resultant vector and that resultant vector gives you the magnitude
+and the angle of the edge. That is why we are computing it. That's a resultant vector.
+
+SUJOY SAHA .   1:07:31
+I have one query. Is there any significance of this angle in the perspective of edge detection?
+
+Dhruba Adhikary .   1:07:32
+Okay.
+Yeah, there is. So say for instance, coming back to this image, right?
+What do you see? Different kinds of angles, right? They're not 90 degree, right? There are different kinds of angles, 45 degree angle, 46 degree angle, 47 degree angle, 90 degree angle, 180 degree angle, 70 degree angle. So say for instance, your eye, right? So at the start of your eye, the angle of edge moves upward, right?
+It is towards 135 degree. As it gradually comes down, it is towards 180 degree. As it goes towards your center, right, it is 270 degree, so on and so forth, right? So this angles, they will combine to form that texture. So that is a purpose of those angles. The angles will tell you like along which direction.
+A line is moving. So say for instance, your line is curved, right? So the angle over here of this edge, right, is 0 degree. The angle over here, what will be the angle? There will be a certain angle associated with it, probably like 135 degree going downwards. Over here again, it is stabilising into 0 degree.
+Over here again it is say 45 degree it is increasing.
+So that is the significance of that angle. It helps you formulate the edge or the boundary.
+
+SUJOY SAHA .   1:08:51
+So finally it will define the shape maybe.
+
+Dhruba Adhikary .   1:08:55
+Kind of it will define the shape.
+
+SUBRAMONY M .   1:08:59
+So, so when we have that dfdf by DX and dfdf by DY, which is GX&GY, and when you do a tan inverse, so why specifically tan, so tan inverse will give you the direction of where that.
+
+Dhruba Adhikary .   1:08:59
+It will define the shape.
+Mhm.
+Resultant vector, tan inverse will give you resultant vector. So over here, right? This particular pixel, right? This is an edge, right? In which direction is this edge moving? You can clearly see it is moving in 135 degree angle.
+
+SUBRAMONY M .   1:09:17
+Result and victory.
+
+Dhruba Adhikary .   1:09:31
+It is moving downwards, right? It is minus 45 degree, which means basically like say for instance, it is 135 degree arc 10.
+It is moving in downward direction. So it tells you like in which direction it is moving, in which direction the intensity changes are happening, and what is the magnitude of that change.
+Okay.
+
+GAURAV KANDEL .   1:09:52
+Also, how do I, how do I map this degree into a, you know, the direction in a 2D matrix, because you know, it shows alpha as one to thirty-five, but why did we compute from, you know, downward facing direction and not from Y direction? How do we choose that?
+
+Dhruba Adhikary .   1:10:13
+So image is arbitrary, right? It is basically like, why did we choose X as downward, Y as horizontal? That is completely on you, right? You can select any.
+
+GAURAV KANDEL .   1:10:23
+No, no, I did not mean that. I got it like that those are arbitrary. But now let's say I got my GY and GX and I compute alpha to be 135 degree, right? How do I get to know this which direction this would have? How do I measure this 135 degree? Like there should be a 0 degree point and from that I take 130 degree, right?
+
+Dhruba Adhikary .   1:10:28
+Mm.
+Mm.
+
+GAURAV KANDEL .   1:10:46
+How do I get into that?
+
+Dhruba Adhikary .   1:10:49
+You have X&Y axis, right? Where they meet, there should be an origin, right? So from that, it gives you like reference, point of view. That is actually a good question, like which direction it is going. So this origin will tell you in which direction you are moving.
+Where the X&Y axis are meeting.
+
+GAURAV KANDEL .   1:11:09
+OK, one, one more question.
+
+SYED MOHAMMED HASAN SHOEB .   1:11:10
+I question the confusing part here is that we have interchanged the access X&Y, but still it says tan inverse YYX. Shouldn't it be tan inverse XYYGXYZ?
+
+Dhruba Adhikary .   1:11:16
+Reading.
+No, because your no, no, but because your operation is same, right?
+Your operation is, what are you doing? G of x + 1? Sorry, F of x + 1 comma Y minus F of XY. Your operation is basically same.
+Right? Similarly, your operation for Y is X comma y + 1 minus f of X comma Y.
+Your operation still remains the same.
+So axes are arbitrary, right? You are just taking the gradient along y-axis, dividing it by gx, along x-axis, and you get an angle. If you want to flip it, you can flip it. You can take an arc tan of it. So you can go with minus 1. Sorry.
+
+GAURAV KANDEL .   1:12:05
+But.
+
+SYED MOHAMMED HASAN SHOEB .   1:12:05
+Yes.
+
+NIKHIL V. KAPRE .   1:12:08
+But, but, but we...
+
+GAURAV KANDEL .   1:12:08
+Okay.
+
+NIKHIL V. KAPRE .   1:12:11
+But we didn't take the origin, so...
+
+GAURAV KANDEL .   1:12:11
+Just one doubt to clear the confusion. So, for example, you said, you know, that the direction arrive tree. For example, let's take the same 2D matrix and instead of X, I take that, consider that to be a Y direction and my Y to be X direction. Where will my alpha point?
+
+Dhruba Adhikary .   1:12:14
+One by one, please. One by one.
+Mm.
+
+SYED MOHAMMED HASAN SHOEB .   1:12:28
+Perfect.
+
+Dhruba Adhikary .   1:12:31
+Mm.
+So we'll come to this also. So when you divide this, right, so you have this as 45 degree angle, right? And this is negative 45 degree.
+So even if you change, even if you show this as say for instance, 135 degree, right? This is all that is, is minus 145 degree. This is minus 45 degree only. You're just showcasing it from a certain access point, like from the origin point of origin, right? So say for instance, this is say for instance, X, and this is for instance, Y.
+
+SYED MOHAMMED HASAN SHOEB .   1:13:02
+Ah.
+
+Dhruba Adhikary .   1:13:05
+Right? So okay, you have like 135 degree. If you have this as Y, this is X, right? This transforms into like say some form of like 135 degree.
+
+SYED MOHAMMED HASAN SHOEB .   1:13:18
+But we can always imagine it goes starting from X-axis towards Y-axis, so then it will be making sense always.
+
+Dhruba Adhikary .   1:13:23
+Correct. It will be easier. You can follow one convention. You can follow one convention ultimately. Okay.
+
+NIKHIL V. KAPRE .   1:13:32
+So, if there's already a established origin and there's a cell being considered for computation of the tan inverse, then the direction is already known, isn't it? Can that not be interpreted that way?
+
+Dhruba Adhikary .   1:13:45
+It can be, but then again, like how do you link it to the world coordinate? So you're going into a very complicated domain, I would say. Do not think of that much at this point in time. Just think, okay, in which direction is the edge moving? Just stay at that.
+
+NIKHIL V. KAPRE .   1:13:50
+So if you had to.
+
+Dhruba Adhikary .   1:14:04
+Either of these answers are correct, right? Minus 45 degree or 135 degree, right? It all depends, okay, your origin is always going to stay at zero comma zero, right? So 135 degree is nothing but arc 10 minus 45 degree. So you can split the entire thing into like multiple compartments and we'll come to the canny edge detector algorithm at the end of session today.
+Just hold on to it. We will attend to that. Okay? We'll come to that. We will see how do we refine our edges as well using that technique. Okay? But for the moment, just understand this, we are taking intensity variations. We are like using like partial derivatives to capture.
+intensity variations along the axes. And once we have those intensity variations captured along the different axes, we are taking a magnitude and we are taking a direction.
+Okay, we are taking a magnitude and we are taking a direction.
+Okay, that's it. Now, you're saying like for this, like what is the origin and what is the angle? How do we do that? Now, the second challenge is like, say for instance, I give you a three-dimension space, right? How do you compute the angle in that particular case?
+What is your angle up against? Like say for instance, you are thinking like, okay, this is my resultant vector, right? Now tell me against which axis what is the angle.
+angles are arbitrary. They are just representing okay against the origin, against a specific axis. This is what I have, right? So the direction I can easily flip X, Y, Z and it won't mean much. So I can write this as Y, I can write this as X and this as Z. So accordingly, the angles will.
+Just representation wise, they will change. We'll see that. OK, we'll come to it now. Say, for instance, up until now, right? What we were doing, we were taking pixel by pixel and we were computing the difference either along this or along this right for X&Y axis.
+Right? This is a time consuming process. We have all seen this, right? Like say for instance, like if we do pixel by pixel manipulation or pixel by pixel computation, right? They are time expensive. So that's why we had introduced spatial filters. Okay.
+in our previous session, right? Wherein we have defined like, okay, we will take one philtre and we will move it across the image and we'll see how it performs, right? It simplifies our calculation, right? So over here also we are gonna do take a kernel, okay? Say for instance, we have image.
+which has the following intensity values, right? So what we will do is that we will take some of the operators, right? So say for instance, we take privets operator. What happens in that? So we take a kernel, 3 cross 3 kernel, wherein the top shelf is stacked with minus 1, the bottom shelf is stacked with once, right?
+What does it do? So it will take Z7 minus Z1, Z8 minus Z2, Z9 minus Z3. Basically the same operation that we were doing before. OK, it will find out for this particular intensity values. OK, whether the intensity is changing.
+along the top or at the bottom. So what are we doing? Earlier we were doing intensity variation 1 by 1. Okay, now what we are doing for a particular pixel, we are able to find out, okay, is the intensity variation happening at the top or at the bottom, right? So prove it simplifies it. So we have the x-axis based.
+GX right gradient along X axis and the formulation simply remains the same, right? Z7 minus Z7, Z8, Z9 all added up, subtracted with Z1, Z2, Z3.
+This approximates my partial derivative along x-axis. Similarly, if you have y-axis right, so you take Z3, Z6, Z9, subtracted by Z1, Z4, and Z7. So this gives you your vertical philtres or your.
+vertical edges. Okay, so we see that rather than doing one by one, right, bit by bit or pixel by pixel computation, we will use kernels to simplify our logic. And this is the same concept that you draw down to your CNNs, okay, within your CNNs.
+You basically see, for instance, we are going to have 32 kernels of size 3 cross 3. What does those kernels do? They formulate N number of permutations of something like this only. They detect edges at, say, for instance, one kernel detects edges at 45 degree, another detects at 90 degree, another detects at minus 45 degree.
+Another detects at minus 90 degree.
+So on and so forth. OK, so it will keep on detecting stuff right in multiple angles. OK, so that is the fundamental principle of having kernels. So kernels they simplify the computation. So when you do this operation right, you get a singular value.
+For GX and GY, a three cross three multiplied with a three cross three kernel gives you a single gradient along X direction and Y direction, for which you can compute the magnitude and the angle. OK, so we again have a Sobel's kernel as well. Sobel did.
+there are multiple kernels and you have Kershoff kernel as well, other kernels. So, but the primary amongst them are Sobel operators and you have like Privet operators, right? So what did Sobel did? So rather than having minus 1 at the center, right, it amplifies the signal.
+Right, it has a two. So if you remember, a couple of our goals were.
+For edge detection was good localization.
+OK, and good.
+Edge points, right?
+Now, say, for instance...
+I have a very fine edge, right? Very fine edge. Like I have 10 and 20, right? This is a very small intensity variation, right? What would Robert do when I have like smoothened out the filter? Say for instance, smoothing operation makes this as 8 and this as say for instance, 12.
+Okay, so you can clearly see the gap has reduced a lot, right? So the intensity variation is just four.
+Okay, now this is poor, right? I may not be able to differentiate it from zero. The edge magnitude is not that significant. It may be noise, right? But here in what happens, right? If I multiply these two values with two, right?
+Right, that signal gets amplified. I am able to detect spike edges or I'm able to detect step edges better. So Sobel came up with this paper wherein he said like the middle values should be -2 and two. They just amplify the signal. The localization becomes better. Okay.
+So we have Sobel and Roberts filter. Now I will just show you like an example of it.
+Convolution.
+I should like say ****.
+editors, okay, how they work out.
+That's fun.
+The
+Uh, T.
+I think this will help.
+
+SYED MOHAMMED HASAN SHOEB .   1:22:12
+So, so in these, like we are trying to summarise 3 pixels at a time instead of going pixel by pixel.
+
+Dhruba Adhikary .   1:22:20
+Nine pixels, 9 pixels at a time.
+
+SYED MOHAMMED HASAN SHOEB .   1:22:22
+No, you think that's okay. Okay.
+
+Dhruba Adhikary .   1:22:23
+Nine pixels at a time. OK, so I don't have it over here, but maybe I can show you over here. It's a not this one edge detection. OK, OK, so say, for instance, you have this image right on this image. First and foremost, I have to suppress noise. So, during our last session, we had seen how do we suppress noise?
+We use some sort of a box philtre or a Gaussian filter, right? So within CV2, right, there are functionalities that are called as Gaussian blur. You can also play around with median blur or mean or mode based blur. And I'll leave you to it, like how you can reduce the noise. So you do a Gaussian blur on the image, you can clearly see.
+pixelation has reduced, right? Once we do that, right, we sharpen up the image, right? Basically use a sharpening filter. I've shown multiple things. Now, next up, we do a Sobel filter. So we define a Sobel filter.
+
+NIKHIL V. KAPRE .   1:23:15
+A small, small request, sir. Is it possible to take a short break, please?
+
+Dhruba Adhikary .   1:23:17
+Yeah.
+Yeah, post this, we can take a break.
+
+NIKHIL V. KAPRE .   1:23:22
+Sure, sure, sure. Thank you.
+
+Dhruba Adhikary .   1:23:24
+Right, OK, so we have a Sobel filter, right? So, once we take a Sobel filter, I'm just defining it right once with ones and zeros, and the kernel size is 3. You can define your own philtres also of different kernel size, 5 cross five, and other things. OK, now I don't know whether this is clear or not, so when you take this filter, right?
+You can clearly see the X, right? Sobel X, right? It is detecting the verticals. OK, so you can clearly see the for the particular edge, right? It is detecting all the edge and the magnitudes in the grayscale image along the vertical axis, right? And.
+you have the Y axis which is detecting all the horizontal edges. Okay, when you combine these two, you get something like this. You have the vertical and the horizontal edges combined. Like as I was saying, you compute the GX and you compute GY, right? Once you combine them to those two magnitude and the alpha, right? This is how the image transforms, right?
+You can clearly see, you can clearly define all the distinct edges and everything, and the entire image is reconstructed back by just using intensity variations. So edges can give you idea about like a lot of the, I would say like the features, the dominant features.
+as a first line wherein you detect edges and post that you can formulate textures and you can do your really cool stuff using this. Okay, so we'll take a quick short break as some of you suggested. We'll meet again like in 5 minutes time. Okay, in the meanwhile, if anyone has any questions.
+Visa.
+
+PALLAM MADHUKAR .   1:25:13
+Sir, can you explain like, so how we like a initially we thought like a one dimension right? Then now we are moving into the three by three, right? So how we are making that done?
+
+Dhruba Adhikary .   1:25:13
+Any questions?
+Student.
+Okay, so basically...
+
+PALLAM MADHUKAR .   1:25:30
+So, we are taking it to the points.
+
+Dhruba Adhikary .   1:25:33
+So say for instance, earlier what we were doing is say for instance, this is my huge image, right? Really large image, right? So what I was doing, I was trying, like say for instance, X&Y, right? So I was doing pixel by pixel subtraction, right? Obviously, what is the time complexity of this? You have an outer loop running M cross N.
+
+PALLAM MADHUKAR .   1:25:51
+Yes.
+And you go send, yeah.
+
+Dhruba Adhikary .   1:25:54
+Okay, and you have this along y-axis again running M cross N, right? So it is basically m ^2 and n ^2 effort, right?
+
+PALLAM MADHUKAR .   1:25:59
+Right.
+And.
+
+Dhruba Adhikary .   1:26:03
+N squared and N squared effort. So it is computationally expensive and older systems could not cope up, right? So we already have a spatial filtering concept, right? Now, if you remember, we were already transitioning for this particular purpose to something called as minus one and one. Okay, so next up, what they defined was
+
+PALLAM MADHUKAR .   1:26:09
+Hello.
+Okay.
+
+Dhruba Adhikary .   1:26:22
+Like, why can't I do both of this in one go, right? So they decided like, okay, I'm going to do this in one go. This is also, this is plus one and this is minus one.
+So something like this, right? So they started calling this as the Roberts filter, right? So -1 + 1, okay? And this one is say, this one is also -1 and this is 1. Okay, so what happens, right? So when you take along the X axis, right? So along the X axis it is.
+f of x + 1.
+comma y - f of xy, right? This philtre can give you that, this part of the filter, correct?
+
+PALLAM MADHUKAR .   1:27:06
+Correct.
+
+Dhruba Adhikary .   1:27:07
+Yes or no? And this part of the philtre can give you the other dimension of it. So they started thinking like, okay, can't I like merge it together? And I can perform 9 computations in one go. So in order to do that, they experimented with multiple forms of filter. Like first one was privet.
+
+PALLAM MADHUKAR .   1:27:08
+Yes.
+
+Dhruba Adhikary .   1:27:26
+pivot filter, they define like, okay, the top axis, right? We are going to retain the middle axis and we are going to see, let's go one step beyond, right? What I can do is like, I can find out, okay, is the intensity changing above me or is the intensity changing below me? If the intensity is changing below me, right, I'm already an edge.
+If the intensity is changing on top of me, I'm again an edge, right? So what they in turn did, like they kept this middle layer as all zeros and the top layer as basically what we had studied earlier, minus 1, minus 1, minus 1, and the bottom layer as 111. So basically they use something called as up.
+approximation that gave them the same sort of results.
+
+PALLAM MADHUKAR .   1:28:11
+Okay.
+
+Dhruba Adhikary .   1:28:12
+Okay, so they were now able to, rather than doing it one by one, right, which is say 9 computations along GX and 9 computations along GY. Okay, what they did was one computation along GX, one computation along GY. So it is much faster.
+
+PALLAM MADHUKAR .   1:28:31
+Yeah.
+
+Dhruba Adhikary .   1:28:32
+Okay, and they played around with different kernel values. So back in the day, we did not have neural networks. So back propagation was invented somewhere around 70s, right? So 50s and 60s, right? They have to come up with this filters, right? So they played around with multiple of this. In today's world, using deep learning.
+We will fine tune this philtre values to detect different edges, 45 degrees, 75 degrees, depending on your data set.
+
+PALLAM MADHUKAR .   1:29:00
+Okay.
+
+Dhruba Adhikary .   1:29:00
+Okay.
+
+PALLAM MADHUKAR .   1:29:02
+Yeah, thank you.
+
+Dhruba Adhikary .   1:29:03
+Okay.
+
+AYUSH KUMAR GUPTA .   1:29:06
+Oh yeah, hi sir. Yeah, sir, I had a question. We have learned so many filters. So is there any case study or is there some trade-off which philtre is applicable to which problem statement? I mean, it will be helpful for our assignment as well.
+
+Dhruba Adhikary .   1:29:06
+We'll connect them. Hi.
+Uh, we'll come to that.
+
+AYUSH KUMAR GUPTA .   1:29:26
+OK.
+
+Dhruba Adhikary .   1:29:26
+In fact, in a few slides, it should be there. Yeah, here you go. We have a complete summary. Okay, I'll come to it.
+
+AYUSH KUMAR GUPTA .   1:29:32
+Okay, okay, okay, sure, okay.
+
+NANDITHA G BHARADWAJ .   1:29:39
+So, the norm, so operator, like, wouldn't it also amplify the noise and, like, how, how do we like mitigate the cases where noise is detected as edge?
+
+Dhruba Adhikary .   1:29:47
+Yes, yes, it will.
+you use something called a Gaussian philtre like we had studied last time, right? So first and foremost step in any edge detector is image smoothening. You do not proceed without it, right? So what does image smoothing does? So say for instance, your small noises like 10 or 20 or other things, right? So you have regular values, right?
+suddenly you have a certain value, right? So you have zero and suddenly you have zero and suddenly you have 10 and again zero. This is my noise, right? So when you take a Gaussian filter, right?
+
+PALLAM MADHUKAR .   1:30:25
+S.
+
+Dhruba Adhikary .   1:30:25
+What does Gaussian philtre do right? It will try to suppress this noise. We'll see that in a little bit now, post a break.
+
+PALLAM MADHUKAR .   1:30:28
+I.
+
+Dhruba Adhikary .   1:30:34
+OK.
+
+NANDITHA G BHARADWAJ .   1:30:35
+Okay, yeah.
+
+SYED MOHAMMED HASAN SHOEB .   1:30:38
+So if you go back to the previous picture of nine metric here, so no, not this one, then this one. So here, I mean, if you look at conceptually, so we are kind of ignoring a one pixel line because we are putting 000, and then we are comparing the alternate ones, one top and one below.
+
+Dhruba Adhikary .   1:30:50
+And.
+
+PALLAM MADHUKAR .   1:30:54
+I.
+
+Dhruba Adhikary .   1:30:56
+Mm.
+
+SYED MOHAMMED HASAN SHOEB .   1:30:59
+and ignoring the line in between those two pixel lines, right?
+
+Dhruba Adhikary .   1:31:03
+We are not, no, we are not ignoring. In the largest scheme of things, if you go through the complete paper, right, this is how it is, right? So this three cross three, right? So what we are saying, above this pixels, there is an edge, or below this, there is an edge. Once this kernel comes over here, right, it will ship eventually, right?
+
+SYED MOHAMMED HASAN SHOEB .   1:31:13
+Yeah.
+Okay.
+
+Dhruba Adhikary .   1:31:22
+So now this pixel will be the top. So nothing is missed in convolution operations or in, yeah, in sequential matrix multiplication, nothing is messed up.
+
+SYED MOHAMMED HASAN SHOEB .   1:31:25
+Okay.
+Okay, yeah.
+
+Dhruba Adhikary .   1:31:33
+So as I said, this is an approximation for faster computation, right? Obviously, the best one would still be like if you do it pixel by pixel. But say for instance, you have a 2K image, it is next to impossible to do a pixel by pixel computation in modern day time.
+
+SYED MOHAMMED HASAN SHOEB .   1:31:37
+Yeah.
+Yeah. Thank you.
+
+Dhruba Adhikary .   1:31:50
+OK.
+Okay, we'll start again. Hope everyone is ready.
+Shall I start?
+Okay, I've got a thumbs up. I will take it because we have still a lot of ground to cover. Okay, so on your screens, what do you see? Okay, Shashwat, quickly your question, please.
+
+SHASHWAT JAIN .   1:32:22
+Sir, if you have to summarise the edge detection, so can we say that by just finding the...
+
+Dhruba Adhikary .   1:32:27
+M.
+
+SHASHWAT JAIN .   1:32:33
+First degree derivatives and the difference between the adjacent boxes.
+
+Dhruba Adhikary .   1:32:37
+M.
+
+SHASHWAT JAIN .   1:32:38
+We can find the edge detection by that process.
+
+Dhruba Adhikary .   1:32:43
+No, no, not yet, not yet. So what we have done so far is set up the mathematical foundation for detecting an edge. We have not even gone into the algorithm. There are multiple components, so it will come to it, Shashir. Yeah, we are coming to it. Okay, so, so far what you saw in order to detect intensity variations, we were taking...
+
+SHASHWAT JAIN .   1:32:45
+OK.
+Okay, okay, okay.
+
+Dhruba Adhikary .   1:33:04
+derivatives, okay? And in order to make it faster, we used kernels, right? We were leveraging kernels, okay? And these kernels, basically, when you take it, right? So say, for instance, you take an horizontal, right? You have the GX component, right?
+So this detects all the horizontal components. In the Y component, you will clearly see all the vertical lines being detected. When you combine these two, right, the gradient, the sum of the absolute values, right, you get something like this. Okay, so this is an instance of Gaussian, sorry, Sobel and Privet kernels.
+You can go ahead and experiment based on the, like, based on the notebook that I will provide. Okay? Now, coming to the code, right now that we have established a little bit of the edge reduction, what we are, we have defined edges are pixels where intensity changes abruptly, right?
+And the change can be along X&Y axis. Okay. And we approximate the derivatives using differences. Okay. Now objectives like we were discussing, it should have a good detection, good localization and single response. Okay. We should have only one point for a true edge.
+Okay, so there are multiple challenges to this, right, which we will, which we may not be able to completely solve using edge detection, which for which we leverage other techniques also like line detection or corner detection, right? What are those? So edge detection has its own like.
+like problems and areas wherein we have to like do better, right? Primary amongst them are like illumination discontinuity, right? So say for instance, this is my object of interest, right? But again, using edge detection, right? I have an edge that is occurring over here, which is a shadow.
+It's not an object in reality. How do I differentiate between them? So edges are caused by different kind of incident light on different elements, right? Also by surface color, right? Like say for instance, red, blue-green. And there is obviously the issue of depth and surface continuity, right?
+So all of this causes edges. Now some are good edges, some are bad edges. We need to remove all of that, right? So given like, we'll come to this, given we have a 1D image, right? So f of X, right? Over here, you see over here we have a ramp edge. Okay, so intensity suddenly spikes from zero.
+all the way to 255, and then from 255, it comes down all the way till zero. My ideal job is to detect the edge somewhere over here, like, OK, this is where the edge is starting. OK, so I take the 1st order derivative of it. OK, so the 1st order derivative.
+gives me an ed spike, so 0 to 255. So how will it be? Edge value is 255. Over here, the edge value is minus 255.
+Right, this was my X, this was x + 1. When this was say, for instance, X, this was x + 1. When this one was X, this one, sorry, this one was X, this one was x + 1. OK, so how do we calculate it at first instance? Zero, 255.
+255, 0, right? So this minus this is 255, right? Edge. This minus this, 0 again. This minus this, right? So minus 255. So my edges are over here and over here. This is what is represented. OK, first order derivative gives you.
+extremums, which are indicative of edges. If you take the absolute value, you are able to say, okay, my edge occurs over here. You are able to say what is the magnitude of that edge as well. Is this clear, everyone?
+Yes, no, anything?
+Yeah, okay. So we are using your Krishna.
+
+KADRE UPENDRA SUNIL .   1:37:17
+Yeah, it's good.
+
+Dhruba Adhikary .   1:37:28
+OK, so.
+
+B. KRISHNA MOHAN .   1:37:29
+I'm sorry, sir, by mistake.
+
+Dhruba Adhikary .   1:37:30
+Okay, no issues. So once you have the gradient defined, right, dou F by dou X and dou F by dou Y, right, you basically find out the magnitude of that edge and the direction of that edge, right? And rather than doing this one by one, right, what do we do?
+leverage different kernels, different gradient operators as such. Right now, Roberts, as I was defining, right, Roberts is a kernel that has a very good localization because if you see, it operates when you go along X&Y axis, 2 pixels at a time or 4 pixels at a time.
+So it is like a lot better. As soon as the edge happens, right, it is able to detect it. But obviously it is poor to noise, right? Because it does not have an amplification factor. And also its detection is poor, right? Because say for instance, if the edge is happening somewhere over here, it won't be able to detect.
+So, ideally, a three cross three kernel is better, and that's where Privet sits, but it is also sensitive to noise. Why? Because all the values are uniform and consistent. So, Sobel breaks that by introducing tools, multiplication of tools, right?
+So it has less noise sensitivity and it has better detection, but it is poor localization, right? You can go with different values of Sobel filter, also 5 cross 5, 7 cross 7. You can look into it. Okay. But now let's go into the algorithm in picture. Okay. So the primary algorithm that we are going to study is canny edge detector.
+Okay, so the steps involved in canny edge detector are first we need to smoothen out the image using Gaussian filter. Why would I do that? Can anyone give me an idea about it?
+
+RAGHAVENDRA S P .   1:39:25
+You know.
+
+G. VIJAY .   1:39:26
+Nice direction.
+
+B. KRISHNA MOHAN .   1:39:26
+To remove noise.
+
+G. VIJAY .   1:39:28
+Vice.
+
+Dhruba Adhikary .   1:39:29
+Yes, to remove noise, any random noise, right? So say for instance, you have multiple points over here, right? Like say for instance, 255, 255, and suddenly you have a 0 and then again 255, 255, right? So all of this is...
+
+RAGHAVENDRA S P .   1:39:31
+M.
+Okay.
+And practice.
+Wow.
+It.
+Tell me, I know, tell me some man for that.
+
+Dhruba Adhikary .   1:39:47
+This 255, right, is basically a noise.
+So what will Gaussian philtre do? Gaussian philtre will say, okay, multiply, it will take this entire thing and it will say like, okay, I'll multiply it with one over here. Okay, say for instance, at this point, and I will do something of like a normalisation over here, like it will be 0.6 or 0.3, right?
+I think root 2 is 0.6.
+0.6 or 0.3, sorry. OK, and this value will be 0.6 multiplied with 0.6, so all values are subdued, but at the same time this value, right, it will increase. It will be brought to the same consistent valuation, right? Post that, what we'll do?
+We'll compute the gradient magnitude and the angles, right? Intensity variation detection using derivatives, so we'll compute the magnitude and the alpha at every position. OK, now...
+You will say, if you remember.
+you will have to do some sort of a non-maxima suppression, right? Because even though we have suppressed the noise, right? So say for instance, there is a slight noise over here. Say for instance, this is 150.
+Okay, this is 150 and this is 255. So obviously there is an angle. Okay, but what are the remaining angles? They are all 0 degrees, more or less, right? So amongst all them, all of these points, the angle is 0 degrees, 0 degrees, 0 degree, right? And suddenly you have a 150 degree angle.
+which does not make any sense. So you will do a non-maximal suppression to put everything into common place. And post that, you will do double thresholding. So we defined based on this image, right, that not all edges are good. So if you see over here, right?
+Um...
+I don't know whether this is visible to you or not.
+Okay, so if you see over here clearly, the pathway has a lot of redundant edges which are of no meaning to us, right? So we will want to remove that. Okay, so we will do something called as double thresholding. Okay, before we go into that, you guys remember the Gaussian filter, right? It is basically root 2, root 2.
+And it is computed using K, which is just a common multiplier, E to the power minus R square by two sigma square. And you can play with different Gaussian values by playing with the standard deviation size, right? So as you increase the standard deviation, you will have different values of the Gaussian filter.
+Okay, and a standard Gaussian philtre looks something like this, 0.3679. And on the outside, you have a normalisation factor. Okay, so Gaussian philtres basically used to smoothen noise. So as you can see over here, all the dots were smoothened out, right? All the noise is removed. Okay.
+And as you play with different values of thresholding, this goes away. Okay, now let's go to the image at hand, right? So this is an actual proper image, what it will look like from a sensor, right? So you can see a lot of pixelation being present over here, even within black, right? Even though human eyes cannot discern it.
+Computers are good with it. Okay, for a computer, zero and one are two different shades of black. For us, it is simply black, absence of color. But this is what an actual signal looks like. Okay, so you have, say, for instance, values like 0, 10, 20, 30, 10, zero.
+Twenty, 30, so you can see constant jittering. OK, and when we take the gradient of this, right, 0 - 10 is 10. OK, 10 - 20 is say again 10, 30 - 20 is 20, right? So when you take the partial derivative of this one-dimensional function.
+This is my output. Okay, now what did I study so far? Extremums will give me my edge. So where is the extrema over here?
+There is no extrema.
+Correct.
+Yes or no, everyone.
+Can you detect an extrema over here?
+Not possible. OK, so what do we do? We smoothen out my image first. OK, we smoothen out the image.
+by multiplying it with some sort of a Gaussian filter. Okay, we smoothen the image by multiplying it with a Gaussian filter. And as a result of which, all this noise, right, they are more or less reduced to some sort of something like this.
+the values will automatically change. Post that, we do a gradient computation. A gradient computation can be done using a Sobel filter, it can be done using Privet, it can be done using Robert or any other thing.
+
+RAGHAVENDRA S P .   1:45:02
+I.
+
+Dhruba Adhikary .   1:45:03
+It can be done using any filter, and accordingly, for every value of X&Y, we will have a magnitude and an angle associated with it. OK.
+So once we complete this, right, so this is what my image will look like. So I already showed you this. So you take an image, you smoothen it out using Gaussian philtre or a median blur philtre or anything, right? You smoothen out the noise and then you multiply it. Or say, for instance, you operate on it.
+using a sobel or a pivot or any kind of kernel, right? And that will give you the magnitudes along X&Y axes. Okay, so if you take this image, right, these are all the vertical edges, right? So along X axis, so in
+conventional computer technology, X is always a vertical axis, Y is always a horizontal axis, just for your tidbit. Okay, so you have all the vertical edges being detected. Along the Y axis, you have all the horizontal edges being detected in prominence, right? When you add them both, right, the intensity values, when you add them,
+you get the perfect outline of the duck or the object of interest. OK, now you also have the angle. OK, you have computed both the direction and the angle, right? So let's see how it looks like. So say, for instance, you have the one-dimensional signal, step one and two. You take a Gaussian kernel.
+Right? What does a Gaussian kernel do? So over here, this is my Gaussian kernel. All the extrema values are basically 0, right? So 0 or close to 0. So this signal is somewhat like this.
+So you have one over here, 0.3, 0.6, 0.3, 0.6, 0.6, 0.3, 0.6, 0.6. So when you multiply it with, right, it looks something like this. So these values are basically your 0.3, 0.6, right?
+So when you're multiplying it with it, right, the noise automatically gradually reduces, right? So you have a lot more straighter line. And when you take the derivative of it, right, you get a distinct edge. So no longer the noise is present, right? So you have like.
+the signal F and you have the kernel, right? And you convolve using that kernel, right? You perform some sort of a convolution and you take the partial derivative of it, right? You get an edge associated with it. Okay, is this clear everyone? This is the signal diagram.
+Yes, no. Okay, now there's another hack to it, okay?
+What is a hack?
+So say for instance, if you take for instance, like ideally what you would have done, right? You would have taken your signal, you would have convolved it with the kernel, okay? And then you would have convolved it with a Gaussian signal, smoothened out the image, and then taken the partial derivative of it.
+Correct? Yes or no?
+Yes or no, everyone.
+Correct? Now, there's a trick to it actually. If you already take the partial derivative of the kernel itself, right, or the Gaussian philtre itself, right, you can save one operation. When you multiply it with the signal directly, it is as good as taking the derivative of the combined signal. So basically,
+What it says, the hack basically says that if you take the partial overall partial derivative of the signal multiplied with a Gaussian filter, it is almost equivalent to multiplying the original signal with a partial derivative of the kernel itself.
+I'll repeat again.
+Rather than taking the partial derivative of the entire signal and the kernel, what we are going to do, whatever kernel we are going to take, right?
+
+RAGHAVENDRA S P .   1:49:14
+Cortana.
+Two.
+With me in my house to be awesome, she is ninety-three about 18.
+
+Dhruba Adhikary .   1:49:22
+Sorry, can everyone please go on mute?
+So rather than taking the overall convolution of the signal, multiplying the signal with the kernel, and then taking the gradient, what we can do is that we can take the partial derivative of the Gaussian signal itself and just multiply it with dou dou x of
+and dodo Y off the Gaussian filter.
+OK, you take that and you just multiply it with the signal.
+So what it does is that it saves us one operation. I do not have to convolve and then take the partial derivative. I can just convolve, I can read the differentiation. So you will all agree that taking the partial derivative of a 3 cross 3 kernel is a lot more easier than taking the partial derivative of F cross H.
+which may be 128 cross 128, right? So it is computationally easier, okay? And that is the crux of modern day CNNs as well. So you always take the partial derivatives of the three cross three kernels, not the overall signal. And when you multiply it with the image,
+The result is as good as taking the partial derivative of the signal multiplied with the kernel. Okay, so let's take step one and two, right? So once you take step one and two, right, you smoothen out the image. This is what it looks like. You have the smoothened out gradient magnitude, right? Now focus over here.
+How thick that particular edge is, right?
+So how do you see which particular pixel is an edge? Right there are multiple pixels that are showing intensity variation.
+After my stage one and two, I have gotten.
+I have gotten a very thick edge, whereas edge should be a simple boundary that will say, okay, this is an edge, right? It should not be something like this. It should not be a thick edge. Okay? Imagine saying like you are cutting into the brain and you're saying, okay, this is not the brain. The brain is somewhere over here.
+That does not work out. OK, so you need to do something. So that's where the angle comes into play. OK, so for every edge, right, you computed magnitude and you had computed alpha. So these are the alpha values that I've visualised between 0 to 360. OK, that's a maximum number of.
+readings that can happen right? Now, we will do something called as non-maximal suppression, right? So say for instance, this is what stage one and two gave you, right? This is a thick edge, right? And within this thick edge, right, you have different angles, right? 10, 10, 20.
+30, you have 40, you have 50, 10, 20, 30.
+40, 10, 20.
+30, 40 and you have one that is 135.
+So what I will do is that I'll suppress all of this other angle values because, say for instance, you are detecting an edge on my eye, right? This particular edge says 10 degree, right? The very close by pixels, right? Say for instance, the close by pixels in immediate neighborhood. See, this is going at 10 degree, right?
+My other eyelash cannot, my eye cannot be at 180 degree. It cannot be inverted. They should be closed by values. So non-maximal suppression says that within a certain window, I'll cheque and I'll retain the most dominant values. So every other value is reduced to 0. So now what happens?
+is that this particular angle of attack, this particular magnitude, becomes my highest value.
+OK, so this is we retain the maximum along a gradient direction. OK, and how do we define that, right? So we have multiple things, and this is where I was saying, right?
+If it is minus 135 degree or 45 degree, sorry, minus 145 degree or plus 135 degree, it does not matter. If I see within a region, right, most of the intensity magnitudes, right, they are pointing towards, say, 45 degree, 45 degree, 45 degree.
+45 degree.
+45 degree and suddenly you have 145 degree. OK, I'll retain these ones only. I won't retain this. Within a certain edge, right? You have defined, right? You have an edge normal concept. You have magnitudes, right? So say for instance you have multiple magnitudes.
+So we have combined all the magnitudes. You have a very thick edge. 10, 10, 10, 10. Suddenly you have 100. You have 10, 10, 10, 10, 10, 10, and 10. What does non-maximal suppression do? It will say this is my maximal intensity value.
+This gradient value, this is my edge, okay? And the angles between all of these are 45 degree, 45 degree, 145 degree. So I'm just going to retain the angle as 45 degree.
+What this does is that it gives you much more refined edges.
+It gives you much more refined edges, wherein you, rather than having a thick edge like earlier, you have a distinct edge value, which is tracking the image now, right? Post non-maximal suppression. So what does non-maximal suppression does? It redeems and it holds out on the maximum edge.
+intensity magnitude and also angles between a certain range within its immediate neighborhood. OK, now. Next up, what we do, this image still has a lot of noise, right? So all of this redundant things, right? So over here, right? Redundant, you can see soft edges appearing over here.
+So what do we do? We threshold them. We will see anything lesser than a lower threshold. Like say for instance, you see anything below 100, I'll see it as irrelevant.
+Magnitude. OK, anything between 100 to say, for instance, 200 is my weak threshold or my weak edge, and anything between greater than 200 I will retain automatically. So, what does Canny Edge Detector algorithm do? It will say...
+It will retain all the edges that are greater than a certain threshold. It will remove everything that is lesser than the lower threshold. And anything in between, it will define. Okay, so.
+Anything between this range, right? They are called as weak edges, and weak edges will only be retained if they are connected to their strong edge. So, say, for instance, you have...
+These values, right? So say, for instance, you have 100 value, right? This is an edge right now. Say, for instance, this is 10. Sorry, this is 110. This is say, for instance, 250. OK, this is say, for instance, 100. OK, this is say, for instance, 100. This is say, for instance, not an edge, zero.
+And this is, say, for instance, 100, 100, and this is, say, 110. The lower threshold was, say, for instance, 90. The higher threshold was, say, 190. By that definition, this is a strong edge.
+OK, this is a strong edge, and all of these are weak edges. OK, now what does the algorithm do? The algorithm will say, OK, 110 is linked to 250, so retain this, retain this, right? And anything that is not connected.
+To the strong edge, right? Remove it.
+So what it does is that it finally gives you.
+a sharp edge like this. So earlier you remember you had a lot of noise present over here, here, here. Right now you only have the most distinct patterns.
+Okay.
+Is this clear, everyone?
+Soap.
+
+SUJOY SAHA .   1:58:12
+So, Armand GAURI, regarding these thresholds, so how this threshold will be decided, because there might be a wide variety of images and...
+
+Dhruba Adhikary .   1:58:16
+M.
+Their hyper parameter, their hyper parameters. OK, so depending on your data set, you will define them like you tune any machine learning algorithm. OK.
+So these are examples of this, right? So say for instance, I took this image, I have the strong plus the connected weak edges, right? So these show the strong edges only, right? So strong edges like this. So over here, this edge is missing, right? Now you have the weak edges present over here. So you have the weak edges.
+So you can clearly see this edge, which was missing, is now connected to strong edges. So it has been retained. The gap is gone, right? So you can clearly see when you use this technique, right? You only retain out on the relevant information and all the irrelevancy, like over here, right? That is gone. Why? Because they are not connected to any of the strong edges.
+Right, so Canny detector, first and foremost, multiplies your image with the derivative of Gaussian.
+Why does it multiply it with the derivative of Gaussian, everyone?
+
+G M AISHWARYA .   1:59:28
+That is as good as convolving and then taking derivative.
+
+PALLAM MADHUKAR .   1:59:30
+Do you?
+
+Dhruba Adhikary .   1:59:32
+Correct, so that is.
+
+G. VIJAY .   1:59:32
+Nice introduction.
+
+B. KRISHNA MOHAN .   1:59:33
+Ohh.
+To save one step of computation.
+
+Dhruba Adhikary .   1:59:36
+Correct. That is as good as convolving with the derivative of the signal multiplied with the Gaussian, right? So it's a hat. Okay. Next up, we find out the magnitude and the gradient. So these two steps are accomplished automatically. So when you multiply with the Gaussian, the image is smoothened, the noise goes down.
+and the magnitude and the gradient are found out. Post that, we do non-maximal suppression, right? So we have thick edges, right? We cannot stop that, right? Rather, we should transform it into something like this, a single edge. Okay, so what does it do? It takes, say for instance, you have this thick edge, okay?
+you have this thick edge for the sake of showing. Let me show. Okay. And what do you do? You take a cross section of it, right? And you see you will only retain the maximum magnitude within this neighborhood. Okay. Maximum magnitude. And also the edge should point towards only one singular direction, right? So
+even if there are multiple other angles, we will just retain angles between a certain range. So we perform maximum suppression. Post that, we define threshold, a low and a high threshold. Like the low threshold, anything below a certain threshold, we will ignore. Anything between the low and the high threshold, we will consider it as a weak edge.
+And anything greater than the higher threshold will consider it as a strong edge. And anything that is linked to a strong edge is automatically retained. Everything else is left out. Okay, so this is an example of canny edge detector. Again, what were the hyper parameters?
+the thresholds and the Gaussian philtre sigma value. So if you increase or decrease it, you will have like more edges, smaller sigma, smaller edges, right? So when you go through the canny edge detection algorithm, this is how it looks like. Okay, so you have a lot of different edges, right?
+even with the strong edge, weak edge, thresholding and everything. So you'll see clearly I've defined the thresholds over here. So you can change and play around with it. However, one critical thing remains that we further simplify this. We further detect the appropriate edges by detecting lines. Okay.
+So, this is what we'll study during our next lecture, OK?
+With that, we will come to the end of the session today. I'll stop my screen share, stop the recording. If you have any questions, please ask.
+
+Dhruba Adhikary . stopped transcription

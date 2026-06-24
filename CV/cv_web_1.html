@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Webinar 1 — Image Processing Techniques</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0c0f;--surface:#131318;--surface2:#1a1a22;--gold:#d4a853;--gold-dim:#8a6a2e;--teal:#2dd4bf;--sky:#38bdf8;--rose:#fb7185;--lime:#a3e635;--violet:#a78bfa;--amber:#fbbf24;--text:#e8e6e0;--text-muted:#7a7875;--text-dim:#4a4845;--border:rgba(212,168,83,0.12);--bl:rgba(255,255,255,0.06)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Newsreader',Georgia,serif;font-size:17px;line-height:1.75;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.5}
+#sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;padding:1.5rem 0 1rem;overflow-y:auto}
+#sb-brand{font-family:'Syne',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding:0 1.25rem 1rem;border-bottom:1px solid var(--border)}
+#progress-bar{height:2px;background:var(--gold-dim);margin:.75rem 1.25rem;border-radius:1px;overflow:hidden}
+#progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--amber));width:0%;transition:width .3s ease;border-radius:1px}
+#sidebar nav{flex:1;padding:.5rem 0}
+#sidebar nav a{display:block;font-family:'Syne',sans-serif;font-size:11px;font-weight:500;letter-spacing:.05em;color:var(--text-muted);text-decoration:none;padding:.4rem 1.25rem;border-left:2px solid transparent;transition:all .2s}
+#sidebar nav a:hover{color:var(--gold);border-left-color:var(--gold-dim)}
+#sidebar nav a.active{color:var(--gold);border-left-color:var(--gold);background:rgba(212,168,83,.05)}
+#sb-session{padding:1rem 1.25rem 0;border-top:1px solid var(--border);font-family:'Syne',sans-serif;font-size:10px;color:var(--text-dim);letter-spacing:.1em}
+main{margin-left:220px;padding:0 3rem 6rem;max-width:860px;position:relative;z-index:1}
+#hero{padding:5rem 0 3rem;border-bottom:1px solid var(--border)}
+.session-label{font-family:'Syne',sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+#hero h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:800;line-height:1.1;color:var(--text);margin-bottom:1rem}
+#hero h1 span{color:var(--gold)}
+.subtitle{font-size:18px;color:var(--text-muted);max-width:600px;font-style:italic}
+.section{padding:4rem 0 2rem;opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
+.section.visible{opacity:1;transform:none}
+.section-header{display:flex;align-items:center;gap:1rem;margin-bottom:2rem}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold-dim);letter-spacing:.1em}
+.section-title{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:700;color:var(--text)}
+.section-line{flex:1;height:1px;background:var(--border)}
+.topic-block{background:var(--surface);border:1px solid var(--bl);border-radius:8px;padding:2rem;margin-bottom:2rem}
+.topic-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.tbadge{font-family:'Syne',sans-serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:3px 8px;border-radius:3px}
+.b-teal{background:rgba(45,212,191,.12);color:var(--teal)}
+.b-sky{background:rgba(56,189,248,.12);color:var(--sky)}
+.b-rose{background:rgba(251,113,133,.12);color:var(--rose)}
+.b-lime{background:rgba(163,230,53,.12);color:var(--lime)}
+.b-violet{background:rgba(167,139,250,.12);color:var(--violet)}
+.b-amber{background:rgba(251,191,36,.12);color:var(--amber)}
+.b-gold{background:rgba(212,168,83,.12);color:var(--gold)}
+p{margin-bottom:1rem}
+.formula{font-family:'JetBrains Mono',monospace;font-size:13px;background:#0a0a0d;border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:4px;padding:1rem 1.25rem;margin:1.25rem 0;overflow-x:auto;line-height:1.9;white-space:pre}
+.fg{color:var(--gold)}.ft{color:var(--teal)}.fs{color:var(--sky)}.fr{color:var(--rose)}.fl{color:var(--lime)}.fv{color:var(--violet)}.fa{color:var(--amber)}.fd{color:var(--text-muted)}
+.callout{border-radius:6px;padding:1.25rem 1.5rem;margin:1.5rem 0;border-left:3px solid;font-size:15px}
+.callout-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.6rem}
+.cw{background:rgba(45,212,191,.06);border-color:var(--teal)}.cw .callout-title{color:var(--teal)}
+.cr{background:rgba(167,139,250,.06);border-color:var(--violet)}.cr .callout-title{color:var(--violet)}
+.ce{background:rgba(251,113,133,.08);border-color:var(--rose)}.ce .callout-title{color:var(--rose)}
+.cp{background:rgba(212,168,83,.07);border-color:var(--gold)}.cp .callout-title{color:var(--gold)}
+.ct{background:rgba(251,191,36,.06);border-color:var(--amber)}.ct .callout-title{color:var(--amber)}
+.tabs-wrapper{margin:1.5rem 0}
+.tab-buttons{display:flex;border-bottom:1px solid var(--bl);margin-bottom:0}
+.tab-btn{font-family:'Syne',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1.25rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-muted);cursor:pointer;transition:all .2s;margin-bottom:-1px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-content{display:none;padding:1.5rem;background:rgba(0,0,0,.3);border:1px solid var(--bl);border-top:none;border-radius:0 0 6px 6px}
+.tab-content.active{display:block}
+.eq{font-family:'Syne',sans-serif;font-size:13px;color:var(--sky);margin-bottom:.75rem;font-weight:600}
+.esteps{counter-reset:step}
+.estep{counter-increment:step;padding:.5rem 0 .5rem 1.5rem;position:relative;border-left:1px solid var(--border);margin-left:.5rem;font-size:15px}
+.estep::before{content:counter(step);position:absolute;left:-10px;top:.55rem;width:18px;height:18px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;font-family:'JetBrains Mono',monospace;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--gold);line-height:18px;text-align:center}
+.abox{background:rgba(212,168,83,.07);border:1px solid var(--gold-dim);border-radius:4px;padding:.75rem 1rem;margin-top:1rem;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gold)}
+.ki{font-size:13px;color:var(--text-muted);margin-top:.75rem;font-style:italic}
+.ibox{background:var(--surface2);border:1px solid var(--bl);border-radius:8px;padding:1.5rem;margin:2rem 0}
+.ititle{font-family:'Syne',sans-serif;font-size:12px;letter-spacing:.15em;color:var(--teal);text-transform:uppercase;margin-bottom:1rem}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--bl);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gold);cursor:pointer}
+.srow{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.slbl{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);min-width:110px}
+.sval{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);min-width:40px;text-align:right}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.75rem;margin:1.5rem 0}
+.dcell{text-align:center}
+.dcell canvas{border-radius:4px;border:1px solid var(--bl)}
+.dlbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:.35rem}
+select{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:1rem 0}
+th{font-family:'Syne',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);padding:.5rem .75rem;border-bottom:1px solid var(--border);text-align:left}
+td{padding:.5rem .75rem;border-bottom:1px solid rgba(255,255,255,.03)}
+tr:hover td{background:rgba(255,255,255,.02)}
+.quiz-item{background:var(--surface);border:1px solid var(--bl);border-radius:6px;padding:1.5rem;margin-bottom:1.25rem}
+.quiz-q{font-size:15px;margin-bottom:1rem;line-height:1.6}
+.qmeta{display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap}
+.qtag{font-family:'Syne',sans-serif;font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.de{background:rgba(163,230,53,.12);color:var(--lime)}
+.dm{background:rgba(251,191,36,.12);color:var(--amber)}
+.dh{background:rgba(251,113,133,.12);color:var(--rose)}
+.tt{background:rgba(56,189,248,.1);color:var(--sky)}
+.qopts{list-style:none}
+.qopts li{font-size:14px;padding:.45rem .75rem;border-radius:4px;cursor:pointer;margin-bottom:.35rem;border:1px solid var(--bl);transition:all .15s}
+.qopts li:hover{border-color:var(--gold-dim);color:var(--gold)}
+.qopts li.correct{background:rgba(163,230,53,.1);border-color:var(--lime);color:var(--lime)}
+.qopts li.wrong{background:rgba(251,113,133,.08);border-color:var(--rose);color:var(--rose)}
+.qexp{display:none;margin-top:1rem;padding:1rem;background:rgba(0,0,0,.3);border-radius:4px;font-size:14px;color:var(--text-muted);border-left:2px solid var(--gold)}
+.qexp.show{display:block}
+.mn{color:var(--rose);font-size:13px;margin-top:.5rem}
+.rcrd{background:var(--surface2);border:1px solid var(--bl);border-top:2px solid var(--violet);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem}
+.rcrd h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--violet);margin-bottom:.75rem}
+.cite{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--violet);opacity:.7}
+#stt{position:fixed;right:1.5rem;bottom:1.5rem;width:38px;height:38px;background:var(--surface);border:1px solid var(--gold-dim);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:16px;z-index:200;opacity:0;transition:opacity .3s}
+#stt.visible{opacity:1}
+#stt:hover{background:var(--gold-dim);color:var(--bg)}
+code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--teal)}
+@media(max-width:900px){#sidebar{display:none}main{margin-left:0;padding:0 1.5rem 4rem}}
+</style>
+</head>
+<body>
+<aside id="sidebar">
+  <div id="sb-brand">AIMLCZG525 · Webinar 1</div>
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+  <nav>
+    <a href="#hero" data-s="hero">Overview</a>
+    <a href="#s1" data-s="s1">Pre-processing</a>
+    <a href="#s2" data-s="s2">Denoising</a>
+    <a href="#s3" data-s="s3">Geometric Transforms</a>
+    <a href="#s4" data-s="s4">Colour Spaces</a>
+    <a href="#s5" data-s="s5">Feature Extraction</a>
+    <a href="#s6" data-s="s6">Morphological Ops</a>
+    <a href="#s7" data-s="s7">Histogram & CLAHE</a>
+    <a href="#s8" data-s="s8">Edge Detection</a>
+    <a href="#s9" data-s="s9">Sharpening</a>
+    <a href="#s10" data-s="s10">Thresholding</a>
+    <a href="#s11" data-s="s11">Contours & Segmentation</a>
+    <a href="#s12" data-s="s12">Research Dive</a>
+    <a href="#s13" data-s="s13">Exam Quiz</a>
+  </nav>
+  <div id="sb-session">Prof. Dhruba · May 19 2026<br>BITS Pilani WILP</div>
+</aside>
+<button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<main>
+<section id="hero" class="section">
+  <div class="session-label">Computer Vision · Webinar 1</div>
+  <h1>Image Processing<br><span>Techniques & Methods</span></h1>
+  <p class="subtitle">Pre-processing, denoising, transforms, colour spaces, feature extraction, morphological operations — the complete session, research-enhanced.</p>
+</section>
+
+<!-- S1 PRE-PROCESSING -->
+<section id="s1" class="section">
+  <div class="section-header"><span class="section-num">01</span><h2 class="section-title">Image Pre-processing</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">What Pre-processing Actually Does <span class="tbadge b-teal">foundation</span></div>
+    <p>Think of an image as a witness. Before you cross-examine it (extract features), it must be coherent — not distorted by noise, bad lighting, or scale mismatch. Pre-processing converts raw captured data into a form that algorithms can reliably analyse.</p>
+    <p>Every real-world image suffers from at least one of: illumination variance, sensor noise, scale mismatch, motion blur, or compression artifacts. Pre-processing attacks all of these before feature extraction.</p>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript</div>"If the features are good, then definitely you'll get a proper output. Without pre-processing, the noise may be treated as an important feature — that is also possible."</div>
+    <p>The canonical pipeline Prof. described: <strong style="color:var(--gold)">pre-process → extract features → post-process → output</strong>. This is the invariant structure of every CV system, from face recognition to tumour segmentation.</p>
+    <div class="formula"><span class="ft">Pre-processing Pipeline</span>
+<span class="fd">────────────────────────────────────</span>
+Raw Image
+  → <span class="fg">Noise Reduction</span>     (remove stochastic interference)
+  → <span class="fs">Normalisation</span>       (uniform scale, dtype, colour space)
+  → <span class="fl">Contrast Enhancement</span> (amplify useful signal)
+  → <span class="fv">Filtering</span>           (sharpen edges or smooth regions)
+  → <span class="fr">Resizing</span>            (canonical spatial resolution)
+  → <span class="fa">Usable Feature Space</span></div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — OpenCV / PyTorch</div>Every CNN backbone has a fixed input resolution (224×224, 384×384). Resizing is therefore mandatory pre-processing for all DL inference. Normalising pixel values via <code>transforms.Normalize(mean, std)</code> in PyTorch is mathematically equivalent to contrast stretching at the data pipeline level.</div>
+    <p>Prof.'s face recognition example: two eyes and the mouth/nose-tip are the three anchor keypoints. Good pre-processing ensures these landmarks are distinguishable — illumination correction is the most critical step because shadow moves pixel values across detection thresholds.</p>
+    <div class="callout ce"><div class="callout-title">Exam Alert</div>Questions ask <em>why</em> pre-processing is needed, not just what it does. Expected answer references: (1) noise treated as signal, (2) illumination variance, (3) scale mismatch preventing algorithm generalisation. The classic wrong answer is "to make the image look better" — that's a consequence, not the reason.</div>
+  </div>
+</section>
+
+<!-- S2 DENOISING -->
+<section id="s2" class="section">
+  <div class="section-header"><span class="section-num">02</span><h2 class="section-title">Denoising Techniques</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">The Three Noise Types <span class="tbadge b-sky">core concept</span></div>
+    <p>Noise is unwanted signal — pixel values the sensor, transmission channel, or compression process introduced instead of scene content. Identifying the noise type determines which filter to apply.</p>
+    <table><thead><tr><th>Noise Type</th><th>Mechanism</th><th>Visual Signature</th><th>Best Filter</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--sky)">Gaussian</td><td>Sensor thermal noise, poor lighting</td><td>Smooth uniform grain over whole image</td><td>Gaussian blur, NL-Means</td></tr>
+    <tr><td style="color:var(--rose)">Salt & Pepper</td><td>Bit errors in transmission, dead pixels</td><td>Random white (255) and black (0) isolated pixels</td><td>Median filter</td></tr>
+    <tr><td style="color:var(--amber)">Speckle</td><td>Coherent imaging (SAR, ultrasound)</td><td>Granular high-frequency texture spread everywhere</td><td>Bilateral, NL-Means</td></tr>
+    </tbody></table>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript</div>"Speckle noise — it is spread around like anything. There will be nothing visible to you, properly not able to visualise what has happened. Salt and pepper: here and there, black and white pixels. Salt always refers to the white pixel and pepper always refers to the black pixel."</div>
+    <div class="formula"><span class="fd"># 1. Box (Averaging) Blur — uniform weight kernel</span>
+<span class="fg">blurred</span> = <span class="fs">cv2.blur</span>(<span class="ft">img</span>, (<span class="fr">5</span>, <span class="fr">5</span>))
+
+<span class="fd"># 2. Gaussian Blur — Gaussian-weighted kernel</span>
+<span class="fg">g_blur</span> = <span class="fs">cv2.GaussianBlur</span>(<span class="ft">img</span>, (<span class="fr">5</span>, <span class="fr">5</span>), <span class="fa">sigmaX</span>=<span class="fr">0</span>)
+
+<span class="fd"># 3. Median Blur — replaces pixel with median of k×k neighbourhood</span>
+<span class="fg">m_blur</span> = <span class="fs">cv2.medianBlur</span>(<span class="ft">img</span>, <span class="fr">5</span>)         <span class="fd"># best for S&P noise</span>
+
+<span class="fd"># 4. Bilateral Filter — edge-preserving (spatial + range weights)</span>
+<span class="fg">bilat</span>  = <span class="fs">cv2.bilateralFilter</span>(<span class="ft">img</span>, <span class="fa">d</span>=<span class="fr">9</span>, <span class="fa">sigmaColor</span>=<span class="fr">75</span>, <span class="fa">sigmaSpace</span>=<span class="fr">75</span>)
+
+<span class="fd"># 5. Non-Local Means — patch-similarity search (non-local)</span>
+<span class="fg">nlm</span>    = <span class="fs">cv2.fastNlMeansDenoisingColored</span>(<span class="ft">img</span>, None,
+          <span class="fa">h</span>=<span class="fr">10</span>, <span class="fa">hColor</span>=<span class="fr">10</span>,
+          <span class="fa">templateWindowSize</span>=<span class="fr">7</span>, <span class="fa">searchWindowSize</span>=<span class="fr">21</span>)</div>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript (on NL-Means h parameter)</div>"Generally a kernel filter of that size — 10 elements of different colour things can just save it over. Normally during your convolutional operation, you keep a particular kernel and fix it on that image patch everywhere — similar to that."</div>
+    <div class="topic-title" style="margin-top:1.5rem">Generating Noise in Code <span class="tbadge b-rose">notebook</span></div>
+    <p>Understanding noise mathematically requires knowing how each type is generated. From the webinar notebook — the three canonical implementations:</p>
+    <div class="formula"><span class="fd"># 1. Gaussian Noise — ADDITIVE: independent of pixel value</span>
+<span class="fl">def</span> <span class="fs">add_gaussian_noise</span>(image, mean=<span class="fr">0</span>, std=<span class="fa">25</span>):
+    noise = <span class="fs">np.random.normal</span>(mean, std, image.shape).<span class="ft">astype</span>(<span class="fs">np.float32</span>)
+    noisy = image.<span class="ft">astype</span>(<span class="fs">np.float32</span>) + noise   <span class="fd"># ADDITIVE</span>
+    <span class="fl">return</span> <span class="fs">np.clip</span>(noisy, <span class="fr">0</span>, <span class="fr">255</span>).<span class="ft">astype</span>(<span class="fs">np.uint8</span>)
+
+<span class="fd"># 2. Salt & Pepper — random pixel corruption at extremes</span>
+<span class="fl">def</span> <span class="fs">add_salt_pepper_noise</span>(image, salt_prob=<span class="fr">0.01</span>, pepper_prob=<span class="fr">0.01</span>):
+    noisy = <span class="fs">np.copy</span>(image)
+    total = image.shape[<span class="fr">0</span>] * image.shape[<span class="fr">1</span>]
+    <span class="fl">for</span> _ <span class="fl">in</span> <span class="fs">range</span>(<span class="fs">int</span>(total * salt_prob)):
+        i,j = <span class="fs">random.randint</span>(<span class="fr">0</span>,image.shape[<span class="fr">0</span>]-<span class="fr">1</span>), <span class="fs">random.randint</span>(<span class="fr">0</span>,image.shape[<span class="fr">1</span>]-<span class="fr">1</span>)
+        noisy[i,j] = [<span class="fr">255</span>,<span class="fr">255</span>,<span class="fr">255</span>]  <span class="fd"># Salt = white</span>
+    <span class="fl">for</span> _ <span class="fl">in</span> <span class="fs">range</span>(<span class="fs">int</span>(total * pepper_prob)):
+        i,j = <span class="fs">random.randint</span>(<span class="fr">0</span>,image.shape[<span class="fr">0</span>]-<span class="fr">1</span>), <span class="fs">random.randint</span>(<span class="fr">0</span>,image.shape[<span class="fr">1</span>]-<span class="fr">1</span>)
+        noisy[i,j] = [<span class="fr">0</span>,<span class="fr">0</span>,<span class="fr">0</span>]        <span class="fd"># Pepper = black</span>
+    <span class="fl">return</span> noisy
+
+<span class="fd"># 3. Speckle Noise — MULTIPLICATIVE: scales with pixel intensity</span>
+<span class="fl">def</span> <span class="fs">add_speckle_noise</span>(image):
+    noise = <span class="fs">np.random.randn</span>(*image.shape).<span class="ft">astype</span>(<span class="fs">np.float32</span>)
+    noisy = image + image * noise              <span class="fd"># MULTIPLICATIVE</span>
+    <span class="fl">return</span> <span class="fs">np.clip</span>(noisy, <span class="fr">0</span>, <span class="fr">255</span>).<span class="ft">astype</span>(<span class="fs">np.uint8</span>)</div>
+    <div class="callout ct"><div class="callout-title">Key Distinction — Additive vs Multiplicative Noise</div>Gaussian: <code>noisy = image + noise</code> — noise intensity is constant regardless of pixel value. A bright pixel (200) and dark pixel (20) get the same noise magnitude. Speckle: <code>noisy = image + image * noise</code> — noise scales proportionally. Pixel 200 gets 10× more noise than pixel 20. This is why speckle looks like granular texture concentrated in bright regions — it models coherent imaging physics (SAR, ultrasound, laser).</div>
+    <div class="ibox">
+      <div class="ititle">Interactive: Noise Visualiser</div>
+      <div class="srow"><span class="slbl">Noise Type</span><select id="noise-type"><option value="gaussian">Gaussian</option><option value="sp">Salt &amp; Pepper</option><option value="speckle">Speckle</option></select></div>
+      <div class="srow"><span class="slbl">Intensity</span><input type="range" id="noise-int" min="5" max="80" value="30" style="flex:1"><span class="sval" id="nval">30</span></div>
+      <div class="dgrid">
+        <div class="dcell"><canvas id="c-orig" width="140" height="140"></canvas><div class="dlbl">Original</div></div>
+        <div class="dcell"><canvas id="c-noisy" width="140" height="140"></canvas><div class="dlbl">Noisy</div></div>
+        <div class="dcell"><canvas id="c-den" width="140" height="140"></canvas><div class="dlbl">Median Denoised</div></div>
+      </div>
+    </div>
+    <div class="tabs-wrapper">
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab(this,'dn-e')">Easy</button>
+        <button class="tab-btn" onclick="switchTab(this,'dn-m')">Medium</button>
+        <button class="tab-btn" onclick="switchTab(this,'dn-h')">Complex</button>
+      </div>
+      <div id="dn-e" class="tab-content active">
+        <div class="eq">Q: Which filter is most effective for salt-and-pepper noise, and why?</div>
+        <div class="esteps">
+          <div class="estep">Recall: salt-and-pepper noise is random isolated pixels at extreme values (0 or 255).</div>
+          <div class="estep">Averaging blur takes the mean — a single corrupt pixel (255) in a 3×3 neighbourhood raises the output from ~100 to ~128. The outlier is diluted, not eliminated.</div>
+          <div class="estep">Median filter sorts the 9 neighbourhood pixels and picks the middle value. A single 255 among 8 normal values (~90–110) falls at rank 9. The median (~100) completely discards the outlier.</div>
+        </div>
+        <div class="abox">→ Median filter. Statistically robust to outliers because it ignores values at extreme ranks.</div>
+        <div class="ki">Key insight: median preserves edges better than box blur because step edges appear as a rank transition, not an outlier.</div>
+      </div>
+      <div id="dn-m" class="tab-content">
+        <div class="eq">Q: A 5×5 Gaussian kernel with σ=1 is applied. What happens to an edge pixel where left neighbours are all 50 and right neighbours are all 200?</div>
+        <div class="esteps">
+          <div class="estep">Gaussian weights decay as exp(−(x²+y²)/2σ²). Centre weight is highest; periphery decays quickly.</div>
+          <div class="estep">The 5×5 window straddles the edge — roughly half the patch draws from the 50-region, half from the 200-region.</div>
+          <div class="estep">Weighted average: output pixel is between 50 and 200. Exact value depends on edge position in the window. The edge gradient is preserved but its magnitude is reduced.</div>
+        </div>
+        <div class="abox">→ Edge pixel averages toward ~125. Edge gradient is blurred (reduced magnitude) but not destroyed.</div>
+        <div class="ki">This is why Gaussian blur is used as a pre-step in Canny: it smooths noise while the edge gradient (though diminished) remains detectable.</div>
+      </div>
+      <div id="dn-h" class="tab-content">
+        <div class="eq">Q: Derive why the bilateral filter preserves edges where Gaussian blur does not. Express the bilateral weight formally.</div>
+        <div class="esteps">
+          <div class="estep">Standard Gaussian weight: <code>w_s(x,y) = exp(−(x²+y²)/(2σ_s²))</code> — depends only on spatial distance.</div>
+          <div class="estep">Bilateral adds a range term: <code>w_r(p,q) = exp(−|I_p−I_q|²/(2σ_r²))</code> — depends on intensity difference.</div>
+          <div class="estep">Combined: <code>w(p,q) = w_s · w_r</code>. Near an edge, pixels across it differ greatly in intensity → |I_p−I_q| is large → w_r ≈ 0 → those pixels are excluded from the average.</div>
+          <div class="estep">Result: only pixels on the same side of the edge (similar intensity) contribute. The filter smooths within homogeneous regions but does not average across discontinuities.</div>
+        </div>
+        <div class="abox">→ Bilateral = spatial Gaussian × range Gaussian. Range term kills cross-edge contributions — edge is preserved because high-contrast neighbours get near-zero weight.</div>
+        <div class="ki">σ_r controls edge sensitivity. Small σ_r = strong edge preservation, less smoothing. Large σ_r → approaches Gaussian blur. Prof. used 75 as a balanced default.</div>
+      </div>
+    </div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — Denoising</div>Denoising Autoencoders and Diffusion Models are the deep learning equivalents of bilateral/NL-Means. DDPM (Ho et al., 2020) explicitly frames image generation as a learnt <em>reverse denoising process</em> — noise is added in ~1000 forward steps and a U-Net learns to invert each step. NL-Means' non-local self-similarity principle directly inspired the Non-Local Means block in Video Transformer architectures.</div>
+  </div>
+</section>
+
+<!-- S3 GEOMETRIC TRANSFORMS -->
+<section id="s3" class="section">
+  <div class="section-header"><span class="section-num">03</span><h2 class="section-title">Geometric Transforms</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Spatial Manipulation of Images <span class="tbadge b-violet">transforms</span></div>
+    <p>Prof.'s analogy: cycling → motorbike → car. Each stage is a spatial transformation of how you navigate the world. The geometry changes; the underlying reality remains. In image processing: the pixel content's position, orientation, or scale changes without (ideally) losing information.</p>
+    <table><thead><tr><th>Transform</th><th>Operation</th><th>OpenCV</th><th>Key Parameter</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--sky)">Translation</td><td>Shift by (dx, dy)</td><td><code>cv2.warpAffine</code></td><td>M = [[1,0,dx],[0,1,dy]]</td></tr>
+    <tr><td style="color:var(--teal)">Rotation</td><td>Rotate about centre by θ</td><td><code>cv2.getRotationMatrix2D</code></td><td>center, angle, scale</td></tr>
+    <tr><td style="color:var(--lime)">Scaling</td><td>Resize by fx, fy</td><td><code>cv2.resize</code></td><td>fx=0.9, fy=0.5 → 50% height</td></tr>
+    <tr><td style="color:var(--amber)">Shearing</td><td>Slant along x or y</td><td><code>cv2.warpAffine</code></td><td>M[0,1]=0.5 → x-shear</td></tr>
+    <tr><td style="color:var(--violet)">Perspective</td><td>4-point map (foreshortening)</td><td><code>cv2.getPerspectiveTransform</code></td><td>src_pts (4×2), dst_pts (4×2)</td></tr>
+    <tr><td style="color:var(--rose)">Flip</td><td>Mirror horizontal/vertical</td><td><code>cv2.flip</code></td><td>1=horizontal, 0=vertical</td></tr>
+    </tbody></table>
+    <div class="formula"><span class="fd"># Translation Matrix: move right 50px, down 30px</span>
+<span class="fg">M</span> = <span class="fs">np.float32</span>([[<span class="fr">1</span>, <span class="fr">0</span>, <span class="fa">50</span>],
+               [<span class="fr">0</span>, <span class="fr">1</span>, <span class="fa">30</span>]])
+<span class="ft">translated</span> = <span class="fs">cv2.warpAffine</span>(<span class="fg">img</span>, <span class="fg">M</span>, (<span class="fv">cols</span>, <span class="fv">rows</span>))
+
+<span class="fd"># Rotation: 45° about centre, scale=1</span>
+<span class="fg">centre</span> = (<span class="fv">cols</span>/<span class="fr">2</span>, <span class="fv">rows</span>/<span class="fr">2</span>)
+<span class="fg">R</span>      = <span class="fs">cv2.getRotationMatrix2D</span>(<span class="fg">centre</span>, <span class="fa">45</span>, <span class="fr">1</span>)
+<span class="ft">rotated</span> = <span class="fs">cv2.warpAffine</span>(<span class="fg">img</span>, <span class="fg">R</span>, (<span class="fv">cols</span>, <span class="fv">rows</span>))
+
+<span class="fd"># Scaling: FX=0.9 width, FY=0.5 height</span>
+<span class="ft">scaled</span> = <span class="fs">cv2.resize</span>(<span class="fg">img</span>, None, <span class="fa">fx</span>=<span class="fr">0.9</span>, <span class="fa">fy</span>=<span class="fr">0.5</span>,
+                   <span class="fa">interpolation</span>=<span class="fs">cv2.INTER_LINEAR</span>)
+
+<span class="fd"># rows = img.shape[0] (height), cols = img.shape[1] (width)</span></div>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript (affine vs perspective)</div>"Affine transform and perspective transform are almost the same, but there's a little difference in it. So you just can explore affine transform later." [Prof. assigned as self-study. Key difference below.]</div>
+    <p><strong style="color:var(--amber)">Affine vs Perspective:</strong> Affine uses 3 point pairs (2×3 matrix) and preserves parallel lines. Perspective uses 4 point pairs (3×3 homography) and can warp rectangles into arbitrary quadrilaterals — used for document rectification and bird's-eye view in autonomous driving.</p>
+    <div class="tabs-wrapper">
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab(this,'tr-e')">Easy</button>
+        <button class="tab-btn" onclick="switchTab(this,'tr-m')">Medium</button>
+        <button class="tab-btn" onclick="switchTab(this,'tr-h')">Complex</button>
+      </div>
+      <div id="tr-e" class="tab-content active">
+        <div class="eq">Q: Write the translation matrix M that moves an image 100 pixels right and 50 pixels down.</div>
+        <div class="esteps">
+          <div class="estep">Format: 2×3 matrix [[a,b,tx],[c,d,ty]] where a=d=1 (identity), b=c=0 (no rotation).</div>
+          <div class="estep">Right = positive x: tx=100. Down = positive y (image y increases downward): ty=50.</div>
+        </div>
+        <div class="abox">M = np.float32([[1, 0, 100], [0, 1, 50]])</div>
+      </div>
+      <div id="tr-m" class="tab-content">
+        <div class="eq">Q: A 300×300 image is rotated 45°. Some pixels become black. Why, and how can this be mitigated?</div>
+        <div class="esteps">
+          <div class="estep">Rotating a square 45° extends its corners to ±212px from the centre (300×√2/2 ≈ 212), exceeding the 150px half-width of the original bounding box.</div>
+          <div class="estep">Pixels that map outside the output canvas boundaries have no source pixel → filled with black (default borderMode=constant, value=0).</div>
+          <div class="estep">Mitigation: (a) expand output canvas to int(300√2)≈424 pixels, or (b) use borderMode=cv2.BORDER_REFLECT to fill from reflected border pixels.</div>
+        </div>
+        <div class="abox">→ Black corners appear because the rotated image corners fall outside the 300×300 output. Fix by enlarging the output canvas or using border reflection.</div>
+      </div>
+      <div id="tr-h" class="tab-content">
+        <div class="eq">Q: Derive why bilinear interpolation is needed during scaling and compute the output for source position (2.3, 1.7).</div>
+        <div class="esteps">
+          <div class="estep">Scaling maps output pixels back to non-integer source coordinates. Nearest-neighbour rounds to the closest pixel → blocky artefacts. Bilinear interpolates from the 4 surrounding integer-coordinate neighbours.</div>
+          <div class="estep">Source position (x,y)=(2.3, 1.7). Four neighbours: I₀₀=(2,1), I₁₀=(3,1), I₀₁=(2,2), I₁₁=(3,2). Fractional offsets: dx=0.3, dy=0.7.</div>
+          <div class="estep">Bilinear formula: output = (1−dx)(1−dy)·I₀₀ + dx(1−dy)·I₁₀ + (1−dx)dy·I₀₁ + dx·dy·I₁₁</div>
+          <div class="estep">Substituting: output = 0.7×0.3·I₀₀ + 0.3×0.3·I₁₀ + 0.7×0.7·I₀₁ + 0.3×0.7·I₁₁ = 0.21·I₀₀ + 0.09·I₁₀ + 0.49·I₀₁ + 0.21·I₁₁</div>
+        </div>
+        <div class="abox">→ output = 0.21·I₀₀ + 0.09·I₁₀ + 0.49·I₀₁ + 0.21·I₁₁ (weighted sum of 4 surrounding pixels)</div>
+        <div class="ki">cv2.INTER_AREA is best for downscaling (avoids aliasing). cv2.INTER_CUBIC uses 4×4 neighbours for smoother upscaling.</div>
+      </div>
+    </div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — Transforms → Data Augmentation</div>PyTorch's <code>torchvision.transforms.RandomHorizontalFlip()</code> and <code>RandomAffine(degrees=15)</code> ARE these geometric transforms applied stochastically at training time. Spatial Transformer Networks (Jaderberg et al., 2015) learn affine parameters end-to-end, making the network invariant to misalignment without manual pre-processing.</div>
+    <div class="topic-title" style="margin-top:1.5rem">Image Arithmetic <span class="tbadge b-amber">notebook</span></div>
+    <p>Before or after geometric transforms, images are often combined arithmetically. A critical distinction between OpenCV and NumPy:</p>
+    <div class="formula"><span class="fd"># Image Arithmetic — from webinar notebook</span>
+img1 = <span class="fs">cv2.resize</span>(img1, (<span class="fr">300</span>, <span class="fr">300</span>))
+img2 = <span class="fs">cv2.resize</span>(img2, (<span class="fr">300</span>, <span class="fr">300</span>))   <span class="fd"># must be same size</span>
+
+<span class="fd"># cv2.add — SATURATING (clips at 255)</span>
+added = <span class="fs">cv2.add</span>(img1, img2)           <span class="fd"># 150 + 150 = 255 ✓</span>
+
+<span class="fd"># numpy + — WRAPS AROUND (modular arithmetic)</span>
+wrong = img1 + img2                    <span class="fd"># 150 + 150 = 44 ✗ (mod 256)</span>
+
+<span class="fd"># cv2.addWeighted — weighted blend (alpha compositing)</span>
+blended = <span class="fs">cv2.addWeighted</span>(img1, <span class="fa">0.7</span>, img2, <span class="fa">0.3</span>, <span class="fr">0</span>)
+<span class="fd"># dst = 0.7*img1 + 0.3*img2 + 0  (gamma=0 bias)</span>
+<span class="fd"># Used for watermarking, overlay, double-exposure effects</span></div>
+    <div class="callout ce"><div class="callout-title">Exam Alert — cv2.add vs numpy +</div>Classic trap: <code>img1 + img2</code> in NumPy wraps mod 256 because uint8 arithmetic overflows. <code>cv2.add(img1, img2)</code> saturates at 255. For image processing, always use <code>cv2.add</code>. The common exam question: "A pixel value is 200 and you add 100. What is the output?" Answer: 255 (cv2) vs 44 (numpy). Use <code>cv2.addWeighted</code> for controlled blending with alpha channels.</div>
+  </div>
+</section>
+
+<!-- S4 COLOUR SPACES -->
+<section id="s4" class="section">
+  <div class="section-header"><span class="section-num">04</span><h2 class="section-title">Colour Space Conversions</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Why Multiple Colour Spaces Exist <span class="tbadge b-amber">colour theory</span></div>
+    <p>RGB is optimised for display hardware. It is poor for many CV tasks because illumination is coupled to colour — the same object under different lighting looks different in RGB but stays consistent in HSV. Different spaces decompose colour information optimally for different tasks.</p>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript</div>"Python will read all the images in the format of BGR. But for a normal human being, our eye will be taking the colour space in the format of red, green and blue. If we are not doing that [converting], then your entire image space and illumination will get changed."</div>
+    <table><thead><tr><th>Space</th><th>Channels</th><th>Why Use It</th><th>OpenCV Code</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--sky)">BGR→RGB</td><td>Blue,Green,Red → R,G,B</td><td>Human display; Matplotlib requires RGB</td><td><code>cv2.COLOR_BGR2RGB</code></td></tr>
+    <tr><td style="color:var(--text-muted)">Grayscale</td><td>L (luminance only)</td><td>Single channel; edge detection; morphology</td><td><code>cv2.COLOR_BGR2GRAY</code></td></tr>
+    <tr><td style="color:var(--teal)">HSV</td><td>Hue, Saturation, Value</td><td>Colour segmentation regardless of brightness</td><td><code>cv2.COLOR_BGR2HSV</code></td></tr>
+    <tr><td style="color:var(--lime)">LAB</td><td>L* (lightness), A* (green↔red), B* (blue↔yellow)</td><td>Perceptual uniformity; CLAHE on L only</td><td><code>cv2.COLOR_BGR2LAB</code></td></tr>
+    <tr><td style="color:var(--violet)">YCrCb</td><td>Luma, Chroma-Red, Chroma-Blue</td><td>Separates brightness from colour for compression</td><td><code>cv2.COLOR_BGR2YCrCb</code></td></tr>
+    </tbody></table>
+    <p>Prof. explained the LAB conversion path: <strong>BGR → XYZ (device-independent) → LAB</strong>. L=lightness, A=green-to-red axis, B=blue-to-yellow axis. It models human visual perception of colour differences — perceptually equal distances in LAB map to equal perceptual differences for humans. This is why CLAHE is typically applied to the L channel in LAB rather than directly to RGB.</p>
+    <div class="formula"><span class="fd"># CLAHE on L-channel — perceptually correct approach</span>
+<span class="fg">lab</span>    = <span class="fs">cv2.cvtColor</span>(<span class="ft">img</span>, <span class="fs">cv2.COLOR_BGR2LAB</span>)
+<span class="fg">l,a,b</span>  = <span class="fs">cv2.split</span>(<span class="fg">lab</span>)
+<span class="fg">clahe</span>  = <span class="fs">cv2.createCLAHE</span>(<span class="fa">clipLimit</span>=<span class="fr">2.0</span>, <span class="fa">tileGridSize</span>=(<span class="fr">8</span>,<span class="fr">8</span>))
+<span class="fg">l_eq</span>   = <span class="fg">clahe</span>.apply(<span class="fg">l</span>)
+<span class="ft">result</span> = <span class="fs">cv2.cvtColor</span>(<span class="fs">cv2.merge</span>([<span class="fg">l_eq</span>,<span class="fg">a</span>,<span class="fg">b</span>]), <span class="fs">cv2.COLOR_LAB2BGR</span>)</div>
+    <div class="callout ce"><div class="callout-title">Exam Alert — BGR vs RGB Trap</div>Classic question: "Why does your image appear bluish when displayed with Matplotlib?" Answer: OpenCV reads BGR; Matplotlib expects RGB. Red and blue channels are swapped. Sky appears orange, skin looks teal. Always apply <code>cv2.COLOR_BGR2RGB</code> before <code>plt.imshow()</code>.</div>
+    <div class="topic-title" style="margin-top:1.5rem">HSV Colour Segmentation <span class="tbadge b-teal">notebook</span></div>
+    <p>The most practical application of HSV: isolate objects by colour regardless of illumination. From the webinar notebook — detecting blue objects:</p>
+    <div class="formula"><span class="fd"># HSV Color Segmentation — from Image_Processing_Demos notebook</span>
+img = <span class="fs">cv2.imread</span>(<span class="ft">"image.jpg"</span>)
+hsv = <span class="fs">cv2.cvtColor</span>(img, <span class="fs">cv2.COLOR_BGR2HSV</span>)
+
+<span class="fd"># HSV ranges: H=[0,179], S=[0,255], V=[0,255] in OpenCV</span>
+lower_blue = <span class="fs">np.array</span>([<span class="fr">100</span>, <span class="fa">150</span>, <span class="fa">50</span>])   <span class="fd"># H~120°, min saturation, min value</span>
+upper_blue = <span class="fs">np.array</span>([<span class="fr">140</span>, <span class="fa">255</span>, <span class="fa">255</span>])
+
+<span class="fd"># Binary mask: white=blue detected, black=not blue</span>
+mask   = <span class="fs">cv2.inRange</span>(hsv, lower_blue, upper_blue)
+
+<span class="fd"># Extract only blue regions (AND with original)</span>
+result = <span class="fs">cv2.bitwise_and</span>(img, img, <span class="fa">mask</span>=mask)
+
+<span class="fd"># Common HSV ranges (OpenCV H is 0-179, i.e. degrees/2):</span>
+<span class="fd"># Red:    [0,120,70]  → [10,255,255]  (also [170,120,70] → [180,255,255])</span>
+<span class="fd"># Green:  [36,50,70]  → [86,255,255]</span>
+<span class="fd"># Blue:   [100,150,50] → [140,255,255]</span>
+<span class="fd"># Yellow: [20,100,100] → [30,255,255]</span></div>
+    <div class="callout cw"><div class="callout-title">Why HSV Beats RGB for Segmentation</div>In RGB: a blue object under bright light has high R, G, B values. The same blue object in shadow has low R, G, B. These look completely different — a threshold on any RGB channel will miss one. In HSV: both cases share the same Hue (~120°). V (brightness) varies; H stays constant. <code>cv2.inRange</code> on H alone separates colours robustly across illumination conditions. This is why HSV is the standard space for colour-based object detection and tracking.</div>
+  </div>
+</section>
+
+<!-- S5 FEATURE EXTRACTION -->
+<section id="s5" class="section">
+  <div class="section-header"><span class="section-num">05</span><h2 class="section-title">Feature Extraction</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">From Pixels to Meaningful Representations <span class="tbadge b-teal">advanced</span></div>
+    <p>Features are the compressed, meaningful representation of an image — "the important information" as Prof. defined. The goal is to reduce a massive pixel array into descriptors that uniquely identify content yet remain stable to irrelevant changes (lighting, small rotation, scale).</p>
+    <table><thead><tr><th>Feature</th><th>What It Detects</th><th>Algorithm</th><th>Invariance</th><th>Use Case</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--sky)">Edges</td><td>Boundaries (intensity jumps)</td><td>Sobel, Canny, Laplacian</td><td>Illumination</td><td>Segmentation, shape</td></tr>
+    <tr><td style="color:var(--teal)">Corners</td><td>Intersection of 2+ edges</td><td>Harris, Shi-Tomasi</td><td>Minor rotation</td><td>Tracking, matching, SLAM</td></tr>
+    <tr><td style="color:var(--lime)">Contours</td><td>Irregular closed boundaries</td><td>cv2.findContours</td><td>Shape variation</td><td>Object shape, counting</td></tr>
+    <tr><td style="color:var(--amber)">HOG</td><td>Gradient orientation distribution</td><td>Histogram of Gradients</td><td>Illumination</td><td>Pedestrian detection (classic)</td></tr>
+    <tr><td style="color:var(--violet)">SIFT</td><td>Scale-invariant keypoints + descriptor</td><td>DoG + descriptor</td><td>Scale, rotation</td><td>Image matching, stitching</td></tr>
+    <tr><td style="color:var(--rose)">ORB</td><td>Binary keypoints + descriptor</td><td>FAST + BRIEF</td><td>Rotation</td><td>Real-time AR, SLAM</td></tr>
+    </tbody></table>
+    <p>Prof. noted: corner detection is where "more than one edge will meet". He distinguished Harris from Shi-Tomasi:</p>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript (mid-lecture correction)</div>"Harris corner detection will go with the maximum points, whereas Shi-Tomasi will go with the minimum points of the eigen problems. Sorry, I was just confused." [Direct correction: Harris = max eigenvalue criteria; Shi-Tomasi = min eigenvalue criteria]</div>
+    <div class="formula"><span class="fd"># Harris Corner Score R</span>
+<span class="fg">R</span> = <span class="fs">det(M)</span> − <span class="fa">k</span> × <span class="fs">trace(M)</span>²
+<span class="fd">  where M = structure tensor (Ix², IxIy; IxIy, Iy²)</span>
+  → <span class="fg">R</span> >> 0  : corner  (both eigenvalues large)
+  → <span class="ft">R</span> << 0  : edge    (one large, one small)
+  → <span class="fr">|R|</span> ≈ 0 : flat region
+
+<span class="fd"># Shi-Tomasi: directly use minimum eigenvalue</span>
+<span class="fg">score</span> = <span class="fs">min</span>(λ₁, λ₂)   <span class="fd"># corner if score > threshold</span>
+<span class="fd"># More robust: avoids borderline mis-classification of edges as corners</span></div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — Feature Extraction</div>Conv layers in CNNs are learnt edge/corner detectors. AlexNet's first layer trained on ImageNet learns Gabor-like filters — oriented edge detectors identical to Sobel kernels. HOG → dense layer of first-order gradient descriptors. SIFT keypoints → attention mechanism anchor points. ORB's binary descriptor → 1-bit hash codes used in approximate nearest-neighbour search (FAISS product quantisation).</div>
+  </div>
+</section>
+
+<!-- S6 MORPHOLOGICAL OPS -->
+<section id="s6" class="section">
+  <div class="section-header"><span class="section-num">06</span><h2 class="section-title">Morphological Operations</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Shape-Based Image Processing <span class="tbadge b-rose">binary ops</span></div>
+    <p>Morphological operations process images based on shape. They require a binary image (white=foreground=1, black=background=0) and a structuring element (kernel). The kernel probes the image — its shape and size determine the operation's behaviour.</p>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript</div>"The kernel slides through the image. Normally, the kernel will be of odd number size. The reason for that is you are getting the information about one particular pixel — the centre pixel is the attractor or the exact value that you are looking for."</div>
+    <p>Odd-sized kernels (3×3, 5×5, 7×7) are required: only odd dimensions have a unique centre pixel. Even kernels have no unambiguous centre.</p>
+    <table><thead><tr><th>Operation</th><th>Rule</th><th>Effect</th><th>Use Case</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--rose)">Erosion ⊖</td><td>Output=1 only if ALL kernel pixels over image are 1</td><td>Shrinks white; removes thin noise</td><td>Remove small noise blobs</td></tr>
+    <tr><td style="color:var(--teal)">Dilation ⊕</td><td>Output=1 if AT LEAST ONE kernel pixel covers a 1</td><td>Expands white; fills gaps</td><td>Connect broken contours</td></tr>
+    <tr><td style="color:var(--sky)">Opening</td><td>Erosion → Dilation</td><td>Removes small objects, preserves large</td><td>Noise removal without shape distortion</td></tr>
+    <tr><td style="color:var(--amber)">Closing</td><td>Dilation → Erosion</td><td>Fills small holes</td><td>Fill gaps in text/objects</td></tr>
+    <tr><td style="color:var(--lime)">Gradient</td><td>Dilation − Erosion</td><td>Object boundary outline</td><td>Edge extraction on binary mask</td></tr>
+    <tr><td style="color:var(--violet)">Top Hat</td><td>Input − Opening</td><td>Small bright regions on dark bg</td><td>Illumination correction</td></tr>
+    <tr><td style="color:var(--gold)">Black Hat</td><td>Closing − Input</td><td>Small dark regions on bright bg</td><td>Dark feature enhancement</td></tr>
+    </tbody></table>
+    <div class="ibox">
+      <div class="ititle">Interactive: Morphological Operations Visualiser</div>
+      <div class="srow"><span class="slbl">Operation</span>
+        <select id="morph-op">
+          <option value="orig">Original</option>
+          <option value="erode">Erosion</option>
+          <option value="dilate">Dilation</option>
+          <option value="open">Opening</option>
+          <option value="close">Closing</option>
+          <option value="grad">Gradient</option>
+        </select>
+      </div>
+      <div class="srow"><span class="slbl">Kernel Size</span><input type="range" id="morph-k" min="1" max="5" value="2" step="1" style="flex:1"><span class="sval" id="mkval">3×3</span></div>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <div class="dcell"><canvas id="c-mi" width="160" height="160"></canvas><div class="dlbl">Input (binary)</div></div>
+        <div class="dcell"><canvas id="c-mo" width="160" height="160"></canvas><div class="dlbl" id="mol">Original</div></div>
+      </div>
+    </div>
+    <div class="formula"><span class="fd"># Create structuring element</span>
+<span class="fg">kernel</span>   = <span class="fs">np.ones</span>((<span class="fr">3</span>, <span class="fr">3</span>), <span class="fs">np.uint8</span>)
+
+<span class="ft">eroded</span>   = <span class="fs">cv2.erode</span>(<span class="fg">img</span>, <span class="fg">kernel</span>, <span class="fa">iterations</span>=<span class="fr">1</span>)
+<span class="ft">dilated</span>  = <span class="fs">cv2.dilate</span>(<span class="fg">img</span>, <span class="fg">kernel</span>)
+<span class="ft">opened</span>   = <span class="fs">cv2.morphologyEx</span>(<span class="fg">img</span>, <span class="fs">cv2.MORPH_OPEN</span>,     <span class="fg">kernel</span>)
+<span class="ft">closed</span>   = <span class="fs">cv2.morphologyEx</span>(<span class="fg">img</span>, <span class="fs">cv2.MORPH_CLOSE</span>,    <span class="fg">kernel</span>)
+<span class="ft">gradient</span> = <span class="fs">cv2.morphologyEx</span>(<span class="fg">img</span>, <span class="fs">cv2.MORPH_GRADIENT</span>, <span class="fg">kernel</span>)
+<span class="ft">tophat</span>   = <span class="fs">cv2.morphologyEx</span>(<span class="fg">img</span>, <span class="fs">cv2.MORPH_TOPHAT</span>,   <span class="fg">kernel</span>)
+<span class="ft">blackhat</span> = <span class="fs">cv2.morphologyEx</span>(<span class="fg">img</span>, <span class="fs">cv2.MORPH_BLACKHAT</span>, <span class="fg">kernel</span>)</div>
+    <div class="tabs-wrapper">
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab(this,'mo-e')">Easy</button>
+        <button class="tab-btn" onclick="switchTab(this,'mo-m')">Medium</button>
+        <button class="tab-btn" onclick="switchTab(this,'mo-h')">Complex</button>
+      </div>
+      <div id="mo-e" class="tab-content active">
+        <div class="eq">Q: After erosion a binary image has fewer white pixels; after dilation it has more. What does Opening preserve?</div>
+        <div class="esteps">
+          <div class="estep">Erosion removes small white regions and thins all white regions.</div>
+          <div class="estep">Subsequent dilation restores the size of white regions that survived erosion — only the large ones, because small ones were completely removed.</div>
+        </div>
+        <div class="abox">→ Opening preserves large white objects while removing small noise blobs. Objects larger than the kernel survive; smaller ones are erased.</div>
+      </div>
+      <div id="mo-m" class="tab-content">
+        <div class="eq">Q: A binary text image has a small gap in one stroke. Which operation closes it, and why does it work?</div>
+        <div class="esteps">
+          <div class="estep">The gap = dark pixels within what should be a white stroke — a small hole in a white region.</div>
+          <div class="estep">Closing = dilation then erosion. Dilation expands white regions in all directions. If the gap is smaller than the kernel, expansion from both sides meets and fills it.</div>
+          <div class="estep">Erosion then shrinks all white regions back — but the filled gap, now part of the larger white region, is too large to be removed by erosion.</div>
+        </div>
+        <div class="abox">→ Closing fills small gaps. cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel). Kernel size must be ≥ the gap width.</div>
+      </div>
+      <div id="mo-h" class="tab-content">
+        <div class="eq">Q: Derive what the Morphological Gradient represents and why it produces object outlines.</div>
+        <div class="esteps">
+          <div class="estep">Dilation(f) ⊇ f ⊇ Erosion(f) for any binary image. Dilation expands each white blob outward by one kernel radius; erosion shrinks it inward.</div>
+          <div class="estep">At interior pixels: both return 1. Gradient = 1−1 = 0. Interior is black.</div>
+          <div class="estep">At boundary pixels: dilation returns 1 (expanded outward), erosion returns 0 (shrank inward past the boundary). Gradient = 1−0 = 1. Boundary is white.</div>
+          <div class="estep">At exterior pixels: both return 0. Gradient = 0. Exterior is black.</div>
+        </div>
+        <div class="abox">→ Gradient = 1 only at object boundaries. Interior and exterior cancel to 0. This is a morphological edge detector operating on binary masks.</div>
+        <div class="ki">Compared to Canny (greyscale), morphological gradient works on binary masks — useful post-thresholding for finding exact object outlines.</div>
+      </div>
+    </div>
+    <div class="callout cr"><div class="callout-title">Research Insight — Morphology in Deep Learning (2025)</div><p><span class="cite">[Arxiv 2505.09710, 2025]</span> Deep Morphological Neural Networks function as universal approximators. Key insight: max-pooling in CNNs is mathematically equivalent to morphological dilation with a square structuring element. Learnable morphological layers allow networks to learn arbitrary structuring element shapes, outperforming fixed max-pooling on boundary detection tasks with only 0.01% of competing methods' parameter count.</p></div>
+  </div>
+</section>
+
+<!-- S7 HISTOGRAM & CLAHE -->
+<section id="s7" class="section">
+  <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Histogram Equalisation & CLAHE</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Contrast Enhancement via Intensity Redistribution <span class="tbadge b-gold">histogram</span></div>
+    <p>A histogram shows how many pixels fall at each intensity level (0–255). A low-contrast image has a narrow, concentrated histogram. Before equalisation, contrast stretching provides a simpler linear fix.</p>
+    <div class="topic-title" style="margin-top:0;font-size:1rem">Contrast Stretching (Linear Normalisation) <span class="tbadge b-amber">notebook</span></div>
+    <p>If an image only uses intensities 80–180 (narrow range), stretching linearly maps 80→0 and 180→255, filling the full dynamic range without changing the shape of the distribution.</p>
+    <div class="formula"><span class="fd"># Contrast Stretching — linear normalisation</span>
+<span class="fd"># Formula: I' = (I - Imin) / (Imax - Imin) × 255</span>
+img   = <span class="fs">cv2.imread</span>(<span class="ft">"image.jpg"</span>, <span class="fr">0</span>)   <span class="fd"># grayscale</span>
+Imin  = img.<span class="ft">min</span>()
+Imax  = img.<span class="ft">max</span>()
+norm  = ((img - Imin) / (Imax - Imin) * <span class="fr">255</span>).<span class="ft">astype</span>(<span class="fs">np.uint8</span>)
+
+<span class="fd"># Equivalent OpenCV call:</span>
+norm2 = <span class="fs">cv2.normalize</span>(img, None, <span class="fr">0</span>, <span class="fr">255</span>, <span class="fs">cv2.NORM_MINMAX</span>)</div>
+    <div class="callout ct"><div class="callout-title">Contrast Stretching vs Histogram Equalisation</div><strong style="color:var(--gold)">Stretching</strong> is LINEAR — maps range [Imin,Imax] to [0,255]. Preserves the relative distribution (histogram shape shifts and scales, not warped). Fast, no side effects. Best when the image simply underutilises the full range (e.g., 8-bit sensor using only 80–180). <strong style="color:var(--gold)">HE</strong> is NON-LINEAR — remaps each intensity via CDF. Forces a flat/uniform histogram. More aggressive; can invert shadows in night-time images. Use HE when you need maximum contrast enhancement; use stretching when you want to correct range only.</div>
+    <p>A histogram shows how many pixels fall at each intensity level (0–255). A low-contrast image has a narrow, concentrated histogram. Equalisation spreads this distribution across the full 0–255 range, making features easier to detect.</p>
+    <div class="formula"><span class="fd"># Histogram Equalisation — 3-step algorithm</span>
+<span class="fd">Step 1: Compute histogram</span>
+<span class="fg">h</span>(v) = number of pixels with intensity v  (v ∈ [0,255])
+
+<span class="fd">Step 2: Compute CDF</span>
+<span class="ft">CDF</span>(v) = Σ <span class="fg">h</span>(k)  for k = 0 to v
+
+<span class="fd">Step 3: Normalise CDF to [0,255] → new intensity mapping</span>
+<span class="fs">new_v</span> = round[ (<span class="ft">CDF</span>(v) − CDF_min) / (N − CDF_min) × <span class="fr">255</span> ]
+<span class="fd">where N = total pixel count</span>
+
+<span class="ft">equ</span> = <span class="fs">cv2.equalizeHist</span>(<span class="fg">gray_img</span>)   <span class="fd"># applies to single channel</span></div>
+    <p>Prof.'s description: "How red, green and blue colours are being distributed in the whole image — with respect to that you get the histogram. Using that, compute the cumulative distribution function and compute the new normalised value and replace the pixel values."</p>
+    <div class="callout ct"><div class="callout-title">Problem with Basic Equalisation</div>Global HE treats the entire image as one distribution. In an image with a bright window region and a dark interior, global equalisation over-amplifies the dark region or washes out the bright one — it cannot adapt locally.</div>
+    <p>CLAHE solves this: <strong style="color:var(--gold)">Contrast Limited Adaptive Histogram Equalisation</strong>.</p>
+    <div class="formula"><span class="fd"># CLAHE Algorithm — Prof. Dhruba's exact description</span>
+<span class="fd">Step 1: Divide image into tiles (e.g. 8×8 grid of patches)</span>
+<span class="fd">Step 2: Compute histogram for each tile independently</span>
+<span class="fd">Step 3: CLIP histogram at clipLimit (redistribute excess to all bins)</span>
+         <span class="fg">if</span> h(v) > clipLimit: redistribute excess evenly
+<span class="fd">Step 4: Equalise the clipped histogram for each tile</span>
+<span class="fd">Step 5: Bilinear blend at tile boundaries → smooth transitions</span>
+
+<span class="ft">clahe</span>  = <span class="fs">cv2.createCLAHE</span>(<span class="fa">clipLimit</span>=<span class="fr">2.0</span>, <span class="fa">tileGridSize</span>=(<span class="fr">8</span>,<span class="fr">8</span>))
+<span class="fg">result</span> = <span class="ft">clahe</span>.apply(<span class="fg">channel</span>)</div>
+    <div class="ibox">
+      <div class="ititle">Interactive: Histogram Equalisation Effect</div>
+      <div class="srow"><span class="slbl">Input Contrast</span><input type="range" id="hc" min="20" max="200" value="80" style="flex:1"><span class="sval" id="hcval">80</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div><canvas id="hb" width="260" height="110" style="border-radius:4px;border:1px solid var(--bl);display:block"></canvas><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:4px">Original histogram</div></div>
+        <div><canvas id="ha" width="260" height="110" style="border-radius:4px;border:1px solid var(--bl);display:block"></canvas><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:4px">After equalisation</div></div>
+      </div>
+    </div>
+    <div class="callout cr"><div class="callout-title">Research Insight — CLAHE as Domain Adaptation (2024)</div><p><span class="cite">[Yoshimi et al., Oral Surgery 2024]</span> CLAHE normalises scanner-specific contrast biases in MRI images — models trained on CLAHE-preprocessed data from one MRI scanner generalise significantly better to a different scanner. This reframes CLAHE from "contrast enhancement technique" to a domain alignment step that reduces distribution shift between acquisition devices. Same principle applies to autonomous vehicle cameras — CLAHE normalises cross-sensor illumination variance before the perception model runs. <span class="cite">[PubMed 2024]</span> CLAHE + transfer learning + augmentation achieved F1=0.89 on brain image classification, outperforming all other preprocessing combinations.</p></div>
+    <div class="callout ce"><div class="callout-title">Exam Alert — CLAHE vs Basic HE</div>Three key differences: (1) CLAHE operates tile-by-tile, not globally; (2) CLAHE clips the histogram at clipLimit before equalising, preventing noise amplification; (3) CLAHE applies bilinear blending at tile boundaries to prevent blocking artefacts. Common mistake: saying "CLAHE is just HE applied multiple times" — wrong. Clipping and tile-based processing are the fundamental innovations.</div>
+  </div>
+</section>
+
+<!-- S8 EDGE DETECTION -->
+<section id="s8" class="section">
+  <div class="section-header"><span class="section-num">08</span><h2 class="section-title">Edge Detection</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Detecting Intensity Boundaries <span class="tbadge b-sky">gradient ops</span></div>
+    <p>Prof. defined an edge as "where the intensity changes drastically" — a rapid transition in the spatial domain. Edges correspond to object boundaries, texture boundaries, and illumination changes.</p>
+    <table><thead><tr><th>Detector</th><th>Method</th><th>Strengths</th><th>Weaknesses</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--teal)">Sobel</td><td>Gx, Gy gradient kernels</td><td>Fast, directional edges</td><td>Noisy on raw images; thick edges</td></tr>
+    <tr><td style="color:var(--sky)">Laplacian</td><td>Second derivative ∇²</td><td>Isotropic (no direction bias)</td><td>Very noise-sensitive</td></tr>
+    <tr><td style="color:var(--gold)">Canny</td><td>Gaussian + gradient + NMS + hysteresis</td><td>Thin single-pixel edges; double threshold</td><td>Slower; two thresholds to tune</td></tr>
+    </tbody></table>
+    <div class="formula"><span class="fd"># Sobel kernels</span>
+<span class="fg">Gx</span> = [[-1, 0, +1],   <span class="fd"># detects horizontal edges (vertical intensity change)</span>
+       [-2, 0, +2],
+       [-1, 0, +1]]
+<span class="ft">Gy</span> = [[-1,-2,-1],   <span class="fd"># detects vertical edges</span>
+       [ 0, 0, 0],
+       [+1,+2,+1]]
+<span class="fs">|G|</span> = <span class="fs">sqrt</span>(<span class="fg">Gx</span>² + <span class="ft">Gy</span>²)   <span class="fd"># gradient magnitude</span>
+<span class="fv">θ</span>   = <span class="fs">arctan</span>(<span class="ft">Gy</span> / <span class="fg">Gx</span>)    <span class="fd"># gradient direction</span>
+
+<span class="fd"># Canny — 4-stage pipeline</span>
+<span class="fd">Stage 1: Gaussian blur                → suppress noise</span>
+<span class="fd">Stage 2: Sobel Gx/Gy                  → |G| and θ</span>
+<span class="fd">Stage 3: Non-Maximum Suppression      → thin edges to 1 pixel</span>
+<span class="fd">Stage 4: Double Threshold + Hysteresis</span>
+         <span class="fr">|G|</span> > <span class="fg">high_thresh</span> → strong edge (always kept)
+         <span class="fa">|G|</span> > <span class="fs">low_thresh</span>  → weak edge (kept if connected to strong)
+         <span class="fd">|G|</span> < <span class="fs">low_thresh</span>  → discard
+
+<span class="ft">edges</span> = <span class="fs">cv2.Canny</span>(<span class="fg">img</span>, <span class="fr">threshold1</span>=<span class="fr">100</span>, <span class="fa">threshold2</span>=<span class="fr">200</span>)</div>
+    <div class="callout cp"><div class="callout-title">Prof. Dhruba — Transcript (Canny pipeline)</div>"It will go with the Gaussian blur at the beginning, compute the gradients in the sense it is computing the intensity value of each pixel, and then Non-Maximum Suppression — all the values are not important, it will suppress only which is important for us. Then Double Thresholding will be applied. Hysteresis Tracking is nothing but connecting the weak edges to strong ones."</div>
+    <div class="callout ce"><div class="callout-title">Exam Alert — Canny's 4 Stages (near-certain question)</div>You must name ALL four stages in order: (1) Gaussian blur, (2) gradient computation via Sobel Gx/Gy, (3) non-maximum suppression, (4) double thresholding + hysteresis tracking. Common mistake: forgetting NMS, or thinking low_thresh discards all weak edges outright — weak edges between both thresholds are KEPT if connected to a strong edge.</div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — Conv Layers as Learnt Edge Detectors</div>Sobel kernels are hand-designed 3×3 filters. CNN conv kernels at layer 1 train to become oriented edge detectors at all angles. In modern segmentation (U-Net, SAM), explicit edge detection is replaced by learned boundary detectors in the encoder — but the underlying mathematics (gradient magnitude thresholding) remains unchanged.</div>
+  </div>
+</section>
+
+<!-- S9 SHARPENING -->
+<section id="s9" class="section">
+  <div class="section-header"><span class="section-num">09</span><h2 class="section-title">Image Sharpening</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Amplifying High-Frequency Detail <span class="tbadge b-sky">filtering</span></div>
+    <p>Sharpening is the inverse goal of denoising — instead of suppressing high-frequency content, we amplify it. Edges and fine detail are high-frequency; blurring removes them; sharpening adds them back. The key tool is the <strong style="color:var(--gold)">Unsharp Mask</strong>.</p>
+    <div class="callout cp"><div class="callout-title">Intuition — Why "Unsharp" Mask?</div>Paradoxically named from darkroom photography: a blurred ("unsharp") copy of the negative was used as a mask to reveal detail. Digitally: blur the image, subtract the blur from the original to extract edges, add those edges back. The "mask" is the blur — you use it to find what to enhance.</div>
+    <div class="formula"><span class="fd"># Unsharp Mask — from Image_Processing_Demos notebook</span>
+<span class="fd"># Algorithm: Sharp = Original + k × (Original − Blurred)</span>
+<span class="fd">#          = Original + k × (high-frequency detail)</span>
+
+blur  = <span class="fs">cv2.GaussianBlur</span>(img, (<span class="fr">0</span>,<span class="fr">0</span>), <span class="fa">sigmaX</span>=<span class="fr">3</span>)
+<span class="fd"># addWeighted: dst = alpha×src1 + beta×src2 + gamma</span>
+sharp = <span class="fs">cv2.addWeighted</span>(img, <span class="fa">1.5</span>, blur, <span class="fa">-0.5</span>, <span class="fr">0</span>)
+<span class="fd"># = 1.5×orig - 0.5×blur</span>
+<span class="fd"># = orig + 0.5×(orig - blur)</span>
+<span class="fd"># = orig + 0.5×edges         ← amplifies edge frequencies</span>
+
+<span class="fd"># Kernel-based alternative (equivalent for 3×3):</span>
+kernel = <span class="fs">np.array</span>([[<span class="fr">0</span>,<span class="fa">-1</span>,<span class="fr">0</span>],[<span class="fa">-1</span>,<span class="fa">5</span>,<span class="fa">-1</span>],[<span class="fr">0</span>,<span class="fa">-1</span>,<span class="fr">0</span>]])
+sharp2 = <span class="fs">cv2.filter2D</span>(img, <span class="fa">-1</span>, kernel)
+<span class="fd"># Centre weight 5 amplifies pixel; neighbours −1 subtract surroundings</span>
+<span class="fd"># Net: pixel gets 5×itself − 4 neighbours = pixel + (pixel − mean_neighbours)</span></div>
+    <div class="tabs-wrapper">
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab(this,'sh-e')">Easy</button>
+        <button class="tab-btn" onclick="switchTab(this,'sh-m')">Medium</button>
+        <button class="tab-btn" onclick="switchTab(this,'sh-h')">Complex</button>
+      </div>
+      <div id="sh-e" class="tab-content active">
+        <div class="eq">Q: What does unsharp masking amplify, and why does blurring first help?</div>
+        <div class="esteps">
+          <div class="estep">Blurring removes high-frequency content (edges, fine detail), leaving only low-frequency (smooth regions).</div>
+          <div class="estep"><code>Original − Blurred</code> = Original − low-frequency = high-frequency detail only (an edge map).</div>
+          <div class="estep">Adding that edge map back to the original amplifies the edges relative to smooth regions → sharpening.</div>
+        </div>
+        <div class="abox">→ Amplifies high-frequency edge detail. Blurring first isolates those frequencies by subtraction.</div>
+      </div>
+      <div id="sh-m" class="tab-content">
+        <div class="eq">Q: cv2.addWeighted(img, 1.5, blur, -0.5, 0) — derive what this computes algebraically.</div>
+        <div class="esteps">
+          <div class="estep">Formula: dst = α·src1 + β·src2 + γ = 1.5·img + (−0.5)·blur + 0</div>
+          <div class="estep">= img + 0.5·img − 0.5·blur = img + 0.5·(img − blur)</div>
+          <div class="estep">= img + 0.5·edges. This is Unsharp Mask with strength k=0.5.</div>
+        </div>
+        <div class="abox">→ Unsharp Mask with k=0.5: adds 50% of the edge signal back to the original. Increasing α (e.g. 2.0, β=-1.0) increases sharpening strength.</div>
+        <div class="ki">Clipping: addWeighted clips to [0,255]. Strong sharpening near bright edges creates halos (bright band above threshold). Use small k for realistic results.</div>
+      </div>
+      <div id="sh-h" class="tab-content">
+        <div class="eq">Q: When does sharpening amplify noise and how to mitigate it?</div>
+        <div class="esteps">
+          <div class="estep">Noise is high-frequency — small, random, spatially isolated intensity variations. Sharpening amplifies ALL high-frequency content: both edges (wanted) and noise (unwanted).</div>
+          <div class="estep">The Gaussian blur step does not perfectly separate noise from edges: low-σ blur leaves noise in the residual; high-σ blur blurs true edges alongside noise.</div>
+          <div class="estep">Mitigation strategies: (1) denoise BEFORE sharpening (bilateral filter preserves edges, removes noise — then sharpen the clean image); (2) use edge-aware sharpening that only applies in high-gradient regions (detected via Canny mask); (3) reduce sharpening strength k.</div>
+          <div class="estep">In practice: always denoise → then sharpen. The order matters — sharpening a noisy image amplifies artefacts irreversibly.</div>
+        </div>
+        <div class="abox">→ Sharpening amplifies noise because noise is high-frequency. Fix: bilateral denoise first, then unsharp mask. Or constrain sharpening to detected edge regions only.</div>
+      </div>
+    </div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — Sharpening as High-Pass Filtering</div>The sharpening kernel <code>[[0,-1,0],[-1,5,-1],[0,-1,0]]</code> is a high-pass filter — it passes high frequencies and suppresses low. CNN kernels at layer 1 learn oriented high-pass filters spontaneously from data (Gabor-like). The Laplacian of Gaussian (LoG = blur then Laplacian) is the theoretical basis for SIFT's Difference-of-Gaussian blob detection. Modern image super-resolution models (ESRGAN, Real-ESRGAN) learn to infer high-frequency detail that was never in the low-res input — generalised learned unsharp masking.</div>
+  </div>
+</section>
+
+<!-- S10 THRESHOLDING -->
+<section id="s10" class="section">
+  <div class="section-header"><span class="section-num">10</span><h2 class="section-title">Thresholding</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Converting Grayscale to Binary <span class="tbadge b-lime">segmentation</span></div>
+    <p>Thresholding converts a grayscale image to binary (0 or 255) — separating foreground from background. It is the simplest segmentation technique and feeds directly into morphological operations, contour detection, and feature extraction.</p>
+    <table><thead><tr><th>Method</th><th>Threshold</th><th>Algorithm</th><th>Best For</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--sky)">Global</td><td>Fixed T (e.g. 127)</td><td>Manual selection</td><td>Uniform illumination, known range</td></tr>
+    <tr><td style="color:var(--gold)">Otsu</td><td>Auto-computed T*</td><td>Minimise within-class variance</td><td>Bimodal histograms (clear fg/bg)</td></tr>
+    <tr><td style="color:var(--teal)">Adaptive Gaussian</td><td>Per-pixel Tlocal</td><td>Gaussian-weighted local mean − C</td><td>Uneven illumination, documents</td></tr>
+    <tr><td style="color:var(--amber)">Adaptive Mean</td><td>Per-pixel Tlocal</td><td>Uniform local mean − C</td><td>Simple shadows, text on paper</td></tr>
+    </tbody></table>
+    <div class="formula"><span class="fd"># 1. Global Thresholding — fixed T</span>
+_, th_global = <span class="fs">cv2.threshold</span>(img, <span class="fr">127</span>, <span class="fr">255</span>, <span class="fs">cv2.THRESH_BINARY</span>)
+<span class="fd"># pixel > 127 → 255  (foreground)
+# pixel ≤ 127 → 0    (background)</span>
+
+<span class="fd"># 2. Otsu Thresholding — automatic optimal T</span>
+T, th_otsu = <span class="fs">cv2.threshold</span>(img, <span class="fr">0</span>, <span class="fr">255</span>, <span class="fs">cv2.THRESH_BINARY</span> + <span class="fs">cv2.THRESH_OTSU</span>)
+<span class="fd"># T is the auto-selected threshold value; first arg=0 is ignored</span>
+<span class="fd"># Works best on bimodal histograms (two distinct peaks)</span>
+
+<span class="fd"># 3. Adaptive Thresholding — local T per pixel</span>
+th_adapt = <span class="fs">cv2.adaptiveThreshold</span>(
+    img, <span class="fr">255</span>,
+    <span class="fs">cv2.ADAPTIVE_THRESH_GAUSSIAN_C</span>,  <span class="fd"># or ADAPTIVE_THRESH_MEAN_C</span>
+    <span class="fs">cv2.THRESH_BINARY</span>,
+    <span class="fa">blockSize</span>=<span class="fr">11</span>,   <span class="fd"># local window size (must be odd)</span>
+    <span class="fa">C</span>=<span class="fr">2</span>             <span class="fd"># constant subtracted from weighted mean</span>
+)
+<span class="fd"># Tlocal(x,y) = GaussianWeightedMean(blockSize neighbourhood) − C</span></div>
+    <div class="formula"><span class="ft">Otsu Optimal Threshold</span>
+<span class="fd">────────────────────────────────────────────────────</span>
+σ²_w(T) = <span class="fg">w₀</span>(T)·σ₀²(T) + <span class="fs">w₁</span>(T)·σ₁²(T)
+
+<span class="fg">w₀</span>(T) = fraction of pixels with intensity ≤ T  (background weight)
+<span class="fs">w₁</span>(T) = fraction of pixels with intensity > T  (foreground weight)
+σ₀², σ₁² = variance within each class
+
+<span class="ft">T* = argmin_T</span> [ σ²_w(T) ]   <span class="fd">← minimise within-class variance</span>
+
+Equivalently: <span class="ft">T* = argmax_T</span> [ σ²_b(T) ]
+<span class="fd">where σ²_b = w₀·w₁·(μ₀ − μ₁)²  (between-class variance)</span>
+<span class="fd">→ maximise separation between class means, weighted by class size</span></div>
+    <div class="ibox">
+      <div class="ititle">Interactive: Thresholding Visualiser</div>
+      <div class="srow"><span class="slbl">Threshold T</span><input type="range" id="tval" min="0" max="255" value="127" style="flex:1"><span class="sval" id="tvall">127</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem">
+        <div class="dcell"><canvas id="c-tgray" width="220" height="140"></canvas><div class="dlbl">Original (grayscale)</div></div>
+        <div class="dcell"><canvas id="c-tbin" width="220" height="140"></canvas><div class="dlbl" id="tbin-lbl">Binary (T=127)</div></div>
+      </div>
+    </div>
+    <div class="tabs-wrapper">
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab(this,'th-e')">Easy</button>
+        <button class="tab-btn" onclick="switchTab(this,'th-m')">Medium</button>
+        <button class="tab-btn" onclick="switchTab(this,'th-h')">Complex</button>
+      </div>
+      <div id="th-e" class="tab-content active">
+        <div class="eq">Q: Why does global thresholding fail on a document image with a bright window on one side and a shadow on the other?</div>
+        <div class="esteps">
+          <div class="estep">Global T is applied uniformly. Under the shadow, text pixels have intensity ~100; background ~60. A threshold of T=127 would classify both as background (both &lt; 127) — text in shadow is invisible.</div>
+          <div class="estep">Under the bright window, background pixels might be 200; text 160. T=127 makes both foreground (both &gt; 127) — pure white page looks like all text.</div>
+          <div class="estep">Adaptive thresholding computes a local T for each pixel based on its neighbourhood. In the shadow region, T≈80 (correctly separates text=100 from bg=60). In the bright region, T≈180.</div>
+        </div>
+        <div class="abox">→ Use adaptive thresholding for non-uniform illumination. blockSize controls neighbourhood; C adjusts sensitivity.</div>
+      </div>
+      <div id="th-m" class="tab-content">
+        <div class="eq">Q: Otsu's method requires a bimodal histogram. What happens if applied to an image with three intensity clusters?</div>
+        <div class="esteps">
+          <div class="estep">Otsu assumes two classes (foreground/background). With three clusters (e.g. dark/grey/white), it finds the threshold that best separates two groups — merging the two closest clusters on one side.</div>
+          <div class="estep">The between-class variance σ²_b is still maximised — but that maximum may not correspond to a meaningful semantic boundary. One pair of adjacent clusters gets merged.</div>
+          <div class="estep">Fix: Multi-Otsu (three classes, two thresholds) or k-means clustering on pixel intensities (k=3).</div>
+        </div>
+        <div class="abox">→ Single Otsu merges two of three clusters. Use Multi-Otsu or k-means for multimodal histograms.</div>
+      </div>
+      <div id="th-h" class="tab-content">
+        <div class="eq">Q: Derive why Otsu's within-class variance minimisation is equivalent to between-class variance maximisation.</div>
+        <div class="esteps">
+          <div class="estep">Total variance: σ²_total = w₀·σ₀² + w₁·σ₁² + w₀·w₁·(μ₀−μ₁)² = σ²_w + σ²_b. This is the law of total variance.</div>
+          <div class="estep">σ²_total is fixed (it's a property of the image histogram, independent of T).</div>
+          <div class="estep">Since σ²_total = σ²_w + σ²_b = constant, minimising σ²_w is identical to maximising σ²_b. They are mathematically equivalent optimisation problems.</div>
+          <div class="estep">σ²_b = w₀·w₁·(μ₀−μ₁)² is cheaper to compute: iterate over all possible T values, compute w and μ for each class from cumulative histogram — O(256) operations.</div>
+        </div>
+        <div class="abox">→ Total variance is constant. Minimising within = maximising between. Otsu solves efficiently via O(256) sweep over cumulative histogram.</div>
+        <div class="ki">Implementation: compute CDF once (256 values). For each T: w₀=CDF(T), w₁=1−CDF(T), μ₀/μ₁ from partial sums. Evaluate σ²_b. O(256) total.</div>
+      </div>
+    </div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — Thresholding → Sigmoid/Softmax</div>Global thresholding is a hard decision boundary at T. Neural network classification is soft thresholding: the sigmoid function σ(x) = 1/(1+e⁻ˣ) produces a smooth, differentiable approximation to the step function. Adaptive thresholding → spatial attention mechanisms: both modulate the decision threshold based on local context rather than applying a global value. Otsu's between-class variance maximisation is directly related to the Fisher Linear Discriminant — maximise class separation, the foundation of LDA.</div>
+  </div>
+</section>
+
+<!-- S11 CONTOUR DETECTION & SEGMENTATION -->
+<section id="s11" class="section">
+  <div class="section-header"><span class="section-num">11</span><h2 class="section-title">Contour Detection & Colour Segmentation</h2><div class="section-line"></div></div>
+  <div class="topic-block">
+    <div class="topic-title">Finding and Measuring Object Boundaries <span class="tbadge b-violet">contours</span></div>
+    <p>Contours are curves joining all continuous points along a boundary with the same colour or intensity. They are extracted from binary images and enable object counting, shape analysis, region extraction, and area/perimeter measurement.</p>
+    <div class="formula"><span class="fd"># Contour Detection Pipeline — from Image_Processing_Demos notebook</span>
+img  = <span class="fs">cv2.imread</span>(<span class="ft">"image.jpg"</span>)
+gray = <span class="fs">cv2.cvtColor</span>(img, <span class="fs">cv2.COLOR_BGR2GRAY</span>)
+
+<span class="fd"># Step 1: Binarise (Otsu gives clean binary for contour extraction)</span>
+_, binary = <span class="fs">cv2.threshold</span>(gray, <span class="fr">0</span>, <span class="fr">255</span>, <span class="fs">cv2.THRESH_BINARY</span> + <span class="fs">cv2.THRESH_OTSU</span>)
+
+<span class="fd"># Step 2: Find contours (Suzuki's border-following algorithm)</span>
+contours, hierarchy = <span class="fs">cv2.findContours</span>(
+    binary,
+    <span class="fs">cv2.RETR_EXTERNAL</span>,         <span class="fd"># only outermost contours</span>
+    <span class="fs">cv2.CHAIN_APPROX_SIMPLE</span>     <span class="fd"># compress straight segments</span>
+)
+
+<span class="fd"># Step 3: Draw all contours</span>
+out = img.<span class="ft">copy</span>()
+<span class="fs">cv2.drawContours</span>(out, contours, <span class="fa">-1</span>, (<span class="fr">0</span>,<span class="fr">255</span>,<span class="fr">0</span>), <span class="fr">2</span>)
+<span class="fd"># -1 = draw all; (0,255,0)=green; 2=thickness in px</span>
+
+<span class="fd"># Step 4: Analyse each contour</span>
+<span class="fl">for</span> cnt <span class="fl">in</span> contours:
+    area      = <span class="fs">cv2.contourArea</span>(cnt)              <span class="fd"># pixels²</span>
+    perimeter = <span class="fs">cv2.arcLength</span>(cnt, <span class="fa">closed</span>=<span class="fl">True</span>)  <span class="fd"># pixels</span>
+    x,y,w,h   = <span class="fs">cv2.boundingRect</span>(cnt)             <span class="fd"># bounding box</span>
+    M         = <span class="fs">cv2.moments</span>(cnt)                   <span class="fd"># shape moments</span>
+    <span class="fl">if</span> M[<span class="ft">"m00"</span>] != <span class="fr">0</span>:                              <span class="fd"># centroid</span>
+        cx = <span class="fs">int</span>(M[<span class="ft">"m10"</span>] / M[<span class="ft">"m00"</span>])
+        cy = <span class="fs">int</span>(M[<span class="ft">"m01"</span>] / M[<span class="ft">"m00"</span>])</div>
+    <table><thead><tr><th>Retrieval Mode</th><th>Returns</th><th>Use When</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--teal)">RETR_EXTERNAL</td><td>Only outermost contours</td><td>Object counting, no nested shapes</td></tr>
+    <tr><td style="color:var(--sky)">RETR_LIST</td><td>All contours, no hierarchy</td><td>Simple flat extraction</td></tr>
+    <tr><td style="color:var(--amber)">RETR_TREE</td><td>All contours + parent-child tree</td><td>Nested shapes (letter 'O', coins)</td></tr>
+    </tbody></table>
+    <table><thead><tr><th>Approximation Method</th><th>Points Stored</th><th>Memory</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--rose)">CHAIN_APPROX_NONE</td><td>Every boundary pixel</td><td>High — hundreds of points for a rectangle</td></tr>
+    <tr><td style="color:var(--lime)">CHAIN_APPROX_SIMPLE</td><td>Only endpoints of straight segments</td><td>Low — a rectangle needs only 4 points</td></tr>
+    </tbody></table>
+    <div class="callout cp"><div class="callout-title">Pipeline Rule — Always Binarise Before findContours</div><code>cv2.findContours</code> requires a binary image. Common order: grayscale → Otsu threshold → morphological cleaning (opening to remove noise) → findContours. If contours fragment (broken boundaries), apply dilation or closing before findContours to seal gaps. Morphological gradient (from S6) produces binary edge maps that are also valid contour inputs.</div>
+    <div class="callout cw"><div class="callout-title">DL Bridge — Contours → Instance Segmentation</div>Classical contours are the pixel-level equivalent of instance segmentation masks in Mask R-CNN, YOLO-Seg, and SAM. <code>cv2.moments</code> centroid computation (m10/m00, m01/m00) is mathematically identical to the attention-weighted centre-of-mass used in DETR's object queries. Contour area filtering (<code>cv2.contourArea</code> > threshold) is the classical analogue of confidence-score thresholding in DL detectors.</div>
+  </div>
+</section>
+<section id="s12" class="section">
+  <div class="section-header"><span class="section-num">12</span><h2 class="section-title">Research Deep Dive</h2><div class="section-line"></div></div>
+  <div class="rcrd">
+    <h3>The Denoising–Generation Duality</h3>
+    <p>Score-based diffusion models (Song & Ermon, 2020; Ho et al., 2020) frame image generation as a learned reverse diffusion — iterative denoising from pure Gaussian noise. Each denoising step is a neural approximation of the Gaussian filter Prof. described, but conditioned on semantic content. <em>Every Stable Diffusion image is the result of applying ~1000 learnt denoising filters to a noise image.</em></p>
+    <p class="cite">DDPM (Ho et al., NeurIPS 2020); Score-Based Generative Models (Song et al., NeurIPS 2020)</p>
+  </div>
+  <div class="rcrd">
+    <h3>Morphological Operations as Neural Primitives</h3>
+    <p>Max-pooling in every ResNet, VGG, and ViT is provably equivalent to morphological dilation with a flat square structuring element. Research 2024–2025 shows learnable morphological layers achieve better boundary detection at 0.01% of the parameter count — because the learned structuring element adapts to actual data shapes rather than assuming squares.</p>
+    <p class="cite">Deep Morphological Networks (Franchi et al., 2020); Universal Approximation for Deep Morphological Networks (Arxiv 2505.09710, 2025)</p>
+  </div>
+  <div class="rcrd">
+    <h3>When Classical Algorithms Fail</h3>
+    <p><strong style="color:var(--rose)">Canny</strong> fails on textures with high-frequency content at similar intensity to edges (grass, fabric) — generates false detections throughout. Fix: texture-aware segmentation with SLIC superpixels before Canny. <strong style="color:var(--rose)">Median filter</strong> destroys fine details (thin lines, small text) when the kernel is large relative to the feature. <strong style="color:var(--rose)">Harris corners</strong> are not scale-invariant — a corner at 8× downsampling may not register. Fix: Harris in a scale-space pyramid (what SIFT builds). <strong style="color:var(--rose)">Histogram equalisation</strong> inverts shadow regions in night-time imagery — CLAHE's clipping mitigates this.</p>
+  </div>
+  <div class="rcrd">
+    <h3>The Classical → Modern Mapping</h3>
+    <table><thead><tr><th>Classical CV</th><th>Deep Learning Equivalent</th><th>Key Insight</th></tr></thead>
+    <tbody>
+    <tr><td style="color:var(--sky)">Sobel Kernel</td><td>Conv Layer 1 filters</td><td>DNNs learn Sobel-like filters from data</td></tr>
+    <tr><td style="color:var(--sky)">Max Pooling</td><td>Morphological Dilation</td><td>Mathematically identical with flat SE</td></tr>
+    <tr><td style="color:var(--sky)">NL-Means</td><td>Self-Attention in Transformers</td><td>Both compute non-local similarity weights</td></tr>
+    <tr><td style="color:var(--sky)">CLAHE</td><td>Batch Normalisation</td><td>Both normalise local contrast/distributions</td></tr>
+    <tr><td style="color:var(--sky)">Bilateral Filter</td><td>Edge-Aware / Guided Filter</td><td>Range-weighted blending = attention mask</td></tr>
+    <tr><td style="color:var(--sky)">SIFT Keypoints</td><td>FPN Anchor Points</td><td>Scale-space blob detection → pyramid anchors</td></tr>
+    <tr><td style="color:var(--sky)">Histogram EQ</td><td>Contrast Normalisation</td><td>CDF-based remapping ≡ histogram matching loss</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<!-- S13 QUIZ -->
+<section id="s13" class="section">
+  <div class="section-header"><span class="section-num">13</span><h2 class="section-title">Exam Quiz</h2><div class="section-line"></div></div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag de">Easy</span><span class="qtag tt">Denoising</span></div>
+    <div class="quiz-q">1. Which noise type is characterised by random isolated pixels at maximum (255) and minimum (0) intensity?</div>
+    <ul class="qopts" id="q1"><li onclick="ca('q1',0,'e1')">A. Gaussian noise</li><li onclick="ca('q1',1,'e1')">B. Salt-and-pepper noise</li><li onclick="ca('q1',2,'e1')">C. Speckle noise</li><li onclick="ca('q1',3,'e1')">D. Compression noise</li></ul>
+    <div class="qexp" id="e1"><strong style="color:var(--lime)">Correct: B.</strong> Prof.: "Salt always refers to the white pixel and pepper always refers to the black pixel — the intensity level only we are changing it." Random location, extreme values.<div class="mn">Common mistake: confusing with Gaussian noise (smooth grain rather than isolated extremes).</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag de">Easy</span><span class="qtag tt">Morphology</span></div>
+    <div class="quiz-q">2. Why must morphological operation kernels have odd dimensions (3×3, 5×5)?</div>
+    <ul class="qopts" id="q2"><li onclick="ca('q2',0,'e2')">A. Odd kernels are computationally faster to slide</li><li onclick="ca('q2',1,'e2')">B. Even kernels cause pixel overflow</li><li onclick="ca('q2',2,'e2')">C. Odd kernels have a unique centre pixel as the output reference</li><li onclick="ca('q2',3,'e2')">D. OpenCV only supports odd kernel sizes</li></ul>
+    <div class="qexp" id="e2"><strong style="color:var(--lime)">Correct: C.</strong> Prof.: "The reason for that is you are getting the information about one particular pixel — the centre pixel is the attractor or the exact value that you are looking for."<div class="mn">Common mistake: citing computational speed — odd/even makes no practical difference to performance.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag de">Easy</span><span class="qtag tt">Colour Spaces</span></div>
+    <div class="quiz-q">3. If you display an OpenCV-read image directly with Matplotlib without colour space conversion, what is the visual effect?</div>
+    <ul class="qopts" id="q3"><li onclick="ca('q3',0,'e3')">A. Image appears in grayscale</li><li onclick="ca('q3',1,'e3')">B. Red and blue channels swap — incorrect colour cast</li><li onclick="ca('q3',2,'e3')">C. Image appears mirrored horizontally</li><li onclick="ca('q3',3,'e3')">D. No visible change — Matplotlib auto-corrects</li></ul>
+    <div class="qexp" id="e3"><strong style="color:var(--lime)">Correct: B.</strong> OpenCV reads BGR; Matplotlib expects RGB. Swapping R and B shifts colour balance — sky becomes orange, skin looks teal. Prof.: "if we are not doing that, then your entire image space and illumination will get changed."<div class="mn">Fix: always apply cv2.COLOR_BGR2RGB before plt.imshow().</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dm">Medium</span><span class="qtag tt">Canny Edge Detection</span></div>
+    <div class="quiz-q">4. In Canny, a pixel is classified as a "weak edge". Under what condition does it appear in the final output?</div>
+    <ul class="qopts" id="q4"><li onclick="ca('q4',0,'e4')">A. Its gradient magnitude exceeds the high threshold</li><li onclick="ca('q4',1,'e4')">B. It is connected to at least one strong edge pixel</li><li onclick="ca('q4',2,'e4')">C. Its gradient direction aligns with the dominant orientation</li><li onclick="ca('q4',3,'e4')">D. It survives non-maximum suppression independently</li></ul>
+    <div class="qexp" id="e4"><strong style="color:var(--lime)">Correct: B.</strong> Hysteresis tracking: weak edges (between low and high threshold) are kept only if connected to a strong edge. Prof.: "Hysteresis Tracking — connecting the weak edges to strong ones."<div class="mn">Common mistake: thinking weak edges are always discarded. They form continuous chains from strong edge pixels.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dm">Medium</span><span class="qtag tt">Morphology</span></div>
+    <div class="quiz-q">5. A binary image has small white noise blobs and one large white object. After Opening with a 5×5 kernel, what is the result?</div>
+    <ul class="qopts" id="q5"><li onclick="ca('q5',0,'e5')">A. All white objects grow by 5 pixels</li><li onclick="ca('q5',1,'e5')">B. Noise blobs removed; large object approximately preserved</li><li onclick="ca('q5',2,'e5')">C. Large object removed; noise blobs preserved</li><li onclick="ca('q5',3,'e5')">D. Dark holes inside the large object are filled</li></ul>
+    <div class="qexp" id="e5"><strong style="color:var(--lime)">Correct: B.</strong> Erosion removes all white regions smaller than the kernel (noise blobs). The large object shrinks. Subsequent dilation restores surviving regions — noise blobs were fully erased so nothing dilates back from them.<div class="mn">Key distinction: Opening removes small objects. Closing fills small holes. Don't mix them up.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dm">Medium</span><span class="qtag tt">CLAHE</span></div>
+    <div class="quiz-q">6. What is the role of the clipLimit parameter in CLAHE?</div>
+    <ul class="qopts" id="q6"><li onclick="ca('q6',0,'e6')">A. Sets the number of tiles (grid divisions)</li><li onclick="ca('q6',1,'e6')">B. Prevents noise over-amplification by capping histogram peaks before equalisation</li><li onclick="ca('q6',2,'e6')">C. Defines the output intensity range</li><li onclick="ca('q6',3,'e6')">D. Controls how many equalisation iterations run</li></ul>
+    <div class="qexp" id="e6"><strong style="color:var(--lime)">Correct: B.</strong> Prof.: "you fix a threshold and you just get that particular information... clip that particular histogram at threshold." Excess counts above clipLimit are redistributed evenly across all bins before equalisation — preventing flat regions' noise from being amplified.<div class="mn">tileGridSize controls tile count, not clipLimit — frequently confused in exams.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dm">Medium</span><span class="qtag tt">Transforms</span></div>
+    <div class="quiz-q">7. Which matrix M correctly shifts an image 30 pixels right and 20 pixels upward for cv2.warpAffine?</div>
+    <ul class="qopts" id="q7"><li onclick="ca('q7',0,'e7')">A. M = [[1, 0, 30], [0, 1, -20]]</li><li onclick="ca('q7',1,'e7')">B. M = [[1, 0, -30], [0, 1, 20]]</li><li onclick="ca('q7',2,'e7')">C. M = [[30, 0, 1], [0, 20, 1]]</li><li onclick="ca('q7',3,'e7')">D. M = [[0, 30, 1], [20, 0, 1]]</li></ul>
+    <div class="qexp" id="e7"><strong style="color:var(--lime)">Correct: A.</strong> Format: [[1,0,tx],[0,1,ty]]. Right = +x: tx=+30. Upward = −y (image y increases downward): ty=−20.<div class="mn">Image coordinate system: y increases downward. "Up" means negative ty — easily inverted in exam answers.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dh">Hard</span><span class="qtag tt">Bilateral Filter</span></div>
+    <div class="quiz-q">8. A bilateral filter with sigmaColor=5 (vs Prof.'s default of 75) is applied. What is the effect on edges and noise removal?</div>
+    <ul class="qopts" id="q8"><li onclick="ca('q8',0,'e8')">A. Sharper edge preservation but less noise removal</li><li onclick="ca('q8',1,'e8')">B. More noise removal but blurred edges</li><li onclick="ca('q8',2,'e8')">C. sigmaColor has no effect on edges — only sigmaSpace does</li><li onclick="ca('q8',3,'e8')">D. Both parameters produce identical results if sigmaSpace is the same</li></ul>
+    <div class="qexp" id="e8"><strong style="color:var(--lime)">Correct: A.</strong> sigmaColor controls the range Gaussian: w_r = exp(−|I_p−I_q|²/(2σ_r²)). Small σ_r → sharp decay → only very similar intensities get significant weight → pixels across edges get near-zero weight → strong edge preservation but minimal within-region smoothing. Large σ_r (75) → gradual decay → some cross-edge averaging → edge slightly softened, noise smoothed more.<div class="mn">The two sigmas are independent: sigmaSpace = how far to look; sigmaColor = how different is "too different".</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dh">Hard</span><span class="qtag tt">Morphological Gradient</span></div>
+    <div class="quiz-q">9. The Morphological Gradient = Dilation(f) − Erosion(f). What does it represent, and how does it relate to Sobel?</div>
+    <ul class="qopts" id="q9"><li onclick="ca('q9',0,'e9')">A. Sum of all intensity values in each kernel region</li><li onclick="ca('q9',1,'e9')">B. Object boundary/outline — analogous to Sobel but via max/min algebra on binary images</li><li onclick="ca('q9',2,'e9')">C. Average gradient direction in each region</li><li onclick="ca('q9',3,'e9')">D. A smoothed version of the original image</li></ul>
+    <div class="qexp" id="e9"><strong style="color:var(--lime)">Correct: B.</strong> Interior: dilation=1, erosion=1 → gradient=0. Boundary: dilation=1, erosion=0 → gradient=1. Exterior: both=0 → gradient=0. Result: gradient=1 only at boundaries. Sobel uses convolution (linear, greyscale); morphological gradient uses max/min (non-linear, binary). Both detect boundaries via different mathematical frameworks.<div class="mn">Don't confuse: morphological gradient works on binary masks; Sobel works on greyscale intensity values.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dh">Hard</span><span class="qtag tt">Feature Extraction</span></div>
+    <div class="quiz-q">10. Prof. corrected himself saying Harris uses "maximum" eigenvalues while Shi-Tomasi uses "minimum". In which scenario does Shi-Tomasi outperform Harris?</div>
+    <ul class="qopts" id="q10"><li onclick="ca('q10',0,'e10')">A. Detecting corners in 4K images where Harris overflows</li><li onclick="ca('q10',1,'e10')">B. When one eigenvalue is large and one small (an edge) — Shi-Tomasi min(λ₁,λ₂) is small (correctly: non-corner) where Harris may borderline mis-classify</li><li onclick="ca('q10',2,'e10')">C. Detecting corners in binary images where Harris is undefined</li><li onclick="ca('q10',3,'e10')">D. Shi-Tomasi is only better for rotated images</li></ul>
+    <div class="qexp" id="e10"><strong style="color:var(--lime)">Correct: B.</strong> Harris R = det(M) − k·trace(M)². For an edge: λ₁>>0, λ₂≈0 → R = 0 − k·λ₁² (very negative, correctly: edge). But the empirical constant k (0.04–0.06) causes borderline cases where R>0 despite being an edge. Shi-Tomasi directly checks min(λ₁,λ₂) — if small, it's never a corner. More robust for tracking.<div class="mn">Prof.'s mid-lecture self-correction is exam-ready material: cite "Harris → maximum, Shi-Tomasi → minimum."</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dm">Medium</span><span class="qtag tt">Thresholding</span></div>
+    <div class="quiz-q">11. Otsu's method selects threshold T* by optimising which criterion?</div>
+    <ul class="qopts" id="q11"><li onclick="ca('q11',0,'e11')">A. Maximising total pixel variance of the image</li><li onclick="ca('q11',1,'e11')">B. Minimising within-class variance (equivalently: maximising between-class variance)</li><li onclick="ca('q11',2,'e11')">C. Finding the intensity value at the histogram peak</li><li onclick="ca('q11',3,'e11')">D. Setting T = mean pixel intensity</li></ul>
+    <div class="qexp" id="e11"><strong style="color:var(--lime)">Correct: B.</strong> Otsu minimises σ²_w = w₀σ₀² + w₁σ₁² (within-class variance). Since total variance is fixed, this equals maximising σ²_b = w₀w₁(μ₀−μ₁)² (between-class). The optimal T* maximises separation between foreground and background means, weighted by their sizes.<div class="mn">Common mistake: confusing Otsu with "peak of histogram" — Otsu uses the full histogram CDF, not just the mode.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag de">Easy</span><span class="qtag tt">Sharpening</span></div>
+    <div class="quiz-q">12. Unsharp masking uses cv2.addWeighted(img, 1.5, blur, -0.5, 0). What does this algebraically compute?</div>
+    <ul class="qopts" id="q12"><li onclick="ca('q12',0,'e12')">A. img − 0.5 × blur (simple subtraction)</li><li onclick="ca('q12',1,'e12')">B. img + 0.5 × (img − blur) — original plus half the edge residual</li><li onclick="ca('q12',2,'e12')">C. 1.5 × img − 0.5 × img (scales without using blur)</li><li onclick="ca('q12',3,'e12')">D. A Laplacian of the blurred image</li></ul>
+    <div class="qexp" id="e12"><strong style="color:var(--lime)">Correct: B.</strong> dst = 1.5×img + (−0.5)×blur = img + 0.5×img − 0.5×blur = img + 0.5×(img − blur). The term (img − blur) is the high-frequency residual (edge detail). Adding 0.5 of it back amplifies edges — this is Unsharp Mask with k=0.5.<div class="mn">Key identity: addWeighted(img, α, blur, −(α−1), 0) = img + (α−1)×(img−blur). Larger α = stronger sharpening.</div></div>
+  </div>
+
+  <div class="quiz-item">
+    <div class="qmeta"><span class="qtag dm">Medium</span><span class="qtag tt">Contours</span></div>
+    <div class="quiz-q">13. cv2.CHAIN_APPROX_SIMPLE vs cv2.CHAIN_APPROX_NONE — what is stored differently?</div>
+    <ul class="qopts" id="q13"><li onclick="ca('q13',0,'e13')">A. SIMPLE is less accurate — it approximates curves with fewer points at the cost of shape fidelity</li><li onclick="ca('q13',1,'e13')">B. SIMPLE compresses straight-line segments, storing only their endpoints; NONE stores every boundary pixel</li><li onclick="ca('q13',2,'e13')">C. NONE retrieves hierarchical contours; SIMPLE retrieves flat contours</li><li onclick="ca('q13',3,'e13')">D. SIMPLE only works on convex shapes; NONE works on arbitrary shapes</li></ul>
+    <div class="qexp" id="e13"><strong style="color:var(--lime)">Correct: B.</strong> A rectangle with CHAIN_APPROX_NONE stores every pixel along all 4 sides (hundreds of points). With CHAIN_APPROX_SIMPLE, only the 4 corner endpoints are stored — straight horizontal/vertical/diagonal runs are compressed with no loss of shape. Hierarchy is controlled by the retrieval mode (RETR_*), not CHAIN_APPROX_*.<div class="mn">CHAIN_APPROX_SIMPLE saves significant memory for shapes with straight edges (documents, printed characters, manufactured parts).</div></div>
+  </div>
+
+  <div style="text-align:center;padding:3rem 0 1rem;font-family:'Syne',sans-serif;font-size:11px;color:var(--text-dim);letter-spacing:.15em">AIMLCZG525 · BITS PILANI WILP · Webinar 1 · MAY 2026 · PROF. DHRUBA</div>
+</section>
+</main>
+<script>
+const sections=document.querySelectorAll('.section');
+const links=document.querySelectorAll('#sidebar nav a');
+const fill=document.getElementById('progress-fill');
+const stt=document.getElementById('stt');
+
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      const id=e.target.id;
+      links.forEach(l=>l.classList.toggle('active',l.dataset.s===id));
+    }
+  });
+},{threshold:.1});
+sections.forEach(s=>io.observe(s));
+
+window.addEventListener('scroll',()=>{
+  const p=(window.scrollY/(document.body.scrollHeight-window.innerHeight))*100;
+  fill.style.width=Math.min(p,100)+'%';
+  stt.classList.toggle('visible',window.scrollY>300);
+});
+
+function switchTab(btn,id){
+  const w=btn.closest('.tabs-wrapper');
+  w.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  w.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+const ans={q1:1,q2:2,q3:1,q4:1,q5:1,q6:1,q7:0,q8:0,q9:1,q10:1,q11:1,q12:1,q13:1};
+function ca(qid,choice,eid){
+  const ul=document.getElementById(qid);
+  if(ul.dataset.done)return;
+  ul.dataset.done='1';
+  const items=ul.querySelectorAll('li');
+  items[choice].classList.add(choice===ans[qid]?'correct':'wrong');
+  if(choice!==ans[qid])items[ans[qid]].classList.add('correct');
+  document.getElementById(eid).classList.add('show');
+}
+
+// NOISE VISUALISER
+function drawNoise(){
+  const W=140,H=140;
+  const type=document.getElementById('noise-type').value;
+  const intens=parseInt(document.getElementById('noise-int').value);
+  document.getElementById('nval').textContent=intens;
+  const co=document.getElementById('c-orig');
+  const cn=document.getElementById('c-noisy');
+  const cd=document.getElementById('c-den');
+  if(!co)return;
+
+  const ctxO=co.getContext('2d');
+  const orig=ctxO.createImageData(W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=(y*W+x)*4;
+    const v=(x<70&&y<70)?180:(x>=70&&y<70)?80:(x<70&&y>=70)?120:200;
+    orig.data[i]=orig.data[i+1]=orig.data[i+2]=v;orig.data[i+3]=255;
+  }
+  ctxO.putImageData(orig,0,0);
+
+  const ctxN=cn.getContext('2d');
+  const noisy=ctxN.createImageData(W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=(y*W+x)*4;
+    const b=orig.data[i];
+    let v;
+    if(type==='gaussian'){const n=(Math.random()+Math.random()+Math.random()-1.5)*intens;v=Math.max(0,Math.min(255,b+n));}
+    else if(type==='sp'){const r=Math.random();v=r<intens/500?255:r<intens/250?0:b;}
+    else{const s=(Math.random()-.5)*intens*.8;v=Math.max(0,Math.min(255,b+s*(b/128)));}
+    noisy.data[i]=noisy.data[i+1]=noisy.data[i+2]=Math.round(v);noisy.data[i+3]=255;
+  }
+  ctxN.putImageData(noisy,0,0);
+
+  const ctxD=cd.getContext('2d');
+  const den=ctxD.createImageData(W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=(y*W+x)*4;
+    const vals=[];
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+      const ny=Math.max(0,Math.min(H-1,y+dy)),nx=Math.max(0,Math.min(W-1,x+dx));
+      vals.push(noisy.data[(ny*W+nx)*4]);
+    }
+    vals.sort((a,b)=>a-b);
+    den.data[i]=den.data[i+1]=den.data[i+2]=vals[4];den.data[i+3]=255;
+  }
+  ctxD.putImageData(den,0,0);
+}
+document.getElementById('noise-type')?.addEventListener('change',drawNoise);
+document.getElementById('noise-int')?.addEventListener('input',drawNoise);
+drawNoise();
+
+// MORPHOLOGY
+function drawMorphology(){
+  const op=document.getElementById('morph-op')?.value;
+  const ks=parseInt(document.getElementById('morph-k')?.value||2);
+  const ksize=ks*2+1;
+  document.getElementById('mkval').textContent=ksize+'×'+ksize;
+  document.getElementById('mol').textContent=op.charAt(0).toUpperCase()+op.slice(1);
+  const W=160,H=160;
+  const ci=document.getElementById('c-mi');
+  const co=document.getElementById('c-mo');
+  if(!ci)return;
+  const half=Math.floor(ksize/2);
+  const bin=new Uint8Array(W*H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const cx=W/2,cy=H/2;
+    const cross=(Math.abs(x-cx)<18&&Math.abs(y-cy)<45)||(Math.abs(y-cy)<18&&Math.abs(x-cx)<45);
+    bin[y*W+x]=(cross||(Math.random()<.025))?1:0;
+  }
+  const ctxI=ci.getContext('2d');
+  const dI=ctxI.createImageData(W,H);
+  for(let i=0;i<W*H;i++){const v=bin[i]?230:15;dI.data[i*4]=dI.data[i*4+1]=dI.data[i*4+2]=v;dI.data[i*4+3]=255;}
+  ctxI.putImageData(dI,0,0);
+  function erode(b){const o=new Uint8Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let ok=true;for(let dy=-half;dy<=half&&ok;dy++)for(let dx=-half;dx<=half&&ok;dx++){const ny=y+dy,nx=x+dx;if(ny<0||ny>=H||nx<0||nx>=W||!b[ny*W+nx])ok=false;}o[y*W+x]=ok?1:0;}return o;}
+  function dilate(b){const o=new Uint8Array(W*H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){let any=false;for(let dy=-half;dy<=half&&!any;dy++)for(let dx=-half;dx<=half&&!any;dx++){const ny=y+dy,nx=x+dx;if(ny>=0&&ny<H&&nx>=0&&nx<W&&b[ny*W+nx])any=true;}o[y*W+x]=any?1:0;}return o;}
+  let res;
+  if(op==='orig')res=bin;
+  else if(op==='erode')res=erode(bin);
+  else if(op==='dilate')res=dilate(bin);
+  else if(op==='open')res=dilate(erode(bin));
+  else if(op==='close')res=erode(dilate(bin));
+  else{const e=erode(bin),d=dilate(bin);res=new Uint8Array(W*H);for(let i=0;i<W*H;i++)res[i]=d[i]-e[i];}
+  const ctxO=co.getContext('2d');
+  const dO=ctxO.createImageData(W,H);
+  for(let i=0;i<W*H;i++){
+    dO.data[i*4]=res[i]?212:20;dO.data[i*4+1]=res[i]?168:20;dO.data[i*4+2]=res[i]?83:20;dO.data[i*4+3]=255;
+  }
+  ctxO.putImageData(dO,0,0);
+}
+document.getElementById('morph-op')?.addEventListener('change',drawMorphology);
+document.getElementById('morph-k')?.addEventListener('input',drawMorphology);
+drawMorphology();
+
+// HISTOGRAM
+function drawHistograms(){
+  const c=parseInt(document.getElementById('hc')?.value||80);
+  document.getElementById('hcval').textContent=c;
+  const hb=document.getElementById('hb'),ha=document.getElementById('ha');
+  if(!hb)return;
+  const W=260,H=110;
+  const cb=hb.getContext('2d'),ca2=ha.getContext('2d');
+  cb.fillStyle='#0a0a0d';cb.fillRect(0,0,W,H);
+  ca2.fillStyle='#0a0a0d';ca2.fillRect(0,0,W,H);
+  const bins=52,bw=W/bins;
+  const centre=Math.floor(bins*.42);
+  const spread=Math.max(2,Math.floor(c/12));
+  for(let b=0;b<bins;b++){
+    const d=Math.abs(b-centre);
+    const h=d<spread?Math.exp(-d*d/(spread*spread)):0;
+    const bh=Math.floor(h*(H-15));
+    cb.fillStyle='#d4a853';cb.fillRect(b*bw,H-bh,bw-1,bh);
+    const h2=.55+.45*Math.sin(b*Math.PI/bins);
+    const bh2=Math.floor(h2*(H-15)*.55);
+    ca2.fillStyle='#2dd4bf';ca2.fillRect(b*bw,H-bh2,bw-1,bh2);
+  }
+  cb.fillStyle='#4a4845';cb.font='9px JetBrains Mono';cb.fillText('0',2,H-2);cb.fillText('255',W-22,H-2);
+  ca2.fillStyle='#4a4845';ca2.font='9px JetBrains Mono';ca2.fillText('0',2,H-2);ca2.fillText('255',W-22,H-2);
+}
+document.getElementById('hc')?.addEventListener('input',drawHistograms);
+drawHistograms();
+
+// THRESHOLDING DEMO
+function drawThreshold(){
+  const T=parseInt(document.getElementById('tval')?.value||127);
+  const lbl=document.getElementById('tvall');
+  const blbl=document.getElementById('tbin-lbl');
+  if(lbl)lbl.textContent=T;
+  if(blbl)blbl.textContent='Binary (T='+T+')';
+  const cg=document.getElementById('c-tgray');
+  const cb=document.getElementById('c-tbin');
+  if(!cg||!cb)return;
+  const W=220,H=140;
+  // Draw grayscale gradient scene (4 quadrants + gradient)
+  const ctxG=cg.getContext('2d');
+  const gd=ctxG.createImageData(W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=(y*W+x)*4;
+    // horizontal gradient + two blobs
+    let v=Math.round(x/W*200+20);
+    // dark blob top-left
+    if(Math.sqrt((x-50)**2+(y-40)**2)<25)v=40;
+    // bright blob bottom-right
+    if(Math.sqrt((x-170)**2+(y-100)**2)<30)v=220;
+    gd.data[i]=gd.data[i+1]=gd.data[i+2]=v;gd.data[i+3]=255;
+  }
+  ctxG.putImageData(gd,0,0);
+  // Draw threshold line on grayscale canvas
+  ctxG.strokeStyle='rgba(212,168,83,0.8)';ctxG.lineWidth=1;
+  ctxG.setLineDash([4,3]);
+  const xT=Math.round((T-20)/200*W);
+  ctxG.beginPath();ctxG.moveTo(xT,0);ctxG.lineTo(xT,H);ctxG.stroke();
+  ctxG.setLineDash([]);
+  ctxG.fillStyle='rgba(212,168,83,0.7)';ctxG.font='9px JetBrains Mono';
+  ctxG.fillText('T='+T,Math.min(xT+3,W-30),12);
+  // Draw binary result
+  const ctxB=cb.getContext('2d');
+  const bd=ctxB.createImageData(W,H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=(y*W+x)*4;
+    let v=Math.round(x/W*200+20);
+    if(Math.sqrt((x-50)**2+(y-40)**2)<25)v=40;
+    if(Math.sqrt((x-170)**2+(y-100)**2)<30)v=220;
+    const bin=v>T?230:15;
+    bd.data[i]=bin>100?212:15;bd.data[i+1]=bin>100?168:20;bd.data[i+2]=bin>100?83:20;bd.data[i+3]=255;
+  }
+  ctxB.putImageData(bd,0,0);
+}
+document.getElementById('tval')?.addEventListener('input',drawThreshold);
+drawThreshold();
+</script>
+</body>
+</html>

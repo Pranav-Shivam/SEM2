@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Session 3 — Low Level Vision | BITS Pilani WILP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0c0f;--bg2:#111116;--bg3:#16161c;--bg4:#1c1c24;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--gold:#d4a853;--gold-dim:rgba(212,168,83,0.15);--gold-glow:rgba(212,168,83,0.08);--teal:#4ec9b0;--sky:#7dd3fc;--rose:#f87171;--lime:#a3e635;--violet:#c084fc;--text:#e8e6e3;--text2:#9d9ba8;--text3:#6b6878;--font-head:'Syne',sans-serif;--font-body:'Newsreader',serif;--font-code:'JetBrains Mono',monospace;--sidebar:260px;--radius:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:17px;line-height:1.75;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar);height:100vh;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:0 0 2rem}
+.sidebar-header{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:10}
+.sidebar-logo{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+.sidebar-title{font-family:var(--font-head);font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.progress-wrap{padding:.75rem 1.25rem;border-bottom:1px solid var(--border);position:sticky;top:82px;background:var(--bg2);z-index:9}
+.progress-label{font-size:11px;color:var(--text3);font-family:var(--font-code);margin-bottom:6px;display:flex;justify-content:space-between}
+.progress-bar-bg{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width .3s ease}
+.nav-group-label{font-family:var(--font-code);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:.5rem 1.25rem .25rem}
+.nav-link{display:block;padding:.45rem 1.25rem;font-family:var(--font-body);font-size:13px;color:var(--text2);text-decoration:none;transition:all .15s;border-left:2px solid transparent;line-height:1.4}
+.nav-link:hover{color:var(--text);background:var(--gold-glow)}
+.nav-link.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-glow)}
+.main{margin-left:var(--sidebar);min-height:100vh}
+.hero{padding:4rem 4rem 3rem;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--bg) 0%,var(--bg3) 100%);position:relative;overflow:hidden}
+.hero::after{content:'CV3';position:absolute;right:3rem;top:50%;transform:translateY(-50%);font-family:var(--font-head);font-size:14rem;font-weight:800;color:rgba(212,168,83,.04);line-height:1;pointer-events:none}
+.hero-tag{font-family:var(--font-code);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);background:var(--gold-dim);display:inline-block;padding:4px 12px;border-radius:20px;margin-bottom:1.25rem;border:1px solid rgba(212,168,83,.2)}
+.hero h1{font-family:var(--font-head);font-size:clamp(2.2rem,4vw,3.2rem);font-weight:800;line-height:1.1;color:var(--text);margin-bottom:1rem;max-width:700px}
+.hero h1 span{color:var(--gold)}
+.hero-meta{display:flex;gap:2rem;flex-wrap:wrap;margin-top:1.5rem}
+.hero-meta-item{font-family:var(--font-code);font-size:12px;color:var(--text3)}
+.hero-meta-item strong{color:var(--text2);display:block;margin-bottom:2px}
+.hero-topics{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.5rem}
+.topic-chip{font-family:var(--font-code);font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--border2);color:var(--text2);background:var(--bg3)}
+.content{padding:3rem 4rem;max-width:900px}
+.section{margin-bottom:5rem;opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.section.visible{opacity:1;transform:translateY(0)}
+.section-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:2rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+.section-num{font-family:var(--font-code);font-size:12px;color:var(--gold);background:var(--gold-dim);padding:2px 8px;border-radius:4px;flex-shrink:0}
+.section-title{font-family:var(--font-head);font-size:1.9rem;font-weight:700;color:var(--text);line-height:1.2}
+.theory-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem 2rem;margin-bottom:1.5rem}
+.theory-block h3{font-family:var(--font-head);font-size:1.05rem;font-weight:600;color:var(--gold);margin-bottom:.9rem}
+.theory-block p{color:var(--text);margin-bottom:.75rem}
+.formula-block{background:var(--bg4);border:1px solid rgba(212,168,83,.2);border-radius:8px;padding:1.25rem 1.5rem;margin:1rem 0;font-family:var(--font-code);overflow-x:auto}
+.formula-block .formula-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.6rem}
+.formula-line{font-size:15px;line-height:1.9}
+.f-gold{color:var(--gold)}.f-teal{color:var(--teal)}.f-sky{color:var(--sky)}.f-rose{color:var(--rose)}.f-lime{color:var(--lime)}.f-violet{color:var(--violet)}.f-dim{color:var(--text3)}
+.annotation{background:rgba(78,201,176,.06);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:.9rem 1.25rem;margin:1rem 0}
+.annotation-label{font-family:var(--font-code);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:.4rem}
+.annotation p{font-size:15px;color:var(--text2);font-style:italic}
+.prof-quote{background:rgba(125,211,252,.06);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;padding:.9rem 1.25rem;margin:1rem 0}
+.prof-quote-label{font-family:var(--font-code);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);margin-bottom:.4rem}
+.prof-quote p{font-size:15px;color:var(--text2);font-style:italic}
+.why-matters{background:linear-gradient(135deg,rgba(212,168,83,.08) 0%,rgba(212,168,83,.04) 100%);border:1px solid rgba(212,168,83,.2);border-radius:var(--radius);padding:1.25rem 1.5rem;margin:1.5rem 0}
+.why-matters-label{font-family:var(--font-code);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem}
+.why-matters p{font-size:15px;color:var(--text)}
+.examples-section{margin:2rem 0}
+.examples-tabs{display:flex;gap:.5rem;margin-bottom:1px}
+.tab-btn{font-family:var(--font-code);font-size:12px;padding:8px 18px;border:1px solid var(--border);border-bottom:none;background:var(--bg3);color:var(--text3);cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s}
+.tab-btn:hover{color:var(--text2)}
+.tab-btn.active-easy{color:var(--lime);border-color:rgba(163,230,53,.3);background:rgba(163,230,53,.06)}
+.tab-btn.active-medium{color:var(--gold);border-color:rgba(212,168,83,.3);background:var(--gold-dim)}
+.tab-btn.active-hard{color:var(--rose);border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)}
+.tab-panel{display:none;background:var(--bg2);border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);padding:1.75rem 2rem}
+.tab-panel.active{display:block}
+.example-q{font-family:var(--font-head);font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:1rem;line-height:1.4}
+.step-list{counter-reset:steps;list-style:none;margin:1rem 0}
+.step-list li{counter-increment:steps;display:flex;gap:1rem;margin-bottom:1rem;align-items:flex-start}
+.step-list li::before{content:counter(steps);font-family:var(--font-code);font-size:11px;font-weight:600;color:var(--bg);background:var(--gold);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px}
+.step-list li p{font-size:15px;color:var(--text)}
+.answer-box{background:var(--bg4);border:1px solid rgba(163,230,53,.25);border-radius:8px;padding:1rem 1.25rem;margin:1.25rem 0 0;display:flex;align-items:center;gap:1rem}
+.answer-box .answer-label{font-family:var(--font-code);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--lime);flex-shrink:0}
+.answer-box .answer-val{font-family:var(--font-code);font-size:14px;color:var(--text)}
+.key-insight{background:rgba(192,132,252,.07);border-left:3px solid var(--violet);border-radius:0 8px 8px 0;padding:.8rem 1.1rem;margin-top:1rem}
+.key-insight .ki-label{font-family:var(--font-code);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--violet);margin-bottom:.3rem}
+.key-insight p{font-size:14px;color:var(--text2)}
+.exam-alert{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.25);border-radius:var(--radius);padding:1.5rem 1.75rem;margin:2rem 0}
+.exam-alert-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.exam-badge{font-family:var(--font-code);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--rose);background:rgba(248,113,113,.12);padding:4px 10px;border-radius:4px;border:1px solid rgba(248,113,113,.25)}
+.exam-alert h4{font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--rose)}
+.exam-list{list-style:none;margin:.5rem 0}
+.exam-list li{padding:.3rem 0;font-size:15px;color:var(--text2);display:flex;gap:.6rem;align-items:flex-start}
+.exam-list li::before{content:'→';color:var(--rose);flex-shrink:0;margin-top:1px}
+.he-table{width:100%;border-collapse:collapse;font-family:var(--font-code);font-size:13px;margin:1rem 0}
+.he-table th{background:var(--bg4);color:var(--gold);padding:8px 12px;text-align:left;font-weight:500;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.he-table td{padding:7px 12px;color:var(--text);border-bottom:1px solid var(--border);vertical-align:top}
+.he-table tr:hover td{background:var(--bg4)}
+.interactive-demo{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem 2rem;margin:1.5rem 0}
+.interactive-demo h4{font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--teal);margin-bottom:1.25rem}
+.slider-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.slider-row label{font-family:var(--font-code);font-size:12px;color:var(--text3);width:80px;flex-shrink:0}
+input[type=range]{flex:1;appearance:none;height:4px;background:var(--bg4);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:16px;height:16px;background:var(--gold);border-radius:50%;cursor:pointer}
+.slider-val{font-family:var(--font-code);font-size:13px;color:var(--gold);width:50px;text-align:right}
+.demo-output{background:var(--bg4);border-radius:8px;padding:1.25rem;margin-top:1rem;font-family:var(--font-code);font-size:13px}
+.demo-output .do-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:.6rem}
+.matrix-grid{display:inline-grid;gap:3px;margin:.5rem 0}
+.matrix-cell{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-size:12px;font-weight:500;transition:background .3s,color .3s}
+.quiz-q{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem 1.75rem;margin-bottom:1rem}
+.quiz-q-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1rem}
+.quiz-num{font-family:var(--font-code);font-size:11px;color:var(--bg);background:var(--gold);padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:3px}
+.diff-badge{font-family:var(--font-code);font-size:10px;padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:3px}
+.diff-easy{background:rgba(163,230,53,.12);color:var(--lime);border:1px solid rgba(163,230,53,.25)}
+.diff-medium{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(212,168,83,.25)}
+.diff-hard{background:rgba(248,113,113,.12);color:var(--rose);border:1px solid rgba(248,113,113,.25)}
+.quiz-q-text{font-family:var(--font-body);font-size:16px;color:var(--text);line-height:1.6;flex:1}
+.quiz-options{list-style:none;margin:.75rem 0}
+.quiz-options li{padding:.5rem .75rem;border-radius:6px;font-size:14px;color:var(--text2);cursor:pointer;transition:all .15s;border:1px solid transparent;margin-bottom:.35rem;display:flex;align-items:center;gap:.6rem}
+.quiz-options li:hover{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.quiz-options li.correct{background:rgba(163,230,53,.08);border-color:rgba(163,230,53,.3);color:var(--lime);pointer-events:none}
+.quiz-options li.wrong{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.3);color:var(--rose);pointer-events:none}
+.quiz-options li.disabled{pointer-events:none;opacity:.6}
+.opt-letter{font-family:var(--font-code);font-size:11px;width:20px;height:20px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.quiz-reveal{display:none;background:var(--bg4);border-radius:8px;padding:1rem 1.25rem;margin-top:.75rem;font-size:14px;color:var(--text2);line-height:1.6}
+.quiz-reveal.shown{display:block}
+.reveal-btn{font-family:var(--font-code);font-size:12px;padding:6px 14px;border:1px solid var(--border2);background:transparent;color:var(--text3);border-radius:6px;cursor:pointer;transition:all .15s;margin-top:.75rem}
+.reveal-btn:hover{color:var(--gold);border-color:rgba(212,168,83,.4)}
+.slide-ref{font-family:var(--font-code);font-size:10px;color:var(--text3);background:var(--bg4);padding:2px 7px;border-radius:3px;vertical-align:middle;margin-left:.4rem}
+.scroll-top{position:fixed;bottom:2rem;right:2rem;width:44px;height:44px;background:var(--gold);color:var(--bg);border:none;border-radius:50%;cursor:pointer;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;z-index:200}
+.scroll-top.visible{opacity:1}
+.scroll-top:hover{background:#e6bb6a}
+h2.sub-h{font-family:var(--font-head);font-size:1.2rem;font-weight:700;color:var(--text);margin:1.5rem 0 .75rem}
+p{margin-bottom:.7rem}
+p:last-child{margin-bottom:0}
+code{font-family:var(--font-code);font-size:.87em;background:var(--bg4);padding:2px 6px;border-radius:4px;color:var(--sky)}
+strong{font-weight:600;color:var(--text)}
+.color-space-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin:1rem 0}
+.color-space-card{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:1rem}
+.color-space-card h4{font-family:var(--font-code);font-size:12px;color:var(--gold);margin-bottom:.5rem}
+.color-space-card p{font-size:13px;color:var(--text2);margin:0}
+@media(max-width:900px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.content{padding:2rem 1.5rem}.hero{padding:2rem 1.5rem}.color-space-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS Pilani WILP · AIMLCZG525</div>
+    <div class="sidebar-title">Session 3: Low Level Vision</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog"></div></div>
+  </div>
+  <div style="padding:.75rem 0 0">
+    <div class="nav-group-label">Topics</div>
+    <a class="nav-link" href="#image-basics">01 — Image Basics</a>
+    <a class="nav-link" href="#intensity-transforms">02 — Intensity Transforms</a>
+    <a class="nav-link" href="#histogram">03 — Image Histogram</a>
+    <a class="nav-link" href="#he">04 — Histogram Equalization</a>
+    <a class="nav-link" href="#spatial">05 — Spatial Filtering</a>
+    <a class="nav-link" href="#box-filter">06 — Box Filter</a>
+    <a class="nav-link" href="#gaussian">07 — Gaussian Filter</a>
+    <a class="nav-link" href="#color">08 — Color Spaces</a>
+    <a class="nav-link" href="#deep-dive">★ Research Deep Dives</a>
+    <div class="nav-group-label" style="margin-top:.5rem">Assessment</div>
+    <a class="nav-link" href="#quiz">Quiz — 10 Questions</a>
+    <a class="nav-link" href="#refs">References</a>
+  </div>
+</nav>
+<div class="main">
+<div class="hero">
+  <div class="hero-tag">Computer Vision · Session 3 · May 9 2026</div>
+  <h1>Digital Image Fundamentals<br><span>Low Level Vision</span></h1>
+  <p style="color:var(--text2);max-width:560px;font-size:16px">Complete study guide synthesising 79 slides, 2h 37m lecture transcript, and deep internet research including 2024–2026 published papers on CLAHE, separable Gaussian filters, frequency-domain analysis, and state-of-the-art DL preprocessing.</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><strong>79 slides</strong>covered in full</div>
+    <div class="hero-meta-item"><strong>2h 37m</strong>transcript analysed</div>
+    <div class="hero-meta-item"><strong>Prof. Dhruba Adhikary</strong>BITS Pilani WILP</div>
+  </div>
+  <div class="hero-topics">
+    <span class="topic-chip">Image Histogram</span>
+    <span class="topic-chip">Histogram Equalization</span>
+    <span class="topic-chip">Intensity Transforms</span>
+    <span class="topic-chip">Spatial Filtering</span>
+    <span class="topic-chip">Convolution vs Correlation</span>
+    <span class="topic-chip">Box Filter</span>
+    <span class="topic-chip">Gaussian Filter</span>
+    <span class="topic-chip">Color: RGB / HSV / YCbCr</span>
+  </div>
+</div>
+<div class="content">
+
+<!-- ====== SECTION 1: IMAGE BASICS ====== -->
+<div class="section" id="image-basics">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Digital Image Basics <span class="slide-ref">Slides 3–5</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>What is a Digital Image?</h3>
+    <p>A digital image is an <strong>M × N matrix of quantised intensity values</strong>. Two processes convert a real-world scene into this matrix:</p>
+    <p><strong>Sampling</strong> — the continuous spatial scene is mapped to a fixed grid. Hardware (camera resolution) sets M and N. Edge devices may sample at 128×128; unconstrained hardware at 512×512 or higher.</p>
+    <p><strong>Quantisation</strong> — each sampled pixel is assigned a discrete integer intensity. The number of bits n determines the number of levels L.</p>
+    <div class="formula-block">
+      <div class="formula-label">Core definitions — Slide 3</div>
+      <div class="formula-line"><span class="f-gold">f(x, y)</span> <span class="f-dim">= intensity value at position (x, y) — image as a function R² → R</span></div>
+      <div class="formula-line"><span class="f-teal">L</span> <span class="f-dim">= 2ⁿ &nbsp;(quantisation levels) &nbsp;|&nbsp; Intensity range:</span> <span class="f-gold">0</span> <span class="f-dim">to</span> <span class="f-gold">L − 1</span></div>
+      <div class="formula-line"><span class="f-dim">8-bit: L = 256, range 0–255 &nbsp;|&nbsp; 3-bit: L = 8, range 0–7</span></div>
+      <div class="formula-line"><span class="f-sky">p(rk)</span> <span class="f-dim">= nk / MN &nbsp;(normalised histogram — probability mass function)</span></div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 3 Prof. Annotation</div>
+      <p>Prof. wrote "Sampling" and "Quantisation" in red ink on the two arrows from the real-world image to the digital matrix. The matrix shown has values like 255, 127, 75, 95, 47 — actual pixel data from the displayed image.</p>
+    </div>
+    <div class="prof-quote">
+      <div class="prof-quote-label">Prof. Dhruba — Transcript</div>
+      <p>"You take the maximum value in the matrix and then find the nearest number which can be represented [as a power of two]. So if I have something like 14, my nearest quantisation is 15 — that is 2⁴ − 1. That is the same as how computers allocate 8 bits every time."</p>
+    </div>
+    <div class="why-matters">
+      <div class="why-matters-label">Why This Matters</div>
+      <p>When you call <code>cv2.imread(path)</code> in OpenCV, you get exactly this M×N (grayscale) or M×N×3 (colour) matrix. Every CNN in PyTorch starts from this representation. Choosing quantisation depth is a hardware–accuracy trade-off: car cameras often use 4-bit; medical MRI uses 12–16 bit.</p>
+    </div>
+  </div>
+  <div class="examples-section">
+    <h2 class="sub-h">Worked Examples</h2>
+    <div class="examples-tabs">
+      <button class="tab-btn active-easy" onclick="switchTab(this,'ib-easy')">Easy</button>
+      <button class="tab-btn" onclick="switchTab(this,'ib-medium')">Medium</button>
+      <button class="tab-btn" onclick="switchTab(this,'ib-hard')">Complex</button>
+    </div>
+    <div class="tab-panel active" id="ib-easy">
+      <div class="example-q">Q: How many distinct intensity levels does an 8-bit image have? What is the intensity range?</div>
+      <ol class="step-list">
+        <li><p>n = 8 bits → L = 2⁸ = <strong>256</strong> distinct levels</p></li>
+        <li><p>Intensity range: 0 to L − 1 = <strong>0 to 255</strong></p></li>
+        <li><p>0 = pure black, 255 = pure white</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">256 levels, range 0–255.</span></div>
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>Common mistake: saying "255 levels." The count is 256 (including 0). The maximum value is 255 = L − 1.</p></div>
+    </div>
+    <div class="tab-panel" id="ib-medium">
+      <div class="example-q">Q: Compute the output of h(x,y) = f/2, then o(x,y) = h + 130 for f = 254. Does overflow occur at 8-bit? What if overflow is allowed (0–512)?</div>
+      <ol class="step-list">
+        <li><p>h = 254 / 2 = 127</p></li>
+        <li><p>o = 127 + 130 = <strong>257</strong></p></li>
+        <li><p>8-bit check: 257 > 255 → <strong>overflow occurs</strong>. Clipped to 255.</p></li>
+        <li><p>With overflow allowed: output stays at <strong>257</strong></p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">8-bit clipped: 255. Overflow allowed: 257. (Slide 18 exact example — answer C)</span></div>
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>Prof.'s warm-up problem. Always check if the question restricts to 8-bit. Prof.: "Had overflow not been allowed, this would have been the ideal answer."</p></div>
+    </div>
+    <div class="tab-panel" id="ib-hard">
+      <div class="example-q">Q: An image has maximum pixel value 14. Determine (a) minimum bits needed, (b) quantisation levels, (c) intensity range, and (d) why 3-bit is insufficient.</div>
+      <ol class="step-list">
+        <li><p>Need L − 1 ≥ 14, so L ≥ 15. L must be a power of 2.</p></li>
+        <li><p>2³ = 8 → max value 7. Too small. 2⁴ = 16 → max value 15 ≥ 14. So <strong>n = 4 bits</strong>.</p></li>
+        <li><p>Quantisation levels: L = 16. Intensity range: <strong>0 to 15</strong>.</p></li>
+        <li><p>3-bit: L = 8, max representable = 7. Value 14 > 7 → cannot be stored. Computers allocate whole bytes; you cannot use "3.9 bits."</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">4 bits needed. L = 16. Range: 0–15. 3-bit is insufficient (max = 7 < 14).</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SECTION 2: INTENSITY TRANSFORMS ====== -->
+<div class="section" id="intensity-transforms">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">Basic Intensity Transformations <span class="slide-ref">Slides 7–17</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>Negative Transformation</h3>
+    <p>Inverts intensity. Used in medical imaging — lesions that appear dark on a mammogram become bright on the negative, making them easier to spot.</p>
+    <div class="formula-block">
+      <div class="formula-label">Negative transform — Slide 7</div>
+      <div class="formula-line"><span class="f-gold">s</span> <span class="f-dim">= (L − 1) − r</span></div>
+      <div class="formula-line"><span class="f-dim">8-bit: s = 255 − r &nbsp;|&nbsp; r = 0 → s = 255 (black becomes white)</span></div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 7 Annotation</div>
+      <p>Prof. wrote "256 − 1 − 0" and "s = L − 1 − r, 255" labelling the formula. Circled the bright lesion region on the negative mammogram with annotation ">15" — showing how the previously dark region now stands out brightly.</p>
+    </div>
+  </div>
+  <div class="theory-block">
+    <h3>Log Transformation</h3>
+    <p>Compresses dynamic range. Essential for displaying Fourier spectra where the DC component can be millions of times brighter than outer detail.</p>
+    <div class="formula-block">
+      <div class="formula-label">Log transform — Slide 8</div>
+      <div class="formula-line"><span class="f-gold">s</span> <span class="f-dim">= c · log(1 + r)</span></div>
+      <div class="formula-line"><span class="f-dim">+1 prevents log(0). c scales the output range.</span></div>
+      <div class="formula-line"><span class="f-dim">Slide 8 annotation: input 0–255 compresses to output 0–2.4 (with c=1)</span></div>
+    </div>
+  </div>
+  <div class="theory-block">
+    <h3>Power-Law (Gamma) Transformation</h3>
+    <p>Most important nonlinear transform in practice. CRT monitors have a natural power response with γ ≈ 1.8–2.5, so images must be pre-corrected (gamma correction) before display.</p>
+    <div class="formula-block">
+      <div class="formula-label">Gamma transform — Slides 10–13</div>
+      <div class="formula-line"><span class="f-gold">s</span> <span class="f-dim">= c · r</span><sup style="color:var(--lime);font-size:11px">γ</sup></div>
+      <div class="formula-line"><span class="f-dim">γ &lt; 1: brightens (nth root) &nbsp;|&nbsp; γ &gt; 1: darkens (nth power)</span></div>
+      <div class="formula-line"><span class="f-teal">Gamma correction for CRT (γ_display = 2.5):</span></div>
+      <div class="formula-line"><span class="f-sky">s</span> <span class="f-dim">= r^(1/2.5) = r^0.4</span></div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 10 Annotation</div>
+      <p>Prof. wrote "∞ ↑↓" with arrows around the gamma formula, listed values "0.4, 0.5, 0.6" below as useful brightening gammas. On slide 15 (aerial image): annotated "1000", "1000 | −", "0.08" showing how c·r^5 crushes bright values when γ=5.</p>
+    </div>
+    <div class="prof-quote">
+      <div class="prof-quote-label">Prof. Dhruba — Transcript</div>
+      <p>"There was not one single value of gamma that you can accurately say would work with N number of images. Every image had a different gamma value — which was proving to be troublesome. That is why histogram equalization does not discriminate between different images. It is a generic algorithm that works across different types."</p>
+    </div>
+  </div>
+  <div class="theory-block">
+    <h3>Contrast Stretching &amp; Intensity Level Slicing</h3>
+    <p><strong>Contrast stretching</strong> uses a piecewise linear T(r) with control points (r₁,s₁) and (r₂,s₂) to expand a narrow input range to the full output range — manual histogram equalization.</p>
+    <p><strong>Intensity level slicing</strong> highlights a band [A,B]: Mode 1 — set [A,B] to max, suppress all else to zero. Mode 2 — boost [A,B], leave other values unchanged.</p>
+    <div class="annotation">
+      <div class="annotation-label">Slide 16 Annotation</div>
+      <p>Prof. labelled the contrast stretching figure "HEq" — bridging directly to Histogram Equalization as the next topic.</p>
+    </div>
+  </div>
+  <div class="why-matters">
+    <div class="why-matters-label">Why This Matters — DL Pipeline</div>
+    <p>Gamma correction is built into every display pipeline (sRGB standard uses γ ≈ 2.2). Normalising PyTorch input images to [0,1] is a linear transform. Combining histogram equalisation + normalisation (÷256) can improve model accuracy by 70–80% on dark datasets, as Prof. Dhruba noted from personal experience.</p>
+  </div>
+  <div class="examples-section">
+    <h2 class="sub-h">Worked Examples</h2>
+    <div class="examples-tabs">
+      <button class="tab-btn active-easy" onclick="switchTab(this,'it-easy')">Easy</button>
+      <button class="tab-btn" onclick="switchTab(this,'it-medium')">Medium</button>
+      <button class="tab-btn" onclick="switchTab(this,'it-hard')">Complex</button>
+    </div>
+    <div class="tab-panel active" id="it-easy">
+      <div class="example-q">Q: Apply the negative transform to r = 0, 128, 200, 255 from an 8-bit image.</div>
+      <ol class="step-list">
+        <li><p>Formula: s = 255 − r</p></li>
+        <li><p>r = 0 → s = 255 &nbsp;|&nbsp; r = 128 → s = 127 &nbsp;|&nbsp; r = 200 → s = 55 &nbsp;|&nbsp; r = 255 → s = 0</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">255, 127, 55, 0</span></div>
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>Negative transform is its own inverse — applying it twice returns the original. Mid-gray (127/128) maps near itself.</p></div>
+    </div>
+    <div class="tab-panel" id="it-medium">
+      <div class="example-q">Q: Apply s = log(1+r) with c=1 to r = 0, 50, 255. Why is this useful for Fourier spectra?</div>
+      <ol class="step-list">
+        <li><p>s(0) = log(1) = <strong>0</strong></p></li>
+        <li><p>s(50) = log(51) ≈ <strong>3.93</strong></p></li>
+        <li><p>s(255) = log(256) ≈ <strong>5.55</strong></p></li>
+        <li><p>Input ratio: 255/50 = 5.1× increase. Output ratio: 5.55/3.93 = only 1.4× increase → dramatic range compression.</p></li>
+        <li><p>Fourier spectrum: DC component ~10⁶ vs outer detail ~1. Log compresses this ratio to log(10⁶)/log(1) ≈ manageable, making all frequency components visible simultaneously.</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">0, 3.93, 5.55. Log compresses large dynamic ranges so Fourier spectra detail becomes visible.</span></div>
+    </div>
+    <div class="tab-panel" id="it-hard">
+      <div class="example-q">Q: Derive the gamma pre-correction value for a CRT with γ_display = 2.5, such that the perceived intensity equals the captured value r.</div>
+      <ol class="step-list">
+        <li><p>Display applies: s_out = s_in^2.5. We want s_out = r (perceived = captured).</p></li>
+        <li><p>Solving: s_in^2.5 = r → s_in = r^(1/2.5) = <strong>r^0.4</strong></p></li>
+        <li><p>Verification: if r = 0.5, s_in = 0.5^0.4 ≈ 0.758. Display: 0.758^2.5 ≈ 0.5 ✓</p></li>
+        <li><p>The exponents multiply: 0.4 × 2.5 = 1.0 → identity. Perfect perceptual fidelity.</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">s = r^(1/γ) = r^0.4. Composing: (r^0.4)^2.5 = r. This is the formula on Slide 12.</span></div>
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>This is why sRGB images look correct on standard monitors — the γ = 2.2 pre-correction is embedded in every image saved as sRGB.</p></div>
+    </div>
+  </div>
+  <div class="exam-alert">
+    <div class="exam-alert-header"><span class="exam-badge">⚠ Exam Alert</span><h4>Intensity Transforms</h4></div>
+    <ul class="exam-list">
+      <li>Two-step transform (like slide 18): compute h then o, explicitly check overflow. State whether 8-bit restriction applies.</li>
+      <li>Common error: log(r) instead of log(1+r) — log(0) is undefined.</li>
+      <li>Gamma direction: γ &lt; 1 brightens, γ &gt; 1 darkens. Many students get this backwards.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== SECTION 3: HISTOGRAM ====== -->
+<div class="section" id="histogram">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Image Histogram <span class="slide-ref">Slides 6, 19</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>Definition &amp; Formulae</h3>
+    <div class="formula-block">
+      <div class="formula-label">Un-normalised histogram — Slide 6</div>
+      <div class="formula-line"><span class="f-gold">h(rk)</span> <span class="f-dim">= nk &nbsp;for k = 0, 1, 2, …, L−1</span></div>
+      <div class="formula-line"><span class="f-dim">nk = number of pixels in image f with intensity rk</span></div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">Normalised histogram (PMF) — Slide 6</div>
+      <div class="formula-line"><span class="f-gold">p(rk)</span> <span class="f-dim">= h(rk) / MN = nk / MN</span></div>
+      <div class="formula-line"><span class="f-dim">∑ p(rk) = 1 for all k &nbsp;|&nbsp; M, N = image rows and columns</span></div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 6 Prof. Annotation</div>
+      <p>On the left of the histogram formula, Prof. wrote "3×4÷16" as a quick worked example of normalisation, with values "0/1/4/2" as sample pixel counts. Also annotated "0/∂/0/2" showing the histogram bar heights.</p>
+    </div>
+    <table class="he-table" style="margin-top:1.25rem">
+      <thead><tr><th>Histogram shape</th><th>Image type</th></tr></thead>
+      <tbody>
+        <tr><td>Concentrated near 0 (left)</td><td>Dark image</td></tr>
+        <tr><td>Concentrated near L−1 (right)</td><td>Bright / overexposed</td></tr>
+        <tr><td>Narrow band in middle (e.g. 100–140)</td><td>Low contrast image</td></tr>
+        <tr><td>Spread evenly across full range</td><td>High contrast image</td></tr>
+      </tbody>
+    </table>
+    <div class="annotation">
+      <div class="annotation-label">Slide 19 Prof. Annotations</div>
+      <p>Prof. wrote "+100", "L−1−γ", "Sharpness" across the four histogram panels. On the right side: "0 → 255", then "0−1024 / 2048 / 2^n" — noting that while 8-bit (0–255) is standard, scientific/medical images can use 10-bit (0–1023), 11-bit (0–2047), etc.</p>
+    </div>
+    <div class="prof-quote">
+      <div class="prof-quote-label">Prof. Dhruba — Transcript</div>
+      <p>"If the histogram is smack in the middle — say intensity values 100 to 140 — this is still problematic because it is a low contrast image. What if I am able to stretch it out? I get a really high contrast image. And that is where histogram equalisation comes in."</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ====== SECTION 4: HISTOGRAM EQUALIZATION ====== -->
+<div class="section" id="he">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Histogram Equalization <span class="slide-ref">Slides 20–35</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>Core Concept &amp; Assumptions</h3>
+    <p>HE transforms an image so that its histogram is spread more evenly across the full dynamic range, producing higher contrast. The transformation function T(r) must satisfy two conditions:</p>
+    <div class="formula-block">
+      <div class="formula-label">Assumptions for T(r) — Slide 22 &amp; 27</div>
+      <div class="formula-line"><span class="f-teal">(a)</span> <span class="f-dim">T(r) is strictly monotonically increasing in [0, L−1]</span></div>
+      <div class="formula-line"><span class="f-teal">(b)</span> <span class="f-dim">0 ≤ T(r) ≤ L−1 for all r in [0, L−1]</span></div>
+      <div class="formula-line"><span class="f-dim">Intensity mapping: s = T(r). Both r and s stay in same range.</span></div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 22 &amp; 27 Annotations</div>
+      <p>Slide 22: Prof. wrote "S = T(γ)" (using γ as variable), "100 →", "origin.", "0−1−2−255", "S 0−255". Slide 27: Wrote "Intensity mapping" with arrow, "0.7 / 0−255 / 0−511 / 0−1023" showing how the same assumption holds for different bit depths. Also labelled the step-function T(r) on the right graph as "Trash" (noting its staircase shape).</p>
+    </div>
+  </div>
+  <div class="theory-block">
+    <h3>Mathematical Proof (Continuous)</h3>
+    <div class="formula-block">
+      <div class="formula-label">Transformation function — Slide 28</div>
+      <div class="formula-line"><span class="f-gold">s = T(r)</span> <span class="f-dim">= (L−1) ∫₀ʳ p_r(w) dw</span></div>
+      <div class="formula-line"><span class="f-dim">= (L−1) × CDF(r)</span></div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">Proof that output is uniform — Slide 29 (Leibniz's rule)</div>
+      <div class="formula-line"><span class="f-dim">ds/dr = dT/dr = (L−1) · d/dr [∫₀ʳ p_r(w)dw]</span> <span class="f-teal">← Leibniz's rule</span></div>
+      <div class="formula-line"><span class="f-dim">= (L−1) · p_r(r)</span></div>
+      <div class="formula-line"><span class="f-dim">p_s(s) = p_r(r) · |dr/ds| = p_r(r) · 1/[(L−1)·p_r(r)]</span></div>
+      <div class="formula-line"><span class="f-gold">p_s(s) = 1/(L−1)</span> <span class="f-dim">← Uniform distribution. QED.</span></div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 29 Annotation</div>
+      <p>Prof. circled the CDF integral and wrote "PMF" above it, annotated "round [PMF] × (L−1)" to the right, wrote "ω = 1, 2, 3" as dummy variable labels, and circled the final result "= 1/(L−1)", labelling it "Form of uniform probability density function."</p>
+    </div>
+  </div>
+  <div class="theory-block">
+    <h3>Discrete Algorithm — The 4 Steps</h3>
+    <div class="formula-block">
+      <div class="formula-label">Discrete HE formula — Slide 30</div>
+      <div class="formula-line"><span class="f-gold">sk</span> <span class="f-dim">= T(rk) = (L−1) ∑ⱼ₌₀ᵏ p_r(rj) &nbsp;&nbsp;for k = 0, 1, …, L−1</span></div>
+      <div class="formula-line"><span class="f-dim">p_r(rj) = nj / MN &nbsp;(PMF — probability mass function)</span></div>
+      <div class="formula-line"><span class="f-dim">∑ⱼ₌₀ᵏ p_r(rj) = CDF(k) — cumulative sum up to and including level k</span></div>
+    </div>
+    <ol class="step-list">
+      <li><p><strong>Create Histogram:</strong> Count nk = pixels at each intensity level k.</p></li>
+      <li><p><strong>Compute PMF:</strong> p_r(rk) = nk / MN</p></li>
+      <li><p><strong>Compute CDF:</strong> CDF(k) = ∑ⱼ₌₀ᵏ p_r(rj)</p></li>
+      <li><p><strong>Scale and Round:</strong> sk = round(CDF(k) × (L−1)). State assumption: round / floor / ceiling — must be consistent.</p></li>
+    </ol>
+    <div class="annotation">
+      <div class="annotation-label">Slide 25 Annotations (Prof. wrote on slide)</div>
+      <p>"④ step." with column labels: "① Create Histogram", "② Prob density func= pmf", "③ CDF=", "④ CDF = (L−1)". Top: "5×5 = 25 + n", "18.24", "256 0.15n". Bottom: "0 − 1" below CDF column.</p>
+    </div>
+  </div>
+
+  <!-- Interactive HE Demo -->
+  <div class="interactive-demo">
+    <h4>⟳ Interactive: HE on the Slide-24 Example</h4>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:1.25rem">The exact 5×5 matrix from Slide 24. All 4 algorithm steps computed live.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+      <div class="demo-output">
+        <div class="do-label">Original Image (values 3–5, 3-bit)</div>
+        <div id="orig-matrix" class="matrix-grid" style="grid-template-columns:repeat(5,36px);margin:.75rem 0"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:.4rem">Low contrast — bundled in middle range</div>
+      </div>
+      <div class="demo-output">
+        <div class="do-label">Equalized Image (stretched to 2–7)</div>
+        <div id="eq-matrix" class="matrix-grid" style="grid-template-columns:repeat(5,36px);margin:.75rem 0"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:.4rem">Higher contrast — range expanded</div>
+      </div>
+    </div>
+    <div class="demo-output" style="margin-top:1rem">
+      <div class="do-label">Algorithm Steps (L=8, MN=25)</div>
+      <div id="he-table-output"></div>
+    </div>
+  </div>
+
+  <div class="theory-block">
+    <h3>Slide 31–33 Full Numerical Example (64×64, L=8)</h3>
+    <table class="he-table">
+      <thead><tr><th>rk</th><th>nk</th><th>PMF = nk/4096</th><th>CDF</th><th>sk = 7×CDF</th><th>Rounded</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>790</td><td>0.19</td><td>0.19</td><td>1.33</td><td style="color:var(--lime);font-weight:600">1</td></tr>
+        <tr><td>1</td><td>1023</td><td>0.25</td><td>0.44</td><td>3.08</td><td style="color:var(--lime);font-weight:600">3</td></tr>
+        <tr><td>2</td><td>850</td><td>0.21</td><td>0.65</td><td>4.55</td><td style="color:var(--lime);font-weight:600">5</td></tr>
+        <tr><td>3</td><td>656</td><td>0.16</td><td>0.81</td><td>5.67</td><td style="color:var(--lime);font-weight:600">6</td></tr>
+        <tr><td>4</td><td>329</td><td>0.08</td><td>0.89</td><td>6.23</td><td style="color:var(--lime);font-weight:600">6</td></tr>
+        <tr><td>5</td><td>245</td><td>0.06</td><td>0.95</td><td>6.65</td><td style="color:var(--lime);font-weight:600">7</td></tr>
+        <tr><td>6</td><td>122</td><td>0.03</td><td>0.98</td><td>6.86</td><td style="color:var(--lime);font-weight:600">7</td></tr>
+        <tr><td>7</td><td>81</td><td>0.02</td><td>1.00</td><td>7.00</td><td style="color:var(--lime);font-weight:600">7</td></tr>
+      </tbody>
+    </table>
+    <div class="annotation">
+      <div class="annotation-label">Slide 33 Annotation</div>
+      <p>Prof. circled intensity levels 2 and 4 on the equalized histogram x-axis. Labelled the step-function T(r) "Sigmoid HE s_k". Wrote "0 − L−1" beneath the transformation x-axis. The step-function shape is characteristic of all discrete HE.</p>
+    </div>
+  </div>
+
+  <div class="theory-block">
+    <h3>Key Clarifications from Lecture</h3>
+    <div class="prof-quote">
+      <div class="prof-quote-label">On information loss (Prof. Dhruba to student Nikhil)</div>
+      <p>"If anything, it just got transformed. Think about it — maybe the camera system could not capture properly what should have been level 7. So the system was at fault. Now using histogram equalisation on top of that image, you are basically augmenting the information which the system might have missed."</p>
+    </div>
+    <div class="prof-quote">
+      <div class="prof-quote-label">On exam expectations (Prof. Dhruba — Transcript)</div>
+      <p>"In your exams, you can anticipate to get a 3-bit image only. We are not heartless folks. One epoch only. But one thing you have to remember: clearly call out your assumption — round, floor, or ceiling — and use that same methodology throughout."</p>
+    </div>
+    <p><strong>Non-linear HE variants</strong> (slide 21 annotation): Prof. listed sigmoid, ReLU, Tanh — these handle cases where low-intensity bins are chronically disadvantaged. These are active research areas (papers published as recently as October 2025).</p>
+  </div>
+
+  <div class="why-matters">
+    <div class="why-matters-label">Why This Matters — OpenCV &amp; DL</div>
+    <p><code>cv2.equalizeHist(img)</code> — one line. Then <code>img = img / 256.0</code> to normalise. Prof. stated this two-step can boost DL model accuracy by 70–80% on low-contrast datasets. LLMs with multimodal capabilities (GPT-4V, Gemini) apply HE variants internally when processing poor-quality image uploads.</p>
+  </div>
+
+  <div class="examples-section">
+    <h2 class="sub-h">Worked Examples</h2>
+    <div class="examples-tabs">
+      <button class="tab-btn active-easy" onclick="switchTab(this,'he-easy')">Easy</button>
+      <button class="tab-btn" onclick="switchTab(this,'he-medium')">Medium</button>
+      <button class="tab-btn" onclick="switchTab(this,'he-hard')">Complex</button>
+    </div>
+    <div class="tab-panel active" id="he-easy">
+      <div class="example-q">Q: 2-bit image (L=4), 4×4 pixels: n₀=4, n₁=8, n₂=3, n₃=1. Compute the normalised histogram.</div>
+      <ol class="step-list">
+        <li><p>MN = 16. Verify: 4+8+3+1 = 16 ✓</p></li>
+        <li><p>p(r₀) = 4/16 = <strong>0.25</strong> &nbsp;|&nbsp; p(r₁) = 8/16 = <strong>0.50</strong></p></li>
+        <li><p>p(r₂) = 3/16 = <strong>0.1875</strong> &nbsp;|&nbsp; p(r₃) = 1/16 = <strong>0.0625</strong></p></li>
+        <li><p>Sum: 0.25 + 0.50 + 0.1875 + 0.0625 = 1.0 ✓</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">[0.25, 0.50, 0.1875, 0.0625]. Sum = 1.0. Image is dark (dominated by levels 0 and 1).</span></div>
+    </div>
+    <div class="tab-panel" id="he-medium">
+      <div class="example-q">Q: Perform one epoch of HE on the Slide-24 5×5 matrix. Show all 4 steps. Use rounding.</div>
+      <ol class="step-list">
+        <li><p>Histogram: n₃=6, n₄=14, n₅=5. All others=0. MN=25.</p></li>
+        <li><p>PMF: p₃=0.24, p₄=0.56, p₅=0.20</p></li>
+        <li><p>CDF: CDF₃=0.24, CDF₄=0.80, CDF₅=1.00</p></li>
+        <li><p>sk: s₃=0.24×7=1.68→<strong>2</strong>, s₄=0.80×7=5.6→<strong>6</strong>, s₅=1.0×7=7.0→<strong>7</strong></p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Equalized Matrix</span><span class="answer-val">Row 1:[6,6,6,6,6] | Row 2:[2,6,7,6,2] | Row 3:[2,7,7,7,2] | Row 4:[2,6,7,6,2] | Row 5:[6,6,6,6,6]</span></div>
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>Range expanded from 3–5 to 2–7. Contrast improved. One iteration was enough for this image.</p></div>
+    </div>
+    <div class="tab-panel" id="he-hard">
+      <div class="example-q">Q: Prove that T(r) = (L−1)∫₀ʳ p_r(w)dw produces a uniform output. State all required conditions.</div>
+      <ol class="step-list">
+        <li><p>Goal: show p_s(s) = 1/(L−1) (uniform).</p></li>
+        <li><p>Change of variable: p_s(s) = p_r(r) · |dr/ds|</p></li>
+        <li><p>Compute ds/dr via Leibniz rule: d/dr[∫₀ʳ p_r(w)dw] = p_r(r). So ds/dr = (L−1)·p_r(r).</p></li>
+        <li><p>Therefore |dr/ds| = 1/[(L−1)·p_r(r)]</p></li>
+        <li><p>p_s(s) = p_r(r) · 1/[(L−1)·p_r(r)] = <strong>1/(L−1)</strong>. QED.</p></li>
+        <li><p>Required conditions: T(r) continuous and differentiable; p_r(r) > 0 everywhere; T strictly monotonically increasing.</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">p_s(s) = 1/(L−1) — uniform. For discrete images: approximately uniform (rounding prevents perfect uniformity).</span></div>
+    </div>
+  </div>
+
+  <div class="exam-alert">
+    <div class="exam-alert-header"><span class="exam-badge">⚠ Exam Alert — High Priority</span><h4>Histogram Equalization</h4></div>
+    <ul class="exam-list">
+      <li>Expect a 3-bit (L=8) image, one epoch. Prof. confirmed this explicitly.</li>
+      <li>Show all 4 columns: nk, PMF, CDF, sk. Missing a column = dropped marks.</li>
+      <li>State rounding assumption at the start and be consistent throughout.</li>
+      <li>Common error: confusing CDF with PMF. CDF is cumulative; PMF is per-level.</li>
+      <li>Slides 25–26 are the exact exam format — study every cell.</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ====== SECTION 5: SPATIAL FILTERING ====== -->
+<div class="section" id="spatial">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Spatial Filtering <span class="slide-ref">Slides 36–40</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>Motivation</h3>
+    <p>Pixel-by-pixel operations require M×N individual operations. A <strong>kernel</strong> (odd-sized square matrix) slides over the image, producing one output value from multiple pixels simultaneously — reducing both computation and the need for storage of intermediate results. Kernels are always odd: 3×3, 5×5, 7×7 etc. (origin at centre).</p>
+    <div class="formula-block">
+      <div class="formula-label">Correlation (spatial filter output) — Slide 37 &amp; 38</div>
+      <div class="formula-line"><span class="f-gold">g(x, y)</span> <span class="f-dim">= ∑_{s=−a}^{a} ∑_{t=−b}^{b}</span> <span class="f-violet">w(s,t)</span> <span class="f-dim">· f(x+s, y+t)</span></div>
+      <div class="formula-line"><span class="f-dim">m = 2a+1, n = 2b+1 (kernel size) &nbsp;|&nbsp; kernel origin at w(0,0) — centre</span></div>
+      <div class="formula-line"><span class="f-dim">Image origin: top-left. Kernel origin: centre. (Slide 36 note)</span></div>
+    </div>
+  </div>
+  <div class="theory-block">
+    <h3>Correlation vs Convolution</h3>
+    <p><strong>Correlation:</strong> slide kernel as-is, multiply element-wise, sum.</p>
+    <p><strong>Convolution:</strong> flip kernel by 180° first (flip rows, then columns), then do the same operation.</p>
+    <div class="formula-block">
+      <div class="formula-label">Key relationship — Slide 39</div>
+      <div class="formula-line"><span class="f-teal">Convolution result</span> <span class="f-dim">= 180° rotation of</span> <span class="f-gold">correlation result</span></div>
+      <div class="formula-line"><span class="f-dim">For symmetric kernels (Gaussian, box): convolution = correlation.</span></div>
+      <div class="formula-line"><span class="f-sky">NVIDIA cuDNN:</span> <span class="f-dim">implements correlation but calls it "convolution." No kernel flip.</span></div>
+    </div>
+    <p><strong>1D example (Slide 39):</strong> image = [0,0,0,1,0,0,0], kernel w = [1,2,4,2,8] (centre=4).</p>
+    <div style="background:var(--bg4);border-radius:8px;padding:1rem;font-family:var(--font-code);font-size:13px;margin:.75rem 0">
+      <span style="color:var(--text3)">Correlation result:</span> <span style="color:var(--sky)">&nbsp;[0, 8, 2, 4, 2, 1, 0, 0]</span><br>
+      <span style="color:var(--text3)">Convolution (w flipped → [8,2,4,2,1]):</span> <span style="color:var(--gold)">&nbsp;[0, 1, 2, 4, 2, 8, 0, 0]</span><br>
+      <span style="color:var(--lime)">Observe: conv result = 180° flip of corr result ✓</span>
+    </div>
+    <div class="prof-quote">
+      <div class="prof-quote-label">Prof. Dhruba — Transcript (key industry insight)</div>
+      <p>"Post 2012 and post 2015, NVIDIA became a dominant force and you all use its CUDA library. CUDA has been optimised for 3×3 operations. And since deep learning was gaining ground, nobody actually looked into it anymore. Fundamentally speaking, a 5×5 operation is a lot better than a 3×3 operation. It is in fact faster. But the GPUs are limited — they can only perform 3×3 matrix multiplications at hyper-optimised speed."</p>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 39 Annotations</div>
+      <p>Prof. annotated "0/0F" on the left of the 1D image (indicating zero-padding), labelled the lower left "pattern matching" — indicating correlation's use in template matching. Slide 40 annotation: "9 8 7 / 6 5 4 / 3 2 1" written in red for the rotated convolution kernel, with "5×5, 3×3" indicating the image and kernel sizes.</p>
+    </div>
+  </div>
+  <div class="why-matters">
+    <div class="why-matters-label">Why This Matters — CNNs</div>
+    <p>Every <code>nn.Conv2d</code> in PyTorch IS a spatial filter. The kernel weights learned during backpropagation are exactly w(s,t) in the formula above. The sliding-window mechanism is unchanged from classical CV. Understanding this equation means understanding what every convolutional layer in ResNet, EfficientNet, and ViT is doing.</p>
+  </div>
+  <div class="examples-section">
+    <h2 class="sub-h">Worked Examples</h2>
+    <div class="examples-tabs">
+      <button class="tab-btn active-easy" onclick="switchTab(this,'sf-easy')">Easy</button>
+      <button class="tab-btn" onclick="switchTab(this,'sf-medium')">Medium</button>
+      <button class="tab-btn" onclick="switchTab(this,'sf-hard')">Complex</button>
+    </div>
+    <div class="tab-panel active" id="sf-easy">
+      <div class="example-q">Q: Apply 1D correlation with kernel w = [1, 0, −1] (centre=0) to f = [2, 4, 6, 8]. What is the output at position x=2?</div>
+      <ol class="step-list">
+        <li><p>At x=2 (f=6): w₋₁=1 aligns with f[1]=4, w₀=0 aligns with f[2]=6, w₁=−1 aligns with f[3]=8.</p></li>
+        <li><p>g(2) = 1×4 + 0×6 + (−1)×8 = 4 + 0 − 8 = <strong>−4</strong></p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">g(2) = −4. Kernel [1,0,−1] detects intensity decrease (right side brighter).</span></div>
+    </div>
+    <div class="tab-panel" id="sf-medium">
+      <div class="example-q">Q: For the 2D slide-40 example, the 3×3 correlation kernel is w = [[1,2,3],[4,5,6],[7,8,9]]. Applied to the 3×3 image f = [[1,0,0],[0,1,0],[0,0,1]] (identity-like). What is the output at centre (1,1)?</div>
+      <ol class="step-list">
+        <li><p>At (1,1), the 3×3 neighbourhood is the entire image f.</p></li>
+        <li><p>Element-wise multiply kernel × image: 1×1 + 2×0 + 3×0 + 4×0 + 5×1 + 6×0 + 7×0 + 8×0 + 9×1</p></li>
+        <li><p>= 1 + 0 + 0 + 0 + 5 + 0 + 0 + 0 + 9 = <strong>15</strong></p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">g(1,1) = 15. Only diagonal elements contribute (1, 5, 9 from kernel at positions where image=1).</span></div>
+    </div>
+    <div class="tab-panel" id="sf-hard">
+      <div class="example-q">Q: A 5×5 image is convolved with a 5×5 kernel (no padding, stride=1). Compare operation count with two sequential 3×3 convolutions for the same receptive field. Which is mathematically cheaper? Why does industry still prefer 3×3?</div>
+      <ol class="step-list">
+        <li><p>Output size (no pad): (5−5+1)×(5−5+1) = <strong>1×1</strong>.</p></li>
+        <li><p>Single 5×5: 5×5 = <strong>25 MACs</strong> per output. Total: 25 MACs.</p></li>
+        <li><p>Two 3×3s: First 3×3 on 5×5 → 3×3 output (9 cells × 9 ops = 81 MACs). Second 3×3 on 3×3 → 1×1 (1 × 9 = 9 MACs). Total: <strong>90 MACs</strong>.</p></li>
+        <li><p>Single 5×5 is 3.6× cheaper mathematically.</p></li>
+        <li><p>Industry still uses 3×3 because NVIDIA cuDNN is hardware-optimised for 3×3 — the physical execution speed of a 3×3 op is so much faster that it outweighs the mathematical advantage of 5×5.</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">5×5: 25 MACs. Two 3×3: 90 MACs. Single 5×5 is cheaper — but CUDA hardware optimisation makes 3×3 faster in practice.</span></div>
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>InceptionNet (multi-scale kernels including 5×5, 11×11) beat ResNet (3×3) at ILSVRC 2015 accuracy — yet ResNet became the industry standard because of CUDA's 3×3 optimisation. Hardware constraints shape algorithm choices.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SECTION 6: BOX FILTER ====== -->
+<div class="section" id="box-filter">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">Box Filter <span class="slide-ref">Slides 41–47</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>Definition</h3>
+    <p>A box filter is a kernel where all weights are equal = 1/(m×n). The output is the arithmetic mean of all pixels in the neighbourhood. It is the simplest low-pass filter.</p>
+    <div class="formula-block">
+      <div class="formula-label">3×3 Box kernel — Slide 41</div>
+      <div class="formula-line"><span class="f-gold">w_box</span> <span class="f-dim">= (1/9) × [1 1 1 / 1 1 1 / 1 1 1]</span></div>
+      <div class="formula-line"><span class="f-dim">Output at (x,y) = average of all 9 neighbourhood pixels</span></div>
+    </div>
+    <p><strong>Noise removal mechanism</strong> (worked in lecture): if a noisy pixel = 10 and all 8 neighbours = 255, box filter output = (8×255 + 10)/9 = 2050/9 ≈ <strong>227.8</strong>. Noise spike is absorbed into the local average.</p>
+    <div class="annotation">
+      <div class="annotation-label">Slide 41 Annotation</div>
+      <p>Prof. labelled the box kernel "L−1−γ", wrote "(1/9) ×" for normalisation. Circled "Sobel. / Robert / Prewitt" printed at the top right — noting these are coming in Session 4. On the right: listed "M=0 / σ=1" for the Gaussian kernel, labelled Gaussian formula "G(u,y) = e^(−(x²+y²)/2)" and computed "e^(−1/2) = 0.6065".</p>
+    </div>
+    <div class="prof-quote">
+      <div class="prof-quote-label">Prof. Dhruba — Transcript</div>
+      <p>"Blur and video call = fuzzy filter. Every Instagram filter, every Snapchat filter — those are static filters. There is no deep learning algorithm behind that. Box filter: low pass filter. You multiply all values and get the average. If I have noise at one pixel and all 8 neighbours are 255, the output is around 228 — the noise gets removed."</p>
+    </div>
+    <div class="why-matters">
+      <div class="why-matters-label">Why This Matters</div>
+      <p>OpenCV: <code>cv2.blur(img, (3,3))</code> = 3×3 box filter. Larger kernel = more smoothing + more blur. Slides 42–43 show a 1024×1024 test pattern with 3×3, 11×11, and 21×21 box filters — progressively increasing blur visible in output.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== SECTION 7: GAUSSIAN FILTER ====== -->
+<div class="section" id="gaussian">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">Gaussian Filter <span class="slide-ref">Slides 41, 50–56</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>Definition &amp; Formulae</h3>
+    <p>Unlike the box filter, the Gaussian kernel assigns <strong>distance-weighted</strong> values — pixels closer to the centre contribute more. This produces smoother, more natural-looking blur.</p>
+    <div class="formula-block">
+      <div class="formula-label">Gaussian kernel function — Slide 50</div>
+      <div class="formula-line"><span class="f-gold">G(r)</span> <span class="f-dim">= K · e^(−r²/2σ²)</span></div>
+      <div class="formula-line"><span class="f-dim">r = √(s² + t²) = distance from kernel centre</span></div>
+      <div class="formula-line"><span class="f-dim">σ = standard deviation (spread parameter) &nbsp;|&nbsp; K = normalisation constant</span></div>
+      <div class="formula-line"><span class="f-dim">Simplified (K=1): G(x,y) = e^(−(x²+y²)/2)</span></div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">3×3 kernel values (K=1, σ=1) — Slide 41</div>
+      <div class="formula-line"><span class="f-dim">Centre (0,0): r=0 → G =</span> <span class="f-gold">1.0000</span></div>
+      <div class="formula-line"><span class="f-dim">Edge (±1,0) or (0,±1): r=1 → G = e^(−0.5) ≈</span> <span class="f-sky">0.6065</span></div>
+      <div class="formula-line"><span class="f-dim">Corner (±1,±1): r=√2 → G = e^(−1) ≈</span> <span class="f-teal">0.3679</span></div>
+      <div class="formula-line"><span class="f-dim">Sum ≈ 4.8976 → normalised kernel = (1/4.8976) × above values</span></div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">Rule of thumb for kernel size — Slide 51</div>
+      <div class="formula-line"><span class="f-gold">K ≈ 2πσ</span> <span class="f-dim">&nbsp;(set kernel size K×K for given σ)</span></div>
+      <div class="formula-line"><span class="f-dim">σ=1 → K≈6 (use 5×5) &nbsp;|&nbsp; σ=3.5 → K≈22 (use 21×21, slide 53)</span></div>
+      <div class="formula-line"><span class="f-dim">σ=7 → K≈44 (use 43×43, slide 53–54)</span></div>
+      <div class="formula-line"><span class="f-dim">Corner distance from centre: (m−1)/2 · √2</span></div>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 50 Annotations</div>
+      <p>Prof. wrote "e^(−(n²+y²)/2) → 0−1" and "3×3" circling the 3×3 subgrid within the large distance table. Annotated "256×256" twice — suggesting kernel can scale to 256×256 in principle. Wrote "σ²+4)" and "σ(2)" in red beside the r formula.</p>
+    </div>
+  </div>
+
+  <!-- Gaussian interactive -->
+  <div class="interactive-demo">
+    <h4>⟳ Interactive: Gaussian Kernel vs σ</h4>
+    <div class="slider-row">
+      <label>σ (sigma)</label>
+      <input type="range" min="0.5" max="5" step="0.5" value="1" id="sigma-slider" oninput="updateGaussian()">
+      <span class="slider-val" id="sigma-val">1.0</span>
+    </div>
+    <div class="demo-output">
+      <div class="do-label">3×3 Gaussian kernel values (normalised)</div>
+      <div id="gauss-kernel-display" style="margin-top:.5rem"></div>
+      <div id="gauss-stats" style="font-size:12px;color:var(--text3);margin-top:.5rem"></div>
+    </div>
+  </div>
+
+  <div class="theory-block">
+    <h3>Real-World Applications</h3>
+    <p><strong>Hubble Telescope (Slide 55):</strong> Gaussian low-pass filter on deep-space image → threshold → isolates galaxies by removing sensor noise spikes.</p>
+    <p><strong>Shading correction (Slide 56):</strong> Shaded image ÷ Gaussian-smoothed estimate of shading → corrected uniform-illumination image. Used in satellite imagery and document scanning.</p>
+    <p><strong>Pre-processing for edge detection (Session 4):</strong> Apply small-σ Gaussian first to remove noise, then compute gradients. Prevents false edge detections from isolated noise pixels.</p>
+    <div class="prof-quote">
+      <div class="prof-quote-label">Prof. Dhruba responding to Aishwarya (Transcript)</div>
+      <p>"Overall we smoothen out everything. If there is a pattern, it will not be destroyed — that is the fundamental assumption. If the pattern is destroyed, then it was a weak pattern to begin with. We will see during edge detection: what are weak edges, what are strong edges, how do we retain strong edges and remove weak ones. Weak features do not help an algorithm."</p>
+    </div>
+    <div class="annotation">
+      <div class="annotation-label">Slide 52 Annotation</div>
+      <p>Prof. circled the top-right corner of the Gaussian-filtered flower image and annotated it in red — highlighting how the edges of the image are blurred. The slide's own caption reads "Larger the kernel (or σ), more the blurring" which Prof. checked off.</p>
+    </div>
+  </div>
+  <div class="why-matters">
+    <div class="why-matters-label">Why This Matters — OpenCV</div>
+    <p><code>cv2.GaussianBlur(img, (21,21), sigmaX=3.5)</code> — ksize must be odd. σ controls spread. Box blur for fast denoising; Gaussian blur for natural-looking smoothing and as Canny edge detector pre-step. Instagram background blur = Gaussian with large σ applied to everything except the subject (segmented region).</p>
+  </div>
+  <div class="examples-section">
+    <h2 class="sub-h">Worked Examples</h2>
+    <div class="examples-tabs">
+      <button class="tab-btn active-easy" onclick="switchTab(this,'gf-easy')">Easy</button>
+      <button class="tab-btn" onclick="switchTab(this,'gf-medium')">Medium</button>
+      <button class="tab-btn" onclick="switchTab(this,'gf-hard')">Complex</button>
+    </div>
+    <div class="tab-panel active" id="gf-easy">
+      <div class="example-q">Q: Compute the unnormalised Gaussian values at positions (0,0), (1,0), and (1,1) using G(x,y) = e^(−(x²+y²)/2). Find the 3×3 kernel sum.</div>
+      <ol class="step-list">
+        <li><p>G(0,0) = e^(0) = <strong>1.0000</strong></p></li>
+        <li><p>G(1,0) = e^(−0.5) ≈ <strong>0.6065</strong> (×4 positions: up, down, left, right)</p></li>
+        <li><p>G(1,1) = e^(−1) ≈ <strong>0.3679</strong> (×4 corner positions)</p></li>
+        <li><p>3×3 sum = 1 + 4(0.6065) + 4(0.3679) = 1 + 2.426 + 1.4716 = <strong>4.8976</strong></p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Centre=1.0, Edge=0.6065, Corner=0.3679. Normalisation factor = 1/4.8976.</span></div>
+    </div>
+    <div class="tab-panel" id="gf-medium">
+      <div class="example-q">Q: A noisy pixel with value 10 sits in a 3×3 neighbourhood where all 8 surrounding pixels = 255. Compute box filter output. Then explain qualitatively what a Gaussian filter would give and why it differs.</div>
+      <ol class="step-list">
+        <li><p>Box filter: (8×255 + 10)/9 = 2050/9 ≈ <strong>227.8</strong></p></li>
+        <li><p>Gaussian (centre weighted ~0.20, edges ~0.12 each, corners ~0.075 each normalised): output ≈ 0.20×10 + 4×(0.12×255) + 4×(0.075×255) = 2 + 122.4 + 76.5 ≈ <strong>200</strong></p></li>
+        <li><p>Gaussian weighs the noisy centre more than box does → output is closer to 10 → the noise spike is less aggressively removed.</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Box: ~228 (uniform avg). Gaussian: ~200 (centre-weighted, less aggressive noise removal). For isolated spike noise, box filter is actually more effective.</span></div>
+    </div>
+    <div class="tab-panel" id="gf-hard">
+      <div class="example-q">Q: Student Aishwarya's question from lecture — does Gaussian filter discriminate between noise and real edges? Prove why it cannot, and describe under what σ-to-edge-width ratio real edges are lost.</div>
+      <ol class="step-list">
+        <li><p>Gaussian filter applies the same weighted average everywhere — it has no semantic awareness of "noise vs edge." Mathematically it is a convolution with a smooth kernel; it cannot condition its behaviour on the nature of the content.</p></li>
+        <li><p>A real edge is a large intensity change over 1–few pixels. Noise is also a large intensity change over 1 pixel. From the kernel's perspective, both look the same: a sharp local variation.</p></li>
+        <li><p>Critical condition for edge destruction: if the Gaussian σ >> edge width W, the filter spans many pixels and the edge's sharp transition is averaged away.</p></li>
+        <li><p>Rule: if σ ≥ W (edge width in pixels), the edge magnitude is significantly attenuated. For a 1-pixel-wide step edge, any σ > 0.5 begins to blur it.</p></li>
+        <li><p>Prof.'s answer: "If the pattern is destroyed, it was a weak pattern." Strong edges (large intensity gradient) survive more σ than weak edges. Canny exploits this via hysteresis thresholding.</p></li>
+      </ol>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Gaussian is non-discriminating. Edges with width ≤ σ will be attenuated. Use small σ to preserve fine edges; Canny then applies gradient + thresholds to separate noise from real edges.</span></div>
+    </div>
+  </div>
+  <div class="exam-alert">
+    <div class="exam-alert-header"><span class="exam-badge">⚠ Exam Alert</span><h4>Spatial Filters</h4></div>
+    <ul class="exam-list">
+      <li>Know the 3×3 box kernel formula and how to apply it at a specific position (multiply + sum).</li>
+      <li>Gaussian: compute G(s,t) using e^(−(s²+t²)/2), find normalisation constant, write normalised kernel.</li>
+      <li>Correlation vs convolution: 180° flip means flip rows then flip columns. Show both for asymmetric kernels.</li>
+      <li>Slides 39 and 40 contain exact 1D and 2D numerical examples — these are exam-style.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== SECTION 8: COLOR ====== -->
+<div class="section" id="color">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">Color Images &amp; Color Spaces <span class="slide-ref">Slides 57–77</span></h2>
+  </div>
+  <div class="theory-block">
+    <h3>Physics &amp; Perception</h3>
+    <p>Light is an electromagnetic wave. Human eye detects 400–700 nm (visible spectrum). Three cone types on the retina (trichromacy):</p>
+    <table class="he-table">
+      <thead><tr><th>Cone</th><th>Peak wavelength</th><th>Color</th><th>Alias</th></tr></thead>
+      <tbody>
+        <tr><td>S (Short)</td><td>≈ 430 nm</td><td>Blue / Violet</td><td>Cone B</td></tr>
+        <tr><td>M (Medium)</td><td>≈ 560 nm</td><td>Green</td><td>Cone G</td></tr>
+        <tr><td>L (Long)</td><td>≈ 610 nm</td><td>Red / Orange</td><td>Cone R</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:.75rem">Rods: low-light monochromatic. Cones: color in normal light, concentrated in fovea. Primary colors standardised by CIE 1931: Red=700nm, Green=546.1nm, Blue=435.8nm.</p>
+  </div>
+  <div class="theory-block">
+    <h3>Color Models</h3>
+    <div class="color-space-grid">
+      <div class="color-space-card"><h4>RGB</h4><p>Device-based, additive. Used in every monitor. 24-bit: 16,777,216 colors. 3D cube: Black(0,0,0) → White(1,1,1).</p></div>
+      <div class="color-space-card"><h4>CMY / CMYK</h4><p>Subtractive, printers. C=1−R, M=1−G, Y=1−B. K=min(C,M,Y) saves ink. K is then subtracted from C,M,Y.</p></div>
+      <div class="color-space-card"><h4>HSI / HSV</h4><p>Perception-based. H=dominant wavelength (hue), S=color purity, I=brightness. Best for image description/segmentation.</p></div>
+      <div class="color-space-card"><h4>YCbCr</h4><p>MPEG/JPEG compression. Y=luminance, Cb=blue chroma, Cr=red chroma. Human vision more sensitive to Y → higher Y bandwidth.</p></div>
+      <div class="color-space-card"><h4>YIQ</h4><p>NTSC television. Y=0.299R+0.587G+0.114B. BW TVs display only Y. Color TVs convert back to RGB.</p></div>
+      <div class="color-space-card"><h4>Lab</h4><p>Perceptually uniform. L=lightness. Prof. noted Lab is good for compression and style transfer.</p></div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">YCbCr from RGB — Slide 76</div>
+      <div class="formula-line"><span class="f-gold">Y</span> <span class="f-dim">= 0.257R + 0.504G + 0.098B + 16</span></div>
+      <div class="formula-line"><span class="f-sky">Cr</span> <span class="f-dim">= 0.439R − 0.368G − 0.071B + 128</span></div>
+      <div class="formula-line"><span class="f-teal">Cb</span> <span class="f-dim">= −0.148R − 0.291G + 0.439B + 128</span></div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">YIQ from RGB — Slide 76</div>
+      <div class="formula-line"><span class="f-dim">[Y / I / Q] = [[0.299, 0.587, 0.114] / [0.596, −0.275, −0.321] / [0.212, −0.528, 0.311]] × [R, G, B]</span></div>
+    </div>
+  </div>
+  <div class="why-matters">
+    <div class="why-matters-label">Why This Matters — OpenCV / DL</div>
+    <p>OpenCV loads as <strong>BGR by default</strong> — not RGB. Always convert: <code>cv2.cvtColor(img, cv2.COLOR_BGR2RGB)</code> before PyTorch. HSV is used for color segmentation — thresholding a hue range is far simpler in HSV than RGB. YCbCr is the reason JPEG images are small — chroma channels (Cb, Cr) are downsampled because human vision is less sensitive to them.</p>
+  </div>
+</div>
+
+
+<!-- ========= WORLD-CLASS EXTRA CONTENT INJECTED AFTER RESEARCH ========= -->
+<!-- This file contains the research-enhanced deep-dive sections to be appended -->
+
+<style>
+.research-badge{display:inline-block;font-family:var(--font-code);font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(163,230,53,.1);color:var(--lime);border:1px solid rgba(163,230,53,.25);margin-left:.5rem;vertical-align:middle}
+.concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.concept-card{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.25rem}
+.concept-card h4{font-family:var(--font-head);font-size:.95rem;font-weight:600;color:var(--sky);margin-bottom:.5rem}
+.concept-card p{font-size:14px;color:var(--text2);margin:0}
+.insight-strip{background:linear-gradient(90deg,rgba(78,201,176,.08),rgba(78,201,176,.02));border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:1rem 1.25rem;margin:.75rem 0}
+.insight-strip p{font-size:15px;color:var(--text);margin:0}
+.danger-box{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:1rem 1.25rem;margin:1rem 0}
+.danger-box h4{font-family:var(--font-head);font-size:.95rem;color:var(--rose);margin-bottom:.4rem}
+.danger-box p{font-size:14px;color:var(--text2);margin:0}
+.research-cite{font-family:var(--font-code);font-size:10px;color:var(--text3);background:rgba(163,230,53,.07);padding:2px 6px;border-radius:3px;margin-left:.3rem}
+.vs-table{width:100%;border-collapse:collapse;font-size:13px;margin:1rem 0}
+.vs-table th{background:var(--bg4);color:var(--gold);padding:8px 12px;text-align:left;font-weight:500;font-family:var(--font-code);font-size:11px;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border)}
+.vs-table td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;font-size:14px}
+.vs-table tr:hover td{background:var(--bg4)}
+.pipeline-step{display:flex;gap:1rem;align-items:flex-start;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.pipeline-step:last-child{border-bottom:none}
+.pipeline-num{font-family:var(--font-code);font-size:12px;font-weight:700;color:var(--bg);background:var(--teal);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.pipeline-content h4{font-family:var(--font-head);font-size:.95rem;color:var(--text);margin-bottom:.3rem}
+.pipeline-content p{font-size:14px;color:var(--text2);margin:0}
+</style>
+
+<!-- ====== DEEP DIVE SECTION: CONCEPTUAL FOUNDATIONS ====== -->
+<div class="section" id="deep-dive">
+  <div class="section-header">
+    <span class="section-num" style="background:rgba(163,230,53,.15);color:var(--lime)">Deep</span>
+    <h2 class="section-title">Conceptual Deep Dives <span class="research-badge">Research Enhanced</span></h2>
+  </div>
+  <p style="color:var(--text2);margin-bottom:2rem;font-size:15px">World-class conceptual explanations synthesising Prof. Dhruba's lecture with cutting-edge research, published papers (2024–2026), and cross-domain connections that will make you truly understand — not just compute.</p>
+
+  <!-- ---- 1. WHY DOES HE WORK: THE ECONOMIST ANALOGY ---- -->
+  <div class="theory-block">
+    <h3>Why Does Histogram Equalization Really Work? — The Economist's View</h3>
+    <p>Think of intensity levels as income brackets in an economy. In a low-contrast image, all the "wealth" (pixels) is bunched into a narrow band — say, the middle class. There are almost no very dark (poor) or very bright (rich) pixels. The image looks flat and grey because there's no spread.</p>
+    <p><strong>HE is redistribution.</strong> It takes that middle-class cluster and spreads the pixels out so they fill the entire income spectrum from 0 to 255, creating maximum contrast. The richer regions become visible where there was previously only undifferentiated grey.</p>
+    <div class="insight-strip">
+      <p>The mathematical guarantee of this is the CDF trick. The CDF is, by definition, a function that maps any distribution to a uniform one on [0,1]. Multiplying by (L−1) re-scales to [0, L−1]. That's the entire proof — it's a fundamental property of probability theory, not a trick invented for images.</p>
+    </div>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <h4>The "wealth redistribution" fails for:</h4>
+        <p>Images already high-contrast (further spread = no improvement). Over-equalization can amplify noise into visible artefacts — a 255 noise spike in a dark image gets "promoted" to a high intensity level.</p>
+      </div>
+      <div class="concept-card">
+        <h4>Why not always use HE?</h4>
+        <p>A 2022–2025 study chain shows HE distorts HU (Hounsfield Unit) values in CT scans — fine for display, catastrophic for radiomic analysis where exact intensities encode tissue density. Always check if you need visual contrast or quantitative values.</p>
+      </div>
+    </div>
+    <div class="danger-box">
+      <h4>Critical Real-World Warning (Research, 2025)</h4>
+      <p>A 2025 systematic review of CT lung-nodule detection found that CLAHE improved visual sensitivity by 10–15% but "frequently distorted HU values and reduced radiomic reproducibility." Global HE showed no statistically significant AUC improvement over no preprocessing for bone scans (p=0.633). Meanwhile CLAHE achieved AUC 0.649 vs HE's 0.593. <span class="research-cite">MDPI Algorithms 2025 / J. Nuclear Medicine 2022</span></p>
+    </div>
+  </div>
+
+  <!-- ---- 2. CLAHE: THE EVOLUTION ---- -->
+  <div class="theory-block">
+    <h3>CLAHE — The Evolution Beyond Basic HE <span class="research-badge">Session 4 Preview</span></h3>
+    <p>Global HE has a critical flaw: it applies ONE transformation function to the entire image. This means a bright face in a dark background gets over-brightened — pixels that were distinct get merged. <strong>CLAHE (Contrast-Limited Adaptive Histogram Equalization)</strong> solves this.</p>
+    <div class="formula-block">
+      <div class="formula-label">CLAHE Algorithm (OpenCV default — cited in research)</div>
+      <div class="formula-line"><span class="f-teal">Step 1:</span> <span class="f-dim">Divide image into tiles (default: 8×8 blocks)</span></div>
+      <div class="formula-line"><span class="f-teal">Step 2:</span> <span class="f-dim">Apply HE independently to each tile</span></div>
+      <div class="formula-line"><span class="f-teal">Step 3:</span> <span class="f-dim">Clip histogram bins exceeding clip_limit (default: 40) — redistribute clipped pixels uniformly</span></div>
+      <div class="formula-line"><span class="f-teal">Step 4:</span> <span class="f-dim">Bilinear interpolation at tile boundaries → seamless result</span></div>
+    </div>
+    <p>The <strong>clip limit</strong> is the key innovation — it prevents noise amplification. If a bin has too many pixels (likely noise), those excess pixels are redistributed equally across all bins before equalisation.</p>
+    <div class="formula-block">
+      <div class="formula-label">OpenCV code</div>
+      <div class="formula-line"><span class="f-teal">clahe</span> <span class="f-dim">= cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))</span></div>
+      <div class="formula-line"><span class="f-sky">result</span> <span class="f-dim">= clahe.apply(gray_image)</span></div>
+      <div class="formula-line"><span class="f-dim"># For colour: apply only to L channel in LAB space (preserves hue)</span></div>
+      <div class="formula-line"><span class="f-dim">lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)</span></div>
+      <div class="formula-line"><span class="f-dim">lab[:,:,0] = clahe.apply(lab[:,:,0])</span></div>
+      <div class="formula-line"><span class="f-sky">result</span> <span class="f-dim">= cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)</span></div>
+    </div>
+    <div class="insight-strip">
+      <p>CLAHE + data augmentation achieved 98.75% accuracy on brain tumour MRI classification (2025 study). CLAHE + U-Net for lumbar spine segmentation outperformed both global HE and no preprocessing. The prof's mention of "sigmoid-based HE variants" from the lecture maps directly to this research lineage.</p>
+    </div>
+  </div>
+
+  <!-- ---- 3. THE REAL REASON GAUSSIAN IS BETTER THAN BOX ---- -->
+  <div class="theory-block">
+    <h3>Why Gaussian Beats Box: Frequency Domain Intuition</h3>
+    <p>Prof. Dhruba showed the visual difference. Here is the deeper "why" from signal processing theory:</p>
+    <p>Every filter has a <strong>frequency response</strong> — how much it attenuates each frequency. In the frequency domain:</p>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <h4>Box Filter Frequency Response</h4>
+        <p>A box filter in spatial domain = a sinc function in frequency domain. Sinc has <strong>side lobes</strong> — it partially passes some high frequencies while blocking others. This causes "ringing" artefacts (visible oscillations near edges). The box filter has sharp edges in frequency space, which is inherently bad.</p>
+      </div>
+      <div class="concept-card">
+        <h4>Gaussian Filter Frequency Response</h4>
+        <p>A Gaussian in spatial domain = a Gaussian in frequency domain (the Fourier transform of a Gaussian is a Gaussian). No side lobes. Smooth, monotonically decreasing attenuation of high frequencies. This is why Gaussian blur looks "natural" — it mimics how optics actually blur things.</p>
+      </div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">Key property: Gaussian is separable</div>
+      <div class="formula-line"><span class="f-gold">G(x,y)</span> <span class="f-dim">= G₁(x) · G₁(y) &nbsp;(product of two 1D Gaussians)</span></div>
+      <div class="formula-line"><span class="f-dim">This means: instead of (2k+1)² multiplications for a 2D kernel,</span></div>
+      <div class="formula-line"><span class="f-dim">apply 1D kernel along rows (N×(2k+1) ops) then along columns (N×(2k+1) ops)</span></div>
+      <div class="formula-line"><span class="f-teal">Complexity: O(n²) → O(n)</span> <span class="f-dim">per output pixel. Massive speedup for large σ.</span></div>
+    </div>
+    <div class="insight-strip">
+      <p>For a 21×21 Gaussian kernel: direct 2D = 441 multiplications per pixel. Separable 1D = 21+21 = 42 multiplications per pixel. A 10.5× speedup. For σ=7 (43×43 kernel): 1849 vs 86 ops. 21.5× faster. This is why real-time Gaussian blur is feasible on smartphones.</p>
+    </div>
+    <p><strong>Repeated box filter → Gaussian:</strong> The Central Limit Theorem says that convolving a box filter with itself multiple times converges to a Gaussian. Convolving [1,1] with itself 3 times gives [1,3,3,1] (Pascal's triangle row) — this is the binomial filter, an excellent Gaussian approximation that uses only additions and bit-shifts (very fast in hardware).</p>
+  </div>
+
+  <!-- ---- 4. CONVOLUTION FLIP: THE REAL REASON ---- -->
+  <div class="theory-block">
+    <h3>Why Does Convolution Flip the Kernel? — The Deep Reason</h3>
+    <p>Prof. Dhruba said NVIDIA doesn't flip. Students asked why. Here is the complete answer that clarifies the debate once and for all.</p>
+    <p>Convolution has a critical mathematical property that correlation lacks: <strong>associativity</strong>.</p>
+    <div class="formula-block">
+      <div class="formula-label">Properties that make convolution mathematically elegant</div>
+      <div class="formula-line"><span class="f-teal">Commutativity:</span> <span class="f-dim">f * g = g * f &nbsp;(correlation: f ⊗ g ≠ g ⊗ f in general)</span></div>
+      <div class="formula-line"><span class="f-teal">Associativity:</span> <span class="f-dim">(f * g) * h = f * (g * h) &nbsp;(correlation lacks this)</span></div>
+      <div class="formula-line"><span class="f-teal">Unit element:</span> <span class="f-dim">Convolving with unit impulse δ returns the original: f * δ = f</span></div>
+      <div class="formula-line"><span class="f-dim">Correlation with δ returns the flipped version of f.</span></div>
+    </div>
+    <p><strong>Why does DL use correlation anyway?</strong> Because the kernel weights are learned. If you use correlation but the correct answer requires a convolution, the network simply learns a flipped set of weights. The two approaches learn equivalent representations — mathematically one is a flipped version of the other. Since the learning process finds the optimal weights either way, the distinction is irrelevant for training accuracy.</p>
+    <div class="insight-strip">
+      <p>"In many contexts, convolution and correlation are mixed up. One of the biggest sources of this confusion is deep learning, where CNNs are implemented using discrete correlation rather than discrete convolution. That is possible, because the order of elements in the masks does not matter — it can simply be learned as flipped." — WolfSound Signal Processing, 2021</p>
+    </div>
+    <div class="danger-box">
+      <h4>When the distinction DOES matter</h4>
+      <p>Template matching — finding a specific pattern in an image. Correlation is the right operation here because you want to measure how similar the image patch is to the template (no flip). Using convolution would find the mirror image of your template. This is the one real-world case where the distinction is critical.</p>
+    </div>
+  </div>
+
+  <!-- ---- 5. GAMMA CORRECTION: THE FULL PIPELINE ---- -->
+  <div class="theory-block">
+    <h3>Gamma Correction: The Full End-to-End Pipeline</h3>
+    <p>Prof. Dhruba explained gamma correction in the context of CRT displays. Here is the complete understanding of how it permeates every single image you have ever seen on a screen:</p>
+    <div class="pipeline-step">
+      <div class="pipeline-num">1</div>
+      <div class="pipeline-content">
+        <h4>Why the human eye demands it</h4>
+        <p>Human vision is logarithmic in luminance — we are more sensitive to changes in dark tones than bright tones. A physically linear gradient (0→255 in equal steps) appears <em>non-uniform</em> to us — the dark half looks much more varied than the bright half.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-num">2</div>
+      <div class="pipeline-content">
+        <h4>The 8-bit efficiency argument</h4>
+        <p>Linear encoding wastes bits on bright regions where we can barely perceive differences. sRGB gamma encoding concentrates bit density in dark regions where our eyes are sensitive. Research shows linear encoding would require 11–12 bits per channel to match the perceived quality of 8-bit sRGB. This is perceptual compression.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-num">3</div>
+      <div class="pipeline-content">
+        <h4>The CRT historical accident</h4>
+        <p>CRT monitors naturally have a power response with γ ≈ 2.2–2.5 (voltage → brightness). Coincidentally, the inverse (γ ≈ 0.45) closely matches human perceptual sensitivity. So camera manufacturers started pre-applying γ ≈ 0.45 ("encoding gamma") before saving images, which looks correct on CRT displays. Modern LCD/OLED monitors emulate this response for compatibility.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-num">4</div>
+      <div class="pipeline-content">
+        <h4>Why PyTorch needs linear values</h4>
+        <p>When doing DL, you need to convert sRGB images to linear space first: <code>linear = (sRGB/255)^2.2</code>. Operations like averaging, blending, and computing distances should be done in linear space — otherwise colours mix incorrectly. Then re-apply gamma before display.</p>
+      </div>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">Complete sRGB pipeline</div>
+      <div class="formula-line"><span class="f-dim">Camera sensor → linear light values → apply γ=1/2.2 → save as sRGB JPEG</span></div>
+      <div class="formula-line"><span class="f-dim">Load JPEG → sRGB values → apply γ=2.2 → monitor display → eye perceives linearly</span></div>
+      <div class="formula-line"><span class="f-dim">Net effect: γ(1/2.2) × γ(2.2) = γ¹ = identity → perceptually correct reproduction</span></div>
+      <div class="formula-line"><span class="f-sky">For DL:</span> <span class="f-dim">load JPEG → ÷255 → .^2.2 → linear tensor → network → output → ^(1/2.2) → ×255 → save</span></div>
+    </div>
+  </div>
+
+  <!-- ---- 6. SPATIAL FILTERING: FULL DL BRIDGE ---- -->
+  <div class="theory-block">
+    <h3>From Static Kernels to Learned Kernels: The Full Bridge to Deep Learning</h3>
+    <p>Prof. Dhruba built the bridge. Here it is completed with research context:</p>
+    <table class="vs-table">
+      <thead><tr><th>Property</th><th>Classical CV (CV3)</th><th>Deep Learning CNN</th></tr></thead>
+      <tbody>
+        <tr><td>Kernel values</td><td>Hand-designed (box=1/9, Gaussian=e^(−r²/2σ²))</td><td>Learned via gradient descent</td></tr>
+        <tr><td>Number of kernels</td><td>1–few static kernels</td><td>32, 64, 128+ kernels per layer</td></tr>
+        <tr><td>Operation</td><td>Correlation (what NVIDIA calls convolution)</td><td>Same — correlation</td></tr>
+        <tr><td>Padding</td><td>Zero-padding (same/valid)</td><td>Same options; <code>padding='same'</code></td></tr>
+        <tr><td>Stride</td><td>Usually 1</td><td>1 (feature extraction) or 2 (downsampling)</td></tr>
+        <tr><td>Kernel size</td><td>3×3, 5×5, 7×7, 21×21</td><td>Almost always 3×3 (CUDA optimised)</td></tr>
+        <tr><td>Nonlinearity after</td><td>None</td><td>ReLU / GELU activation</td></tr>
+      </tbody>
+    </table>
+    <div class="insight-strip">
+      <p>When a CNN is trained on natural images, the first-layer kernels spontaneously learn to look like Gabor filters (oriented Gaussians) and edge detectors — the same filters classical CV engineers hand-designed for 40 years. Deep learning did not replace classical CV; it automated the design of these kernels.</p>
+    </div>
+    <div class="formula-block">
+      <div class="formula-label">PyTorch Conv2d is literally the slide-37 formula</div>
+      <div class="formula-line"><span class="f-dim"># Classical CV (slide 37):</span></div>
+      <div class="formula-line"><span class="f-dim">g(x,y) = ∑ₛ ∑ₜ w(s,t) · f(x+s, y+t)</span></div>
+      <div class="formula-line"><span class="f-dim"># PyTorch:</span></div>
+      <div class="formula-line"><span class="f-sky">nn.Conv2d</span><span class="f-dim">(in_channels=1, out_channels=32, kernel_size=3, padding=1)</span></div>
+      <div class="formula-line"><span class="f-dim"># 32 different w(s,t) kernels learned simultaneously. That is all.</span></div>
+    </div>
+  </div>
+
+  <!-- ---- 7. HE FAILURE MODES ---- -->
+  <div class="theory-block">
+    <h3>When Histogram Equalization Fails — Complete Analysis</h3>
+    <p>Student Nikhil raised the degeneration question in lecture. Here is the complete research-backed answer:</p>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <h4>Over-enhancement</h4>
+        <p>Bright regions with many pixels expand and "crush" neighbouring intensities together. A face in front of a dark background gets over-brightened, losing fine skin texture detail. The OpenCV docs explicitly warn: "compare the face of the statue — we lost most of the information due to over-brightness."</p>
+      </div>
+      <div class="concept-card">
+        <h4>Noise amplification</h4>
+        <p>In dark regions, if a small noise bin gets assigned a high output level, isolated pixels shoot to maximum brightness — creating bright speckles. This is why CLAHE clips the histogram before equalising each tile.</p>
+      </div>
+      <div class="concept-card">
+        <h4>Sparse output histogram</h4>
+        <p>Due to rounding, many output levels are left empty (zero counts). The output histogram has gaps between spikes — it looks "comb-like" rather than uniform. Research (2022) showed a "selective filter" approach using dequantisation can produce truly uniform histograms.</p>
+      </div>
+      <div class="concept-card">
+        <h4>HU distortion in medical CT</h4>
+        <p>CT scanners encode tissue density as specific Hounsfield Units (HU). Liver is ≈40–70 HU, cancer nodules may be ≈120 HU. HE remaps these absolute values. A 2025 review found HE reduced radiomic reproducibility and is "quantitatively unreliable" for CT analysis despite improving visual contrast.</p>
+      </div>
+    </div>
+    <div class="insight-strip">
+      <p>The practical recommendation: Use CLAHE over global HE for medical imaging. Use global HE only for pure visual enhancement tasks where absolute intensity values don't matter. For DL training data augmentation, use CLAHE from the Albumentations library: <code>A.CLAHE(clip_limit=2.0, tile_grid_size=(8,8))</code></p>
+    </div>
+  </div>
+</div>
+<!-- ========= END RESEARCH-ENHANCED SECTIONS ========= -->
+
+
+<!-- ====== SECTION 9: QUIZ ====== -->
+<div class="section" id="quiz">
+  <div class="section-header">
+    <span class="section-num">Quiz</span>
+    <h2 class="section-title">Practice Quiz — 10 Questions</h2>
+  </div>
+  <p style="color:var(--text2);margin-bottom:2rem;font-size:15px">Click an answer to check it. Use the "Show explanation" button for the full reasoning including common mistakes.</p>
+
+  <!-- Q1 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span>
+      <div class="quiz-q-text">For an 8-bit image, the total number of distinct intensity levels is: <span class="slide-ref">Slide 3</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q1">
+      <li data-val="a" onclick="checkAns('q1','b',this)"><span class="opt-letter">A</span>128</li>
+      <li data-val="b" onclick="checkAns('q1','b',this)"><span class="opt-letter">B</span>256</li>
+      <li data-val="c" onclick="checkAns('q1','b',this)"><span class="opt-letter">C</span>255</li>
+      <li data-val="d" onclick="checkAns('q1','b',this)"><span class="opt-letter">D</span>512</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q1')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q1"><strong style="color:var(--lime)">Correct: B — 256.</strong><br><br>L = 2⁸ = 256 levels, numbered 0 to 255. The maximum value is L−1 = 255, but the total count of levels is L = 256. Common mistake: choosing 255, confusing L with L−1.</div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span>
+      <div class="quiz-q-text">h(x,y) = f/2, then o(x,y) = h + 130. For f = 0, the output o is: <span class="slide-ref">Slide 18</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q2">
+      <li data-val="a" onclick="checkAns('q2','b',this)"><span class="opt-letter">A</span>0</li>
+      <li data-val="b" onclick="checkAns('q2','b',this)"><span class="opt-letter">B</span>130</li>
+      <li data-val="c" onclick="checkAns('q2','b',this)"><span class="opt-letter">C</span>65</li>
+      <li data-val="d" onclick="checkAns('q2','b',this)"><span class="opt-letter">D</span>260</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q2')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q2"><strong style="color:var(--lime)">Correct: B — 130.</strong><br><br>h = 0/2 = 0. o = 0 + 130 = 130. This is the first-row calculation from the slide 18 warm-up problem. Prof. noted "All values are basically same in the first row."</div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q3</span><span class="diff-badge diff-medium">Medium</span>
+      <div class="quiz-q-text">Which statement correctly describes the CDF used in histogram equalization? <span class="slide-ref">Slide 30</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q3">
+      <li data-val="a" onclick="checkAns('q3','c',this)"><span class="opt-letter">A</span>The probability of exactly level k occurring</li>
+      <li data-val="b" onclick="checkAns('q3','c',this)"><span class="opt-letter">B</span>The number of pixels divided by total pixels at level k</li>
+      <li data-val="c" onclick="checkAns('q3','c',this)"><span class="opt-letter">C</span>The cumulative sum of PMF values from level 0 up to level k</li>
+      <li data-val="d" onclick="checkAns('q3','c',this)"><span class="opt-letter">D</span>The maximum intensity value divided by L−1</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q3')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q3"><strong style="color:var(--lime)">Correct: C.</strong><br><br>CDF(k) = ∑ⱼ₌₀ᵏ p_r(rj). It is the running cumulative sum of all PMF values from level 0 up to and including k. Option A describes the PMF (not CDF). Option B describes the PMF formula. The distinction: PMF gives probability at each level; CDF gives probability of being ≤ k.</div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span>
+      <div class="quiz-q-text">For the Slide-24 5×5 example (L=8, MN=25), what is the new grey level for pixels originally at intensity 4? <span class="slide-ref">Slide 26</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q4">
+      <li data-val="a" onclick="checkAns('q4','c',this)"><span class="opt-letter">A</span>2</li>
+      <li data-val="b" onclick="checkAns('q4','c',this)"><span class="opt-letter">B</span>5</li>
+      <li data-val="c" onclick="checkAns('q4','c',this)"><span class="opt-letter">C</span>6</li>
+      <li data-val="d" onclick="checkAns('q4','c',this)"><span class="opt-letter">D</span>7</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q4')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q4"><strong style="color:var(--lime)">Correct: C — 6.</strong><br><br>PMF at k=4: p₄ = 14/25 = 0.56. CDF at k=4 = p₃ + p₄ = 0.24 + 0.56 = 0.80. s₄ = 0.80 × 7 = 5.6 → round to 6. Common mistake: using only p₄ (0.56) without adding the cumulative p₃ (0.24), giving 0.56×7 = 3.9 → 4. Always accumulate!</div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span>
+      <div class="quiz-q-text">The mathematical rule used to prove HE produces a uniform output PDF is: <span class="slide-ref">Slide 29</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q5">
+      <li data-val="a" onclick="checkAns('q5','b',this)"><span class="opt-letter">A</span>Bayes' theorem</li>
+      <li data-val="b" onclick="checkAns('q5','b',this)"><span class="opt-letter">B</span>Leibniz's rule (differentiating under the integral sign)</li>
+      <li data-val="c" onclick="checkAns('q5','b',this)"><span class="opt-letter">C</span>Central limit theorem</li>
+      <li data-val="d" onclick="checkAns('q5','b',this)"><span class="opt-letter">D</span>Taylor series expansion</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q5')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q5"><strong style="color:var(--lime)">Correct: B — Leibniz's rule.</strong><br><br>T(r) = (L−1)∫₀ʳ p_r(w)dw. To compute ds/dr, differentiate the CDF integral with respect to its upper limit r. By Leibniz rule: d/dr[∫₀ʳ f(w)dw] = f(r). So ds/dr = (L−1)·p_r(r). Then p_s(s) = p_r(r)·|dr/ds| = 1/(L−1). Prof. explicitly cited "Leibniz's rule in calculus" on slide 29.</div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span>
+      <div class="quiz-q-text">A 3×3 box filter is applied to a region where 8 pixels = 255 and the centre pixel = 10. The output is approximately: <span class="slide-ref">Lecture transcript</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q6">
+      <li data-val="a" onclick="checkAns('q6','d',this)"><span class="opt-letter">A</span>10</li>
+      <li data-val="b" onclick="checkAns('q6','d',this)"><span class="opt-letter">B</span>255</li>
+      <li data-val="c" onclick="checkAns('q6','d',this)"><span class="opt-letter">C</span>132</li>
+      <li data-val="d" onclick="checkAns('q6','d',this)"><span class="opt-letter">D</span>228</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q6')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q6"><strong style="color:var(--lime)">Correct: D — 228.</strong><br><br>(8×255 + 10) / 9 = 2050/9 ≈ 227.8 ≈ 228. This is the exact worked example Prof. Dhruba walked through in the lecture transcript. The noisy pixel (10) is replaced by a value close to its surroundings (228 ≈ 255), effectively removing it.</div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q7</span><span class="diff-badge diff-medium">Medium</span>
+      <div class="quiz-q-text">The key difference between convolution and correlation in spatial filtering is: <span class="slide-ref">Slides 36, 39</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q7">
+      <li data-val="a" onclick="checkAns('q7','a',this)"><span class="opt-letter">A</span>Convolution flips the kernel 180° before sliding; correlation does not</li>
+      <li data-val="b" onclick="checkAns('q7','a',this)"><span class="opt-letter">B</span>They always produce identical results regardless of kernel shape</li>
+      <li data-val="c" onclick="checkAns('q7','a',this)"><span class="opt-letter">C</span>Correlation is only applicable to 1D signals</li>
+      <li data-val="d" onclick="checkAns('q7','a',this)"><span class="opt-letter">D</span>Convolution uses larger kernel sizes by convention</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q7')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q7"><strong style="color:var(--lime)">Correct: A.</strong><br><br>Convolution = flip kernel 180° (flip rows then columns) → then slide-multiply-sum. Correlation = directly slide-multiply-sum. For symmetric kernels (Gaussian, box) results are identical — but for asymmetric kernels (like [1,2,4,2,8]), the results are 180° rotations of each other. NVIDIA cuDNN uses correlation but calls it "convolution" — no flip happens in deep learning.</div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q8</span><span class="diff-badge diff-hard">Hard</span>
+      <div class="quiz-q-text">Applying gamma transform s = r^γ with γ = 3 to an MRI image (c=1) with pixel values normalised to [0,1]. What happens to mid-gray pixels (r ≈ 0.5) and why would a radiologist choose γ &lt; 1 instead? <span class="slide-ref">Slide 14</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q8">
+      <li data-val="a" onclick="checkAns('q8','c',this)"><span class="opt-letter">A</span>γ=3 brightens the image; radiologist prefers γ&lt;1 to darken</li>
+      <li data-val="b" onclick="checkAns('q8','c',this)"><span class="opt-letter">B</span>Both γ=3 and γ&lt;1 give identical results since c=1</li>
+      <li data-val="c" onclick="checkAns('q8','c',this)"><span class="opt-letter">C</span>γ=3 darkens mid-gray (0.5³=0.125); radiologist uses γ&lt;1 (e.g. 0.4) to brighten dark regions and reveal subtle tissue detail</li>
+      <li data-val="d" onclick="checkAns('q8','c',this)"><span class="opt-letter">D</span>γ=3 has no effect on normalised images; only affects values &gt;1</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q8')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q8"><strong style="color:var(--lime)">Correct: C.</strong><br><br>r=0.5, γ=3: s = 0.5³ = 0.125 — significantly darker. γ&gt;1 always darkens values between 0 and 1. Slide 14 shows MRI with γ=0.6, 0.4, 0.3 — each progressively brighter, revealing the fracture region (circled) that was previously dark. Prof.'s comment: "The image does not come very good because the lower intensity values are not properly registered by the sensor." γ&lt;1 fixes this.</div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q9</span><span class="diff-badge diff-hard">Hard</span>
+      <div class="quiz-q-text">The Gaussian filter unnormalised value at corner position (1,1) of a 3×3 kernel with σ=1 is: <span class="slide-ref">Slide 41, 51</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q9">
+      <li data-val="a" onclick="checkAns('q9','b',this)"><span class="opt-letter">A</span>0.6065</li>
+      <li data-val="b" onclick="checkAns('q9','b',this)"><span class="opt-letter">B</span>0.3679</li>
+      <li data-val="c" onclick="checkAns('q9','b',this)"><span class="opt-letter">C</span>0.5000</li>
+      <li data-val="d" onclick="checkAns('q9','b',this)"><span class="opt-letter">D</span>1.0000</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q9')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q9"><strong style="color:var(--lime)">Correct: B — 0.3679.</strong><br><br>Position (1,1): r = √(1²+1²) = √2. G = e^(−r²/2σ²) = e^(−2/2×1) = e^(−1) ≈ 0.3679. Common mistake: using r=1 (distance=1) instead of r=√2. The corner is diagonally offset so its distance from centre is √2, not 1. Edge positions (1,0) or (0,1) have r=1 → G=e^(−0.5)=0.6065.</div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="quiz-q">
+    <div class="quiz-q-header">
+      <span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span>
+      <div class="quiz-q-text">Why does the discrete HE algorithm NOT produce a perfectly uniform histogram, even though the continuous proof guarantees uniformity? <span class="slide-ref">Slide 30, Transcript</span></div>
+    </div>
+    <ul class="quiz-options" id="opts-q10">
+      <li data-val="a" onclick="checkAns('q10','d',this)"><span class="opt-letter">A</span>The algorithm uses the wrong formula</li>
+      <li data-val="b" onclick="checkAns('q10','d',this)"><span class="opt-letter">B</span>Only images with more than 1024 pixels achieve uniformity</li>
+      <li data-val="c" onclick="checkAns('q10','d',this)"><span class="opt-letter">C</span>The Leibniz proof is incorrect</li>
+      <li data-val="d" onclick="checkAns('q10','d',this)"><span class="opt-letter">D</span>Rounding of sk to nearest integer and the discrete nature of pixel levels prevent exact uniformity</li>
+    </ul>
+    <button class="reveal-btn" onclick="toggleReveal('rv-q10')">Show explanation</button>
+    <div class="quiz-reveal" id="rv-q10"><strong style="color:var(--lime)">Correct: D.</strong><br><br>The continuous proof assumes T(r) is continuous — the CDF is a smooth function. In the discrete case: (1) sk = round(CDF(k)×(L−1)) introduces rounding error, (2) multiple input levels can map to the same output level (merging), (3) some output levels may remain empty (no input level maps to them). Prof. Dhruba noted: "For discrete images, the PMF or probability mass function may not be the optimal things — we might want to refer to them as probability mass functions, not density functions. The output is approximately uniform, not perfectly uniform." The equalized histogram in slide 33 visually confirms: it is more spread out, not perfectly flat.</div>
+  </div>
+</div>
+
+<!-- REFERENCES -->
+<div class="section" id="refs">
+  <div class="section-header">
+    <span class="section-num">Ref</span>
+    <h2 class="section-title">Reading &amp; Next Session</h2>
+  </div>
+  <div class="theory-block">
+    <h3>From Slide 78</h3>
+    <p><strong>Textbook:</strong> Digital Image Processing, Rafael C. Gonzalez &amp; Richard E. Woods, 3rd Edition, Chapter 3.</p>
+    <p><strong>Lab notebook:</strong> <code>github.com/DhrubaAdhikary/Learn_CV_with_Dhruv</code> → <code>CV_3_Digital_Image_Processing_Exercises.ipynb</code></p>
+    <p><strong>Colour models explorer:</strong> <code>chromatone.center/theory/color/models/</code></p>
+    <p><strong>Session 4 preview:</strong> Image Sharpening; Linear Filters; Edge Detection (Gradients, Sobel, Canny); Line Detection (Hough Transform).</p>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// Progress bar
+const prog=document.getElementById('prog'),pct=document.getElementById('pct');
+window.addEventListener('scroll',()=>{
+  const s=document.documentElement.scrollTop;
+  const d=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+  const p=Math.round((s/d)*100);
+  prog.style.width=p+'%';pct.textContent=p+'%';
+  document.getElementById('scrollTop').classList.toggle('visible',s>300);
+});
+
+// Active nav
+const navLinks=document.querySelectorAll('.nav-link');
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      const a=document.querySelector('.nav-link[href="#'+e.target.id+'"]');
+      if(a)a.classList.add('active');
+    }
+  });
+},{rootMargin:'-40% 0px -55% 0px'});
+document.querySelectorAll('.section[id]').forEach(s=>obs.observe(s));
+
+// Fade-in sections
+const sObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.05});
+document.querySelectorAll('.section').forEach(s=>sObs.observe(s));
+
+// Tabs
+function switchTab(btn,panelId){
+  const parent=btn.parentElement;
+  const grandParent=parent.parentElement;
+  parent.querySelectorAll('.tab-btn').forEach(b=>b.className='tab-btn');
+  grandParent.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const t=btn.textContent.toLowerCase();
+  btn.classList.add(t==='easy'?'active-easy':t==='medium'?'active-medium':'active-hard');
+}
+
+// Quiz
+function checkAns(qid,correct,clickedLi){
+  const opts=clickedLi.parentElement;
+  if(opts.dataset.answered)return;
+  opts.dataset.answered='1';
+  const chosen=clickedLi.dataset.val;
+  opts.querySelectorAll('li').forEach(li=>{
+    if(li.dataset.val===correct)li.classList.add('correct');
+    else if(li.dataset.val===chosen&&chosen!==correct)li.classList.add('wrong');
+    else li.classList.add('disabled');
+  });
+}
+function toggleReveal(id){document.getElementById(id).classList.toggle('shown');}
+
+// HE Demo
+const origImg=[[4,4,4,4,4],[3,4,5,4,3],[3,5,5,5,3],[3,4,5,4,3],[4,4,4,4,4]];
+function intToStyle(v,maxV){
+  const br=Math.round((v/(maxV||7))*220+20);
+  return{bg:`rgb(${br},${br},${br})`,fg:br>140?'#0c0c0f':'#e8e6e3'};
+}
+function renderMat(id,mat,maxV){
+  const c=document.getElementById(id);if(!c)return;
+  c.innerHTML='';
+  mat.flat().forEach(v=>{
+    const{bg,fg}=intToStyle(v,maxV);
+    const d=document.createElement('div');
+    d.className='matrix-cell';d.style.background=bg;d.style.color=fg;d.textContent=v;
+    c.appendChild(d);
+  });
+}
+function runHE(){
+  const flat=origImg.flat(),MN=flat.length,L=8;
+  const nk=new Array(L).fill(0);
+  flat.forEach(v=>nk[v]++);
+  const pmf=nk.map(n=>n/MN);
+  let cum=0;
+  const cdf=pmf.map(p=>{cum+=p;return cum;});
+  const sk=cdf.map(c=>Math.round(c*(L-1)));
+  let html='<table class="he-table" style="font-size:12px"><thead><tr>';
+  ['Level k','nk','PMF','CDF','7×CDF','sk (new)'].forEach(h=>html+=`<th>${h}</th>`);
+  html+='</tr></thead><tbody>';
+  for(let k=0;k<L;k++){
+    if(nk[k]===0&&(k<3||k>5))continue;
+    html+=`<tr><td>${k}</td><td>${nk[k]}</td><td>${pmf[k].toFixed(2)}</td><td style="color:var(--sky)">${cdf[k].toFixed(2)}</td><td style="color:var(--gold)">${(cdf[k]*7).toFixed(2)}</td><td style="color:var(--lime);font-weight:600">${sk[k]}</td></tr>`;
+  }
+  html+='</tbody></table>';
+  document.getElementById('he-table-output').innerHTML=html;
+  const eqMat=origImg.map(row=>row.map(v=>sk[v]));
+  renderMat('eq-matrix',eqMat,7);
+}
+renderMat('orig-matrix',origImg,7);
+runHE();
+
+// Gaussian Demo
+function updateGaussian(){
+  const sigma=parseFloat(document.getElementById('sigma-slider').value);
+  document.getElementById('sigma-val').textContent=sigma.toFixed(1);
+  const pos=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,0],[0,1],[1,-1],[1,0],[1,1]];
+  const raw=pos.map(([s,t])=>Math.exp(-(s*s+t*t)/(2*sigma*sigma)));
+  const sum=raw.reduce((a,b)=>a+b,0);
+  const norm=raw.map(v=>v/sum);
+  let html='<div style="display:grid;grid-template-columns:repeat(3,72px);gap:3px">';
+  norm.forEach((v,i)=>{
+    const intensity=Math.round(40+v*500);
+    const r=Math.min(255,Math.round(20+v*400));
+    const g=Math.min(255,Math.round(40+v*350));
+    html+=`<div style="padding:6px;background:rgba(${r},${g},60,0.85);border-radius:4px;text-align:center;font-size:11px;color:#e8e6e3">${v.toFixed(4)}</div>`;
+  });
+  html+='</div>';
+  document.getElementById('gauss-kernel-display').innerHTML=html;
+  document.getElementById('gauss-stats').textContent=`Raw sum = ${sum.toFixed(4)} | Normalisation = 1/${sum.toFixed(4)} = ${(1/sum).toFixed(4)} | Rule of thumb kernel size ≈ ${Math.round(2*Math.PI*sigma)}×${Math.round(2*Math.PI*sigma)}`;
+}
+updateGaussian();
+</script>
+</body>
+</html>

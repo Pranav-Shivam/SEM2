@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Session 5 — Mid-Level Vision · Canny, Hough, Harris, HoG, Colour</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .sidebar { position:fixed; left:0; top:0; width:var(--sidebar); height:100vh; background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .nav-link .prev-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--violet); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV5'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:14rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-transcript { color:var(--sky); background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .src-preview { color:var(--violet); background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 5 — Mid-Level Vision</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Grounded in CV5 Materials</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Canny Edge Detection<span class="lab-dot" title="Lab 3"></span></a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Hough Transform<span class="lab-dot" title="Lab 3"></span></a>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Harris Corner Detector</a>
+  <a href="#s4" class="nav-link" data-section="s4">04 · HoG + SVM<span class="lab-dot" title="Lab 3"></span></a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · Colour Spaces</a>
+  <span class="nav-group-label">Upcoming-Session Preview</span>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Image Sharpening<span class="prev-dot"></span></a>
+  <a href="#s7" class="nav-link" data-section="s7">07 · RANSAC<span class="prev-dot"></span></a>
+  <a href="#s8" class="nav-link" data-section="s8">08 · SIFT<span class="prev-dot"></span></a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s9" class="nav-link" data-section="s9">Conceptual Deep Dives</a>
+  <a href="#s10" class="nav-link" data-section="s10">Exam Quiz (12 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 5 · S2-25</span>
+    <h1>Mid-Level Vision<br><span>Canny · Hough · Harris · HoG</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">From abrupt intensity changes to corners, descriptors and pedestrian detection — the most algorithmically dense session in the mid-sem window.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Lecture</strong>May 30, 2026</div>
+      <div class="hero-meta-item"><strong>Prof</strong>Dhruba Adhikary</div>
+      <div class="hero-meta-item"><strong>Duration</strong>2h 0m</div>
+      <div class="hero-meta-item"><strong>Slides</strong>88 pages</div>
+      <div class="hero-meta-item"><strong>Mid-Sem</strong>Jun 20, 2026 · Closed Book</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Canny 4-Step</span>
+      <span class="topic-chip">Non-Maxima Suppression</span>
+      <span class="topic-chip">Hysteresis</span>
+      <span class="topic-chip">Hough Transform</span>
+      <span class="topic-chip">Harris Corner</span>
+      <span class="topic-chip">HoG + SVM</span>
+      <span class="topic-chip">Colour Spaces</span>
+      <span class="topic-chip">RANSAC*</span>
+      <span class="topic-chip">SIFT*</span>
+      <span class="topic-chip">Sharpening*</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide — source honesty</h3>
+      <p>This guide is colour-coded by <em>where each fact comes from</em>, because not every topic in the official handout actually appears in the CV5 deck or the May 30 lecture:</p>
+      <p><span class="src-badge src-slides">Slides</span> &nbsp;= taken from <code>CV_CS_5.pdf</code> (88 slides). &nbsp; <span class="src-badge src-transcript">Transcript</span> &nbsp;= Prof. Dhruba's live words, May 30 2026. &nbsp; <span class="src-badge src-lab">Lab 3</span> &nbsp;= hands-on lab topic. &nbsp; <span class="src-badge src-preview">Preview</span> &nbsp;= NOT in CV5 materials; Prof said these are taught <em>next</em> session — included as research-sourced revision.</p>
+      <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--rose)">Reality check:</strong> The <code>CV_CS_5.pdf</code> deck is titled <em>"Edge Detection (Canny) &amp; Line Detection (Hough)"</em> and covers Canny → Hough → Colour spaces. The live lecture covered Harris Corner Detector + HoG. <strong>Sharpening, RANSAC and SIFT do not appear in either file</strong> — Prof explicitly defers SIFT to "our next lecture" (Transcript ~1:53). They are kept here (starred*) as forward-looking revision so the mid-sem syllabus is fully covered.</p>
+    </div>
+
+    <div class="callout-weight">
+      <div class="weight-card"><div class="wpct" style="color:var(--gold)">30%</div><div class="wlbl">Mid-Sem · Jun 20<br>Closed Book</div></div>
+      <div class="weight-card"><div class="wpct" style="color:var(--teal)">20%</div><div class="wlbl">Lab 3<br>Hands-on</div></div>
+      <div class="weight-card"><div class="wpct" style="color:var(--sky)">40%</div><div class="wlbl">Comprehensive · Sep 5<br>Open Book</div></div>
+    </div>
+
+    <!-- ============ SECTION 01 — CANNY ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Canny Edge Detection</h2>
+        <span class="src-badge src-slides">Slides 4–50</span>
+        <span class="src-badge src-lab">Lab 3</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Source note</div>
+        <p>Canny is the <strong>core of the CV5 slide deck</strong> (slides 4–50) and the single most exam-likely topic. It was carried over from Session 4 as Prof flagged. <em>Slides only — no live transcript coverage was found for Canny in the May 30 recording</em> (that lecture ran Harris + HoG). All numbers below come from the slide formulas and the Gonzalez &amp; Woods reading cited on Slide 66.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — why one operator isn't enough</h3>
+        <p>Run a raw Sobel gradient on a real photo and you get a disappointing mess: edges are <em>thick</em> (several pixels wide), <em>noisy</em> (grain fires as fake edges), and <em>broken</em> (a single contour appears as dashes). John Canny's 1986 insight was that edge detection is not one operation but a <strong>pipeline of four</strong>, each fixing a specific failure of the last.</p>
+        <p>The analogy: think of it like cleaning up a hand-drawn pencil sketch. First you <strong>blur away the smudges</strong> (Gaussian — kill noise). Then you <strong>find every dark stroke</strong> (gradient — candidate edges). Then you <strong>thin each stroke to one crisp line</strong> (non-maxima suppression — keep only the ridge top). Finally you <strong>ink the confident lines and follow faint ones only if they touch a confident one</strong> (hysteresis — two thresholds + connectivity). The output is a clean, single-pixel-wide, connected edge map.</p>
+        <p>Slide 49 calls this <em>"our first computer vision pipeline!"</em> — and that framing is the whole point. Canny is the template for every multi-stage CV algorithm you'll meet after it.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The 4-step pipeline <span style="color:var(--text3);font-size:0.8rem;">(Slide 15 &amp; Slide 48)</span></h3>
+        <ol class="pipeline">
+          <li><strong>Gaussian smoothing</strong>
+            <p>Convolve the image with a Gaussian kernel to suppress noise <em>before</em> differentiating. Slide 48 fuses this with step 2 as a single <code>derivative-of-Gaussian</code> filter (associative property of convolution, Slide 30). σ is the key knob: bigger σ = less noise but worse localisation.</p></li>
+          <li><strong>Gradient magnitude &amp; angle</strong>
+            <p>Apply Sobel/Prewitt to get G<sub>x</sub>, G<sub>y</sub>. Magnitude <code>|G| = √(Gx²+Gy²)</code>, direction <code>θ = arctan(Gy/Gx)</code>. Slide 23: the gradient "points in the direction of maximum rate of change."</p></li>
+          <li><strong>Non-Maxima Suppression (NMS)</strong>
+            <p>For each pixel, check if its magnitude is a <em>local maximum along the gradient direction</em>. If a neighbour across the edge is stronger, zero this pixel. Thins edges to 1px (Slides 35–38).</p></li>
+          <li><strong>Double thresholding + hysteresis linking</strong>
+            <p>Two thresholds T<sub>L</sub>, T<sub>H</sub> (ratio 2:1 to 3:1, Slide 39). Strong (≥T<sub>H</sub>) = edge. Weak (T<sub>L</sub>..T<sub>H</sub>) = edge <em>iff</em> 8-connected to a strong one. Below T<sub>L</sub> = discarded (Slides 39–47).</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Canny — All formulas, colour-coded</div>
+<span class="formula-line"><span class="f-dim">Step 1  smooth:</span>  <span class="f-teal">S = G<sub>σ</sub> ∗ I</span>      <span class="f-dim">(G<sub>σ</sub> = Gaussian, σ controls scale)</span></span>
+<span class="formula-line"><span class="f-dim">         deriv-of-Gaussian (Slide 30):</span>  <span class="f-teal">∇(G<sub>σ</sub> ∗ I) = (∇G<sub>σ</sub>) ∗ I</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Step 2  gradient:</span>  <span class="f-gold">G<sub>x</sub> = ∂S/∂x</span>     <span class="f-gold">G<sub>y</sub> = ∂S/∂y</span></span>
+<span class="formula-line"><span class="f-dim">         magnitude:</span>  <span class="f-lime">|G| = √(G<sub>x</sub>² + G<sub>y</sub>²)</span></span>
+<span class="formula-line"><span class="f-dim">         direction:</span>  <span class="f-sky">θ = arctan(G<sub>y</sub> / G<sub>x</sub>)</span>   <span class="f-dim">→ quantised to {0°,45°,90°,135°}</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Step 3  NMS:</span>  keep |G(x,y)| <span class="f-violet">only if</span> |G(x,y)| ≥ both neighbours along θ</span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Step 4  hysteresis:</span>  <span class="f-lime">|G| ≥ T<sub>H</sub></span> → strong  ·  <span class="f-gold">T<sub>L</sub> ≤ |G| &lt; T<sub>H</sub></span> → weak  ·  <span class="f-rose">|G| &lt; T<sub>L</sub></span> → none</span>
+<span class="formula-line"><span class="f-dim">         ratio (Slide 39):</span>  <span class="f-gold">T<sub>H</sub> / T<sub>L</sub>  ≈  2:1  to  3:1</span></span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Slide 4 — Objectives of Edge Detection (verbatim)</div>
+        <p>"Good Detection: filter responds to edge, not noise. Good Localization: detected edge near true edge. Single Response: only one point for each true edge point." These three criteria are <em>exactly</em> what the four steps are engineered to satisfy — map each criterion to the step that delivers it (see table below).</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Slide 39 — Hysteresis threshold ratio (exam gold)</div>
+        <p>"Use two thresholds T<sub>L</sub> and T<sub>H</sub> which results in two images; Choose the ratio of high to low threshold in the range of <strong>2:1 to 3:1</strong>." This exact ratio is a classic one-mark recall question.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Slide 44 — Edge-linking rule (verbatim)</div>
+        <p>"Strong edges are edges! Weak edges are edges <strong>iff they connect to strong</strong>. Look in some neighborhood (usually 8 closest)." The "iff connect to strong" + "8-connected" pair is the most testable detail of step 4.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Which step satisfies which requirement</h3>
+        <table class="he-table">
+          <thead><tr><th>Requirement (Slide 4)</th><th>Failure if missing</th><th>Step that solves it</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Good Detection</td><td style="color:var(--rose)">Noise grain fires as false edges</td><td style="color:var(--lime)">Step 1 — Gaussian smoothing</td></tr>
+            <tr><td style="color:var(--teal)">Good Localization</td><td style="color:var(--rose)">Thick, smeared edge bands</td><td style="color:var(--lime)">Step 3 — Non-Maxima Suppression</td></tr>
+            <tr><td style="color:var(--sky)">Single Response</td><td style="color:var(--rose)">One edge → many parallel detections / broken lines</td><td style="color:var(--lime)">Step 4 — Double threshold + hysteresis</td></tr>
+          </tbody>
+        </table>
+        <table class="he-table">
+          <thead><tr><th>Operator</th><th>Kernel idea</th><th>Noise robust?</th><th>Output</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Roberts</td><td>2×2 diagonal diff</td><td style="color:var(--rose)">Poor</td><td>Thick, noisy</td></tr>
+            <tr><td style="color:var(--gold)">Prewitt</td><td>3×3, uniform weights (Slide 24)</td><td style="color:var(--gold)">Fair</td><td>Thick</td></tr>
+            <tr><td style="color:var(--gold)">Sobel</td><td>3×3, centre-weighted (Slide 25)</td><td style="color:var(--teal)">Good</td><td>Thick but smoother</td></tr>
+            <tr><td style="color:var(--lime)">Canny</td><td>Full 4-step pipeline</td><td style="color:var(--lime)">Best</td><td>1px, connected, single response</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- DEMO 1: Canny pipeline visualiser -->
+      <div class="interactive-demo" id="cannyDemo">
+        <h4>⊞ Interactive · Canny Pipeline Visualiser</h4>
+        <div class="demo-sub">Step through all 4 stages on a fixed 5×5 toy gradient-magnitude patch. Watch what each stage changes.</div>
+        <div style="margin-bottom:1rem;">
+          <button class="demo-btn" id="cannyPrev" onclick="cannyStep(-1)" disabled>‹ Prev</button>
+          <button class="demo-btn" id="cannyNext" onclick="cannyStep(1)">Next ›</button>
+          <span id="cannyStepLabel" style="font-family:var(--font-code);font-size:12px;color:var(--gold);margin-left:0.75rem;"></span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <div><div class="demo-col-label" style="font-family:var(--font-code);font-size:10px;text-transform:uppercase;color:var(--text3);margin-bottom:0.5rem;">Patch state</div><div class="mgrid" id="cannyGrid" style="grid-template-columns:repeat(5,42px);"></div></div>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="cannyExplain"></div></div>
+        </div>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV &amp; the CNN link</div>
+        <p>Canny is one OpenCV call — but knowing the two thresholds <em>are</em> T<sub>L</sub>, T<sub>H</sub> (and that order is threshold1=low, threshold2=high) is the Lab-3 trap:</p>
+        <pre>import cv2
+img = cv2.imread('road.jpg', cv2.IMREAD_GRAYSCALE)
+# threshold1 = T_low, threshold2 = T_high  (ratio ~2:1 to 3:1)
+edges = cv2.Canny(img, threshold1=100, threshold2=200, apertureSize=3, L2gradient=True)
+# L2gradient=True uses sqrt(Gx^2+Gy^2); False uses |Gx|+|Gy| (faster, less accurate)</pre>
+        <p><strong>DL connection:</strong> a CNN's first conv block learns oriented gradient kernels — i.e. it relearns Canny's step 2 by backprop. But CNNs replace the <em>hand-tuned</em> NMS + thresholds with learned non-linearities, which is why deep edge detectors (HED, 2015) beat Canny on cluttered scenes. <strong>Real use:</strong> lane detection in ADAS, document scanning, medical organ boundary extraction.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Canny is still a strong baseline in 2024.</strong> A recurring finding (e.g. surveys on edge detection 2022–2024) is that learned detectors like <cite>HED / RCF / EDTER (2022)</cite> win on <em>semantic</em> boundaries but Canny remains preferred for low-power, real-time geometric tasks (calibration targets, AR markers) because it is parameter-light and deterministic.</p>
+        <p><strong>Failure modes with evidence:</strong> Canny is acutely <em>threshold-sensitive</em> — on texture-rich regions (foliage, hair) a fixed T<sub>L</sub>/T<sub>H</sub> floods false edges; under shadows the same physical contour splits because illumination changes the gradient. The modern fix is <cite>adaptive/automatic thresholding (Otsu-driven Canny, median-based "auto-Canny", 2015→)</cite>: set T<sub>H</sub>=1.33·median, T<sub>L</sub>=0.66·median per-image.</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span><span style="font-family:var(--font-code);font-size:11px;color:var(--text3);margin-left:1rem;letter-spacing:.08em;">SELECT DIFFICULTY</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s1-easy', this, 's1-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s1-medium', this, 's1-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s1-complex', this, 's1-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s1-easy" data-tab-group="s1-ex">
+          <div class="example-q">Given T<sub>L</sub> = 50 and T<sub>H</sub> = 120, classify three pixels by gradient magnitude: A = 140, B = 80, C = 30. (Strong / Weak / None)</div>
+          <ol class="step-list">
+            <li><p>Rule: |G| ≥ T<sub>H</sub> → <strong style="color:var(--lime)">strong</strong>; T<sub>L</sub> ≤ |G| &lt; T<sub>H</sub> → <strong style="color:var(--gold)">weak</strong>; |G| &lt; T<sub>L</sub> → <strong style="color:var(--rose)">none</strong>.</p></li>
+            <li><p>A = 140 ≥ 120 → <strong style="color:var(--lime)">STRONG</strong> (definitely an edge).</p></li>
+            <li><p>B = 80: 50 ≤ 80 &lt; 120 → <strong style="color:var(--gold)">WEAK</strong> (edge only if 8-connected to a strong pixel).</p></li>
+            <li><p>C = 30 &lt; 50 → <strong style="color:var(--rose)">NONE</strong> (discarded).</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">A = Strong, B = Weak (conditional), C = None. Ratio check: T<sub>H</sub>/T<sub>L</sub> = 120/50 = 2.4:1 ✓ (in 2:1–3:1 range).</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"Weak" is not a final answer — its fate depends on connectivity. Writing "B is an edge" with no connectivity caveat loses the mark.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s1-medium" data-tab-group="s1-ex">
+          <div class="example-q">A horizontal edge runs left–right. At pixel P the gradient direction θ = 90° (pointing vertically, i.e. across the edge). P's magnitude is 100; its top neighbour is 130, bottom neighbour is 60. After NMS, is P kept? Then with T<sub>L</sub>=70, T<sub>H</sub>=150, classify the surviving pixels.</div>
+          <ol class="step-list">
+            <li><p>NMS compares along the gradient direction (θ=90° → vertical). P's competitors are top (130) and bottom (60).</p></li>
+            <li><p>Is P (100) ≥ both? 100 ≥ 130? <strong style="color:var(--rose)">No.</strong> So P is suppressed → set to 0. The top neighbour (130) is the ridge maximum and survives NMS instead.</p></li>
+            <li><p>Now threshold the survivor 130 with T<sub>L</sub>=70, T<sub>H</sub>=150: 70 ≤ 130 &lt; 150 → <strong style="color:var(--gold)">WEAK</strong>.</p></li>
+            <li><p>So this ridge yields one weak pixel at the old top-neighbour location. It becomes a final edge only if 8-connected to some strong (≥150) pixel further along the contour.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">P is NOT kept (130 &gt; 100 across the edge). The kept pixel (130) is WEAK under T<sub>H</sub>=150 → survives only via hysteresis link to a strong edge.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>NMS and thresholding are independent gates: a pixel can survive NMS (it's the local ridge max) yet still be killed or made conditional by thresholding. Order matters — NMS first, threshold second.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s1-complex" data-tab-group="s1-ex">
+          <div class="example-q">Prove with numbers why <em>two</em> thresholds beat <em>one</em> on a faint but real edge corrupted by noise. Consider a true contour whose magnitudes along its length are: 160, 90, 85, 200, 75 — interspersed with isolated noise spikes of 95 sitting alone in flat regions.</div>
+          <ol class="step-list">
+            <li><p><strong>Single threshold @ 100:</strong> contour pixels 90, 85, 75 fall below 100 → the real edge breaks into disconnected dots (160 … 200 only). Localisation of a continuous contour is destroyed (violates "single response").</p></li>
+            <li><p><strong>Single threshold @ 70:</strong> now the contour survives (all ≥70) — but every isolated 95 noise spike also passes → false edges everywhere (violates "good detection"). No single value wins.</p></li>
+            <li><p><strong>Hysteresis, T<sub>L</sub>=70, T<sub>H</sub>=150:</strong> 160 and 200 are strong seeds. 90, 85, 75 are weak but each is 8-connected along the contour to a strong seed → promoted to edges. The whole contour is recovered intact.</p></li>
+            <li><p>The isolated noise spike of 95 is weak (70≤95&lt;150) but sits alone — no strong neighbour → discarded. Both criteria satisfied simultaneously.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">No single threshold can both keep the faint contour (needs low T) and reject lone noise (needs high T). Hysteresis decouples the two: high T finds trustworthy seeds, low T + connectivity grows them while orphan noise dies.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Hysteresis = "trust, then extend trust by contact." It is the same logic as flood-fill from confident seeds — and it is why Canny produces connected contours where Sobel+threshold produces dashes.</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>Canny — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Most likely form:</strong> "List the 4 steps of Canny in order" (Slide 15/48) or "classify pixels strong/weak/none given T<sub>L</sub>, T<sub>H</sub>" (numerical, like the Easy example).</li>
+          <li><strong>#1 student mistake:</strong> reversing NMS and thresholding, or forgetting NMS entirely. If you skip NMS, edges come out thick — that's the giveaway. Order is non-negotiable: smooth → gradient → NMS → hysteresis.</li>
+          <li><strong>#2 mistake:</strong> quoting the threshold ratio as 1:2 instead of <strong>T<sub>H</sub>:T<sub>L</sub> = 2:1 to 3:1</strong> (high is the bigger number).</li>
+          <li><strong>Exam-critical slides:</strong> 4 (objectives), 15 (4 steps), 39 (ratio), 44 (linking rule), 48 (summary).</li>
+          <li><strong>Lab 3 API:</strong> <code>cv2.Canny(img, threshold1, threshold2)</code> — threshold1 is LOW. Pair with <code>cv2.GaussianBlur</code> beforehand if the image is noisy.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 — HOUGH ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Hough Transform for Line Detection</h2>
+        <span class="src-badge src-slides">Slides 51–66</span>
+        <span class="src-badge src-lab">Lab 3</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Source note</div>
+        <p>Hough fills slides 51–66 of CV5 and carries a fully worked numerical on <strong>Slide 65</strong>. <em>Slides only — no live transcript coverage in the May 30 recording.</em> The reading is Gonzalez &amp; Woods 4th Ed, pp. 737–742 (Slide 66).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — voting instead of searching</h3>
+        <p>After Canny you have a scatter of edge <em>points</em>, not lines. Slide 51 asks the sharp question: <em>"why aren't we done just by running edge detection?"</em> Because edge points are fragmented (clutter, gaps, noise — Slide 52) and you still don't know <em>which points belong to which line</em>.</p>
+        <p>The analogy is an <strong>election</strong> (Slide 53). Rather than testing every possible line against every subset of points (combinatorially hopeless), you let each edge point <em>vote</em> for all lines that could pass through it. Lines that collect many votes are real; noise points scatter their votes inconsistently and never accumulate. Democracy finds the line.</p>
+        <p>The trick is a <strong>duality</strong>: a point in image space maps to a <em>line</em> in parameter space, and vice-versa. So "find points that are collinear" becomes "find the parameter-space cell where many image-point lines cross" — a peak in an accumulator.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The image ↔ Hough duality <span style="color:var(--text3);font-size:0.8rem;">(Slides 55–57)</span></h3>
+        <ol class="pipeline">
+          <li><strong>A line in image space → a point in (m,b) space</strong>
+            <p>Line <code>y = mx + b</code> is fully described by its slope-intercept pair (m, b) — one point in parameter space.</p></li>
+          <li><strong>A point in image space → a line in (m,b) space</strong>
+            <p>Fix (x<sub>0</sub>, y<sub>0</sub>). All lines through it satisfy <code>b = −x<sub>0</sub>m + y<sub>0</sub></code> — a straight line in (m,b) space (Slide 55).</p></li>
+          <li><strong>Two image points → intersection of two Hough lines</strong>
+            <p>The (m,b) where both Hough lines cross is the single line through both image points (Slide 56).</p></li>
+          <li><strong>Accumulate votes &amp; find peaks</strong>
+            <p>Discretise (m,b) into bins; each edge point increments every bin on its Hough line. Peak bins = most prominent image lines (Slide 57).</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Hough — slope-intercept vs polar form</div>
+<span class="formula-line"><span class="f-dim">Image line:</span>   <span class="f-gold">y = m·x + b</span></span>
+<span class="formula-line"><span class="f-dim">Point→line in Hough space:</span>   <span class="f-teal">b = −x<sub>0</sub>·m + y<sub>0</sub></span>   <span class="f-dim">(Slide 55)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-rose">Problem:</span> <span class="f-dim">vertical lines need m = ∞  →  slope-intercept blows up</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Fix — polar/normal form (Slides 61–63):</span>   <span class="f-lime">ρ = x·cos θ + y·sin θ</span></span>
+<span class="formula-line"><span class="f-dim">  ρ = ⊥ distance from line to origin</span></span>
+<span class="formula-line"><span class="f-dim">  θ = angle the ⊥ makes with the x-axis  →  bounded, no infinities</span></span>
+<span class="formula-line"><span class="f-dim">  A point now votes along a sinusoid in (ρ, θ) space.</span></span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Slide 53 — Why voting (verbatim)</div>
+        <p>"It's not feasible to check all combinations of features by fitting a model to each possible subset. Voting is a general technique where we let the features vote for all models that are compatible with it… Noise &amp; clutter features will cast votes too, but typically their votes should be inconsistent with the majority of good features."</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Slide 65 — Worked numerical (Prof's own example)</div>
+        <p>"Determine if (1,2), (2,3) and (3,4) are on the same line using Hough transformation." Using <code>c = −mx + y</code>: for (1,2) → c = −m+2; for (2,3) → c = −2m+3; for (3,4) → c = −3m+4. Solve any two: −m+2 = −2m+3 → m = 1, c = 1. Check the third: c = −3(1)+4 = 1 ✓. All three Hough lines intersect at <strong>(m=1, c=1)</strong> → the points are collinear on <code>y = x + 1</code>.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why polar form is mandatory in practice</h3>
+        <table class="he-table">
+          <thead><tr><th>Form</th><th>Parameters</th><th>Vertical line?</th><th>Vote shape in param space</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Slope-intercept</td><td>(m, b)</td><td style="color:var(--rose)">m → ∞ (breaks)</td><td>Straight line</td></tr>
+            <tr><td style="color:var(--lime)">Polar / normal</td><td>(ρ, θ)</td><td style="color:var(--lime)">Handled (θ=0)</td><td>Sinusoid</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:14px;color:var(--text2);">θ ranges over [0°, 180°), ρ over [−D, +D] where D is the image diagonal — both bounded, so the accumulator is a finite 2-D array. That is why every real implementation (and OpenCV) uses (ρ, θ), never (m, b).</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV &amp; beyond lines</div>
+        <p>Hough generalises from lines to circles and arbitrary shapes. The two line variants in OpenCV:</p>
+        <pre>import cv2, numpy as np
+edges = cv2.Canny(img, 50, 150)           # Hough needs an edge map first
+# Standard Hough: returns (rho, theta) peaks
+lines = cv2.HoughLines(edges, rho=1, theta=np.pi/180, threshold=200)
+# Probabilistic Hough: returns actual segment endpoints (faster, used in Lab)
+segs  = cv2.HoughLinesP(edges, 1, np.pi/180, threshold=80,
+                        minLineLength=50, maxLineGap=10)
+circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, dp=1, minDist=20)</pre>
+        <p><strong>Real use:</strong> lane-line detection (ADAS), barcode/grid detection, detecting the iris in eye-tracking, rectifying scanned documents. <strong>Pipeline note:</strong> Hough always runs <em>after</em> Canny — it consumes the binary edge map, it does not find edges itself.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Hough lives on inside deep nets.</strong> <cite>Deep Hough Transform (TPAMI 2021/2022)</cite> bakes the Hough voting operation into a differentiable layer for semantic line detection, and <cite>HoughNet (ECCV 2020)</cite> uses voting for object detection — evidence that the "let features vote" principle outlived hand-engineered CV.</p>
+        <p><strong>Failure modes:</strong> the classic Hough is memory- and compute-heavy (the accumulator scales with resolution × angular bins) and its peaks blur when many near-parallel lines exist. Probabilistic Hough (random subset of edge points) is the standard 2024 speed fix; coarse-to-fine accumulators handle the memory blow-up.</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s2-easy', this, 's2-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s2-medium', this, 's2-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s2-complex', this, 's2-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s2-easy" data-tab-group="s2-ex">
+          <div class="example-q">What does a single image point (x<sub>0</sub>, y<sub>0</sub>) map to in (m, b) Hough space?</div>
+          <ol class="step-list">
+            <li><p>Every line through (x<sub>0</sub>,y<sub>0</sub>) obeys y<sub>0</sub> = m·x<sub>0</sub> + b. Rearrange for b: b = −x<sub>0</sub>·m + y<sub>0</sub>.</p></li>
+            <li><p>Treating m as the variable, this is the equation of a <strong>straight line</strong> in (m,b) space with slope −x<sub>0</sub> and intercept y<sub>0</sub>.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">A straight line: b = −x<sub>0</sub>·m + y<sub>0</sub>. (One image point ↔ one Hough line — the core duality.)</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Point↔line duality is symmetric: an image line is a Hough point, an image point is a Hough line. Memorise the swap.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s2-medium" data-tab-group="s2-ex">
+          <div class="example-q">Reproduce Slide 65: are (1,2), (2,3), (3,4) collinear via Hough? Show the intersection.</div>
+          <ol class="step-list">
+            <li><p>Use c = −mx + y. Point (1,2): c = −m + 2. Point (2,3): c = −2m + 3. Point (3,4): c = −3m + 4.</p></li>
+            <li><p>Intersect the first two: −m + 2 = −2m + 3 → m = 1. Then c = −1 + 2 = 1.</p></li>
+            <li><p>Test the third Hough line at m=1: c = −3(1) + 4 = 1 ✓. It passes through (1,1) too.</p></li>
+            <li><p>All three lines meet at the single point (m=1, c=1) → the image points lie on y = x + 1.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Yes — collinear. Common Hough point (m=1, c=1) ⇒ image line y = x + 1.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"Collinear in image ⟺ concurrent in Hough." Three intersecting Hough lines = three collinear image points. That single sentence answers the whole slide.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s2-complex" data-tab-group="s2-ex">
+          <div class="example-q">You must detect a perfectly vertical wall edge (x = 5). Show why slope-intercept Hough fails and how polar form rescues it. Give the (ρ, θ) of the line.</div>
+          <ol class="step-list">
+            <li><p>A vertical line x = 5 has slope m = ∞. In (m,b) space its vote-line has infinite slope — the accumulator can't represent it, votes never land. Detection fails.</p></li>
+            <li><p>Switch to ρ = x·cosθ + y·sinθ. For a vertical line the perpendicular from the origin is horizontal → θ = 0°.</p></li>
+            <li><p>At θ = 0°: ρ = x·cos0 + y·sin0 = x·1 + y·0 = x = 5. So every point on x=5 votes for the same cell (ρ=5, θ=0°).</p></li>
+            <li><p>That cell accumulates a sharp peak → the vertical line is detected cleanly. No infinity anywhere.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">(ρ, θ) = (5, 0°). Polar form bounds both parameters (θ∈[0,180°), ρ∈[−D,D]), so vertical lines that break the (m,b) form are represented trivially.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>The infinity in slope is not a corner case you can ignore — vertical/near-vertical edges are everywhere (walls, poles, doc borders). Polar form isn't an "alternative," it's the only production-grade choice.</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>Hough — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Most likely form:</strong> the Slide 65 collinearity numerical — "are these 3 points on a line, show via Hough." Practise the −mx+y substitution and intersection until it's automatic.</li>
+          <li><strong>#1 mistake:</strong> forgetting the duality direction — writing "a point maps to a point." A point → a LINE; a line → a point.</li>
+          <li><strong>#2 mistake:</strong> not knowing <em>why</em> polar form exists (vertical-line / m=∞ problem). This is a favourite "explain why" question.</li>
+          <li><strong>Exam-critical slides:</strong> 53 (voting), 55 (duality), 61–63 (polar ρ,θ), 65 (numerical).</li>
+          <li><strong>Lab 3 API:</strong> <code>cv2.HoughLines</code> (ρ,θ peaks) vs <code>cv2.HoughLinesP</code> (segment endpoints). Both require a Canny edge map as input.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 — HARRIS ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Harris Corner Detector</h2>
+        <span class="src-badge src-transcript">Transcript 0:11–1:02</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Source note</div>
+        <p>Harris is the <strong>first half of the actual May 30 lecture</strong> — Prof spent ~50 minutes deriving it live, including a full 4×4 numerical. It is genuine CV5 content (Prof: <em>"from your curriculum perspective we are gonna study Harris corner detector"</em>, ~29:30) even though it isn't in the handout's 5-topic list. <em>Transcript-grounded; the static slide text for these slides was image-heavy.</em></p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — slide a window and watch the change</h3>
+        <p>Prof's definition, repeated many times: <em>"a corner is a point where intensity changes in multiple directions"</em> — and equivalently <em>"a corner is where two edges intersect."</em> A flat region changes in <em>no</em> direction; an edge changes in <em>one</em> direction (across it, not along it); a corner changes in <em>every</em> direction.</p>
+        <p>The test: take a small window (think 3×3) and shift it by a tiny amount (u,v). On a flat patch the contents barely change for any shift. On an edge they don't change if you slide <em>along</em> the edge, but do if you slide across. On a corner, <strong>any</strong> shift changes the contents a lot. Harris turns "how much does the windowed content change for a shift" into an eigenvalue test.</p>
+        <p>Why it matters (Prof, ~14:00): corners drive <strong>apparent motion / parallax</strong> — as you move toward a corner its image position shifts, which is the backbone of ADAS Level-1, structure-from-motion, camera calibration, AR and 3D reconstruction. Harris (Harris &amp; Stephens, 1988) reports <strong>corners, edges, AND flats all from one response function.</strong></p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The derivation Prof did live <span style="color:var(--text3);font-size:0.8rem;">(Transcript 23:00–52:00)</span></h3>
+        <ol class="pipeline">
+          <li><strong>Window shift &amp; intensity change</strong>
+            <p>E(u,v) = Σ w(x,y)·[ I(x+u, y+v) − I(x,y) ]². Sum the squared intensity difference over the window for a shift (u,v).</p></li>
+          <li><strong>Taylor-expand the shift</strong>
+            <p>I(x+u,y+v) ≈ I(x,y) + I<sub>x</sub>u + I<sub>y</sub>v (drop higher orders since u,v are small — Prof stressed this). The I(x,y) terms cancel, leaving E ≈ Σ w·(I<sub>x</sub>u + I<sub>y</sub>v)².</p></li>
+          <li><strong>Write it as a quadratic form</strong>
+            <p>E(u,v) ≈ [u v] · <strong>M</strong> · [u v]ᵀ where M = Σ w·[[I<sub>x</sub>², I<sub>x</sub>I<sub>y</sub>],[I<sub>x</sub>I<sub>y</sub>, I<sub>y</sub>²]]. Prof labelled A=I<sub>x</sub>², B=I<sub>x</sub>I<sub>y</sub>, C=I<sub>y</sub>².</p></li>
+          <li><strong>Eigen-decompose M (the structure tensor)</strong>
+            <p>λ<sub>1</sub>, λ<sub>2</sub> = eigenvalues = axes of the response ellipse. λ<sub>min</sub> = slowest-change direction, λ<sub>max</sub> = fastest.</p></li>
+          <li><strong>Corner response R (avoid computing eigenvalues directly)</strong>
+            <p>R = det(M) − k·trace(M)² with k ∈ [0.04, 0.06]. det = λ<sub>1</sub>λ<sub>2</sub>, trace = λ<sub>1</sub>+λ<sub>2</sub>. R&gt;0 → corner, R&lt;0 → edge, |R|≈0 → flat.</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Harris — structure tensor &amp; response</div>
+<span class="formula-line"><span class="f-dim">Change for shift (u,v):</span>  <span class="f-teal">E(u,v) = Σ w(x,y)·[I(x+u,y+v) − I(x,y)]²</span></span>
+<span class="formula-line"><span class="f-dim">Taylor →</span>  <span class="f-teal">E(u,v) ≈ [u v] M [u v]ᵀ</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Structure tensor:</span>   <span class="f-gold">M = Σ w · [ I<sub>x</sub>²      I<sub>x</sub>I<sub>y</sub> ]</span></span>
+<span class="formula-line">                       <span class="f-gold">        [ I<sub>x</sub>I<sub>y</sub>   I<sub>y</sub>²   ]   = [ A  B ; B  C ]</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">det M =</span> <span class="f-lime">A·C − B²</span> <span class="f-dim">= λ<sub>1</sub>λ<sub>2</sub></span>      <span class="f-dim">trace M =</span> <span class="f-sky">A + C</span> <span class="f-dim">= λ<sub>1</sub> + λ<sub>2</sub></span></span>
+<span class="formula-line"><span class="f-dim">Response:</span>   <span class="f-violet">R = det(M) − k·trace(M)²</span>,   <span class="f-dim">k ∈ [0.04, 0.06]</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-lime">R &gt; 0</span> → corner   ·   <span class="f-gold">R &lt; 0</span> → edge   ·   <span class="f-rose">|R| ≈ 0 (1e-9)</span> → flat</span>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba — Transcript (~31:00)</div>
+        <p>"Corners are basically areas where intensity changes along multiple directions at the same time and they help us in detecting the apparent motion of an object. Corners are also places where two edges intersect."</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba — Transcript (~53:00) — eigenvalue logic</div>
+        <p>"If both lambda one and lambda two are small, you are at a flat area. If one of them is large, you are at an edge. And if they are both equally large, you are at a corner… so rather than calculating the gradient, we directly take det and trace — determinant is λ₁·λ₂, trace is λ₁+λ₂."</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba — Transcript (~57:00) — the Sobel-squared trick</div>
+        <p>"Why am I taking the gradient of the Sobel operator and not the image? It is just the associative property of convolution. Rather than taking the derivative then squaring, I take the square of the Sobel filter and multiply with the input signal — almost equivalent, cheaper."</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Reading the eigenvalues — the (λ<sub>1</sub>, λ<sub>2</sub>) map</h3>
+        <table class="he-table">
+          <thead><tr><th>λ<sub>1</sub></th><th>λ<sub>2</sub></th><th>Region</th><th>Response R</th><th>Ellipse shape</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--rose)">small</td><td style="color:var(--rose)">small</td><td style="color:var(--text3)">Flat</td><td>|R| ≈ 0</td><td>Tiny circle (no change)</td></tr>
+            <tr><td style="color:var(--gold)">large</td><td style="color:var(--rose)">small</td><td style="color:var(--gold)">Edge</td><td>R &lt; 0</td><td>Long ellipse (1 direction)</td></tr>
+            <tr><td style="color:var(--lime)">large</td><td style="color:var(--lime)">large</td><td style="color:var(--lime)">Corner</td><td>R &gt; 0</td><td>Big circle (all directions)</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:14px;color:var(--text2);"><strong>Steps to remember (Prof, ~1:00):</strong> (1) Gaussian-smooth the image — <em>"if you have noise, the partial-order derivative will be garbled."</em> (2) Compute I<sub>x</sub>, I<sub>y</sub> (Sobel). (3) Form M = [A B; B C]. (4) Compute R = det − k·trace². (5) Threshold &amp; non-max-suppress R to mark corners.</p>
+      </div>
+
+      <!-- DEMO is the Harris numerical worked below; the corner concept demo is the HoG one -->
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV &amp; motion</div>
+        <pre>import cv2, numpy as np
+gray = np.float32(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+# blockSize=neighbourhood, ksize=Sobel aperture, k=Harris free param 0.04-0.06
+R = cv2.cornerHarris(gray, blockSize=2, ksize=3, k=0.04)
+img[R > 0.01 * R.max()] = [0, 0, 255]   # threshold on R, mark corners red
+# Sub-pixel refinement: cv2.cornerSubPix(...)
+# Modern alternative: cv2.goodFeaturesToTrack (Shi-Tomasi, uses min(λ1,λ2))</pre>
+        <p><strong>Prof's industry link (~17:00):</strong> ADAS Level-1 uses exactly this — corner + edge + line detection, "no fancy deep-learning stuff" because cars can't mount a GPU. Corners feed <strong>parallax</strong> estimation (are we moving toward or away?), camera calibration, monocular/stereo SLAM, and AR overlay anchoring.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Shi-Tomasi vs Harris.</strong> The widely used <cite>Shi &amp; Tomasi "Good Features to Track" (1994)</cite> replaces R = det − k·trace² with R = min(λ<sub>1</sub>, λ<sub>2</sub>) — no free parameter k, and empirically more stable corners for tracking. It's <code>cv2.goodFeaturesToTrack</code> and is the default front-end of the <cite>Lucas-Kanade</cite> optical-flow / VO pipelines still shipping in 2024.</p>
+        <p><strong>Failure modes:</strong> Harris is <em>rotation-invariant but NOT scale-invariant</em> — a corner viewed from far away becomes a smooth blob and stops being detected. This exact limitation is what motivates SIFT's scale-space (Section 08). It is also sensitive to the k and threshold choices, as Prof showed live by tuning the threshold to reveal/hide corners (~1:01).</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s3-easy', this, 's3-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s3-medium', this, 's3-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s3-complex', this, 's3-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s3-easy" data-tab-group="s3-ex">
+          <div class="example-q">At a pixel the eigenvalues of M are λ<sub>1</sub> = 1200, λ<sub>2</sub> = 1100. Using k = 0.04, compute R and classify the region.</div>
+          <ol class="step-list">
+            <li><p>det(M) = λ<sub>1</sub>λ<sub>2</sub> = 1200 × 1100 = 1,320,000.</p></li>
+            <li><p>trace(M) = λ<sub>1</sub> + λ<sub>2</sub> = 2300. trace² = 5,290,000.</p></li>
+            <li><p>R = det − k·trace² = 1,320,000 − 0.04 × 5,290,000 = 1,320,000 − 211,600 = <strong style="color:var(--lime)">1,108,400</strong>.</p></li>
+            <li><p>R ≫ 0 and both eigenvalues are large &amp; comparable → <strong style="color:var(--lime)">CORNER</strong>.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">R ≈ +1.11×10⁶ &gt; 0 → corner. (Both λ large &amp; similar = corner, per Prof's rule.)</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>You never actually need λ₁, λ₂ separately — det and trace give R directly from A, B, C. That's the whole computational point of Harris.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s3-medium" data-tab-group="s3-ex">
+          <div class="example-q">From Prof's live example: at the corner pixel I<sub>x</sub> = 150 and I<sub>y</sub> = 150 (so I<sub>x</sub>² = 22500, I<sub>y</sub>² = 22500, I<sub>x</sub>I<sub>y</sub> = 22500). With a single-pixel window, build M, then compute det, trace and R (k=0.04).</div>
+          <ol class="step-list">
+            <li><p>M = [[A, B],[B, C]] = [[22500, 22500],[22500, 22500]].</p></li>
+            <li><p>det(M) = A·C − B² = 22500·22500 − 22500² = 0.</p></li>
+            <li><p>trace(M) = A + C = 45000. R = det − k·trace² = 0 − 0.04·(45000)² = −0.04·2.025×10⁹ = <strong style="color:var(--gold)">−8.1×10⁷</strong>.</p></li>
+            <li><p>R &lt; 0 → this <em>single-pixel</em> tensor reads as an EDGE, not a corner — because with I<sub>x</sub>=I<sub>y</sub> the tensor is rank-1 (det=0). A true corner needs the <em>window sum</em> over neighbours with <em>different</em> gradient directions so det&gt;0.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">det=0, trace=45000, R=−8.1×10⁷ (&lt;0). A rank-1 single-pixel tensor → edge-like. Corners emerge only after the windowed Σ mixes multiple gradient directions (det becomes &gt;0).</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>This is exactly why Prof emphasised the <em>window sum</em> and warned the slide numeric "was wrong" (~7:56 / 47:00): a corner is a property of a neighbourhood, not one pixel. One pixel with a single gradient direction can only look like an edge.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s3-complex" data-tab-group="s3-ex">
+          <div class="example-q">Explain — using the structure tensor M — why Harris is rotation-invariant but not scale-invariant. Tie it to what SIFT must add.</div>
+          <ol class="step-list">
+            <li><p><strong>Rotation:</strong> rotating the image rotates the gradient vector but M's <em>eigenvalues</em> are rotation-invariant (rotation only rotates the eigenvectors/ellipse, not λ₁,λ₂). R depends only on det and trace = λ₁λ₂ and λ₁+λ₂ → unchanged. So a rotated corner gives the same R. ✓ invariant.</p></li>
+            <li><p><strong>Scale:</strong> the window is a <em>fixed</em> pixel size. Zoom out and a sharp corner spreads across fewer pixels than the window — the gradients average out, λ's shrink, R drops below threshold. The corner "disappears."</p></li>
+            <li><p>Conversely a large smooth curve, viewed close up, can momentarily look corner-like inside a small window. The response is tied to the absolute pixel scale of the window.</p></li>
+            <li><p><strong>What SIFT adds:</strong> a <em>scale space</em> (Gaussian pyramid + DoG) so features are detected at the scale where they are extremal — making the detector scale-invariant, which Harris fundamentally is not.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Rotation-invariant: R = f(det, trace) = f(λ₁λ₂, λ₁+λ₂), and eigenvalues don't change under rotation. NOT scale-invariant: a single fixed-size window can't track a feature across zoom — gradients wash out. SIFT fixes this with scale-space/DoG.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"Eigenvalues survive rotation, fixed windows don't survive zoom." That one line is the bridge from Harris (Section 03) to SIFT (Section 08).</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>Harris — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Most likely form:</strong> given a small image patch, "compute I<sub>x</sub>, I<sub>y</sub>, build M, compute R, classify corner/edge/flat" — exactly Prof's live 4×4 example. Or the eigenvalue table (small/large → flat/edge/corner).</li>
+          <li><strong>#1 mistake:</strong> forgetting Gaussian smoothing first → noisy derivatives → garbage R (Prof, ~1:00: "if you have noise the partial-order derivative will be garbled").</li>
+          <li><strong>#2 mistake:</strong> wrong sign convention — R&gt;0 corner, R&lt;0 edge, R≈0 flat. Mixing these up flips the whole answer.</li>
+          <li><strong>#3 mistake:</strong> computing R from a single pixel — corners are a <em>windowed</em> property; det must be &gt;0, which needs mixed gradient directions.</li>
+          <li><strong>Remember k:</strong> empirical constant 0.04–0.06, exists to suppress noisy/edge responses.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 — HoG + SVM ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">HoG + SVM — Pedestrian Detection</h2>
+        <span class="src-badge src-transcript">Transcript 1:16–1:57</span>
+        <span class="src-badge src-lab">Lab 3</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Source note</div>
+        <p>HoG is the <strong>second half of the live lecture</strong> — Prof's longest single segment, with a worked bin-interpolation numerical he debugged live (~1:36). All numbers below (13.6 @ 36°, 25 @ 25°, the 64×128 / 8×8 / 2×2 structure) are <strong>Prof's own from the transcript.</strong> Dalal &amp; Triggs (CVPR 2005) supplies the SVM half and the 3780-dim count, which Prof referenced as the pedestrian-detection use case.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — shape as a grammar of gradient directions</h3>
+        <p>Prof's framing (~1:20): every object class shares a <em>direction signature</em>. <em>"What is the direction of your nose? It is pointed towards the ground, always. Every human has a nose that points downward, eyes placed 90° to the nose."</em> HoG captures that — not <em>where</em> exact pixels are, but <em>which way the gradients point</em> in each little cell. Edges, lines and corners were isolated features; <strong>HoG ties them together into a template</strong> (~1:57: "HoG ties all of it together").</p>
+        <p>The analogy is a <strong>fingerprint made of arrows</strong>. Divide the image into a grid; in each grid cell, record a histogram of which directions the gradients lean. Stack all those histograms → one long vector that describes the object's <em>shape grammar</em>. Two humans give similar HoG templates; a human and a dog don't. Match against a stored template → classify.</p>
+        <p>Why it's still taught (~1:57): HoG is the <strong>cheap, GPU-free</strong> detector — <em>"Hog can be done almost on a Pentium-4 processor"</em> — used in low-cost surveillance and edge/IoT pedestrian counters. It's also the historical bridge to CNNs: a CNN's first layer relearns oriented-gradient filters automatically (Prof: HoG "forms a basis of modern-day deep-learning training").</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The pipeline on a 64×128 window <span style="color:var(--text3);font-size:0.8rem;">(Transcript + Dalal-Triggs)</span></h3>
+        <ol class="pipeline">
+          <li><strong>Take a 64×128 detection window</strong>
+            <p>Prof (~1:18): crop a 64-wide × 128-tall patch. Convert to grayscale (RGB → do all 3 channels, keep max-magnitude, ~1:46).</p></li>
+          <li><strong>Gradients per pixel</strong>
+            <p>Simple [−1,0,1] / [−1,0,1]ᵀ → G<sub>x</sub>, G<sub>y</sub>. Magnitude = √(G<sub>x</sub>²+G<sub>y</sub>²), angle = arctan(G<sub>y</sub>/G<sub>x</sub>).</p></li>
+          <li><strong>8×8 cell histograms — 9 bins, 0–180°</strong>
+            <p>64×128 ÷ 8 = 8×16 cells. Each cell → 9-bin <em>unsigned</em> histogram (bins centred 0,20,…,160). Magnitudes split between the two nearest bins by linear interpolation.</p></li>
+          <li><strong>2×2 block normalisation (16×16 px), stride 8</strong>
+            <p>Group 2×2 cells = 1 block; concatenate their four 9-bin histograms (36 values) and L2-normalise. Blocks overlap (stride = 1 cell) → each cell contributes to multiple blocks. This is the illumination-invariance step.</p></li>
+          <li><strong>Concatenate → 3780-dim descriptor</strong>
+            <p>Blocks: (8−1)×(16−1) = 7×15 = 105 blocks. 105 × 4 cells × 9 bins = <strong>3780-D</strong> feature vector.</p></li>
+          <li><strong>Linear SVM, sliding window + image pyramid</strong>
+            <p>A linear SVM scores each 3780-D vector "person / not person." Slide the window over the image at multiple scales (pyramid); merge hits with Non-Maximum Suppression.</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">HoG — gradient, bin interpolation, dimensions</div>
+<span class="formula-line"><span class="f-dim">Per pixel:</span>  <span class="f-gold">m = √(G<sub>x</sub>² + G<sub>y</sub>²)</span>    <span class="f-sky">θ = arctan(G<sub>y</sub>/G<sub>x</sub>) mod 180°</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Bin interpolation (bin width = 20°, nearest centres c<sub>lo</sub>, c<sub>hi</sub>):</span></span>
+<span class="formula-line">  <span class="f-teal">w(c<sub>hi</sub>) = m · (θ − c<sub>lo</sub>) / 20</span>      <span class="f-teal">w(c<sub>lo</sub>) = m · (c<sub>hi</sub> − θ) / 20</span></span>
+<span class="formula-line">  <span class="f-dim">≡ closer bin gets the larger share:</span>  <span class="f-violet">w(c) = m · (1 − |θ−c|/20)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Block L2-Hys norm:</span>  <span class="f-lime">v ← v / √(‖v‖² + ε²)</span>, clip at 0.2, renormalise</span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Dimensions (64×128):</span></span>
+<span class="formula-line">  cells = (64/8) × (128/8) = <span class="f-gold">8 × 16</span></span>
+<span class="formula-line">  blocks = (8−1) × (16−1) = <span class="f-gold">7 × 15 = 105</span></span>
+<span class="formula-line">  descriptor = <span class="f-lime">105 × 4 × 9 = 3780</span></span>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba — Transcript (~1:20) — the nose analogy</div>
+        <p>"Think about your face. What is the direction of your nose? It is pointed towards the ground, right? Always. Every human being has a nose that points downward, eyes placed directly 90 degree to the nose. So HoG takes this distinct direction and uses it to recognise patterns."</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba — Transcript (~1:42) — live bin interpolation</div>
+        <p>"Magnitude is 25, angle is 25°. 25° sits between 20 and 40. It is 5 points from 20 and 15 from 40. So contribution to the 20-bin = 15/20 × 25 = 18.75; contribution to the 40-bin = 5/20 × 25 = 6.25. The closer bin gets the bigger share — the weight is one minus the distance."</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba — Transcript (~1:51) — accuracy reality check</div>
+        <p>"Using HoG for image classification, the performance is at max 36%. The first deep algorithms VGG and AlexNet achieved ~40% — built on top of this only. Be prepared for a lot less accuracy than your deep-learning algorithms. These were developed when imaging data was not that mature."</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Transcript ~1:46 — RGB handling (student Q from Bhawani Paliwal)</div>
+        <p>Q: "How does HoG pan out with RGB channels?" Prof: "You calculate G<sub>x</sub>, G<sub>y</sub> for all 3 layers separately. They don't conflict — at the end of the day it contributes. For a 3-D image F(x,y,z) you get angles between XY, YZ, ZX, and one resultant angle from the origin." (Standard HoG keeps, per pixel, the channel with the <em>maximum</em> gradient magnitude.)</p>
+      </div>
+
+      <!-- DEMO 4: HoG cell-to-histogram -->
+      <div class="interactive-demo" id="hogDemo">
+        <h4>⊞ Interactive · HoG Cell → 9-Bin Histogram</h4>
+        <div class="demo-sub">Click any arrow to rotate its gradient by +20°. The 9-bin histogram below updates live using Prof's linear-interpolation rule (each arrow has magnitude 20). Watch the dominant orientation emerge.</div>
+        <div class="demo-canvas-wrap">
+          <div>
+            <div class="demo-col-label" style="font-family:var(--font-code);font-size:10px;text-transform:uppercase;color:var(--text3);margin-bottom:0.5rem;">3×3 cell — click arrows</div>
+            <div class="mgrid" id="hogGrid" style="grid-template-columns:repeat(3,52px);"></div>
+          </div>
+          <div style="flex:1;min-width:260px;">
+            <div class="demo-col-label" style="font-family:var(--font-code);font-size:10px;text-transform:uppercase;color:var(--text3);margin-bottom:0.5rem;">9-bin histogram (0–180°, unsigned)</div>
+            <div class="bar-chart" id="hogBars"></div>
+            <div class="demo-output" id="hogOut" style="margin-top:0.75rem;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV pedestrian detector</div>
+        <pre>import cv2
+hog = cv2.HOGDescriptor()              # default = 64x128, 8x8 cell, 2x2 block, 9 bins
+hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+# detectMultiScale = sliding window + image pyramid + built-in NMS
+rects, weights = hog.detectMultiScale(img, winStride=(8,8),
+                                       padding=(8,8), scale=1.05)
+for (x, y, w, h) in rects:
+    cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)</pre>
+        <p><strong>DL connection (Prof's whole thesis):</strong> HoG is hand-engineered feature extraction; a CNN learns the same oriented-gradient detectors in conv-block-1 by backprop, then learns the higher blocks too — which is why CNNs (2012+) crushed HoG's ~36% on general classification. <strong>Real use today:</strong> low-power people-counters, IoT motion triggers, and as facial-landmark seeds — Prof notes face detection still rides on ~11 HoG-derived key points (~1:57).</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Why unsigned (0–180°) not signed (0–360°)?</strong> Dalal &amp; Triggs' own ablation (CVPR 2005) found unsigned gradients <em>better</em> for pedestrians: a dark-jacket-on-light-background edge and its light-on-dark counterpart point 180° apart but describe the same body contour — folding them together halves the bins and removes contrast-polarity noise. (For vehicles, signed can help — orientation polarity carries info there.)</p>
+        <p><strong>Ablation evidence (the "what breaks if you remove X" facts):</strong> removing <em>block normalisation</em> is the single biggest hit — miss-rate roughly doubles, because illumination invariance is lost. Removing <em>orientation binning</em> (using magnitude only) collapses the shape grammar. Fine 8×8 cells + 2×2 block overlap were the empirically tuned sweet spot. Post-2012, <cite>CNN detectors (R-CNN→YOLO)</cite> dominate, but HoG+SVM remains the reference low-compute baseline in 2024 embedded vision.</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s4-easy', this, 's4-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s4-medium', this, 's4-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s4-complex', this, 's4-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s4-easy" data-tab-group="s4-ex">
+          <div class="example-q">A 64×128 detection window uses 8×8 cells. How many cells across and down, and how many 8×8 cells total?</div>
+          <ol class="step-list">
+            <li><p>Across: 64 / 8 = <strong style="color:var(--gold)">8 cells</strong>. Down: 128 / 8 = <strong style="color:var(--gold)">16 cells</strong>.</p></li>
+            <li><p>Total = 8 × 16 = <strong style="color:var(--lime)">128 cells</strong>.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">8 wide × 16 tall = 128 cells of 8×8 pixels each.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Prof flip-flopped on which dim is which in the lecture — anchor yourself: 64 is WIDTH (→8 cells), 128 is HEIGHT (→16 cells). Don't let the slide confusion confuse you.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s4-medium" data-tab-group="s4-ex">
+          <div class="example-q">Prof's live numerical: a pixel has gradient magnitude 13.6 at angle 36°. Distribute it into the 9-bin (0,20,40,…,160) histogram by linear interpolation.</div>
+          <ol class="step-list">
+            <li><p>36° lies between bin centres 20° and 40° (width 20°).</p></li>
+            <li><p>Distance to 40 = 4; distance to 20 = 16. Closer bin (40) gets the bigger share.</p></li>
+            <li><p>w(40) = 13.6 × (36−20)/20 = 13.6 × 16/20 = 13.6 × 0.8 = <strong style="color:var(--lime)">10.88</strong>.</p></li>
+            <li><p>w(20) = 13.6 × (40−36)/20 = 13.6 × 4/20 = 13.6 × 0.2 = <strong style="color:var(--gold)">2.72</strong>. (Check: 10.88 + 2.72 = 13.6 ✓)</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Bin 40° gets 10.88, bin 20° gets 2.72 (sum = 13.6, magnitude conserved). Closer bin = larger weight = 1 − distance/20.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>The contribution is proportional to the distance to the <em>opposite</em> bin (inverse of distance to itself). Prof debugged exactly this sign live (~1:36) — "weight = one minus d." Always sanity-check the two shares sum to the magnitude.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s4-complex" data-tab-group="s4-ex">
+          <div class="example-q">Derive the full 3780-D descriptor length from first principles, and state what each removed stage (normalisation, binning) costs — citing Dalal &amp; Triggs.</div>
+          <ol class="step-list">
+            <li><p>Cells: 64×128 with 8×8 cells → 8 × 16 cells.</p></li>
+            <li><p>Blocks: 2×2 cells, slid with stride = 1 cell → (8−1) × (16−1) = 7 × 15 = 105 overlapping blocks.</p></li>
+            <li><p>Per block: 2×2 cells × 9 bins = 36 values (L2-normalised together).</p></li>
+            <li><p>Descriptor = 105 blocks × 36 = <strong style="color:var(--lime)">3780</strong> dimensions.</p></li>
+            <li><p><strong>Remove block normalisation:</strong> miss-rate ≈ doubles — illumination/contrast invariance gone (D&amp;T's biggest single ablation). <strong>Remove orientation bins</strong> (magnitude only): shape grammar collapses, detector can't tell a leg-edge from a head-edge. <strong>Coarsen cells</strong> beyond 8×8: localisation of limbs lost.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">3780 = 105 overlapping blocks × (4 cells × 9 bins). Block overlap (stride 8) is why blocks ≠ cells/4. Dropping normalisation is the costliest ablation (~2× miss-rate); dropping bins destroys the descriptor entirely.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>The 3780 count hinges on <em>overlap</em>: without overlap you'd get (8/2)×(16/2)=4×8=32 blocks → 1152-D. The 7×15 comes from sliding one cell at a time. Overlap is what gives each cell multiple normalisation contexts — the secret of HoG's robustness.</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>HoG — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Most likely form:</strong> the bin-interpolation numerical (magnitude m at angle θ → split between two bins) — Prof did it twice live. Also "how many cells/blocks/dimensions for 64×128" and "why unsigned 0–180°."</li>
+          <li><strong>#1 mistake:</strong> inverting the interpolation weights — putting the bigger share in the farther bin. Weight = 1 − (distance to that bin)/20; closer bin wins.</li>
+          <li><strong>#2 mistake:</strong> 9 bins over <strong>0–180°</strong> (unsigned), NOT 0–360°. Gradient direction flips at a contrast reversal but describes the same edge → fold to 180°.</li>
+          <li><strong>#3 mistake:</strong> forgetting block <em>overlap</em> when counting blocks → wrong 3780. It's (8−1)×(16−1), not 4×8.</li>
+          <li><strong>Lab 3 API:</strong> <code>cv2.HOGDescriptor()</code> + <code>setSVMDetector(getDefaultPeopleDetector())</code> + <code>detectMultiScale()</code>. The default IS 64×128 / 8×8 / 2×2 / 9-bin.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 — COLOUR SPACES ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Colour &amp; Colour Spaces</h2>
+        <span class="src-badge src-slides">Slides 67–88</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Source note</div>
+        <p>The final third of CV5 (slides 67–88) is colour theory — light physics, trichromacy, and the device/perception colour spaces. <em>Slides only — the May 30 lecture ran out of time on Harris + HoG and did not reach colour live.</em> Prof did flag (~1:46, HoG section) that everything generalises from grayscale to RGB by processing each channel, which is the practical bridge into this section.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — we never see objects, only reflected light</h3>
+        <p>Slide 69 states it bluntly: <em>"We do not see objects, but the light that has been reflected by or transmitted through the objects."</em> Colour is therefore not a property of an object alone — it's the product of <strong>(1) the light source's spectral power distribution</strong> and <strong>(2) the object's reflectance</strong> (Slide 70). Change the lamp, change the colour.</p>
+        <p>Human colour vision is <strong>trichromatic</strong> (Slide 87): three cone types — S (short, ≈430 nm), M (medium, ≈560 nm), L (long, ≈610 nm) — sometimes called B, G, R cones. Every perceivable colour is just a 3-number combination of these cone responses. That biological fact is exactly why a 3-channel RGB image suffices to fool the eye, and why colour spaces are all 3-coordinate systems.</p>
+        <p>The reason there are <em>many</em> colour spaces (Slide 74): some match <strong>devices</strong> (RGB for screens, CMYK for printers, YCbCr for video), others match <strong>perception</strong> (HSI/HSV for human description — "blue for cold water," Slide 72). You pick the space whose coordinates align with your task.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The colour-space families <span style="color:var(--text3);font-size:0.8rem;">(Slides 74–86)</span></h3>
+        <table class="he-table">
+          <thead><tr><th>Space</th><th>Type</th><th>Mixing</th><th>Used in</th><th>Key relation</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--rose)">RGB</td><td>Device</td><td>Additive</td><td>Every monitor (internal)</td><td>(2⁸)³ = 16,777,216 colours</td></tr>
+            <tr><td style="color:var(--sky)">CMY(K)</td><td>Device</td><td>Subtractive</td><td>Colour printers</td><td>C=1−R, M=1−G, Y=1−B; K=min(C,M,Y)</td></tr>
+            <tr><td style="color:var(--gold)">HSI / HSV</td><td>Perception</td><td>—</td><td>Image description &amp; interpretation</td><td>Decouples chroma (H,S) from intensity (I)</td></tr>
+            <tr><td style="color:var(--lime)">YCbCr / YIQ / YUV</td><td>Device (broadcast)</td><td>—</td><td>TV, MPEG compression</td><td>Y=luminance, Cb/Cr=chroma</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Colour — exact conversions from the slides</div>
+<span class="formula-line"><span class="f-dim">CMYK (Slides 77–78):</span></span>
+<span class="formula-line">  <span class="f-sky">C = 1 − R     M = 1 − G     Y = 1 − B</span></span>
+<span class="formula-line">  <span class="f-sky">K = min(C, M, Y)</span>;  then  <span class="f-sky">C = C−K,  M = M−K,  Y = Y−K</span>  <span class="f-dim">(save ink)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">YCbCr — MPEG/JPEG (Slide 86):</span></span>
+<span class="formula-line">  <span class="f-lime">Y  = 0.257·R + 0.504·G + 0.098·B + 16</span></span>
+<span class="formula-line">  <span class="f-rose">Cr = 0.439·R − 0.368·G − 0.071·B + 128</span></span>
+<span class="formula-line">  <span class="f-sky">Cb = −0.148·R − 0.291·G + 0.439·B + 128</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">CIE 1931 primaries (Slide 71):</span>  <span class="f-rose">R=700nm</span>  <span class="f-lime">G=546.1nm</span>  <span class="f-sky">B=435.8nm</span></span>
+<span class="formula-line"><span class="f-dim">Secondaries:</span>  magenta = R+B,  cyan = G+B,  yellow = R+G</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Slide 80 — Why HSI exists (verbatim)</div>
+        <p>"RGB, CMY and the like are hardware-oriented colour spaces (suited for image acquisition and display). The HSI (Hue, Saturation, Intensity) is a perceptive colour space (suited for image description and interpretation). It allows the decoupling of chromatic signals (H+S) from the intensity signal (I)." — This decoupling is why segmentation/thresholding is often done in HSI, not RGB.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Slide 85 — Why Class-Y for compression</div>
+        <p>"Better compression ratio if changing to Class-Y before compression — High bandwidth for Y, small bandwidth for chromaticity." The human eye is far more sensitive to luminance than chroma, so MPEG/JPEG keep Y at full resolution and subsample Cb, Cr. That's chroma subsampling (4:2:0).</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV colour conversions</div>
+        <pre>import cv2
+hsv   = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)    # segment by hue, not RGB
+ycbcr = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)  # luminance/chroma split
+gray  = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)   # 0.299R+0.587G+0.114B
+# Colour-based object isolation (e.g. skin/road) works in HSV:
+mask = cv2.inRange(hsv, (0,30,60), (20,150,255))</pre>
+        <p><strong>Note the catch:</strong> OpenCV loads images as <strong>BGR</strong>, not RGB. Every Lab-3 pipeline that mixes OpenCV and matplotlib must convert, or colours look wrong. <strong>Real use:</strong> HSV for colour-based segmentation (traffic lights, skin detection), YCbCr for video codecs, CMYK for print pre-press.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Colour spaces still matter in deep learning.</strong> Modern detectors mostly ingest RGB, but research 2022–2024 shows <cite>perceptual spaces (Lab, HSV) improve robustness</cite> for low-light and colour-constancy tasks, and <cite>YCbCr-domain CNNs</cite> exploit JPEG's existing transform to skip decoding — running inference directly on compressed DCT coefficients for big speedups in large-scale image pipelines.</p>
+        <p><strong>Limitation:</strong> RGB→HSI conversion is non-linear and singular at the grey axis (hue undefined when S=0), so naïve hue thresholding fails on near-grey pixels. Production code always gates hue by a minimum saturation.</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s5-easy', this, 's5-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s5-medium', this, 's5-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s5-complex', this, 's5-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s5-easy" data-tab-group="s5-ex">
+          <div class="example-q">A 24-bit RGB image uses 8 bits per channel. How many distinct colours can it represent?</div>
+          <ol class="step-list">
+            <li><p>Each channel: 8 bits → 2⁸ = 256 levels.</p></li>
+            <li><p>Three independent channels: 256 × 256 × 256 = (2⁸)³ = 2²⁴.</p></li>
+            <li><p>2²⁴ = <strong style="color:var(--lime)">16,777,216</strong> colours (Slide 76).</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">16,777,216 (≈16.7 million) colours = (2⁸)³ = 2²⁴.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"24-bit colour" = 8 bits × 3 channels. The 16.7M figure is a guaranteed recall mark — memorise it.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s5-medium" data-tab-group="s5-ex">
+          <div class="example-q">A normalised pixel is R=0.8, G=0.5, B=0.2. Convert to CMYK (Slides 77–78).</div>
+          <ol class="step-list">
+            <li><p>C = 1−R = 0.2, M = 1−G = 0.5, Y = 1−B = 0.8.</p></li>
+            <li><p>K = min(C,M,Y) = min(0.2, 0.5, 0.8) = 0.2.</p></li>
+            <li><p>Subtract K: C = 0.2−0.2 = 0, M = 0.5−0.2 = 0.3, Y = 0.8−0.2 = 0.6.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">CMYK = (0, 0.3, 0.6, 0.2). The K channel replaces the common 0.2 of CMY with cheap black ink.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>K=min(C,M,Y) is the "grey-component replacement" — it pulls out the equal part of C, M, Y (which would otherwise muddy to black) and prints it with black ink instead. Saves coloured ink and gives crisper blacks.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s5-complex" data-tab-group="s5-ex">
+          <div class="example-q">Explain why edge detection and segmentation are often more reliable in HSI/HSV than in RGB, using the decoupling property from Slide 80. Give a failure case for RGB.</div>
+          <ol class="step-list">
+            <li><p>In RGB, all three channels co-vary with brightness: a shadow on a red car lowers R, G, B together — the colour "red" is smeared across many RGB values.</p></li>
+            <li><p>HSI decouples chroma (H, S) from intensity (I). The car's <em>hue</em> stays ~red in both lit and shadowed regions; only I changes.</p></li>
+            <li><p>So thresholding on H isolates the object regardless of illumination — robust to shadows and shading that wreck an RGB threshold.</p></li>
+            <li><p><strong>RGB failure case:</strong> skin detection. Skin tones span a wide RGB box (lighting varies), causing false positives on wood/sand. In HSV, skin clusters tightly in a narrow hue band → far cleaner mask. (Caveat: hue is undefined at S≈0, so gate on minimum saturation.)</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">HSI separates "what colour" (H,S) from "how bright" (I), so illumination changes move only I and leave hue stable — making colour-based detection robust to shadows/shading. RGB entangles colour with brightness, so the same object spans many RGB values under varying light.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"Decouple chroma from intensity" (Slide 80) is the one-line reason HSV is the segmentation workhorse. But always remember the singularity: hue is meaningless for grey/near-grey pixels.</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>Colour — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Most likely form:</strong> "how many colours in 24-bit RGB" (16.7M), RGB→CMYK conversion (the C=1−R, K=min rule), or "why does HSI exist / what does it decouple."</li>
+          <li><strong>#1 mistake:</strong> additive vs subtractive mix-up — RGB is additive (light, screens), CMY is subtractive (ink, printers).</li>
+          <li><strong>#2 mistake:</strong> forgetting K = min(C,M,Y) and the subtract-K step.</li>
+          <li><strong>Exam-critical slides:</strong> 76 (16.7M), 77–78 (CMYK), 80 (HSI decoupling), 86 (YCbCr formulas).</li>
+          <li><strong>Lab note:</strong> OpenCV is <code>BGR</code>; convert with <code>cv2.cvtColor(img, cv2.COLOR_BGR2HSV)</code> etc.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 — SHARPENING (PREVIEW) ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Image Sharpening</h2>
+        <span class="src-badge src-preview">Preview · not in CV5 deck</span>
+      </div>
+
+      <div class="annotation" style="border-left-color:var(--violet);background:rgba(192,132,252,0.06);">
+        <div class="annotation-label" style="color:var(--violet);">Preview note — research-sourced</div>
+        <p>Sharpening does <strong>not appear in the CV_CS_5.pdf deck or the May 30 transcript.</strong> It's in the handout's stated Session-5 list, so it's kept here as research-sourced revision (Gonzalez &amp; Woods Ch. 3 + OpenCV docs). Treat every formula here as textbook-derived, not Prof-quoted. It pairs naturally with the <em>derivative duality</em> deep dive (Section 09-A).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — un-blur by adding back the edges</h3>
+        <p>Smoothing (Gaussian) <em>removes</em> high-frequency detail. Sharpening does the opposite: it <strong>amplifies high frequencies</strong> so edges and fine texture pop. The clean trick: a blurred image is "the original minus its detail," so <strong>detail = original − blurred</strong>. Add that detail back (scaled up) and the image looks crisper.</p>
+        <p>Two routes reach the same place. The <strong>Laplacian</strong> route uses the <em>second derivative</em> — it's zero on flat/ramps and spikes at edges, so subtracting it from the image accentuates edges. The <strong>unsharp masking</strong> route (a darkroom technique from film photography — print through a blurred "unsharp" negative mask) computes detail = f − blur(f) and adds it back. They're the same idea in two languages.</p>
+        <p>The analogy: <strong>turning up the "clarity" slider</strong>. You're not adding new information — you're exaggerating the contrast that already exists at boundaries so the eye reads them as sharper.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Sharpening — Laplacian, unsharp, high-boost</div>
+<span class="formula-line"><span class="f-dim">Laplacian (2nd derivative):</span>  <span class="f-gold">∇²f = ∂²f/∂x² + ∂²f/∂y²</span></span>
+<span class="formula-line"><span class="f-dim">4-neighbour kernel:</span>  <span class="f-teal">[0 1 0 ; 1 −4 1 ; 0 1 0]</span></span>
+<span class="formula-line"><span class="f-dim">8-neighbour kernel:</span>  <span class="f-teal">[1 1 1 ; 1 −8 1 ; 1 1 1]</span>  <span class="f-dim">(includes diagonals)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Sharpen:</span>  <span class="f-lime">g(x,y) = f(x,y) + c·∇²f(x,y)</span></span>
+<span class="formula-line">  <span class="f-rose">c = −1</span> if centre is <span class="f-rose">negative</span> (−4, −8 kernels)</span>
+<span class="formula-line">  <span class="f-lime">c = +1</span> if centre is <span class="f-lime">positive</span> (+4, +8 kernels)</span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Unsharp mask:</span>  <span class="f-sky">g = f + k·(f − blur(f))</span></span>
+<span class="formula-line">  <span class="f-gold">k = 1</span> → standard unsharp   ·   <span class="f-gold">k &gt; 1</span> → high-boost filtering</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why the sign of c flips, and why k&gt;1 = high-boost</h3>
+        <p>The Laplacian's centre coefficient sets the sign. With the <code>[1,−4,1]</code> (negative-centre) kernel, edges produce a result of the <em>opposite</em> polarity, so you must <strong>subtract</strong> it (c = −1) to brighten the bright side of the edge. With a positive-centre <code>[−1,4,−1]</code> kernel you add it (c = +1). Get the sign wrong and the image looks embossed/inverted instead of sharpened.</p>
+        <p>For unsharp masking, k controls how much detail you re-inject. <strong>k = 1</strong> restores the lost detail exactly (standard sharpening). <strong>k &gt; 1</strong> ("high-boost") adds <em>more</em> detail than was lost — it both sharpens AND keeps the original brightness, used when the image is dark and you want edges to pop without losing the base. Too large a k → <strong>over-sharpening</strong> halos.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV three ways</div>
+        <pre>import cv2, numpy as np
+# 1. Direct Laplacian
+lap = cv2.Laplacian(img, ddepth=cv2.CV_64F, ksize=1)
+sharp = cv2.convertScaleAbs(img - lap)         # c = -1 for neg-centre kernel
+
+# 2. Custom kernel via filter2D (8-neighbour sharpen)
+kernel = np.array([[ 0,-1, 0],
+                   [-1, 5,-1],
+                   [ 0,-1, 0]])                 # = identity - Laplacian
+sharp = cv2.filter2D(img, -1, kernel)
+
+# 3. Unsharp mask via addWeighted: g = 1.5*f - 0.5*blur(f)  (k=0.5)
+blur  = cv2.GaussianBlur(img, (0,0), sigmaX=3)
+unsharp = cv2.addWeighted(img, 1.5, blur, -0.5, 0)</pre>
+        <p><strong>DL connection:</strong> sharpening is a fixed high-pass conv; modern <cite>image-restoration / super-resolution nets (SRCNN→Real-ESRGAN, 2021)</cite> learn content-adaptive sharpening that avoids halos. <strong>Real use:</strong> medical X-ray/MRI enhancement, satellite imagery, every phone camera's "detail" pipeline.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Sharpening amplifies noise — and LoG fixes it.</strong> Because the Laplacian is a second derivative, it doubles down on noise (noise has high frequency too). The standard remedy is the <cite>Laplacian-of-Gaussian (LoG / "Mexican hat")</cite>: smooth with Gaussian <em>first</em>, then take the Laplacian — one combined kernel. This is the same "smooth-before-differentiate" lesson as Canny Step 1 and Harris Step 1.</p>
+        <p><strong>Failure modes:</strong> <em>ringing / halo artefacts</em> (bright/dark fringes hugging strong edges) appear when k or c is too large — the classic over-sharpened look. Modern deblurring (2022–2024) uses learned priors to suppress these halos while still recovering detail.</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s6-easy', this, 's6-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s6-medium', this, 's6-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s6-complex', this, 's6-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s6-easy" data-tab-group="s6-ex">
+          <div class="example-q">Apply the 4-neighbour Laplacian [0,1,0;1,−4,1;0,1,0] to the centre pixel of this patch: top=10, left=10, centre=50, right=10, bottom=10.</div>
+          <ol class="step-list">
+            <li><p>∇²f = (top + bottom + left + right) − 4·centre.</p></li>
+            <li><p>= (10 + 10 + 10 + 10) − 4×50 = 40 − 200 = <strong style="color:var(--gold)">−160</strong>.</p></li>
+            <li><p>The large-magnitude negative response flags the centre as a bright spike (a point/edge) sitting above its neighbours.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">∇²f = −160. Large |response| ⇒ strong local detail. Sign is negative because the centre is brighter than its surround (and the kernel centre is −4).</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>On a flat patch (all equal) the Laplacian = 0. It only fires where intensity curves — that's the second-derivative signature.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s6-medium" data-tab-group="s6-ex">
+          <div class="example-q">Using the result above (∇²f = −160 at the centre, original centre = 50), produce the sharpened pixel with g = f + c·∇²f. Which sign of c, and what's the value?</div>
+          <ol class="step-list">
+            <li><p>The kernel has a <em>negative</em> centre (−4), so use c = −1 to sharpen.</p></li>
+            <li><p>g = f + (−1)·∇²f = 50 − (−160) = 50 + 160 = <strong style="color:var(--lime)">210</strong>.</p></li>
+            <li><p>The bright centre got brighter (50 → 210) — its contrast against the surround (still ~10) is exaggerated. That's sharpening.</p></li>
+            <li><p>(If you'd wrongly used c = +1: g = 50 + (−160) = −110 → clipped to 0, a black hole. That's the sign-error failure.)</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">c = −1 (negative-centre kernel). g = 50 − (−160) = 210. The wrong sign would give −110 → black, the tell-tale of a sign mistake.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>The c=−1/+1 choice is welded to the kernel's centre sign. Memorise: negative-centre kernel ⇒ subtract (c=−1). It's the most common sharpening exam trap.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s6-complex" data-tab-group="s6-ex">
+          <div class="example-q">Derive, in the frequency domain, why g = f + c·∇²f sharpens. Then explain why high-boost (k&gt;1) preserves brightness where plain unsharp (k=1) can darken.</div>
+          <ol class="step-list">
+            <li><p>The Laplacian is a high-pass operator: in the frequency domain ∇² ↔ −(u²+v²), which scales <em>up</em> high frequencies and zeros DC. So ∇²f contains only the image's high-frequency (edge) content.</p></li>
+            <li><p>g = f − ∇²f (taking c=−1) = (all frequencies) + (high frequencies) → high frequencies are <em>boosted</em> relative to lows. Boosting highs = sharper edges. QED.</p></li>
+            <li><p>Unsharp: g = f + k(f − blur). The mask (f − blur) is also pure high-pass (a low-pass blur subtracted from the original). k=1 adds one copy of detail.</p></li>
+            <li><p>High-boost rewrite: g = (1+k)·f − k·blur. The (1+k) gain on f means the DC/brightness term is amplified, so dark images keep their base level while edges are boosted — whereas an aggressive pure high-pass (no f term) would suppress the low-frequency brightness and darken flat regions.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">∇²f ↔ −(u²+v²) is high-pass; adding it to f re-weights high frequencies up ⇒ sharper. High-boost g=(1+k)f − k·blur keeps a (1+k) gain on the full image, preserving brightness; a pure high-pass (no f) would strip the DC term and darken flats.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"Sharpening = original + a scaled high-pass." Whether you phrase it as Laplacian or unsharp mask, you're always re-injecting the high-frequency residual. The k (or c) is just the gain on that residual.</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>Sharpening — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Caveat:</strong> not in the CV5 deck — verify with Prof / handout whether it's actually examinable for <em>this</em> mid-sem before over-investing. If it is, it'll come from Gonzalez &amp; Woods Ch. 3.</li>
+          <li><strong>Most likely form:</strong> apply a Laplacian kernel to a 3×3 patch (Easy example), then add back with correct c (Medium example).</li>
+          <li><strong>#1 mistake:</strong> wrong sign of c for the kernel's centre polarity → inverted/black output.</li>
+          <li><strong>#2 mistake:</strong> confusing k=1 (unsharp) with k&gt;1 (high-boost) — k&gt;1 preserves brightness AND sharpens.</li>
+          <li><strong>Lab API:</strong> <code>cv2.Laplacian</code>, <code>cv2.filter2D</code> (custom kernel), <code>cv2.addWeighted</code> (unsharp mask).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 — RANSAC (PREVIEW) ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">RANSAC — Robust Model Fitting</h2>
+        <span class="src-badge src-preview">Preview · not in CV5 deck</span>
+      </div>
+
+      <div class="annotation" style="border-left-color:var(--violet);background:rgba(192,132,252,0.06);">
+        <div class="annotation-label" style="color:var(--violet);">Preview note — research-sourced</div>
+        <p>RANSAC is <strong>not in the CV5 deck or transcript</strong> — it belongs to a later session (it follows SIFT in the standard CV pipeline). Included as research-sourced revision (Fischler &amp; Bolles 1981 + OpenCV). It connects directly to Hough (Section 02): both are <em>voting/consensus</em> methods for fitting models amid outliers.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — one bad point ruins least squares</h3>
+        <p>Fit a line to points with least squares and a <em>single</em> wild outlier drags the whole line toward it — the squared error gives outliers enormous pull. RANSAC's idea is gloriously simple: <strong>don't trust all the data; sample a tiny random subset, fit a model, and see how many other points agree.</strong> Repeat many times; keep the model with the biggest agreement (consensus) set.</p>
+        <p>The analogy is <strong>voting / jury selection</strong>. You can't poll everyone honestly (outliers lie), so you pick a few at random, propose a model from them, and count how many of the rest "vote" for it (land within ε). A model built from inliers attracts a big crowd; a model built from outliers attracts almost no one. After enough random juries, the popular model wins.</p>
+        <p>Why minimum samples matter: you fit from the <em>smallest</em> set that defines the model — 2 points for a line, <strong>4 point-pairs for a homography</strong> (a homography is a 3×3 matrix with 8 degrees of freedom; each point-pair gives 2 equations, so 4 pairs = 8 equations = solvable).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The RANSAC loop (homography example)</h3>
+        <ol class="pipeline">
+          <li><strong>Randomly select the minimal sample</strong>
+            <p>For a homography, pick 4 random point correspondences between the two images.</p></li>
+          <li><strong>Fit the model</strong>
+            <p>Solve for the 3×3 homography H (8 DOF) from those 4 pairs.</p></li>
+          <li><strong>Score by counting inliers</strong>
+            <p>For every other pair, measure reprojection error: inlier if <code>‖p′ − H·p‖ &lt; ε</code> (SSD/reprojection threshold).</p></li>
+          <li><strong>Keep the best consensus</strong>
+            <p>Remember the H with the most inliers so far.</p></li>
+          <li><strong>Refit on all inliers</strong>
+            <p>After N iterations, re-estimate H using <em>every</em> inlier of the best model (least squares now safe — no outliers left).</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">RANSAC — iteration count &amp; sample size</div>
+<span class="formula-line"><span class="f-dim">Iterations needed for confidence p:</span></span>
+<span class="formula-line">  <span class="f-lime">N = log(1 − p) / log(1 − (1 − ε)<sup>s</sup>)</span></span>
+<span class="formula-line"><span class="f-dim">  p = desired confidence (e.g. 0.99)</span></span>
+<span class="formula-line"><span class="f-dim">  ε = outlier fraction</span>      <span class="f-dim">s = sample size (min points)</span></span>
+<span class="formula-line"><span class="f-dim">  (1 − ε)<sup>s</sup> = P(all s sampled points are inliers, one trial)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Minimum sample size s:</span></span>
+<span class="formula-line">  line: <span class="f-gold">s = 2</span>   ·   affine: <span class="f-gold">s = 3</span>   ·   homography: <span class="f-gold">s = 4</span> <span class="f-dim">(8 DOF ÷ 2 eqns/pair)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Inlier test:</span>  <span class="f-teal">‖ p′ − H·p ‖² &lt; ε²</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>What a homography is — and when it applies</h3>
+        <p>A homography H is a 3×3 projective transform (8 DOF, defined up to scale) mapping one plane to another: <code>[x′ y′ w]ᵀ = H·[x y 1]ᵀ</code>. It is exact <strong>only</strong> when the scene is <em>planar</em> (a wall, a floor, a poster) OR the camera undergoes <em>pure rotation</em> (no translation) — that's why panorama stitching works (you only rotate the phone). For a general 3-D scene with translation, a single homography is wrong and you need the fundamental/essential matrix instead.</p>
+      </div>
+
+      <!-- DEMO 2: RANSAC iteration simulator -->
+      <div class="interactive-demo" id="ransacDemo">
+        <h4>⊞ Interactive · RANSAC Iteration Simulator</h4>
+        <div class="demo-sub">8 fixed points: 4 true inliers (lime, on a line) + 4 outliers (rose). Drag the slider to try different random 2-point samples. The fitted line and inlier count update — watch how only inlier-pair samples win a big consensus.</div>
+        <div class="slider-row">
+          <span class="slider-label">Iteration (sample)</span>
+          <input type="range" id="ransacSlider" min="0" max="7" value="0" oninput="ransacDraw()">
+          <span class="slider-val" id="ransacIterVal">#0</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="ransacCanvas" width="320" height="240"></canvas>
+          <div style="flex:1;min-width:200px;"><div class="demo-output" id="ransacOut"></div></div>
+        </div>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV homography</div>
+        <pre>import cv2, numpy as np
+# srcPts, dstPts = matched keypoints (e.g. from SIFT) as Nx1x2 float32
+H, mask = cv2.findHomography(srcPts, dstPts, cv2.RANSAC,
+                             ransacReprojThreshold=5.0)   # eps = 5 px
+inliers = mask.ravel().astype(bool)
+warped = cv2.warpPerspective(img1, H, (w, h))   # align img1 onto img2
+# Pipeline: SIFT match -> RANSAC filter -> homography -> stitch/AR overlay</pre>
+        <p><strong>Real use:</strong> panorama stitching, AR marker overlay, image rectification, document scanning ("flatten" a tilted page), visual SLAM loop closure. <strong>DL connection:</strong> learned robust estimators like <cite>Differentiable RANSAC (DSAC, 2017)</cite> and <cite>MAGSAC++ (CVPR 2020)</cite> replace the hard ε threshold with a soft/learned one for better accuracy.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>The statistics behind it.</strong> One trial picks s points; chance all are inliers = (1−ε)<sup>s</sup>. Chance the trial is "bad" = 1−(1−ε)<sup>s</sup>. After N independent trials, chance <em>all</em> are bad = [1−(1−ε)<sup>s</sup>]<sup>N</sup>. Set that ≤ 1−p and solve → N = log(1−p)/log(1−(1−ε)<sup>s</sup>). Worked: p=0.99, s=4, ε=0.5 → (1−0.5)⁴=0.0625 → N = log(0.01)/log(0.9375) ≈ <strong>72 iterations</strong>. Cheap.</p>
+        <p><strong>Failure modes (NOT fixable by more iterations):</strong> (1) <em>degenerate configurations</em> — 4 collinear points can't define a homography no matter how often sampled. (2) <em>non-planar scenes</em> — a single homography is simply the wrong model. (3) <em>outliers &gt; 50%</em> blows N up super-linearly. (4) The formula assumes ε is <em>known</em>; in practice it's estimated adaptively (<cite>MLESAC, PROSAC, MAGSAC++</cite>).</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s7-easy', this, 's7-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s7-medium', this, 's7-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s7-complex', this, 's7-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s7-easy" data-tab-group="s7-ex">
+          <div class="example-q">Compute the number of RANSAC iterations N for p = 0.99, outlier fraction ε = 0.5, sample size s = 4.</div>
+          <ol class="step-list">
+            <li><p>P(all 4 inliers in one trial) = (1−ε)ˢ = (0.5)⁴ = 0.0625.</p></li>
+            <li><p>P(trial is bad) = 1 − 0.0625 = 0.9375.</p></li>
+            <li><p>N = log(1−p)/log(0.9375) = log(0.01)/log(0.9375) = (−2)/(−0.0280) ≈ <strong style="color:var(--lime)">71.6</strong>.</p></li>
+            <li><p>Round up → N = <strong style="color:var(--lime)">72</strong> iterations.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">N ≈ 72 iterations. Note how small it is — even with 50% outliers, 72 random 4-samples give 99% confidence of hitting one all-inlier set.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>RANSAC is cheap because N grows with the <em>log</em> of (1−p), not linearly. Doubling confidence costs only a few more iterations.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s7-medium" data-tab-group="s7-ex">
+          <div class="example-q">6 point-pairs, of which 2 are outliers. You randomly sample pairs A &amp; B (both inliers) and fit a line. Using inlier threshold ε, you find pairs A,B,C,D land within ε and E,F do not. Report the inlier count and what RANSAC does next.</div>
+          <ol class="step-list">
+            <li><p>Sample {A, B} → fit line L (minimal sample for a line = 2 points).</p></li>
+            <li><p>Test all 6 against L: A,B,C,D within ε (4 inliers), E,F beyond ε (the 2 outliers).</p></li>
+            <li><p>Consensus size = 4 out of 6. This is the best so far → store L and its inlier set {A,B,C,D}.</p></li>
+            <li><p>RANSAC continues sampling other pairs; no later sample beats 4 inliers here, so {A,B,C,D} wins. Final step: <strong>refit the line using all 4 inliers</strong> (least squares, now outlier-free) for the best estimate.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Inlier count = 4 (A,B,C,D); outliers E,F rejected. RANSAC keeps this max-consensus model, then refits on all 4 inliers. The 2 outliers never corrupt the final fit.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>The minimal sample only <em>proposes</em> a model; the final estimate uses <em>all</em> inliers. That two-phase design is why RANSAC is both robust (outlier-proof) and accurate (uses all good data).</p></div>
+        </div>
+
+        <div class="tab-panel" id="s7-complex" data-tab-group="s7-ex">
+          <div class="example-q">Derive N algebraically for general (p, ε, s), then identify which failure mode adding iterations does NOT solve.</div>
+          <ol class="step-list">
+            <li><p>P(one sampled point is inlier) = 1−ε. P(all s independent points inliers) = (1−ε)ˢ.</p></li>
+            <li><p>P(a given trial fails to be all-inlier) = 1 − (1−ε)ˢ. Over N independent trials, P(every trial fails) = [1−(1−ε)ˢ]ᴺ.</p></li>
+            <li><p>We want P(at least one good trial) ≥ p ⟺ 1 − [1−(1−ε)ˢ]ᴺ ≥ p ⟺ [1−(1−ε)ˢ]ᴺ ≤ 1−p.</p></li>
+            <li><p>Take logs (argument &lt;1, so log negative — inequality flips): N ≥ <strong style="color:var(--lime)">log(1−p) / log(1−(1−ε)ˢ)</strong>.</p></li>
+            <li><p><strong>Not solvable by more N:</strong> a <em>degenerate / non-planar</em> configuration. If the model itself is wrong for the data (e.g. fitting one homography to a non-planar scene), no number of iterations produces a correct fit — the inlier set is structurally bounded. More N only helps when the issue is <em>finding</em> a good sample, not when no good model exists.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">N = ⌈log(1−p)/log(1−(1−ε)ˢ)⌉. Increasing N defeats outliers (sampling luck) but CANNOT fix degenerate samples or a wrong model class (non-planar scene). Those need a different model or a degeneracy check, not more iterations.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>RANSAC's N formula answers "how long until I get lucky." It says nothing about whether the model you're fitting is even appropriate — a separate, more dangerous failure.</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>RANSAC — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Caveat:</strong> not in the CV5 deck — confirm it's in <em>this</em> mid-sem's scope before heavy prep.</li>
+          <li><strong>Most likely form:</strong> plug into N = log(1−p)/log(1−(1−ε)ˢ) (the p=0.99, ε=0.5, s=4 → 72 classic), or "why does least squares fail with outliers and RANSAC not."</li>
+          <li><strong>#1 mistake:</strong> using inlier fraction where the formula wants <em>outlier</em> fraction ε (the (1−ε)ˢ term is the all-inlier probability).</li>
+          <li><strong>#2 mistake:</strong> wrong minimal sample size — homography needs 4 pairs (8 DOF), not 3.</li>
+          <li><strong>Lab API:</strong> <code>cv2.findHomography(src, dst, cv2.RANSAC, ransacReprojThreshold=5.0)</code> — pairs naturally with SIFT matches.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 — SIFT (PREVIEW) ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">SIFT — Scale-Invariant Feature Transform</h2>
+        <span class="src-badge src-preview">Preview · next lecture</span>
+      </div>
+
+      <div class="annotation" style="border-left-color:var(--violet);background:rgba(192,132,252,0.06);">
+        <div class="annotation-label" style="color:var(--violet);">Preview note — Prof defers this</div>
+        <p>SIFT is <strong>explicitly the next lecture's topic</strong>, in Prof's own words: <em>"SIFT stands for Scale Invariant Feature Transform… we will be studying about it"</em> (~15:30) and <em>"Google uses something called SIFT… which we will study in our next lecture"</em> (~1:53). It directly answers the scale-invariance gap left by Harris (Section 03). Content below is research-sourced (Lowe 1999/2004 + OpenCV) and given so your mid-sem syllabus is complete.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — a fingerprint that survives zoom and rotation</h3>
+        <p>Harris finds corners but dies under scale change (Section 03). SIFT's whole purpose is a feature that you can <strong>re-find in another photo even if it's bigger, rotated, or differently lit</strong> — and describe it with a number-vector ("descriptor") distinctive enough to match across images.</p>
+        <p>The analogy is <strong>fingerprinting a landmark</strong>. For each interesting spot SIFT records: (1) <em>where</em> it is, (2) at <em>what scale</em> it looks most distinctive, (3) its <em>dominant orientation</em> (so you can rotate it upright), and (4) a 128-number summary of the local gradient pattern (the fingerprint). Two photos of the same building produce near-identical fingerprints → match; everything else differs.</p>
+        <p>The cleverness is achieving invariance constructively: detect at the scale where the feature is extremal (scale invariance), rotate the patch to its dominant gradient (rotation invariance), and normalise the descriptor (illumination invariance). David Lowe's 1999/2004 papers made wide-baseline matching, panoramas and early visual search practical.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The 4-stage pipeline <span style="color:var(--text3);font-size:0.8rem;">(Lowe 2004)</span></h3>
+        <ol class="pipeline">
+          <li><strong>Scale-space extrema detection</strong>
+            <p>Build a Gaussian pyramid (octaves × scales). Compute <code>DoG = G(kσ) − G(σ)</code> per level. A keypoint = a pixel that is a local max/min among its <strong>26 neighbours</strong> (8 same scale + 9 above + 9 below) — extremal in space AND scale.</p></li>
+          <li><strong>Keypoint localisation</strong>
+            <p>Sub-pixel refine via Taylor expansion of DoG. Reject low-contrast points (|D| &lt; 0.03). Reject edge responses using a Harris-like curvature ratio (principal-curvature test, ratio threshold r=10).</p></li>
+          <li><strong>Orientation assignment</strong>
+            <p>Build a 36-bin (10° each) gradient-orientation histogram in the keypoint's neighbourhood; the peak = dominant orientation. Rotating the descriptor to this → <strong>rotation invariance.</strong></p></li>
+          <li><strong>Descriptor generation</strong>
+            <p>Take a 16×16 window around the keypoint → 4×4 sub-blocks, each an 8-bin orientation histogram → <strong>4×4×8 = 128-D</strong> vector. Gaussian-weight magnitudes, L2-normalise, clip at 0.2, renormalise (illumination invariance).</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">SIFT — DoG, descriptor, ratio test</div>
+<span class="formula-line"><span class="f-dim">Scale space:</span>  <span class="f-teal">L(x,y,σ) = G(x,y,σ) ∗ I(x,y)</span></span>
+<span class="formula-line"><span class="f-dim">DoG (≈ scale-normalised LoG):</span>  <span class="f-gold">D = L(x,y,kσ) − L(x,y,σ)</span></span>
+<span class="formula-line"><span class="f-dim">  relation:</span>  <span class="f-violet">G(kσ) − G(σ) ≈ (k−1)·σ²·∇²G</span>   <span class="f-dim">(DoG approximates σ²∇²G)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Descriptor length:</span>  <span class="f-lime">4 × 4 grid × 8 orientation bins = 128</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Lowe's ratio test (matching):</span>  keep match if  <span class="f-sky">d<sub>1</sub> / d<sub>2</sub> &lt; 0.7</span> – 0.8</span>
+<span class="formula-line"><span class="f-dim">  d<sub>1</sub> = nearest-neighbour dist, d<sub>2</sub> = 2nd-nearest. Ambiguous → reject.</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Rejection thresholds:</span>  low-contrast <span class="f-rose">|D| &lt; 0.03</span>   ·   edge ratio <span class="f-rose">r = 10</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why DoG instead of LoG, and why 128</h3>
+        <p><strong>DoG ≈ LoG, but cheaper.</strong> The Laplacian-of-Gaussian (σ²∇²G) is the ideal scale-normalised blob detector, but expensive. The heat equation gives ∂G/∂σ = σ∇²G, and a finite difference G(kσ)−G(σ) ≈ (k−1)σ²∇²G. So a <em>subtraction of two Gaussians</em> you already computed for the pyramid approximates the LoG for free — no explicit second-derivative kernel.</p>
+        <p><strong>Why 128 dimensions?</strong> A trade-off. 4×4 spatial bins keep coarse geometry (where in the patch each gradient is), 8 orientation bins keep enough angular detail — 128 numbers is distinctive enough to disambiguate millions of keypoints, yet small enough to match fast. Fewer dims (e.g. 36) lose distinctiveness; more (e.g. 512) barely help matching but cost memory/speed.</p>
+        <table class="he-table">
+          <thead><tr><th>Detector</th><th>Descriptor</th><th>Speed</th><th>Accuracy</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">SIFT (2004)</td><td>128-D float</td><td>Slow</td><td style="color:var(--lime)">High</td><td>Patent expired 2020 — now free in OpenCV main</td></tr>
+            <tr><td style="color:var(--sky)">SURF (2006)</td><td>64/128-D float</td><td>Medium</td><td style="color:var(--gold)">High</td><td>Still patented; Haar/integral-image speedup</td></tr>
+            <tr><td style="color:var(--teal)">ORB (2011)</td><td>256-bit binary</td><td style="color:var(--lime)">~100× faster</td><td style="color:var(--gold)">Good</td><td>FAST + BRIEF; free; default for SLAM/mobile</td></tr>
+            <tr><td style="color:var(--violet)">SuperPoint (2018)</td><td>256-D learned</td><td>GPU-fast</td><td style="color:var(--lime)">SOTA</td><td>Self-supervised CNN; 2024 systems pair it with LightGlue</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- DEMO 3: SIFT descriptor calculator -->
+      <div class="interactive-demo" id="siftDemo">
+        <h4>⊞ Interactive · SIFT Descriptor Calculator</h4>
+        <div class="demo-sub">A SIFT descriptor is a 4×4 grid of sub-blocks, each holding an 8-bin orientation histogram. Set a dominant gradient direction; every sub-block's 8-bin histogram peaks toward it. Total cells = 4×4×8 = 128.</div>
+        <div class="slider-row">
+          <span class="slider-label">Dominant orientation</span>
+          <input type="range" id="siftSlider" min="0" max="315" step="45" value="90" oninput="siftDraw()">
+          <span class="slider-val" id="siftAngleVal">90°</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="siftCanvas" width="300" height="300"></canvas>
+          <div style="flex:1;min-width:200px;"><div class="demo-output" id="siftOut"></div></div>
+        </div>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — OpenCV &amp; the DL bridge</div>
+        <pre>import cv2
+sift = cv2.SIFT_create()                       # free since patent expired 2020
+kp, des = sift.detectAndCompute(gray, None)    # des shape: (N, 128)
+
+# Match with Lowe's ratio test
+bf = cv2.BFMatcher()
+matches = bf.knnMatch(des1, des2, k=2)
+good = [m for m, n in matches if m.distance < 0.7 * n.distance]  # ratio test
+# Feed 'good' matches into cv2.findHomography(..., cv2.RANSAC) -> panorama</pre>
+        <p><strong>The full pipeline (ties the whole session together):</strong> SIFT keypoints → ratio-test matches → RANSAC homography → warp/stitch. <strong>DL connection (Prof's recurring thesis):</strong> SIFT's gradient-histogram descriptor is almost exactly what a CNN's early layers learn — oriented-gradient pooling — which is why SIFT was the bridge to learned descriptors. <strong>Real use:</strong> panoramas, Google-image-style visual search, AR tracking, object recognition.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>2024 reality:</strong> learned matchers dominate wide-baseline tasks — <cite>SuperPoint + SuperGlue/LightGlue (2020–2023)</cite> beat SIFT on extreme viewpoint and low-texture scenes. But SIFT (free since the 2020 patent expiry) is still the trusted choice for geometric-verification ground truth and runs CPU-only, which learned methods often can't.</p>
+        <p><strong>Failure modes:</strong> SIFT struggles with <em>repeated textures</em> (brick walls — many near-identical descriptors, the ratio test discards them), <em>motion blur</em> (gradients smear), and <em>extreme viewpoint change &gt; 60°</em> (the local patch is no longer affine-approximable). Lowe's ratio test (d₁/d₂ &lt; 0.7) is the key robustness knob — lower = stricter, fewer but cleaner matches.</p>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Worked Examples</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s8-easy', this, 's8-ex')">Easy</button>
+          <button class="tab-btn" onclick="showTab('s8-medium', this, 's8-ex')">Medium</button>
+          <button class="tab-btn" onclick="showTab('s8-complex', this, 's8-ex')">Complex</button>
+        </div>
+
+        <div class="tab-panel active" id="s8-easy" data-tab-group="s8-ex">
+          <div class="example-q">How many values are in a standard SIFT descriptor, and from what grid?</div>
+          <ol class="step-list">
+            <li><p>Spatial grid: 4 × 4 sub-blocks = 16 sub-blocks.</p></li>
+            <li><p>Each sub-block: an 8-bin orientation histogram.</p></li>
+            <li><p>Total = 16 × 8 = <strong style="color:var(--lime)">128</strong> values.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">128 values = 4×4 spatial grid × 8 orientation bins. Built from a 16×16 pixel window (each sub-block = 4×4 px).</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Don't confuse the 16×16 <em>pixel</em> window with the 4×4 <em>sub-block</em> grid. 16×16 px → 4×4 blocks (each 4×4 px) → ×8 bins = 128.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s8-medium" data-tab-group="s8-ex">
+          <div class="example-q">During matching, keypoint Q's nearest descriptor in the other image is at distance d₁ = 120; its second-nearest is at d₂ = 140. With Lowe's ratio threshold 0.7, is the match kept? What about d₁=120, d₂=400?</div>
+          <ol class="step-list">
+            <li><p>Case 1: ratio = d₁/d₂ = 120/140 = 0.857. Is 0.857 &lt; 0.7? <strong style="color:var(--rose)">No</strong> → REJECT. The two candidates are nearly equidistant → ambiguous → discard.</p></li>
+            <li><p>Case 2: ratio = 120/400 = 0.30. Is 0.30 &lt; 0.7? <strong style="color:var(--lime)">Yes</strong> → KEEP. The nearest is far more similar than the runner-up → confident, distinctive match.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Case 1 (ratio 0.857) rejected — ambiguous. Case 2 (ratio 0.30) kept — distinctive. The ratio test rejects matches where the best and 2nd-best are too close.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>The ratio test answers "is my best match clearly better than the next?" Repeated textures fail it (many equal candidates) — which is exactly why brick walls are hard for SIFT.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s8-complex" data-tab-group="s8-ex">
+          <div class="example-q">Show why DoG is a valid approximation to the scale-normalised LoG, and state the scale-factor relationship.</div>
+          <ol class="step-list">
+            <li><p>The Gaussian satisfies the heat/diffusion equation: ∂G/∂σ = σ∇²G (the scale derivative equals σ times the Laplacian).</p></li>
+            <li><p>Approximate the left side by a finite difference across two nearby scales σ and kσ: ∂G/∂σ ≈ [G(kσ) − G(σ)] / (kσ − σ).</p></li>
+            <li><p>Combine: G(kσ) − G(σ) ≈ (k−1)·σ·(∂G/∂σ)·... → G(kσ) − G(σ) ≈ (k−1)·σ²·∇²G.</p></li>
+            <li><p>So the DoG image is (k−1) times the scale-normalised LoG (σ²∇²G). The constant (k−1) is the same at every pixel, so it doesn't shift the location of extrema — DoG extrema = LoG extrema. You get the expensive LoG blob detector for the price of one subtraction.</p></li>
+          </ol>
+          <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">G(kσ)−G(σ) ≈ (k−1)σ²∇²G, from the heat equation ∂G/∂σ = σ∇²G. The constant (k−1) scale factor doesn't move extrema, so DoG and scale-normalised LoG peak at the same keypoints — DoG is a free, accurate LoG approximation.</span></div>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>DoG isn't a hack — it's the heat equation's finite-difference form. That's why it works so well: it's a principled approximation, not a coincidence.</p></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Mid-Sem · Jun 20 · Closed Book</span><h4>SIFT — exam radar</h4></div>
+        <ul class="exam-list">
+          <li><strong>Caveat:</strong> Prof defers SIFT to next session — likely <em>not</em> on the Jun 20 mid-sem, but firmly on the Sep 5 comprehensive. Confirm scope.</li>
+          <li><strong>Most likely form:</strong> "how many dims in a SIFT descriptor &amp; derive it" (128 = 4×4×8), "what does the ratio test reject" (ambiguous matches), "why DoG not LoG" (cheaper LoG approx).</li>
+          <li><strong>#1 mistake:</strong> the 128 derivation — saying 16×16×8 (pixels) instead of 4×4×8 (sub-blocks).</li>
+          <li><strong>#2 mistake:</strong> thinking SIFT is scale-invariant "automatically" — it's the scale-space/DoG pyramid that earns it (the thing Harris lacks).</li>
+          <li><strong>Lab API:</strong> <code>cv2.SIFT_create()</code> → <code>detectAndCompute</code> → <code>BFMatcher.knnMatch</code> + ratio test → <code>findHomography(...RANSAC)</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 — DEEP DIVES ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Conceptual Deep Dives</h2>
+      </div>
+      <p style="color:var(--text2);margin-bottom:1.5rem;">Six cross-cutting ideas that connect the session's algorithms. These are the "why" questions that separate a distinction answer from a pass.</p>
+
+      <div class="theory-block">
+        <h3>A · The Derivative Duality — 1st vs 2nd derivative</h3>
+        <p>Edge detection lives between two derivatives. The <strong>first derivative</strong> (gradient) is large <em>on</em> an edge — it peaks where intensity changes fastest. The <strong>second derivative</strong> (Laplacian) is zero on flat AND on linear ramps, but <strong>crosses zero exactly at the edge centre</strong>. So: gradient finds <em>"where is the slope steep"</em> (a maximum to threshold), Laplacian finds <em>"where does the slope stop increasing and start decreasing"</em> (a zero-crossing to locate).</p>
+        <div class="formula-block">
+<span class="formula-line"><span class="f-dim">1D edge (ramp up):</span>  f rises from 0 → 255</span>
+<span class="formula-line"><span class="f-gold">f′  (gradient):</span>   a single bump — <span class="f-gold">maximum at the edge</span>  → threshold it</span>
+<span class="formula-line"><span class="f-teal">f″  (Laplacian):</span>  + then −, passing through <span class="f-teal">zero at the edge centre</span>  → find zero-crossing</span>
+        </div>
+        <p>Why it matters here: Canny &amp; Sobel use the <strong>first derivative</strong> (threshold the gradient max). Sharpening &amp; Marr-Hildreth/LoG use the <strong>second derivative</strong> (zero-crossings). Prof connected the second derivative to corner detection (Harris uses second-order structure via I<sub>x</sub>², I<sub>y</sub>², I<sub>x</sub>I<sub>y</sub>). Zero-crossings give sub-pixel localisation but amplify noise twice as hard — hence always Gaussian-smooth first (LoG).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>B · RANSAC — the statistics behind the magic</h3>
+        <p>RANSAC works because <em>finding one clean sample</em> is exponentially easier than <em>cleaning all the data</em>. Probability a single random minimal sample is all-inliers = (1−ε)ˢ. The chance you've failed every time after N tries is [1−(1−ε)ˢ]ᴺ, which decays geometrically. Demand it drop below 1−p and solve:</p>
+        <div class="formula-block">
+<span class="formula-line"><span class="f-lime">N ≥ log(1−p) / log(1 − (1−ε)ˢ)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Worked table (s = 4, p = 0.99):</span></span>
+<span class="formula-line">  ε = 0.10 → (0.9)⁴=0.656 → N ≈ <span class="f-gold">5</span></span>
+<span class="formula-line">  ε = 0.30 → (0.7)⁴=0.240 → N ≈ <span class="f-gold">17</span></span>
+<span class="formula-line">  ε = 0.50 → (0.5)⁴=0.0625 → N ≈ <span class="f-gold">72</span></span>
+<span class="formula-line">  ε = 0.70 → (0.3)⁴=0.0081 → N ≈ <span class="f-rose">588</span>  <span class="f-dim">(blows up past 50%)</span></span>
+        </div>
+        <p><strong>Limitation:</strong> the formula assumes ε is <em>known</em>. In practice you don't know the outlier fraction up front, so real implementations estimate it adaptively (recompute N as the best inlier count grows) — MLESAC, PROSAC, MAGSAC++.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>C · SIFT vs ORB vs SuperPoint — choosing in 2024</h3>
+        <table class="he-table">
+          <thead><tr><th>Method</th><th>Year</th><th>Type</th><th>Best for</th><th>Avoid when</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">SIFT</td><td>2004 (free 2020)</td><td>Hand-crafted, 128-D float</td><td>Accuracy, geometric ground-truth, CPU-only</td><td>Real-time mobile (too slow)</td></tr>
+            <tr><td style="color:var(--teal)">ORB</td><td>2011</td><td>Binary, 256-bit</td><td>SLAM, AR, mobile — ~100× faster, free</td><td>Severe scale/viewpoint change</td></tr>
+            <tr><td style="color:var(--violet)">SuperPoint</td><td>2018</td><td>Learned CNN, 256-D</td><td>Low-texture, extreme viewpoint (with LightGlue)</td><td>No GPU / no training data domain match</td></tr>
+          </tbody>
+        </table>
+        <p>Rule of thumb: <strong>ORB on a phone, SIFT on a server, SuperPoint when you have a GPU and hard scenes.</strong> All three then feed the same RANSAC + homography back-end.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>D · HoG → CNN — the feature-learning revolution</h3>
+        <p>This is Prof's central thesis across the whole lecture. Dalal &amp; Triggs <em>hand-designed</em> in 2005 what AlexNet <em>learned automatically</em> in 2012. HoG's pipeline — oriented gradients → cell histograms → block normalisation → linear classifier — is structurally a shallow CNN with <em>fixed</em> first-layer filters. A trained CNN's conv-block-1 converges to oriented edge/gradient detectors (verifiable by feature visualisation), i.e. it relearns HoG. The difference: CNNs then learn blocks 2–4 (textures → patterns → parts) too, while HoG stops at one hand-tuned layer.</p>
+        <p>That's why Prof quotes the numbers: HoG classification ~36%, AlexNet/VGG ~40% in 2012 "built on top of this only," and modern nets &gt;90%. The receptive field grows, the filters specialise, and orientation selectivity (the Schrödinger-cat edge neurons from Session 4) emerges by gradient descent — the same oriented-gradient idea, now learned end-to-end.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>E · Canny's 3 criteria — the mathematical meaning</h3>
+        <table class="he-table">
+          <thead><tr><th>Criterion</th><th>Formal meaning</th><th>In tension with</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Good detection</td><td>Low miss rate AND low false-alarm rate (max SNR)</td><td>Localisation</td></tr>
+            <tr><td style="color:var(--teal)">Good localisation</td><td>Detected edge as close as possible to the true edge</td><td>Detection</td></tr>
+            <tr><td style="color:var(--sky)">Single response</td><td>Exactly one detected point per true edge</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <p>The deep point: detection and localisation <strong>fight each other through σ</strong>. Larger Gaussian σ suppresses more noise (better detection) but smears the edge (worse localisation); smaller σ localises sharply but lets noise through. Canny derived the optimal trade-off as a step-edge filter approximated by the first derivative of a Gaussian — and σ is the single knob you turn to slide along that trade-off. This same σ-tension recurs in Harris (smoothing vs corner precision) and SIFT (scale selection).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>F · The end-to-end CV5 pipeline</h3>
+        <p>Every topic in this session is one link in two chains. Seeing them assembled is the best revision:</p>
+        <div class="cnn-flow">
+          <div class="cnn-flow-node"><div class="cnn-flow-box input-box">IMAGE</div><div class="cnn-flow-label">raw pixels</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b2">GAUSSIAN<br>(S3)</div><div class="cnn-flow-label">denoise</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b1">GRADIENTS<br>(S4)</div><div class="cnn-flow-label">Sobel</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b1">CANNY</div><div class="cnn-flow-label">edges</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b3">HARRIS / SIFT</div><div class="cnn-flow-label">keypoints</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b4">RANSAC</div><div class="cnn-flow-label">match + H</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box output-box">PANORAMA<br>/ AR</div><div class="cnn-flow-label">application</div></div>
+        </div>
+        <div class="cnn-flow">
+          <div class="cnn-flow-node"><div class="cnn-flow-box input-box">IMAGE</div><div class="cnn-flow-label">raw pixels</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b1">GRADIENTS</div><div class="cnn-flow-label">Gx, Gy</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b2">HoG</div><div class="cnn-flow-label">3780-D</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box b3">LINEAR SVM</div><div class="cnn-flow-label">score</div></div>
+          <div class="cnn-flow-arrow">→</div>
+          <div class="cnn-flow-node"><div class="cnn-flow-box output-box">PEDESTRIAN<br>BOXES</div><div class="cnn-flow-label">+ NMS</div></div>
+        </div>
+        <p style="color:var(--text2);font-size:14px;margin-top:0.5rem;">Top chain = <strong>geometric / matching</strong> (Canny→keypoints→RANSAC→homography). Bottom chain = <strong>recognition / detection</strong> (HoG→SVM). Hough plugs into the top chain after Canny (line fitting); Harris is the cheap keypoint stage; colour spaces sit at the very front (which channel you compute gradients on).</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — QUIZ ============ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Exam Quiz — 12 Questions</h2>
+      </div>
+      <p style="color:var(--text2);margin-bottom:1.5rem;">Click an option to lock your answer; the correct one turns green and the explanation appears (with <em>why each wrong option is wrong</em>). 3 Easy · 6 Medium · 3 Hard.</p>
+
+      <!-- Q1 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Canny · Slide 39</span>
+          <div class="quiz-q-text">Canny's two thresholds should be chosen in the ratio T<sub>high</sub> : T<sub>low</sub> of:</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>1 : 1</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>1 : 2 to 1 : 3</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>2 : 1 to 3 : 1</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>10 : 1</li>
+        </ul>
+        <div class="quiz-reveal">Slide 39 states the high-to-low ratio is <strong>2:1 to 3:1</strong> (high is the larger number). <strong>A</strong> defeats the purpose — two equal thresholds = single threshold, no hysteresis. <strong>B</strong> inverts it (low &gt; high is meaningless). <strong>D</strong> is too aggressive — weak edges below T<sub>L</sub> vanish, breaking contours.<span class="mistake">Common mistake</span>Writing the ratio inverted (1:2). High threshold is always the bigger value.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q2 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">SIFT</span>
+          <div class="quiz-q-text">How many values are in a standard SIFT descriptor?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>64</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>128</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>256</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>1024</li>
+        </ul>
+        <div class="quiz-reveal">128 = 4×4 spatial sub-blocks × 8 orientation bins. <strong>A (64)</strong> is SURF's default, not SIFT. <strong>C (256)</strong> is ORB's binary length / SuperPoint's dim. <strong>D</strong> is far too large (would be 4×4×64).<span class="mistake">Common mistake</span>Computing 16×16×8 from the pixel window instead of 4×4×8 from the sub-block grid.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q3 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">HoG · Transcript</span>
+          <div class="quiz-q-text">A 64×128 detection window split into 8×8 cells contains how many cells?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>64</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>105</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>128</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>3780</li>
+        </ul>
+        <div class="quiz-reveal">8 cells wide (64/8) × 16 cells tall (128/8) = <strong>128 cells</strong>. <strong>B (105)</strong> is the number of <em>blocks</em> (7×15), not cells. <strong>D (3780)</strong> is the final descriptor length (105×4×9). <strong>A</strong> is just one dimension's count.<span class="mistake">Common mistake</span>Confusing cells (128) with blocks (105) with descriptor dims (3780). Know all three.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q4 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">RANSAC</span>
+          <div class="quiz-q-text">With p=0.99, outlier fraction ε=0.5, sample size s=4, the required iterations N ≈ ?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>4</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>17</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>72</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>588</li>
+        </ul>
+        <div class="quiz-reveal">N = log(1−0.99)/log(1−0.5⁴) = log(0.01)/log(0.9375) ≈ 72. <strong>B (17)</strong> is the answer for ε=0.3, not 0.5. <strong>D (588)</strong> is ε=0.7. <strong>A</strong> is ε=0.1. The whole point: changing ε moves N dramatically.<span class="mistake">Common mistake</span>Plugging the inlier fraction (0.5 here it's symmetric, but for ε=0.3 you'd get the wrong row). Always use (1−ε)ˢ = all-inlier probability.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q5 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Canny · Slides 15/48</span>
+          <div class="quiz-q-text">If you removed Non-Maxima Suppression from Canny, the most direct visible symptom would be:</div></div>
+        <ul class="quiz-options" data-correct="0">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Thick, multi-pixel-wide edges instead of 1-px lines</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>The image becomes blurry</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>No edges are detected at all</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Colours invert</li>
+        </ul>
+        <div class="quiz-reveal">NMS thins the gradient ridge to its single local-maximum pixel; without it the whole ridge (several pixels) survives → thick edges (violates "single response"/localisation). <strong>B</strong> is what skipping Gaussian smoothing affects, not NMS. <strong>C</strong> happens only if thresholds are absurdly high. <strong>D</strong> is unrelated to any Canny step.<span class="mistake">Common mistake</span>Thinking NMS removes noise — that's Step 1's job. NMS is purely about thinning/localisation.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q6 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Canny thresholds</span>
+          <div class="quiz-q-text">With T<sub>L</sub>=40, T<sub>H</sub>=100, a pixel with gradient magnitude 70 that is NOT 8-connected to any strong pixel is classified as:</div></div>
+        <ul class="quiz-options" data-correct="3">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Strong edge</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Weak edge, kept</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Strong, then suppressed</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Weak edge, discarded (no strong neighbour)</li>
+        </ul>
+        <div class="quiz-reveal">40 ≤ 70 &lt; 100 → weak. Hysteresis keeps a weak pixel <em>only if</em> 8-connected to a strong one; this one isn't → discarded. <strong>A</strong> needs ≥100. <strong>B</strong> forgets the connectivity condition. <strong>C</strong> misreads it as strong first.<span class="mistake">Common mistake</span>Calling every weak pixel an edge. "Weak" is conditional — connectivity decides.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q7 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">SIFT matching</span>
+          <div class="quiz-q-text">Lowe's ratio test (d₁/d₂ &lt; 0.7) primarily rejects:</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Keypoints that are too bright</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Ambiguous matches where best and 2nd-best are nearly equidistant</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Low-contrast keypoints</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Edge keypoints</li>
+        </ul>
+        <div class="quiz-reveal">If the nearest and second-nearest descriptors are about as close (ratio →1), the match is ambiguous → reject. <strong>C (low-contrast)</strong> and <strong>D (edge)</strong> are rejected in Stage 2 (keypoint localisation), NOT by the ratio test. <strong>A</strong> is irrelevant (descriptors are illumination-normalised).<span class="mistake">Common mistake</span>Confusing matching-stage rejection (ratio test) with detection-stage rejection (contrast 0.03 / edge ratio r=10).</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q8 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Sharpening</span>
+          <div class="quiz-q-text">In unsharp masking g = f + k·(f − blur(f)), setting k &gt; 1 instead of k = 1:</div></div>
+        <ul class="quiz-options" data-correct="0">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Boosts detail beyond what was lost AND preserves base brightness (high-boost)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Blurs the image more</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Has no effect</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Converts it to grayscale</li>
+        </ul>
+        <div class="quiz-reveal">k&gt;1 is "high-boost": g=(1+k)f − k·blur, so the original's brightness is amplified (1+k gain) while extra detail is added — sharper without darkening. <strong>B</strong> is the opposite (more blur). <strong>C</strong> only k=0 does nothing. <strong>D</strong> is unrelated.<span class="mistake">Common mistake</span>Thinking k=1 and k&gt;1 are the same. k=1 just restores lost detail; k&gt;1 over-emphasises it (and preserves brightness).</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q9 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Harris · Transcript</span>
+          <div class="quiz-q-text">In Harris, the corner response uses R = det(M) − k·trace(M)². For a corner we expect:</div></div>
+        <ul class="quiz-options" data-correct="0">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>R &gt; 0 (both eigenvalues large)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>R &lt; 0 (one eigenvalue large)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>R ≈ 0 (both eigenvalues small)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>R exactly = k</li>
+        </ul>
+        <div class="quiz-reveal">Corner ⇒ both λ large ⇒ det large, R&gt;0. <strong>B (R&lt;0)</strong> is an <em>edge</em> (one λ large, one small). <strong>C (R≈0)</strong> is a <em>flat</em> region (both λ small). <strong>D</strong> is meaningless — k is just the 0.04–0.06 sensitivity constant.<span class="mistake">Common mistake</span>Flipping the sign convention. Memorise: R&gt;0 corner, R&lt;0 edge, R≈0 flat.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q10 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">RANSAC</span>
+          <div class="quiz-q-text">Which RANSAC failure is NOT solvable by increasing the iteration count N?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>High outlier fraction (60%)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Needing higher confidence p</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>A non-planar scene fitted with a single homography</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Bad luck in early sampling</li>
+        </ul>
+        <div class="quiz-reveal">A non-planar scene is the <em>wrong model</em> — no sample can produce a correct single homography, so more N can't help (a degeneracy/model-class failure). <strong>A</strong>, <strong>B</strong>, <strong>D</strong> are all "sampling luck" problems the N formula directly addresses — bigger N buys higher confidence even at 60% outliers.<span class="mistake">Common mistake</span>Assuming more iterations cure everything. N only helps you <em>find</em> a good sample, not when no valid model exists.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q11 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q11</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">HoG · Dalal-Triggs</span>
+          <div class="quiz-q-text">Why does HoG use unsigned orientation (0–180°) rather than signed (0–360°) for pedestrians?</div></div>
+        <ul class="quiz-options" data-correct="3">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>It halves computation only, no accuracy reason</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>360° is impossible to compute</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Gradients are always positive</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Contrast polarity flips at edges (dark-on-light vs light-on-dark) describe the same contour, so folding to 180° removes polarity noise</li>
+        </ul>
+        <div class="quiz-reveal">A body contour produces opposite gradient directions depending on whether clothing is darker/lighter than the background — 180° apart but the same shape. Folding to unsigned removes this contrast-polarity noise (Dalal &amp; Triggs ablation). <strong>A</strong> understates it (there IS an accuracy gain). <strong>B</strong>/<strong>C</strong> are false — signed gradients are perfectly computable and can be negative.<span class="mistake">Common mistake</span>Saying "to save computation." The real reason is invariance to contrast polarity.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q12 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q12</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Hough · Slides 55/61</span>
+          <div class="quiz-q-text">Why does the standard Hough transform use the polar form ρ = x·cosθ + y·sinθ instead of y = mx + b?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Polar form is faster to compute</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Vertical lines need m=∞ in slope form, which the accumulator can't represent; (ρ,θ) bounds both parameters</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Polar form detects circles</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>It removes the need for an edge map</li>
+        </ul>
+        <div class="quiz-reveal">A vertical line has infinite slope; the (m,b) accumulator can't hold m=∞, so vertical edges (walls, poles) are undetectable. Polar (ρ,θ) bounds θ∈[0,180°) and ρ∈[−D,D] — no infinities. <strong>A</strong> is false (sinusoid voting is slightly costlier). <strong>C</strong> is HoughCircles, a separate variant. <strong>D</strong> is wrong — Hough always needs a Canny edge map first.<span class="mistake">Common mistake</span>Citing speed. The real reason is representational: m=∞ breaks the slope-intercept accumulator.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="theory-block" style="margin-top:2rem;text-align:center;border-color:rgba(212,168,83,0.3);">
+        <h3 style="color:var(--gold);">You've reached the end · CV Session 5</h3>
+        <p style="color:var(--text2);">Grounded topics: Canny, Hough, Harris, HoG, Colour. Preview topics (starred): Sharpening, RANSAC, SIFT. Mid-Sem <strong>Jun 20 2026, closed book</strong> — focus your closed-book recall on the Canny 4-step order, the HoG bin interpolation, the Harris R-sign rule, and the Hough collinearity numerical. Lab 3 maps to Canny, Hough, RANSAC, SIFT &amp; HoG — know the OpenCV calls.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('easy')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('medium')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+    const b = reveal.nextElementSibling;
+    if(b && b.classList.contains('reveal-btn')) b.textContent='Hide Explanation';
+  }
+}
+function toggleReveal(btn, id){
+  const reveal = id ? document.getElementById(id) : btn.previousElementSibling;
+  if(!reveal) return;
+  const shown = reveal.classList.toggle('shown');
+  if(id){ reveal.style.display = shown ? 'block' : 'none'; }
+  btn.textContent = shown ? 'Hide Explanation' : 'Show Explanation';
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO 1 · Canny pipeline visualiser ================= */
+const cannyStates = [
+  { label:'Step 1 · Gaussian-smoothed intensity',
+    explain:'Input after noise removal. A vertical brightness edge sits between column 2 and 3 (dark left → bright right). Smoothing has tamed pixel noise so the next derivative is clean.',
+    cells:[40,48,150,205,210, 42,46,148,206,212, 44,50,152,204,209, 41,47,149,207,211, 43,45,151,203,210].map(v=>({v,c:''})) },
+  { label:'Step 2 · Gradient magnitude |G|',
+    explain:'Sobel gives |G|=√(Gx²+Gy²). The transition column lights up (~100); flat regions ≈ near zero. But the ridge is 2–3 px wide — not yet a clean line.',
+    cells:[5,42,100,35,4, 8,45,98,30,6, 3,50,95,42,5, 6,38,102,33,7, 4,44,97,28,3].map(v=>({v,c:v>=60?'hot':''})) },
+  { label:'Step 3 · After Non-Maxima Suppression',
+    explain:'Along the gradient (horizontal) direction, only the local-max pixel of each row survives; its weaker horizontal neighbours are zeroed. The thick ridge becomes a 1-px line (lime). This is the localisation step.',
+    cells:[0,0,100,0,0, 0,0,98,0,0, 0,0,95,0,0, 0,0,102,0,0, 0,0,97,0,0].map(v=>({v,c:v>0?'keep':'kill'})) },
+  { label:'Step 4 · Hysteresis (T_L=70, T_H=99)',
+    explain:'Survivors classified: ≥99 strong (lime), 70–99 weak (gold). Every weak pixel here is 8-connected vertically to a strong one → all promoted to a single connected edge. None are orphaned, so the contour is intact.',
+    cells:[0,0,'S',0,0, 0,0,'W',0,0, 0,0,'W',0,0, 0,0,'S',0,0, 0,0,'W',0,0].map(v=>({v,c: v==='S'?'strong': v==='W'?'weak':'none'})) }
+];
+let cannyIdx = 0;
+function cannyRender(){
+  const st = cannyStates[cannyIdx];
+  const g = document.getElementById('cannyGrid'); g.innerHTML='';
+  st.cells.forEach(c=>{ const d=document.createElement('div'); d.className='cell '+c.c; d.textContent=c.v; g.appendChild(d); });
+  document.getElementById('cannyExplain').innerHTML='<strong style="color:var(--gold)">'+st.label+'</strong><br><br>'+st.explain;
+  document.getElementById('cannyStepLabel').textContent='Step '+(cannyIdx+1)+' / 4';
+  document.getElementById('cannyPrev').disabled = cannyIdx===0;
+  document.getElementById('cannyNext').disabled = cannyIdx===cannyStates.length-1;
+}
+function cannyStep(d){ cannyIdx=Math.max(0,Math.min(cannyStates.length-1,cannyIdx+d)); cannyRender(); }
+
+/* ================= DEMO 4 · HoG cell → histogram ================= */
+let hogAngles = [10,30,30,80,90,90,90,150,30]; // 9 cells, 0-180
+const HOG_MAG = 20, BIN_W = 20, NBINS = 9;
+function hogRender(){
+  const grid = document.getElementById('hogGrid'); grid.innerHTML='';
+  hogAngles.forEach((a,i)=>{
+    const d=document.createElement('div'); d.className='cell'; d.style.cursor='pointer'; d.title='click: +20°';
+    // arrow: orientation line, screen y is down so negate
+    d.innerHTML='<span style="display:inline-block;transform:rotate('+(-a)+'deg);color:var(--gold);font-size:18px;line-height:1;">→</span>';
+    d.onclick=()=>{ hogAngles[i]=(hogAngles[i]+20)%180; hogRender(); };
+    grid.appendChild(d);
+  });
+  // histogram with linear interpolation
+  const bins=new Array(NBINS).fill(0);
+  hogAngles.forEach(a=>{
+    let lo=Math.floor(a/BIN_W), hi=(lo+1)%NBINS;
+    let loC=lo*BIN_W, frac=(a-loC)/BIN_W;
+    bins[lo]+=HOG_MAG*(1-frac); bins[hi]+=HOG_MAG*frac;
+  });
+  const mx=Math.max(...bins,1);
+  const bc=document.getElementById('hogBars'); bc.innerHTML='';
+  bins.forEach((v,i)=>{
+    const col=document.createElement('div'); col.className='bar-col';
+    col.innerHTML='<div class="bar-fill" style="height:'+(v/mx*100)+'%"></div><div class="bar-label">'+(i*20)+'</div>';
+    bc.appendChild(col);
+  });
+  const dom=bins.indexOf(mx);
+  document.getElementById('hogOut').innerHTML='Dominant orientation: <strong style="color:var(--gold)">'+(dom*20)+'°</strong> (bin value '+mx.toFixed(1)+')<br>Σ magnitude conserved = '+bins.reduce((a,b)=>a+b,0).toFixed(0)+' (= 9 arrows × 20).';
+}
+
+/* ================= DEMO 2 · RANSAC iteration simulator ================= */
+const rPts=[ {x:40,y:180,in:true},{x:100,y:150,in:true},{x:160,y:120,in:true},{x:220,y:90,in:true},
+             {x:60,y:55,in:false},{x:150,y:215,in:false},{x:255,y:205,in:false},{x:205,y:45,in:false} ];
+const rPairs=[[0,1],[0,4],[4,5],[2,3],[1,6],[5,7],[1,3],[4,7]];
+const REPS=12;
+function ptLineDist(p,a,b){ const A=b.y-a.y,B=a.x-b.x,C=b.x*a.y-a.x*b.y; return Math.abs(A*p.x+B*p.y+C)/Math.hypot(A,B); }
+let ransacBest=0;
+function ransacDraw(){
+  const it=+document.getElementById('ransacSlider').value;
+  document.getElementById('ransacIterVal').textContent='#'+it;
+  const cv=document.getElementById('ransacCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const pr=rPairs[it], a=rPts[pr[0]], b=rPts[pr[1]];
+  // fitted line extended
+  g.strokeStyle='rgba(212,168,83,0.9)'; g.lineWidth=2; g.beginPath();
+  const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy);
+  const ux=dx/L, uy=dy/L;
+  g.moveTo(a.x-ux*300, a.y-uy*300); g.lineTo(b.x+ux*300, b.y+uy*300); g.stroke();
+  // count inliers
+  let cnt=0;
+  rPts.forEach((p,i)=>{
+    const d=ptLineDist(p,a,b), inl=d<12; if(inl) cnt++;
+    g.beginPath(); g.arc(p.x,p.y,7,0,7);
+    g.fillStyle = p.in ? 'rgba(163,230,53,0.9)' : 'rgba(248,113,113,0.9)';
+    g.fill();
+    if(inl){ g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); }
+    if(i===pr[0]||i===pr[1]){ g.strokeStyle='var(--gold)'; g.strokeStyle='#d4a853'; g.lineWidth=3; g.beginPath(); g.arc(p.x,p.y,11,0,7); g.stroke(); }
+  });
+  ransacBest=Math.max(ransacBest,cnt);
+  const sampType=(a.in&&b.in)?'<span style="color:var(--lime)">both inliers → good model</span>':'<span style="color:var(--rose)">≥1 outlier → bad model</span>';
+  document.getElementById('ransacOut').innerHTML='Sample = points {'+pr[0]+','+pr[1]+'} (gold rings).<br>'+sampType+'<br><br>Inliers within ε=12px: <strong style="color:var(--gold)">'+cnt+' / 8</strong><br>Best consensus so far: <strong style="color:var(--lime)">'+ransacBest+'</strong><br><br><span style="color:var(--text3)">White-ringed dots = inliers to THIS line. RANSAC keeps the max-consensus model, then refits on all its inliers.</span>';
+}
+
+/* ================= DEMO 3 · SIFT descriptor calculator ================= */
+function siftDraw(){
+  const ang=+document.getElementById('siftSlider').value;
+  document.getElementById('siftAngleVal').textContent=ang+'°';
+  const cv=document.getElementById('siftCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const N=4, cell=cv.width/N, domBin=Math.round(ang/45)%8;
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    const cx=c*cell+cell/2, cy=r*cell+cell/2;
+    g.strokeStyle='rgba(255,255,255,0.08)'; g.strokeRect(c*cell+2,r*cell+2,cell-4,cell-4);
+    // 8 spokes, dominant longest
+    for(let bdir=0;bdir<8;bdir++){
+      const theta=bdir*45*Math.PI/180;
+      let w=0.25; // base
+      const dist=Math.min((bdir-domBin+8)%8,(domBin-bdir+8)%8);
+      w = dist===0?1 : dist===1?0.55 : dist===2?0.3 : 0.12;
+      const len=(cell/2-6)*w;
+      g.strokeStyle = dist===0 ? 'rgba(212,168,83,0.95)' : 'rgba(125,211,252,0.5)';
+      g.lineWidth = dist===0?2:1;
+      g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(theta)*len, cy-Math.sin(theta)*len); g.stroke();
+    }
+    g.fillStyle='rgba(212,168,83,0.9)'; g.beginPath(); g.arc(cx,cy,1.5,0,7); g.fill();
+  }
+  document.getElementById('siftOut').innerHTML='Grid: <strong style="color:var(--gold)">4×4 = 16</strong> sub-blocks.<br>Each: <strong style="color:var(--sky)">8</strong>-bin orientation histogram (gold spoke = dominant '+ang+'°).<br><br>Descriptor length = 4×4×8 = <strong style="color:var(--lime)">128</strong> values.<br><span style="color:var(--text3)">Then L2-normalise → clip 0.2 → renormalise for illumination invariance.</span>';
+}
+
+/* ---------- init all demos ---------- */
+cannyRender(); hogRender(); ransacDraw(); siftDraw();
+</script>
+
+</body>
+</html>
