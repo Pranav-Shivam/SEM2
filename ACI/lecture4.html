@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACI · Lecture 4 — Heuristic Design &amp; Admissibility</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
+<style>
+:root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e29;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#e8eaf0;--text2:#8891a8;--text3:#505870;--accent:#7c6af7;--accent2:#a594ff;--accent-glow:rgba(124,106,247,0.18);--green:#3ecf8e;--green-bg:rgba(62,207,142,0.1);--red:#f26b6b;--red-bg:rgba(242,107,107,0.1);--amber:#f5a623;--amber-bg:rgba(245,166,35,0.1);--blue:#4ea8e8;--blue-bg:rgba(78,168,232,0.1);--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;--serif:'Fraunces',serif;--r:10px;--rl:16px;--shadow-lg:0 8px 32px rgba(0,0,0,0.4)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.sb-logo .course{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2);margin-bottom:4px}
+.sb-logo .title{font-family:var(--serif);font-size:14px;font-weight:400;color:var(--text);line-height:1.3}
+.sb-logo .session{font-size:11px;color:var(--text3);margin-top:4px}
+.nav-section{padding:12px 10px 4px}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:0 8px;margin-bottom:3px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;border:none;background:none;width:100%;text-align:left;position:relative}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.nav-item.active{background:var(--accent-glow);color:var(--accent2);font-weight:500}
+.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:2.5px;background:var(--accent);border-radius:2px}
+.nav-item i{font-size:15px;opacity:.8}
+.nav-item .nbadge{margin-left:auto;background:var(--accent-glow);color:var(--accent2);font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;border:1px solid rgba(124,106,247,.3)}
+.sb-footer{margin-top:auto;padding:14px;border-top:1px solid var(--border)}
+.pw{background:var(--bg3);border-radius:var(--r);padding:12px;border:1px solid var(--border)}
+.pw-title{font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:500}
+.pbt{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.pbf{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .4s}
+.pl{font-size:11px;color:var(--text2);display:flex;justify-content:space-between}
+.main{overflow-y:auto;max-height:100vh}
+.page{display:none;padding:36px 44px 60px}
+.page.active{display:block}
+.ph{margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ptitle{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--text);line-height:1.25;margin-bottom:8px}
+.pdesc{font-size:14px;color:var(--text2);line-height:1.6;max-width:580px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:14px;transition:border-color .2s}
+.card:hover{border-color:var(--border2)}
+.clabel{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.clabel.blue{color:var(--blue)}.clabel.green{color:var(--green)}.clabel.amber{color:var(--amber)}.clabel.red{color:var(--red)}.clabel.purple{color:var(--accent2)}
+.formula{font-family:var(--mono);font-size:13px;background:rgba(124,106,247,.08);border:1px solid rgba(124,106,247,.2);border-left:3px solid var(--accent);padding:12px 16px;border-radius:0 var(--r) var(--r) 0;margin:12px 0;color:var(--accent2);letter-spacing:.01em;white-space:pre-wrap}
+.callout{border-radius:var(--r);padding:11px 15px;font-size:13px;line-height:1.6;display:flex;gap:10px;align-items:flex-start;margin-top:12px}
+.callout i{font-size:15px;margin-top:1px;flex-shrink:0}
+.callout.info{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(78,168,232,.2)}
+.callout.warn{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+.callout.success{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.2)}
+.callout.danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(242,107,107,.2)}
+.callout p{color:var(--text2)}
+.node-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 10px}
+.nbtn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 6px;text-align:center;cursor:pointer;transition:all .15s;font-family:var(--sans)}
+.nbtn:hover{border-color:var(--border2)}
+.nbtn .nl{font-size:12px;font-weight:500;color:var(--text)}.nbtn .nv{font-size:11px;color:var(--text3);margin-top:3px;font-family:var(--mono)}
+.nbtn.pass{border-color:rgba(62,207,142,.4);background:var(--green-bg)}.nbtn.fail{border-color:rgba(242,107,107,.4);background:var(--red-bg)}
+.nbtn.pass .nl{color:var(--green)}.nbtn.fail .nl{color:var(--red)}
+.dout{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;font-size:13px;line-height:1.7;min-height:52px;color:var(--text2);font-family:var(--mono);white-space:pre-wrap}
+.elist{display:flex;flex-direction:column;gap:5px;margin:12px 0 10px}
+.ebtn{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;cursor:pointer;font-family:var(--sans);font-size:13px;color:var(--text2);transition:all .15s;text-align:left}
+.ebtn:hover{border-color:var(--border2);color:var(--text)}
+.ebtn.pass{border-color:rgba(62,207,142,.4);background:var(--green-bg);color:var(--green)}
+.ebtn.fail{border-color:rgba(242,107,107,.4);background:var(--red-bg);color:var(--red)}
+.ecost{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.ebtn.pass .ecost{color:rgba(62,207,142,.7)}.ebtn.fail .ecost{color:rgba(242,107,107,.7)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+.gcell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.gcell h4{font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px}
+.gcell p{font-size:12px;color:var(--text2);line-height:1.5}
+.gcell .gv{font-family:var(--mono);font-size:11px;color:var(--green);margin-top:6px}
+.pw-wrap{display:flex;align-items:flex-start;gap:22px;flex-wrap:wrap;margin:14px 0}
+.plabel{font-size:11px;color:var(--text3);text-align:center;margin-bottom:5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase}
+.pgrid{display:grid;grid-template-columns:repeat(3,52px);gap:4px}
+.tile{width:52px;height:52px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;border:1px solid var(--border);font-family:var(--mono)}
+.tile.correct{background:var(--green-bg);border-color:rgba(62,207,142,.35);color:var(--green)}
+.tile.wrong{background:var(--amber-bg);border-color:rgba(245,166,35,.35);color:var(--amber)}
+.tile.empty{background:var(--bg3);color:transparent;border-style:dashed}
+.adiv{display:flex;align-items:center;padding-top:32px;color:var(--text3);font-size:20px}
+.htabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:12px 0 8px}
+.htab{padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);text-align:center;transition:all .15s;font-family:var(--sans)}
+.htab:hover{border-color:var(--border2);color:var(--text)}
+.htab.ab{background:var(--blue-bg);border-color:rgba(78,168,232,.4);color:var(--blue)}
+.htab.ag{background:var(--green-bg);border-color:rgba(62,207,142,.4);color:var(--green)}
+.htab.aa{background:var(--amber-bg);border-color:rgba(245,166,35,.4);color:var(--amber)}
+.hout{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;font-size:13px;line-height:1.8;color:var(--text2);min-height:80px}
+.hout strong{color:var(--text)}.hout .hg{color:var(--green);font-weight:500}.hout .ha{color:var(--amber);font-weight:500}.hout .hr{color:var(--red);font-weight:500}.hout .hb{color:var(--blue);font-weight:500}.hout .mono{font-family:var(--mono);font-size:12px}
+.qboard{display:inline-grid;border:1px solid var(--border2);border-radius:8px;overflow:hidden;margin:10px 0}
+.qc{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all .1s;user-select:none}
+.qc.light{background:#1e2233}.qc.darkc{background:#161929}
+.qc:hover{filter:brightness(1.3)}
+.qc.conflict{box-shadow:inset 0 0 0 2px var(--red)}
+.qc .qs{color:var(--green)}.qc .qx{color:var(--red)}
+.hvs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.hchip{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;color:var(--text2);font-family:var(--mono)}
+.hchip.goal{border-color:rgba(62,207,142,.4);background:var(--green-bg);color:var(--green)}
+.relax-steps{display:flex;flex-direction:column;gap:0;margin:12px 0}
+.rs{display:flex;gap:14px;align-items:flex-start;padding:14px;position:relative}
+.rs:not(:last-child)::after{content:'';position:absolute;left:27px;top:50px;bottom:0;width:1px;background:var(--border)}
+.ri{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;z-index:1;background:var(--bg2)}
+.ri.locked{border-color:var(--red);background:var(--red-bg)}.ri.r1{border-color:var(--blue);background:var(--blue-bg)}.ri.r2{border-color:var(--green);background:var(--green-bg)}.ri.r3{border-color:var(--amber);background:var(--amber-bg)}
+.rb h4{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}.rb p{font-size:12px;color:var(--text2);line-height:1.5}
+.rb .res{display:inline-block;margin-top:5px;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:4px}
+.rb .res.blue{background:var(--blue-bg);color:var(--blue)}.rb .res.green{background:var(--green-bg);color:var(--green)}.rb .res.amber{background:var(--amber-bg);color:var(--amber)}
+.src-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.src-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.src-icon.blue{background:var(--blue-bg);border:1px solid rgba(78,168,232,.3)}.src-icon.green{background:var(--green-bg);border:1px solid rgba(62,207,142,.3)}.src-icon.purple{background:var(--accent-glow);border:1px solid rgba(124,106,247,.3)}
+.src-body p.sh{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}.src-body p.sd{font-size:12px;color:var(--text2);line-height:1.5}
+.step-list{display:flex;flex-direction:column;gap:0;margin:10px 0}
+.step-row{display:flex;gap:14px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.step-row:last-child{border-bottom:none}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent-glow);border:1px solid rgba(124,106,247,.3);color:var(--accent2);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-body{font-size:13px;color:var(--text2);line-height:1.5}.step-body strong{color:var(--text)}
+.ex-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:14px}
+.ex-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:12px}
+.ex-title{font-size:15px;font-weight:500;color:var(--text)}
+.ex-tag{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.ex-tag.exam{background:rgba(242,107,107,.15);color:var(--red);border:1px solid rgba(242,107,107,.3)}
+.ex-body{font-size:13px;color:var(--text2);line-height:1.7}
+.ex-body strong{color:var(--text)}
+.ex-parts{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.ex-part{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--text2);line-height:1.5}
+.ex-part .part-label{font-family:var(--mono);font-size:11px;color:var(--accent2);margin-bottom:3px;font-weight:500}
+.hint{background:rgba(124,106,247,.07);border:1px solid rgba(124,106,247,.18);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--text3);margin-top:10px;line-height:1.6}
+.hint strong{color:var(--accent2)}
+.ref-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
+.ref-item:last-child{border-bottom:none}
+.ref-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.ref-body .rt{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.ref-body .ra{font-size:12px;color:var(--text3);margin-bottom:4px}
+.ref-body a{font-size:12px;color:var(--blue);text-decoration:none}
+.ref-body a:hover{text-decoration:underline}
+.algo-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg3);color:var(--text3);font-weight:600;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+td:first-child{font-weight:500;color:var(--text);font-family:var(--mono)}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.badge.yes{background:var(--green-bg);color:var(--green)}.badge.no{background:var(--red-bg);color:var(--red)}.badge.opt{background:rgba(124,106,247,.15);color:var(--accent2)}.badge.cond{background:var(--amber-bg);color:var(--amber)}.badge.yes2{background:var(--blue-bg);color:var(--blue)}
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.ov-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:7px}
+.ov-card:hover{border-color:var(--border2);background:var(--bg3);transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.ov-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:2px}
+.ov-icon.pu{background:var(--accent-glow);color:var(--accent2);border:1px solid rgba(124,106,247,.3)}
+.ov-icon.bl{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(78,168,232,.3)}
+.ov-icon.gr{background:var(--green-bg);color:var(--green);border:1px solid rgba(62,207,142,.3)}
+.ov-icon.am{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
+.ov-icon.re{background:var(--red-bg);color:var(--red);border:1px solid rgba(242,107,107,.3)}
+.ov-card h3{font-size:14px;font-weight:500;color:var(--text)}.ov-card p{font-size:12px;color:var(--text2);line-height:1.4}.ov-card .arr{color:var(--text3);font-size:13px;margin-top:auto}
+.rec-row{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.rec-row:last-child{border-bottom:none}
+.rec-s{font-family:var(--mono);color:var(--text3);font-size:11px;padding-top:1px}.rec-d{color:var(--text2)}
+.qpr{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.qsc{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--text)}.qsc span{color:var(--text3);font-weight:300}
+.qpt{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.qpf{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .4s}
+.qcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:12px}
+.qcard.answered{border-color:var(--border2)}
+.qnum{font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;margin-bottom:7px}
+.qtext{font-size:14px;color:var(--text);line-height:1.6;margin-bottom:13px}
+.opts{display:flex;flex-direction:column;gap:5px}
+.obtn{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--text2);background:var(--bg3);transition:all .15s;width:100%;text-align:left;font-family:var(--sans);line-height:1.5}
+.obtn:not(:disabled):hover{border-color:var(--border2);color:var(--text);background:rgba(255,255,255,.04)}
+.obtn:disabled{cursor:default}
+.obtn.correct{border-color:rgba(62,207,142,.5);background:var(--green-bg);color:var(--green)}
+.obtn.wrong{border-color:rgba(242,107,107,.5);background:var(--red-bg);color:var(--red)}
+.okey{width:20px;height:20px;border-radius:50%;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;opacity:.7;margin-top:1px}
+.expl{background:var(--bg);border-left:3px solid var(--green);border-radius:0 var(--r) var(--r) 0;padding:10px 13px;font-size:12px;color:var(--text2);line-height:1.6;margin-top:8px;display:none}
+.expl.show{display:block}
+.prop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.prop-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.prop-card .pc-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:8px}
+.prop-card h4{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
+.prop-card p{font-size:12px;color:var(--text2);line-height:1.5}
+.multi-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.multi-table th{background:var(--bg3);color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.multi-table td{padding:9px 12px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+.multi-table tr:last-child td{border-bottom:none}
+.multi-table td:first-child{color:var(--text);font-weight:500}
+.ex-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.ex-table th{background:var(--bg3);color:var(--text3);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.ex-table td{padding:8px 12px;color:var(--text2);border-bottom:1px solid var(--border);line-height:1.5}
+.ex-table tr:last-child td{border-bottom:none}
+.cycle-steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.cs{display:flex;gap:10px;align-items:flex-start;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px}
+.cs-num{width:22px;height:22px;border-radius:50%;background:var(--accent-glow);border:1px solid rgba(124,106,247,.3);color:var(--accent2);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cs-text{font-size:12px;color:var(--text2);line-height:1.4}.cs-text strong{color:var(--text)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:768px){.shell{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.main{max-height:none}.page{padding:20px 18px 40px}.node-grid{grid-template-columns:repeat(3,1fr)}.ov-grid{grid-template-columns:1fr}.grid2,.grid3,.htabs,.prop-grid,.cycle-steps{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="course">ZG557 · BITS Pilani WILP</div>
+    <div class="title">Artificial &amp; Computational Intelligence</div>
+    <div class="session">Session 4 of 16</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <button class="nav-item active" onclick="showPage('overview')"><i class="ti ti-layout-dashboard"></i> Course map</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Core concepts</div>
+    <button class="nav-item" onclick="showPage('admis')"><i class="ti ti-shield-check"></i> Admissibility</button>
+    <button class="nav-item" onclick="showPage('consist')"><i class="ti ti-arrows-exchange"></i> Consistency</button>
+    <button class="nav-item" onclick="showPage('goodh')"><i class="ti ti-star"></i> Good heuristics</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Worked examples</div>
+    <button class="nav-item" onclick="showPage('puzzle')"><i class="ti ti-grid-3x3"></i> 8-Puzzle</button>
+    <button class="nav-item" onclick="showPage('queens')"><i class="ti ti-chess-queen"></i> N-Queens</button>
+    <button class="nav-item" onclick="showPage('relax')"><i class="ti ti-lock-open"></i> Relaxed Problems</button>
+    <button class="nav-item" onclick="showPage('learning')"><i class="ti ti-brain"></i> Learning heuristics</button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Exam prep</div>
+    <button class="nav-item" onclick="showPage('cycle')"><i class="ti ti-refresh"></i> Design cycle</button>
+    <button class="nav-item" onclick="showPage('exercises')"><i class="ti ti-pencil"></i> Exercises</button>
+    <button class="nav-item" onclick="showPage('algos')"><i class="ti ti-table"></i> All algorithms</button>
+    <button class="nav-item" onclick="showPage('quiz')"><i class="ti ti-help-circle"></i> Self-test <span class="nbadge" id="sidebar-score">12 Q</span></button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Resources</div>
+    <button class="nav-item" onclick="showPage('refs')"><i class="ti ti-books"></i> References</button>
+  </div>
+  <div class="sb-footer">
+    <div class="pw">
+      <div class="pw-title">Quiz progress</div>
+      <div class="pbt"><div class="pbf" id="global-progress" style="width:0%"></div></div>
+      <div class="pl"><span id="global-score-label">0 of 12 answered</span><span id="global-correct-label">0 correct</span></div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- OVERVIEW -->
+<div id="overview" class="page active">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-map"></i> Session 4</div>
+    <h1 class="ptitle">Heuristic Design, Admissibility &amp; Relaxed Problems</h1>
+    <p class="pdesc">Session 4 of 16 — 25% through the course. This session formalises what makes a heuristic good, gives tools to generate admissible ones automatically, and introduces learning-based heuristics.</p>
+  </div>
+  <div class="card">
+    <div class="clabel purple"><i class="ti ti-flag"></i> Core principle</div>
+    <p style="font-size:14px;line-height:1.7;color:var(--text)">The closer your heuristic values are to the actual costs, the better the heuristic. <strong>Admissibility</strong> and <strong>Consistency</strong> are the mathematical formalisation of this principle.</p>
+    <div class="formula">h(n) ≤ h*(n)  for all n   →   A* finds the optimal path</div>
+  </div>
+  <h2 style="font-size:15px;font-weight:500;color:var(--text);margin:22px 0 10px">Sections in this session</h2>
+  <div class="ov-grid">
+    <div class="ov-card" onclick="showPage('admis')"><div class="ov-icon pu"><i class="ti ti-shield-check"></i></div><h3>Admissibility</h3><p>h(n) ≤ h*(n) per node. The minimum requirement for A* optimality.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+    <div class="ov-card" onclick="showPage('consist')"><div class="ov-icon bl"><i class="ti ti-arrows-exchange"></i></div><h3>Consistency</h3><p>Triangle inequality across every edge. Stronger than admissibility alone.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+    <div class="ov-card" onclick="showPage('goodh')"><div class="ov-icon gr"><i class="ti ti-star"></i></div><h3>Good heuristics</h3><p>4 core properties, dominance, and multiple-heuristic strategy with 4 cases.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+    <div class="ov-card" onclick="showPage('puzzle')"><div class="ov-icon am"><i class="ti ti-grid-3x3"></i></div><h3>8-Puzzle</h3><p>H1 misplaced tiles, H2 Manhattan, H3 empty tile — with exam preference table.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+    <div class="ov-card" onclick="showPage('queens')"><div class="ov-icon re"><i class="ti ti-chess-queen"></i></div><h3>N-Queens</h3><p>Interactive board — move queens, watch H1/H2/H3 update live.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+    <div class="ov-card" onclick="showPage('relax')"><div class="ov-icon bl"><i class="ti ti-lock-open"></i></div><h3>Relaxed Problems</h3><p>Remove constraints → auto-generate admissible heuristics with formal proof.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+    <div class="ov-card" onclick="showPage('learning')"><div class="ov-icon pu"><i class="ti ti-brain"></i></div><h3>Learning heuristics</h3><p>Neural networks as h(n), pattern databases, and the Ferber 2020 paper.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+    <div class="ov-card" onclick="showPage('exercises')"><div class="ov-icon re"><i class="ti ti-pencil"></i></div><h3>Exercises (4)</h3><p>Instructor-flagged mid-semester exam practice questions with hints.</p><div class="arr"><i class="ti ti-arrow-right"></i></div></div>
+  </div>
+  <h2 style="font-size:15px;font-weight:500;color:var(--text);margin:26px 0 10px">Course progress</h2>
+  <div class="card" style="margin-top:0">
+    <div class="rec-row"><span class="rec-s">S1</span><span class="rec-d">Introduction to AI, history, four perspectives, risks</span></div>
+    <div class="rec-row"><span class="rec-s">S2</span><span class="rec-d">Agents, PEAS, 6 environment types, 5 agent architectures, problem formulation</span></div>
+    <div class="rec-row"><span class="rec-s">S3</span><span class="rec-d">Uninformed search (BFS/DFS/UCS/IDS), Informed search (GBFS/A*)</span></div>
+    <div class="rec-row" style="border-color:rgba(124,106,247,.3)"><span class="rec-s" style="color:var(--accent2)">S4 ←</span><span class="rec-d" style="color:var(--text)"><strong>Heuristic evaluation, design, relaxed problems, learning heuristics</strong></span></div>
+    <div class="rec-row"><span class="rec-s" style="color:var(--text3)">S5+</span><span class="rec-d" style="color:var(--text3)">Local search: hill climbing, genetic algorithms</span></div>
+  </div>
+</div>
+
+<!-- ADMISSIBILITY -->
+<div id="admis" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-shield-check"></i> Core concept</div>
+    <h1 class="ptitle">Admissibility</h1>
+    <p class="pdesc">The minimum requirement for A* optimality in tree search. A heuristic must never overestimate the true cost to reach the goal.</p>
+  </div>
+  <div class="card">
+    <div class="clabel blue"><i class="ti ti-math-function"></i> Definition</div>
+    <p style="font-size:14px;color:var(--text);line-height:1.7">A heuristic <strong>h(n)</strong> is admissible if for every node n:</p>
+    <div class="formula">h(n) ≤ h*(n)
+
+where h*(n) = the TRUE minimum cost from n to the goal</div>
+    <p style="font-size:13px;color:var(--text2);margin-top:8px">Even a single node where h(n) &gt; h*(n) breaks admissibility for the entire graph. The procedure: enumerate all paths from each node to the goal, take the minimum cost, then compare with h(n).</p>
+  </div>
+  <div class="card">
+    <div class="clabel amber"><i class="ti ti-sitemap"></i> Worked example — 5-node graph (node 3 = goal)</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:4px">Click each node to enumerate all paths and check h(n) ≤ h*(n).</p>
+    <div class="node-grid" id="adm-nodes">
+      <button class="nbtn" onclick="showAdm(0)"><div class="nl">Node 1</div><div class="nv">h = 80</div></button>
+      <button class="nbtn" onclick="showAdm(1)"><div class="nl">Node 2</div><div class="nv">h = 60</div></button>
+      <button class="nbtn" onclick="showAdm(2)"><div class="nl">Node 3</div><div class="nv">h = 0</div></button>
+      <button class="nbtn" onclick="showAdm(3)"><div class="nl">Node 4</div><div class="nv">h = 200</div></button>
+      <button class="nbtn" onclick="showAdm(4)"><div class="nl">Node 5</div><div class="nv">h = 190</div></button>
+    </div>
+    <div class="dout" id="adm-detail">← Select a node to check admissibility</div>
+  </div>
+  <div class="card">
+    <div class="clabel red"><i class="ti ti-alert-triangle"></i> What happens when admissibility fails?</div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.6">When h(n) &gt; h*(n), A* sees that path as inflated and <strong style="color:var(--red)">permanently discards it</strong>. Once discarded, A* cannot recover — the optimal solution is lost. Admissibility is the MINIMUM requirement for A* optimality in tree search.</p>
+    <div class="callout warn"><i class="ti ti-bulb"></i><p><strong>Fix:</strong> Return to the domain expert. Correct any node where h(n) &gt; h*(n) to any value ≤ h*(n).</p></div>
+  </div>
+</div>
+
+<!-- CONSISTENCY -->
+<div id="consist" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-arrows-exchange"></i> Core concept</div>
+    <h1 class="ptitle">Consistency</h1>
+    <p class="pdesc">Also called Monotonicity. Stronger than admissibility — ensures f(n) = g(n)+h(n) is non-decreasing along any path, preventing A* from re-expanding nodes in graph search.</p>
+  </div>
+  <div class="card">
+    <div class="clabel blue"><i class="ti ti-math-function"></i> Definition — triangle inequality</div>
+    <p style="font-size:14px;color:var(--text);line-height:1.7">For every node i and its successor j:</p>
+    <div class="formula">h(i) ≤ cost(i → j) + h(j)</div>
+    <p style="font-size:13px;color:var(--text2);margin-top:8px;line-height:1.6">Consistency implies admissibility, but admissibility does NOT imply consistency. Consistency prevents "sudden jumps" in heuristic values — A* with a consistent heuristic never needs to re-expand a closed node.</p>
+  </div>
+  <div class="card">
+    <div class="clabel amber"><i class="ti ti-route"></i> Worked example — check every edge</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:4px">Click an edge to verify the triangle inequality. Two edges fail.</p>
+    <div class="elist" id="edge-list">
+      <button class="ebtn" onclick="showEdge(0)"><span>Edge 1 → 2</span><span class="ecost">cost = 70</span></button>
+      <button class="ebtn" onclick="showEdge(1)"><span>Edge 1 → 3</span><span class="ecost">cost = 125</span></button>
+      <button class="ebtn" onclick="showEdge(2)"><span>Edge 2 → 3</span><span class="ecost">cost = 50</span></button>
+      <button class="ebtn" onclick="showEdge(3)"><span>Edge 2 → 5</span><span class="ecost">cost = 125</span></button>
+      <button class="ebtn" onclick="showEdge(4)"><span>Edge 4 → 5</span><span class="ecost">cost = 50</span></button>
+      <button class="ebtn" onclick="showEdge(5)"><span>Edge 5 → 1</span><span class="ecost">cost = 75</span></button>
+    </div>
+    <div class="dout" id="edge-detail">← Select an edge to verify the triangle inequality</div>
+  </div>
+  <div class="card">
+    <div class="clabel purple"><i class="ti ti-table"></i> Admissibility vs Consistency — full comparison</div>
+    <div style="overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);margin-top:10px">
+      <table>
+        <thead><tr><th>Property</th><th>Formula</th><th>What it checks</th><th>Consequence if violated</th></tr></thead>
+        <tbody>
+          <tr><td>Admissibility</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent2)">h(n) ≤ h*(n)</span></td><td>Per NODE — heuristic vs true cost to goal</td><td>A* may miss optimal path (tree search)</td></tr>
+          <tr><td>Consistency</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--accent2)">h(i) ≤ c(i,j)+h(j)</span></td><td>Per EDGE — triangle inequality</td><td>A* may re-expand nodes or miss optimal (graph search)</td></tr>
+          <tr><td>Both satisfied</td><td><span style="font-size:11px;color:var(--green)">Both above</span></td><td>Entire graph</td><td>A* is GUARANTEED optimal</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- GOOD HEURISTICS -->
+<div id="goodh" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-star"></i> What makes a good heuristic?</div>
+    <h1 class="ptitle">Heuristic Quality &amp; Dominance</h1>
+    <p class="pdesc">Four core properties, how to choose between multiple heuristics, and the formal dominance rule. A heuristic that always returns 0 is admissible but useless — it turns A* into UCS.</p>
+  </div>
+  <div class="card">
+    <div class="clabel blue"><i class="ti ti-list-check"></i> The four core properties</div>
+    <div class="prop-grid">
+      <div class="prop-card"><div class="pc-icon" style="background:var(--green-bg);border:1px solid rgba(62,207,142,.3)"><i class="ti ti-shield-check" style="color:var(--green);font-size:15px"></i></div><h4>Admissible</h4><p>h(n) ≤ h*(n) for every node. Never overestimates the true cost to goal. The minimum requirement for A* optimality.</p></div>
+      <div class="prop-card"><div class="pc-icon" style="background:var(--blue-bg);border:1px solid rgba(78,168,232,.3)"><i class="ti ti-arrows-exchange" style="color:var(--blue);font-size:15px"></i></div><h4>Consistent</h4><p>h(i) ≤ cost(i→j) + h(j) for every edge. Stronger than admissibility. Prevents re-expansion of nodes in graph search.</p></div>
+      <div class="prop-card"><div class="pc-icon" style="background:var(--amber-bg);border:1px solid rgba(245,166,35,.3)"><i class="ti ti-trending-up" style="color:var(--amber);font-size:15px"></i></div><h4>Informative</h4><p>Close to the true cost h*(n). A heuristic closer to h* expands fewer nodes. Dominates weaker alternatives.</p></div>
+      <div class="prop-card"><div class="pc-icon" style="background:var(--red-bg);border:1px solid rgba(242,107,107,.3)"><i class="ti ti-bolt" style="color:var(--red);font-size:15px"></i></div><h4>Fast to compute</h4><p>A heuristic that costs as much to compute as the search itself is useless. The trade-off between quality and speed matters.</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="clabel amber"><i class="ti ti-users"></i> When you have multiple heuristics — 4 situations</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:4px">Domain experts often provide different heuristics. Here's how to choose:</p>
+    <div style="overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);margin-top:10px">
+      <table class="multi-table">
+        <thead><tr><th>Situation</th><th>Decision</th><th>Reasoning</th></tr></thead>
+        <tbody>
+          <tr><td>h₂ is a superset of h₁ — covers everything h₁ covers plus more</td><td style="color:var(--green);font-weight:500">Choose h₂</td><td>More information = more guidance. h₂ dominates h₁ if h₂(n) ≥ h₁(n) for all n.</td></tr>
+          <tr><td>Both unique, both admissible + consistent</td><td style="color:var(--blue);font-weight:500">Compare branch factors</td><td>Whichever produces a smaller effective branching factor (expands fewer nodes) is more efficient.</td></tr>
+          <tr><td>Both unique, both pass, but different expert reliability</td><td style="color:var(--amber);font-weight:500">Weighted combination</td><td>f(n) = g(n) + α·h₁(n) + β·h₂(n) where α,β reflect expert reliability/trust.</td></tr>
+          <tr><td>Both give same meaning but different formulation</td><td style="color:var(--text2)">They are equivalent</td><td>Check if they produce the same ranking of nodes. If so, choose the simpler one to compute.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="clabel green"><i class="ti ti-trophy"></i> Dominance — which heuristic is stronger?</div>
+    <p style="font-size:14px;color:var(--text);line-height:1.7;margin-bottom:8px"><strong>h₂ dominates h₁</strong> if h₂(n) ≥ h₁(n) for all n, and both are admissible.</p>
+    <div class="formula">h₂(n) ≥ h₁(n) for ALL n, both admissible → h₂ dominates h₁</div>
+    <p style="font-size:13px;color:var(--text2);margin-top:8px;line-height:1.6">A* with h₂ will always expand <strong>fewer or equal nodes</strong> compared to A* with h₁. Taking the <strong>max</strong> of multiple admissible heuristics is always safe: h(n) = max(h₁, h₂, …) is admissible and dominates each individually.</p>
+    <div class="callout success"><i class="ti ti-bulb"></i><p>The simple rule: the closer your heuristic values are to h*(n), the better. A heuristic that always returns 0 is admissible but completely useless — it degrades A* into Uniform Cost Search.</p></div>
+  </div>
+</div>
+
+<!-- 8-PUZZLE -->
+<div id="puzzle" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-grid-3x3"></i> Heuristic design</div>
+    <h1 class="ptitle">8-Puzzle Problem</h1>
+    <p class="pdesc">A 3×3 grid, tiles 1–8 plus one blank space. Tiles slide into the blank. Three heuristics compete — one dominates, one is preferred for exams, one is dangerously misleading alone.</p>
+  </div>
+  <div class="card">
+    <div class="clabel blue"><i class="ti ti-eye"></i> Current vs goal state</div>
+    <div class="pw-wrap">
+      <div><div class="plabel">Current state</div><div class="pgrid" id="curr-grid"></div></div>
+      <div class="adiv">→</div>
+      <div><div class="plabel">Goal state</div><div class="pgrid" id="goal-grid"></div></div>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-top:6px">
+      <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px"><span style="width:10px;height:10px;border-radius:2px;background:var(--amber-bg);border:1px solid rgba(245,166,35,.35);display:inline-block"></span> Wrong position</span>
+      <span style="display:inline-flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:var(--green-bg);border:1px solid rgba(62,207,142,.35);display:inline-block"></span> Correct position</span>
+    </p>
+  </div>
+  <div class="card">
+    <div class="clabel amber"><i class="ti ti-calculator"></i> Compare heuristics — click for full calculation</div>
+    <div class="htabs">
+      <button class="htab ab" id="htab-0" onclick="showH(0)">H1: Misplaced tiles</button>
+      <button class="htab" id="htab-1" onclick="showH(1)">H2: Manhattan distance</button>
+      <button class="htab" id="htab-2" onclick="showH(2)">H3: Empty tile only</button>
+    </div>
+    <div class="hout" id="h-output"></div>
+  </div>
+  <div class="card">
+    <div class="clabel green"><i class="ti ti-table"></i> Which heuristic to choose? — exam preference guide</div>
+    <div style="overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);margin-top:8px">
+      <table class="ex-table">
+        <thead><tr><th>Criterion</th><th>H1 Misplaced</th><th>H2 Manhattan</th><th>H3 Empty Only</th></tr></thead>
+        <tbody>
+          <tr><td>Computation speed</td><td>Fastest — just count</td><td>Medium — sum of diffs</td><td>Fastest — one tile</td></tr>
+          <tr><td>Information quality</td><td>Weakest lower bound</td><td>Strongest lower bound</td><td>Almost no information</td></tr>
+          <tr><td>Dominance</td><td>Dominated by H2</td><td>Dominates H1</td><td>Dominated by both</td></tr>
+          <tr><td style="color:var(--red);font-weight:500">Exam preference</td><td style="color:var(--amber)">Acceptable if H2 not asked</td><td style="color:var(--green);font-weight:500">Correct answer — always</td><td style="color:var(--text3)">Only as supplement</td></tr>
+          <tr><td>Admissible?</td><td><span class="badge yes">Yes</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge cond">Yes but useless alone</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout danger" style="margin-top:10px"><i class="ti ti-alert-circle"></i><p><strong>H3 is misleading alone.</strong> H3=0 does not mean the goal is reached — the blank can be in the correct position while all numbered tiles are completely wrong. Always use H2 as your primary heuristic.</p></div>
+  </div>
+</div>
+
+<!-- N-QUEENS -->
+<div id="queens" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-chess-queen"></i> Heuristic design</div>
+    <h1 class="ptitle">N-Queens Problem</h1>
+    <p class="pdesc">Place N queens on an N×N board so no two attack each other. Queens attack in the same row, column, or diagonal. Click any cell to move a queen in that column.</p>
+  </div>
+  <div class="card">
+    <div class="clabel amber"><i class="ti ti-interactive"></i> Interactive board — 4-Queens (click to move queens)</div>
+    <div id="queen-board"></div>
+    <div class="hvs" id="queens-hvals"></div>
+  </div>
+  <div class="card">
+    <div class="clabel purple"><i class="ti ti-list"></i> Three heuristics compared</div>
+    <div class="grid3">
+      <div class="gcell"><h4>H1: Non-conflicting pairs</h4><p>Count queen pairs NOT attacking each other. C(4,2)=6 possible pairs total.</p><div class="gv">Goal = 6 (max) · Maximise</div></div>
+      <div class="gcell"><h4>H2: Conflicting pairs</h4><p>Count queen pairs that ARE attacking each other (same row, column, or diagonal).</p><div class="gv">Goal = 0 (min) · Minimise</div></div>
+      <div class="gcell"><h4>H3: Safe queens</h4><p>Count queens not being attacked by any other queen. Simpler per-queen check.</p><div class="gv">Goal = 4 (max) · Maximise</div></div>
+    </div>
+    <div class="callout info" style="margin-top:12px"><i class="ti ti-bulb"></i><p><strong>H1 and H3 are equivalent in meaning.</strong> Both answer "how far from goal?" in the same direction. If all 6 pairs are non-conflicting (H1=6), all 4 queens are safe (H3=4). Using both gives no extra information — prefer the simpler one (H3: count safe queens individually).</p></div>
+  </div>
+</div>
+
+<!-- RELAXED PROBLEMS -->
+<div id="relax" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-lock-open"></i> Automatic heuristic generation</div>
+    <h1 class="ptitle">Relaxed Problems</h1>
+    <p class="pdesc">When no domain expert is available — or the problem is too novel — remove constraints from the original problem. The relaxed solution cost is always ≤ the true cost: admissibility guaranteed by construction.</p>
+  </div>
+  <div class="card">
+    <div class="clabel blue"><i class="ti ti-math-function"></i> Formal proof of admissibility</div>
+    <p style="font-size:14px;color:var(--text);margin-bottom:8px;line-height:1.7">Let P = original problem (all constraints). Let P' = relaxed problem (fewer constraints).</p>
+    <div class="formula">Any solution to P is also a solution to P'
+  (P has MORE constraints, so P' accepts everything P does)
+
+→  optimal_cost(P') ≤ optimal_cost(P)
+→  h(n) = optimal_cost(P') ≤ h*(n) = optimal_cost(P)
+→  h(n) is ADMISSIBLE by definition  ✓</div>
+  </div>
+  <div class="card">
+    <div class="clabel amber"><i class="ti ti-steps"></i> 8-Puzzle: three relaxations</div>
+    <div class="relax-steps">
+      <div class="rs"><div class="ri locked"><i class="ti ti-lock" style="font-size:12px;color:var(--red)"></i></div><div class="rb"><h4>Original: Tile moves to adjacent empty cell only</h4><p>Fully constrained. Hard to solve optimally. State space: 9! = 362,880 states.</p></div></div>
+      <div class="rs"><div class="ri r1"><i class="ti ti-lock-open" style="font-size:12px;color:var(--blue)"></i></div><div class="rb"><h4>Relax 1: Remove "empty" requirement → tile moves to any adjacent cell</h4><p>Each tile can slide regardless of whether the adjacent cell is occupied.</p><span class="res blue">→ Manhattan distance (H2) · Admissible ✓</span></div></div>
+      <div class="rs"><div class="ri r2"><i class="ti ti-lock-open" style="font-size:12px;color:var(--green)"></i></div><div class="rb"><h4>Relax 2: Also allow diagonal moves</h4><p>Tile can now move in any direction including diagonals.</p><span class="res green">→ Chebyshev distance · Admissible ✓</span></div></div>
+      <div class="rs"><div class="ri r3"><i class="ti ti-lock-open" style="font-size:12px;color:var(--amber)"></i></div><div class="rb"><h4>Relax 3: Remove ALL movement restrictions → tile teleports</h4><p>A tile can move to any position in one step. Maximally relaxed.</p><span class="res amber">→ Misplaced tiles (H1) · Admissible ✓ — weakest but fastest</span></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="clabel green"><i class="ti ti-database"></i> Other heuristic sources</div>
+    <div class="src-item"><div class="src-icon blue"><i class="ti ti-database" style="color:var(--blue);font-size:15px"></i></div><div class="src-body"><p class="sh">Pattern databases</p><p class="sd">Pre-compute exact costs for sub-problems (e.g. tiles 1–4 only). Store in a hash table. During A* search, look up the cached value. Always admissible: solving the sub-problem ≤ solving the full problem.</p></div></div>
+    <div class="src-item"><div class="src-icon green"><i class="ti ti-map-pin" style="color:var(--green);font-size:15px"></i></div><div class="src-body"><p class="sh">Landmarks</p><p class="sd">Pick key "landmark" nodes and pre-compute distances to them. From any state, navigate via the nearest landmark. Rubik's cube masters use this — from any scrambled config, manoeuvre to a known landmark, then apply memorised moves to the solved state. The instructor's visually impaired friend who holds the Asia Book of Records uses the same technique with braille-based landmarks.</p></div></div>
+  </div>
+</div>
+
+<!-- LEARNING HEURISTICS -->
+<div id="learning" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-brain"></i> Learning heuristics</div>
+    <h1 class="ptitle">Neural Networks as h(n)</h1>
+    <p class="pdesc">When manual heuristic design fails, train a neural network on thousands of solved problem instances and use its output as h(n). The A* formula becomes f(n) = g(n) + h(s,θ).</p>
+  </div>
+  <div class="card">
+    <div class="clabel red"><i class="ti ti-alert-circle"></i> Three scenarios where manual design fails</div>
+    <div class="step-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>No domain expert available</strong> — the problem is too novel or specialised for any SME to provide reliable h(n) values.</div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>State space too large</strong> — even relaxed-problem heuristics become too loose to be useful in enormous spaces (e.g. Sokoban, sliding-tile variants).</div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>Complex implicit constraints</strong> — domain constraints are too intertwined to express as a clean mathematical relaxation.</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="clabel blue"><i class="ti ti-arrows-split"></i> Two approaches to learning heuristics</div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="gcell"><h4>Metalevel learning</h4><p>The agent "thinks about its own thinking." It learns to avoid dead ends and recognise promising states from past searches — improving the search strategy itself, not just the estimate.</p></div>
+      <div class="gcell"><h4>Feature learning</h4><p>Solve thousands of instances. Identify features that predict cost (e.g. # out-of-place tiles). Fit a formula or neural network to those features. The result: h(s,θ) where θ are the learned parameters.</p></div>
+    </div>
+    <div class="callout warn" style="margin-top:12px"><i class="ti ti-alert-triangle"></i><p><strong>Caveat:</strong> Learned heuristics are usually NOT guaranteed admissible — optimality can be lost. But they are often far more informative and faster in practice on large state spaces.</p></div>
+  </div>
+  <div class="card">
+    <div class="clabel green"><i class="ti ti-file-text"></i> Reference paper (shown by instructor in lecture)</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:8px">
+      <p style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px">Learning Heuristic Functions for Large State Spaces</p>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Patrick Ferber, Malte Helmert, Jörg Hoffmann · 2020 · arXiv:2107.12945</p>
+      <p style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:8px">Uses <strong>convolutional neural networks</strong> to learn heuristic functions for grid-world problems including Sokoban, maze-with-teleports, and sliding tile puzzles. Key formula: <span style="font-family:var(--mono);font-size:12px;color:var(--accent2)">f(n) = g(n) + h(s,θ)</span> where θ are the trained network parameters. Results show learned heuristics <strong>outperform manually designed ones</strong> in large state spaces.</p>
+      <a href="https://arxiv.org/abs/2107.12945" target="_blank" style="font-size:12px;color:var(--blue);text-decoration:none"><i class="ti ti-external-link" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>arxiv.org/abs/2107.12945</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="clabel purple"><i class="ti ti-database"></i> Pattern databases — learning by pre-computation</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.6">Pattern databases are a form of "offline learning" — the system solves many sub-problems before the main search begins and caches the results.</p>
+    <div class="step-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>Identify a sub-problem</strong> — e.g. only tiles 1–4 in the 8-puzzle, ignoring tiles 5–8 and the blank.</div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>Pre-compute optimal cost</strong> for EVERY configuration of those 4 tiles. Exhaustive but offline.</div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>Store in a hash table / database</strong> — keyed by the sub-problem state.</div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-body"><strong>During A* search</strong> — look up the current sub-problem configuration to get its cost instantly.</div></div>
+      <div class="step-row"><div class="step-num">5</div><div class="step-body"><strong>Use as h(n)</strong> — always admissible because solving the sub-problem ≤ solving the full problem.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DESIGN CYCLE -->
+<div id="cycle" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-refresh"></i> Heuristic design summary</div>
+    <h1 class="ptitle">The Heuristic Evaluation Cycle</h1>
+    <p class="pdesc">What to tell a domain expert, how to validate the heuristic, and what to do when it fails. This is the complete deployment workflow from the lecture.</p>
+  </div>
+  <div class="card">
+    <div class="clabel blue"><i class="ti ti-info-circle"></i> What to give the domain expert (SME)</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.6">Provide the complete problem specification:</p>
+    <div class="step-list">
+      <div class="step-row"><div class="step-num">·</div><div class="step-body">PEAS description (Performance, Environment, Actuators, Sensors)</div></div>
+      <div class="step-row"><div class="step-num">·</div><div class="step-body">Environment type (6-dimension classification from Session 2)</div></div>
+      <div class="step-row"><div class="step-num">·</div><div class="step-body">All 5 PSA components (Initial State, Actions, Transition, Goal Test, Path Cost)</div></div>
+      <div class="step-row"><div class="step-num">·</div><div class="step-body">A sample problem instance with known graph structure for validation</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="clabel amber"><i class="ti ti-refresh"></i> The 8-step evaluation cycle</div>
+    <div class="cycle-steps">
+      <div class="cs"><div class="cs-num">1</div><div class="cs-text"><strong>Give SME the full problem spec</strong> (PEAS + environment + PSA components)</div></div>
+      <div class="cs"><div class="cs-num">2</div><div class="cs-text"><strong>SME provides h(n) values</strong> for all nodes in sample problem</div></div>
+      <div class="cs"><div class="cs-num">3</div><div class="cs-text"><strong>Check admissibility:</strong> h(n) ≤ h*(n) for every node</div></div>
+      <div class="cs"><div class="cs-num">4</div><div class="cs-text"><strong>Check consistency:</strong> h(i) ≤ cost(i→j) + h(j) for every edge</div></div>
+      <div class="cs"><div class="cs-num">5</div><div class="cs-text"><strong>If BOTH pass →</strong> deploy the heuristic</div></div>
+      <div class="cs"><div class="cs-num">6</div><div class="cs-text"><strong>If EITHER fails →</strong> return to SME with the specific failed nodes/edges</div></div>
+      <div class="cs"><div class="cs-num">7</div><div class="cs-text"><strong>SME corrects the values →</strong> repeat from step 3</div></div>
+      <div class="cs"><div class="cs-num">8</div><div class="cs-text"><strong>No SME available →</strong> use relaxed problems or learning heuristics</div></div>
+    </div>
+    <div class="callout success" style="margin-top:14px"><i class="ti ti-check"></i><p>The heuristic design process is iterative, not one-shot. Build validation of admissibility and consistency into your workflow before deployment.</p></div>
+  </div>
+  <div class="card">
+    <div class="clabel purple"><i class="ti ti-sitemap"></i> Heuristic design process — 5 stages</div>
+    <div class="step-list">
+      <div class="step-row"><div class="step-num">1</div><div class="step-body"><strong>Problem Spec</strong> — Provide PEAS, environment type, PSA 5-components to domain expert</div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-body"><strong>Get Heuristic</strong> — Domain expert or SME provides h(n) values for all nodes</div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-body"><strong>Validate Admissible</strong> — Check h(n) ≤ h*(n) for every node in sample problem</div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-body"><strong>Validate Consistent</strong> — Check h(i) ≤ c(i,j)+h(j) for every edge in sample problem</div></div>
+      <div class="step-row"><div class="step-num">5</div><div class="step-body"><strong>Deploy / Refine</strong> — If both pass → deploy. If either fails → go back to SME</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- EXERCISES -->
+<div id="exercises" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-pencil"></i> Exam prep</div>
+    <h1 class="ptitle">Exercises</h1>
+    <p class="pdesc">Four exercises from the lecture. The instructor noted these types of questions will appear in the mid-semester exam. Work through each before checking the hints.</p>
+  </div>
+  <div class="ex-card">
+    <div class="ex-header"><div class="ex-title">Exercise 1 — Admissibility &amp; Consistency Check</div><span class="ex-tag exam">Mid-sem exam</span></div>
+    <div class="ex-body">
+      <p style="margin-bottom:10px">A graph has nodes {A,B,C,D,E} where <strong>E is the goal</strong>.</p>
+      <p style="margin-bottom:6px"><strong>Edges:</strong> A→B(3), A→C(6), B→D(4), C→D(2), B→E(8), D→E(3)</p>
+      <p style="margin-bottom:10px"><strong>Heuristic values:</strong> h(A)=7, h(B)=5, h(C)=4, h(D)=2, h(E)=0</p>
+      <div class="ex-parts">
+        <div class="ex-part"><div class="part-label">(a)</div>For each node, find h*(n) — the minimum actual cost to goal E.</div>
+        <div class="ex-part"><div class="part-label">(b)</div>Check admissibility for each node: is h(n) ≤ h*(n)?</div>
+        <div class="ex-part"><div class="part-label">(c)</div>Check consistency for every edge: is h(i) ≤ cost(i→j) + h(j)?</div>
+        <div class="ex-part"><div class="part-label">(d)</div>Is A* guaranteed to find the optimal path? Justify your answer.</div>
+      </div>
+      <div class="hint"><strong>Hint:</strong> For h*(n): enumerate all paths from each node to E, take the minimum cost. For consistency: apply h(i) ≤ cost(i→j) + h(j) for every directed edge. Remember: consistency implies admissibility but not vice versa.</div>
+    </div>
+  </div>
+  <div class="ex-card">
+    <div class="ex-header"><div class="ex-title">Exercise 2 — 8-Puzzle Heuristic Design</div><span class="ex-tag exam">Mid-sem exam</span></div>
+    <div class="ex-body">
+      <p style="margin-bottom:8px"><strong>Current state:</strong> [1,2,3 / 4,_,5 / 7,8,6] where _ is blank</p>
+      <p style="margin-bottom:10px"><strong>Goal state:</strong> [1,2,3 / 4,5,6 / 7,8,_]</p>
+      <div class="ex-parts">
+        <div class="ex-part"><div class="part-label">(a)</div>Calculate H1 (misplaced tiles) — how many tiles are in the wrong position?</div>
+        <div class="ex-part"><div class="part-label">(b)</div>Calculate H2 (Manhattan distance) — compute the Manhattan distance for each tile individually.</div>
+        <div class="ex-part"><div class="part-label">(c)</div>Calculate H3 (empty tile Manhattan) — where is the blank, where should it go?</div>
+        <div class="ex-part"><div class="part-label">(d)</div>Which heuristic dominates? Is H2 ≥ H1 for this configuration?</div>
+        <div class="ex-part"><div class="part-label">(e)</div>Which heuristic would A* expand fewer nodes with? Why?</div>
+      </div>
+      <div class="hint"><strong>Hint:</strong> For Manhattan distance, count |row_current − row_goal| + |col_current − col_goal| for each tile independently, ignoring all other tiles.</div>
+    </div>
+  </div>
+  <div class="ex-card">
+    <div class="ex-header"><div class="ex-title">Exercise 3 — Heuristic Design for a New Problem: Delivery Robot</div><span class="ex-tag exam">Mid-sem exam</span></div>
+    <div class="ex-body">
+      <p style="margin-bottom:10px">A robot must deliver packages to 5 offices (A,B,C,D,E) starting from a depot (D0). It can carry <strong>one package at a time</strong>. The goal is all packages delivered.</p>
+      <div class="ex-parts">
+        <div class="ex-part"><div class="part-label">(a)</div>Write the PSA 5-component specification (Initial State, Actions, Transition, Goal Test, Path Cost).</div>
+        <div class="ex-part"><div class="part-label">(b)</div>Propose THREE different heuristics for this problem.</div>
+        <div class="ex-part"><div class="part-label">(c)</div>Argue why each heuristic is admissible.</div>
+        <div class="ex-part"><div class="part-label">(d)</div>Which heuristic would you use in A* and why?</div>
+        <div class="ex-part"><div class="part-label">(e)</div>Write a possible relaxed version of this problem and its resulting heuristic.</div>
+      </div>
+      <div class="hint"><strong>Hint:</strong> Think about what information is available at each state: which packages are delivered, which are not, current robot location, distances between locations. A relaxed version might ignore the one-at-a-time constraint.</div>
+    </div>
+  </div>
+  <div class="ex-card">
+    <div class="ex-header"><div class="ex-title">Exercise 4 — N-Queens Extended</div><span class="ex-tag exam">Mid-sem exam</span></div>
+    <div class="ex-body">
+      <p style="margin-bottom:10px">4-Queens problem. Queens are at row-column positions: <strong>Q1=(0,0), Q2=(1,2), Q3=(2,0), Q4=(3,2)</strong>.</p>
+      <div class="ex-parts">
+        <div class="ex-part"><div class="part-label">(a)</div>How many conflicting pairs are there? List them all.</div>
+        <div class="ex-part"><div class="part-label">(b)</div>Compute H1 (non-conflicting pairs), H2 (conflicting pairs), H3 (safe queens) for this configuration.</div>
+        <div class="ex-part"><div class="part-label">(c)</div>Is this state promising (close to goal) or not?</div>
+        <div class="ex-part"><div class="part-label">(d)</div>Propose one move (change position of one queen) that improves all three heuristics.</div>
+        <div class="ex-part"><div class="part-label">(e)</div>Design a fourth heuristic for N-Queens not mentioned in class.</div>
+      </div>
+      <div class="hint"><strong>Hint:</strong> Two queens conflict if they share a row, column, or diagonal. For diagonals: |row1−row2| == |col1−col2|. For part (e): think about what other geometric properties indicate how "spread out" queens are.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ALL ALGORITHMS -->
+<div id="algos" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-table"></i> Reference</div>
+    <h1 class="ptitle">All Search Algorithms</h1>
+    <p class="pdesc">Complete comparison from Sessions 1–4. A* is optimal when h(n) is admissible (tree search) or consistent (graph search).</p>
+  </div>
+  <div class="algo-wrap">
+    <table>
+      <thead><tr><th>Algorithm</th><th>Type</th><th>f(n)</th><th>Complete?</th><th>Optimal?</th><th>Heuristic?</th></tr></thead>
+      <tbody>
+        <tr><td>BFS</td><td>Uninformed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">steps from root</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge cond">Equal cost</span></td><td><span class="badge no">No</span></td></tr>
+        <tr><td>DFS</td><td>Uninformed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">depth</span></td><td><span class="badge no">No</span></td><td><span class="badge no">No</span></td><td><span class="badge no">No</span></td></tr>
+        <tr><td>UCS</td><td>Uninformed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">g(n)</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge no">No</span></td></tr>
+        <tr><td>IDS</td><td>Uninformed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">depth limit</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge cond">Equal cost</span></td><td><span class="badge no">No</span></td></tr>
+        <tr><td>GBFS</td><td>Informed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">h(n)</span></td><td><span class="badge no">No</span></td><td><span class="badge no">No</span></td><td><span class="badge yes2">h only</span></td></tr>
+        <tr><td>A*</td><td>Informed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">g(n)+h(n)</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge opt">Yes *</span></td><td><span class="badge yes2">g + h</span></td></tr>
+        <tr><td>IDA*</td><td>Informed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">g(n)+h(n)</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge opt">Yes *</span></td><td><span class="badge yes2">Memory-efficient A*</span></td></tr>
+        <tr><td>Learning A*</td><td>Informed</td><td><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">g(n)+h(s,θ)</span></td><td><span class="badge yes">Yes</span></td><td><span class="badge cond">Approx</span></td><td><span class="badge yes2">Neural network h(n)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:12px;color:var(--text3);margin-top:8px">* A* optimal when h(n) admissible (tree search) or consistent (graph search). IDA* = Iterative Deepening A* (memory-efficient variant, covered in webinar).</p>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-help-circle"></i> Exam prep</div>
+    <h1 class="ptitle">Self-test</h1>
+    <p class="pdesc">12 questions drawn directly from the lecture notes — covering all sections including good heuristics, multiple-heuristic strategy, the design cycle, and the reference paper.</p>
+  </div>
+  <div class="qpr">
+    <div class="qsc" id="quiz-score-display">0 <span>/ 12</span></div>
+    <div class="qpt"><div class="qpf" id="quiz-progress-fill" style="width:0%"></div></div>
+    <div style="font-size:12px;color:var(--text3)" id="quiz-correct-display">0 correct</div>
+  </div>
+  <div id="quiz-body"></div>
+</div>
+
+<!-- REFERENCES -->
+<div id="refs" class="page">
+  <div class="ph">
+    <div class="eyebrow"><i class="ti ti-books"></i> References</div>
+    <h1 class="ptitle">References &amp; Resources</h1>
+    <p class="pdesc">Primary references used in this lecture. All links open in a new tab.</p>
+  </div>
+  <div class="card">
+    <div class="ref-item">
+      <div class="ref-icon" style="background:var(--blue-bg);border:1px solid rgba(78,168,232,.3)"><i class="ti ti-book" style="color:var(--blue);font-size:16px"></i></div>
+      <div class="ref-body">
+        <div class="rt">Artificial Intelligence: A Modern Approach — Chapter 3 §3.5</div>
+        <div class="ra">Russell &amp; Norvig · 4th Edition · 2020 · Pearson</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:5px">Primary reference for all topics in this lecture. Section 3.5 covers admissibility, consistency, dominance, and relaxed problems. §3.5.2 "Inventing admissible heuristics" directly corresponds to the relaxed problems discussion.</p>
+        <a href="https://aima.cs.berkeley.edu/" target="_blank">aima.cs.berkeley.edu</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-icon" style="background:var(--green-bg);border:1px solid rgba(62,207,142,.3)"><i class="ti ti-file-text" style="color:var(--green);font-size:16px"></i></div>
+      <div class="ref-body">
+        <div class="rt">Learning Heuristic Functions for Large State Spaces</div>
+        <div class="ra">Patrick Ferber, Malte Helmert, Jörg Hoffmann · 2020 · arXiv:2107.12945</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:5px">The reference paper shown by the instructor. Uses CNNs to learn heuristic functions for Sokoban, sliding tiles, and maze-with-teleports. Key contribution: learned heuristics outperform manually designed ones at scale. This is the intersection of deep learning and classical search that the course will revisit.</p>
+        <a href="https://arxiv.org/abs/2107.12945" target="_blank">arxiv.org/abs/2107.12945</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-icon" style="background:var(--amber-bg);border:1px solid rgba(245,166,35,.3)"><i class="ti ti-book" style="color:var(--amber);font-size:16px"></i></div>
+      <div class="ref-body">
+        <div class="rt">Artificial Intelligence: A Modern Approach — Chapter 3 Full</div>
+        <div class="ra">Russell &amp; Norvig · 4th Edition · 2020 · Pearson</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:5px">The complete Chapter 3 covers all search algorithms, heuristics, and optimality conditions. The worked examples in the book (8-puzzle, Romania map) are the same examples used throughout Sessions 3–4.</p>
+        <a href="https://aima.cs.berkeley.edu/" target="_blank">aima.cs.berkeley.edu</a>
+      </div>
+    </div>
+    <div class="ref-item">
+      <div class="ref-icon" style="background:var(--accent-glow);border:1px solid rgba(124,106,247,.3)"><i class="ti ti-device-desktop" style="color:var(--accent2);font-size:16px"></i></div>
+      <div class="ref-body">
+        <div class="rt">PathFinding.js — Interactive A* Visualiser</div>
+        <div class="ra">Xueqiao Xu · Online · Free</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:5px">Draw mazes and compare BFS, DFS, A* with different heuristics in real time. Shows concretely how the choice of heuristic affects the number of nodes expanded. Very useful for building intuition on dominance and informativeness.</p>
+        <a href="https://qiao.github.io/PathFinding.js/visual/" target="_blank">qiao.github.io/PathFinding.js/visual</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+<script>
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const lmap={overview:'Course map',admis:'Admissibility',consist:'Consistency',goodh:'Good heuristics',puzzle:'8-Puzzle',queens:'N-Queens',relax:'Relaxed Problems',learning:'Learning heuristics',cycle:'Design cycle',exercises:'Exercises',algos:'All algorithms',quiz:'Self-test',refs:'References'};
+  document.querySelectorAll('.nav-item').forEach(b=>{if(b.textContent.trim().startsWith(lmap[id]))b.classList.add('active');});
+  document.querySelector('.main').scrollTop=0;
+}
+
+// ADMISSIBILITY
+const admData=[
+  {h:80,hs:120,paths:'Paths:  1→3 = 125\n         1→2→3 = 70+50 = 120  →  h*(1) = 120',pass:true},
+  {h:60,hs:50,paths:'Path:   2→3 = 50  →  h*(2) = 50',pass:false},
+  {h:0,hs:0,paths:'Node 3 is the goal itself  →  h*(3) = 0',pass:true},
+  {h:200,hs:245,paths:'Best:   4→5→1→2→3 = 50+75+70+50 = 245  →  h*(4) = 245',pass:true},
+  {h:190,hs:195,paths:'Best:   5→1→2→3 = 75+70+50 = 195  →  h*(5) = 195',pass:true},
+];
+function showAdm(i){
+  const d=admData[i];
+  document.querySelectorAll('#adm-nodes .nbtn').forEach((n,j)=>{n.classList.remove('pass','fail');if(j===i)n.classList.add(d.pass?'pass':'fail');});
+  const r=d.pass?`✓ PASSES  →  ${d.h} ≤ ${d.hs}`:`✗ FAILS   →  ${d.h} > ${d.hs}  —  NOT ADMISSIBLE`;
+  document.getElementById('adm-detail').textContent=`Node ${i+1}: h = ${d.h}\n\n${d.paths}\n\nh*(n) = ${d.hs}\n\n${r}`;
+}
+
+// CONSISTENCY
+const edgeData=[
+  {lbl:'1→2',hi:80,c:70,hj:60,pass:true,r:'80 ≤ 70+60 = 130  ✓ PASSES'},
+  {lbl:'1→3',hi:80,c:125,hj:0,pass:true,r:'80 ≤ 125+0 = 125  ✓ PASSES'},
+  {lbl:'2→3',hi:60,c:50,hj:0,pass:false,r:'60 ≤ 50+0 = 50?   ✗ FAILS  —  heuristic drops too fast'},
+  {lbl:'2→5',hi:60,c:125,hj:190,pass:true,r:'60 ≤ 125+190 = 315  ✓ PASSES'},
+  {lbl:'4→5',hi:200,c:50,hj:190,pass:true,r:'200 ≤ 50+190 = 240  ✓ PASSES'},
+  {lbl:'5→1',hi:190,c:75,hj:80,pass:false,r:'190 ≤ 75+80 = 155?  ✗ FAILS  —  heuristic inflated at node 5'},
+];
+function showEdge(i){
+  const d=edgeData[i];
+  document.querySelectorAll('#edge-list .ebtn').forEach((b,j)=>{b.classList.remove('pass','fail');if(j===i)b.classList.add(d.pass?'pass':'fail');});
+  document.getElementById('edge-detail').textContent=`Edge ${d.lbl}\n\nCheck: h(i) ≤ cost(i→j) + h(j)\n       ${d.hi} ≤ ${d.c} + ${d.hj} = ${d.c+d.hj}\n\n${d.r}`;
+}
+
+// 8-PUZZLE
+const currS=[[7,2,4],[5,0,6],[8,3,1]];
+const goalS=[[1,2,0],[3,4,5],[6,7,8]];
+const gPos={};
+goalS.forEach((row,r)=>row.forEach((v,c)=>{if(v!==0)gPos[v]=[r,c];}));
+function renderPG(gid,state,sc){
+  const g=document.getElementById(gid);g.innerHTML='';
+  state.forEach((row,r)=>row.forEach((v,c)=>{
+    const d=document.createElement('div');
+    if(v===0){d.className='tile empty';}
+    else if(sc){const gp=gPos[v];d.className=(gp[0]===r&&gp[1]===c)?'tile correct':'tile wrong';d.textContent=v;}
+    else{d.className='tile correct';d.textContent=v===0?'':v;}
+    g.appendChild(d);
+  }));
+}
+renderPG('curr-grid',currS,true);
+renderPG('goal-grid',goalS,false);
+const hOuts=[
+  `<strong>H1: Misplaced tiles</strong> — count tiles NOT in their goal position<br><br>
+<span class="mono">Tile 7: goal(2,1) current(0,0) ✗ &nbsp; Tile 2: goal(0,1) current(0,1) ✗<br>
+Tile 4: goal(0,2) current(0,2) ✗ &nbsp; Tile 5: goal(1,0) current(1,0) ✗<br>
+Tile 6: goal(2,0) current(1,2) ✗ &nbsp; Tile 8: goal(2,1) current(2,0) ✗<br>
+Tile 3: goal(1,2) current(2,1) ✗ &nbsp; Tile 1: goal(0,0) current(2,2) ✗</span><br><br>
+<span class="hb">H1 = 8 misplaced tiles</span> &nbsp;·&nbsp; Admissible ✓ (each tile needs ≥ 1 move) &nbsp;·&nbsp; Fastest to compute, weakest estimate.`,
+  `<strong>H2: Manhattan distance</strong> — sum of |Δrow|+|Δcol| for each tile<br><br>
+<span class="mono">Tile 1: |2-0|+|2-0| = 4 &nbsp; Tile 2: |0-0|+|1-1| = 1 (right column!)<br>
+Tile 3: |2-1|+|1-2| = 3 &nbsp; Tile 4: |0-1|+|2-0| = 2<br>
+Tile 5: |1-1|+|0-0| = 0 (in correct position!) &nbsp; Tile 6: |1-2|+|2-0| = 2<br>
+Tile 7: |0-2|+|0-1| = 3 &nbsp; Tile 8: |2-2|+|0-1| = 3</span><br><br>
+<span class="hg">H2 = 4+1+3+2+0+2+3+3 = 18</span> &nbsp;·&nbsp; Admissible ✓ &nbsp;·&nbsp; H2 ≥ H1 always → <strong>H2 dominates H1</strong> &nbsp;·&nbsp; <strong>Correct answer for exams</strong>`,
+  `<strong>H3: Empty tile Manhattan only</strong><br><br>
+<span class="mono">Blank is at position (1,1) in current state.<br>
+In goal state, blank is at position (0,2).<br>
+Manhattan = |1−0| + |1−2| = 1+1 = 2 moves</span><br><br>
+<span class="hr">⚠ H3 = 2 — but this is dangerously misleading if used alone.</span><br><br>
+H3=0 does NOT mean the goal is reached. The blank can be in the correct cell while every numbered tile is completely wrong. <strong>Use only as a supplement to H2.</strong> For exams, H3 alone is insufficient.`
+];
+const hTC=['ab','ag','aa'];
+function showH(i){
+  for(let j=0;j<3;j++){const t=document.getElementById('htab-'+j);t.classList.remove('ab','ag','aa');if(j===i)t.classList.add(hTC[i]);}
+  document.getElementById('h-output').innerHTML=hOuts[i];
+}
+showH(0);
+
+// N-QUEENS
+let qRows=[0,2,1,3];
+function getConflicts(){
+  const bad=new Set();
+  for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+    if(qRows[i]===qRows[j]||Math.abs(qRows[i]-qRows[j])===Math.abs(i-j)){bad.add(i);bad.add(j);}
+  }
+  return bad;
+}
+function renderQueens(){
+  const c=document.getElementById('queen-board');
+  const cf=getConflicts();
+  let h=`<div class="qboard" style="grid-template-columns:repeat(4,44px)">`;
+  for(let r=0;r<4;r++)for(let col=0;col<4;col++){
+    const isL=(r+col)%2===0;const hQ=qRows[col]===r;const isCf=hQ&&cf.has(col);
+    const cc=['qc',isL?'light':'darkc',isCf?'conflict':''].filter(Boolean).join(' ');
+    const qc=hQ?(isCf?'qx':'qs'):'';
+    h+=`<div class="${cc}" onclick="moveQ(${col},${r})"><span class="${qc}">${hQ?'♛':''}</span></div>`;
+  }
+  h+=`</div>`;
+  c.innerHTML=h;
+  updateQStats(cf);
+}
+function moveQ(col,row){qRows[col]=row;renderQueens();}
+function updateQStats(cf){
+  let cp=0;
+  for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+    if(qRows[i]===qRows[j]||Math.abs(qRows[i]-qRows[j])===Math.abs(i-j))cp++;
+  }
+  const h2=cp,h1=6-cp,h3=4-cf.size,goal=cf.size===0;
+  document.getElementById('queens-hvals').innerHTML=
+    `<span class="hchip ${h1===6?'goal':''}">H1 = ${h1} / 6</span>
+     <span class="hchip ${h2===0?'goal':''}">H2 = ${h2} conflicts</span>
+     <span class="hchip ${h3===4?'goal':''}">H3 = ${h3} / 4 safe</span>
+     ${goal?'<span class="hchip goal" style="font-family:var(--sans);font-weight:500">Goal reached!</span>':''}`;
+}
+renderQueens();
+
+// QUIZ
+const questions=[
+  {q:'A heuristic returns h(n) = 0 for every node. Is it admissible?',opts:['Yes — always admissible','No — it overestimates','No — it must equal h*(n)','Only if the graph has no cycles'],ans:0,exp:'h(n)=0 ≤ h*(n) for all n, so it is technically admissible. However, it is completely useless — it turns A* into Uniform Cost Search (UCS), expanding nodes purely by actual cost with no heuristic guidance.'},
+  {q:'Node 2 has h = 60 and the true cost h*(2) = 50. What happens in A*?',opts:['A* finds the optimal path faster','A* may permanently discard the optimal path','A* becomes more memory efficient','Nothing — it is a minor difference'],ans:1,exp:'When h(n) > h*(n), A* sees that path as inflated and discards it permanently. Once discarded, A* cannot recover — the optimal solution is lost. This is why admissibility is the minimum requirement.'},
+  {q:'What are the four core properties of a good heuristic?',opts:['Admissible, Consistent, Deterministic, Scalable','Admissible, Consistent, Informative, Fast to compute','Optimal, Complete, Admissible, Consistent','Admissible, Polynomial, Monotone, Consistent'],ans:1,exp:'The four core properties from the lecture: (1) Admissible — h(n) ≤ h*(n), (2) Consistent — triangle inequality across edges, (3) Informative — close to h*(n), and (4) Fast to compute — a heuristic that costs as much as the search itself is counterproductive.'},
+  {q:'You have two admissible heuristics from different domain experts. How do you safely combine them?',opts:['h = h₁ + h₂','h = (h₁ + h₂) / 2','h = max(h₁, h₂)','h = min(h₁, h₂)'],ans:2,exp:'max(h₁,h₂) is admissible: since both h₁ ≤ h* and h₂ ≤ h*, max(h₁,h₂) ≤ h* too. It dominates both individually — the best of both worlds. The sum h₁+h₂ can exceed h*(n) and violate admissibility.'},
+  {q:'For the 8-puzzle, which heuristic does the instructor recommend as the "correct answer" for exams?',opts:['H1 — misplaced tiles','H2 — Manhattan distance of all tiles','H3 — empty tile Manhattan only','Any admissible heuristic is equally correct'],ans:1,exp:'H2 (Manhattan distance of all tiles) is the correct exam answer. H1 is acceptable if H2 is not specifically asked for. H3 alone is insufficient and misleading — H3=0 does not mean the goal is reached.'},
+  {q:'Edge 2→3 has cost 50, h(2)=60, h(3)=0. Is this edge consistent?',opts:['Yes — 60 ≤ 50+0 = 50','No — 60 > 50, fails the triangle inequality','Yes — consistency only applies to directed cycles','Cannot determine without the full graph'],ans:1,exp:'Consistency requires h(2) ≤ cost(2→3) + h(3) = 50+0 = 50. But 60 > 50, so it FAILS. This means the heuristic "drops too fast" — it claims 60 from node 2 but the edge + destination only accounts for 50.'},
+  {q:'Why do heuristics derived from relaxed problems guarantee admissibility?',opts:['They always return zero','Removing constraints lowers the optimal cost, giving a lower bound','They use Manhattan distance which is always admissible','They are validated by the domain expert'],ans:1,exp:'Any solution to the original problem is also valid in the relaxed problem (since it has fewer constraints). So optimal_cost(relaxed) ≤ optimal_cost(original) = h*(n). The relaxed cost is always a lower bound — admissible by construction.'},
+  {q:'In the N-Queens problem, why are H1 (non-conflicting pairs) and H3 (safe queens) considered equivalent?',opts:['They produce identical numerical values for all configurations','Both measure how far from the goal in the same direction','They both count conflicting queens','They are both equal to zero at the goal'],ans:1,exp:'Both H1 and H3 answer "how close am I to a solution?" from the same angle. If all 6 pairs are non-conflicting (H1=6), all 4 queens must be safe (H3=4), and vice versa. One is derivable from the other — using both adds no information. Choose the simpler one (H3).'},
+  {q:'What is the Ferber, Helmert & Hoffmann (2020) paper about?',opts:['Proving admissibility conditions for A*','Using CNNs to learn heuristic functions for grid-world problems','Designing pattern databases for the 15-puzzle','Proving that IDA* is optimal'],ans:1,exp:'The reference paper shown by the instructor. It uses convolutional neural networks to learn h(n) for Sokoban, maze-with-teleports, and sliding tile puzzles. Key finding: learned heuristics outperform manually designed ones at scale. The A* formula becomes f(n) = g(n) + h(s,θ) where θ are the trained network parameters.'},
+  {q:'In the heuristic evaluation cycle, what do you do if either admissibility or consistency fails?',opts:['Deploy anyway — one failure is acceptable','Return to the SME with the specific failed nodes/edges','Use a relaxed problem heuristic instead automatically','Re-run the check with a different sample problem'],ans:1,exp:'Step 6 of the evaluation cycle: if EITHER admissibility or consistency fails, return to the SME with the specific failed nodes (for admissibility) or failed edges (for consistency). The SME corrects the values and you repeat the validation from step 3.'},
+  {q:'What is the key advantage of pattern databases over standard relaxed problem heuristics?',opts:['They are always admissible unlike relaxed heuristics','They provide exact sub-problem costs rather than estimates','They require no pre-computation time','They work for continuous state spaces'],ans:1,exp:'Pattern databases pre-compute and cache the EXACT optimal cost for every configuration of a sub-problem. A relaxed heuristic is still an estimate (a lower bound). Pattern database values are exact — producing a tighter, more informative heuristic while remaining admissible.'},
+  {q:'h₂ dominates h₁. What does this mean for A* search performance?',opts:['A* with h₂ uses less memory','A* with h₂ always expands fewer or equal nodes than A* with h₁','A* with h₂ always finds the goal faster in real time','A* with h₂ is always guaranteed optimal while h₁ is not'],ans:1,exp:'Dominance means h₂(n) ≥ h₁(n) for all n (both admissible). Since h₂ provides a tighter lower bound, A* with h₂ can prune more aggressively and will always expand fewer or equal nodes compared to A* with h₁. The path length is the same — the search is more efficient.'},
+];
+let answered=new Array(questions.length).fill(null);
+function renderQuiz(){
+  const body=document.getElementById('quiz-body');body.innerHTML='';
+  questions.forEach((q,qi)=>{
+    const card=document.createElement('div');card.className='qcard'+(answered[qi]!==null?' answered':'');
+    let oh='';
+    q.opts.forEach((o,oi)=>{
+      let cls='obtn';
+      if(answered[qi]!==null){if(oi===q.ans)cls+=' correct';else if(oi===answered[qi])cls+=' wrong';}
+      const da=answered[qi]!==null?' disabled':'';
+      oh+=`<button class="${cls}"${da} onclick="doAnswer(${qi},${oi})"><span class="okey">${'ABCD'[oi]}</span><span>${o}</span></button>`;
+    });
+    const es=answered[qi]!==null?' show':'';
+    card.innerHTML=`<div class="qnum">Question ${qi+1} of ${questions.length}</div><div class="qtext">${q.q}</div><div class="opts">${oh}</div><div class="expl${es}">${q.exp}</div>`;
+    body.appendChild(card);
+  });
+  updateScores();
+}
+function doAnswer(qi,oi){if(answered[qi]!==null)return;answered[qi]=oi;renderQuiz();}
+function updateScores(){
+  const done=answered.filter(a=>a!==null).length;
+  const correct=answered.filter((a,i)=>a===questions[i].ans).length;
+  const pct=Math.round((done/questions.length)*100);
+  document.getElementById('quiz-progress-fill').style.width=pct+'%';
+  document.getElementById('quiz-score-display').innerHTML=`${done} <span>/ ${questions.length}</span>`;
+  document.getElementById('quiz-correct-display').textContent=`${correct} correct`;
+  document.getElementById('global-progress').style.width=pct+'%';
+  document.getElementById('global-score-label').textContent=`${done} of ${questions.length} answered`;
+  document.getElementById('global-correct-label').textContent=`${correct} correct`;
+  if(done>0)document.getElementById('sidebar-score').textContent=`${correct}/${questions.length}`;
+}
+renderQuiz();
+</script>
+</body>
+</html>

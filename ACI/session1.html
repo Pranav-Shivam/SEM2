@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S1 · Introduction to AI &amp; Agents · ACI</title>
+<script>(function(){try{var t=localStorage.getItem('aci-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="session1">
+<main class="wide">
+  <div class="page-head">
+    <div class="breadcrumb"><a href="index.html">Home</a> › Session 1</div>
+    <h1>Introduction to AI &amp; Agents</h1>
+    <div class="session-meta">
+      <span class="pill">CS#1</span>
+      <span class="pill orange">Module 1</span>
+      <span class="dim">Four views of AI · Turing test · rationality · agents · PEAS · foundations &amp; risks</span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <aside class="toc">
+      <div class="toc-title">On this page</div>
+      <a href="#intel">What is intelligence?</a>
+      <a href="#fourviews">The 4 views of AI</a>
+      <a href="#rational">Acting rationally</a>
+      <a href="#foundations">Foundations of AI</a>
+      <a href="#risks">Risks of AI</a>
+      <a href="#agents">Agents &amp; environments</a>
+      <a href="#peas">PEAS</a>
+      <a href="#worked">Worked examples</a>
+      <a href="#quiz">Self-test</a>
+    </aside>
+
+    <div>
+      <p class="lead">This course is fundamentally about <strong>designing rational agents</strong> — programs that perceive an environment and act to achieve the best expected outcome. Session 1 sets up the vocabulary: what we even mean by "intelligence", the four classic ways to define AI, and the agent/PEAS framing used for the rest of the course.</p>
+
+      <section id="intel">
+        <h2>What is intelligence?</h2>
+        <p>There is no single accepted definition. Working description: the <strong>capacity for learning, reasoning, understanding</strong>, and the ability to <strong>perceive and act</strong> in the world. It shows up as reasoning (proving theorems, diagnosis), planning (taking decisions), learning &amp; adaptation (recommending movies, learning traffic), and understanding (text, speech, scenes).</p>
+        <div class="box intuition"><div class="box-title">Intuition</div>Don't anchor on "human-like". Humans aren't always intelligent, and non-human behaviour can be intelligent. AI asks a sharper question: <em>given what an agent perceives, did it do the right thing?</em></div>
+      </section>
+
+      <section id="fourviews">
+        <h2>The four views of AI</h2>
+        <p>AI definitions split along two axes — <strong>thought vs behaviour</strong> and <strong>human-like vs rational</strong> — giving a 2×2:</p>
+        <div data-diagram="four-views" data-caption="The four approaches to AI. This course lives in the bottom-right quadrant — acting rationally."></div>
+        <div class="tbl-wrap"><table class="center-cells">
+          <tr><th></th><th>Human performance</th><th>Rational (ideal) performance</th></tr>
+          <tr><th>Thinking / reasoning</th><td>(1) Thinking <b>Humanly</b><br><span class="faint">Cognitive modelling</span></td><td>(3) Thinking <b>Rationally</b><br><span class="faint">Laws of thought / logic</span></td></tr>
+          <tr><th>Acting / behaviour</th><td>(2) Acting <b>Humanly</b><br><span class="faint">Turing test</span></td><td>(4) Acting <b>Rationally</b><br><span class="faint">Rational agent ← this course</span></td></tr>
+        </table></div>
+
+        <h3>(1) Thinking humanly — cognitive modelling</h3>
+        <p>Build systems whose internal reasoning <em>matches how humans think</em>. We probe human thought via introspection, psychological experiments, and brain imaging. Example: Newell &amp; Simon's <strong>General Problem Solver (1961)</strong> — the first system to separate <strong>knowledge base from inference</strong>, and it was judged by comparing its reasoning trace to human subjects'.</p>
+        <div class="box"><div class="box-title">Analogy from the slides</div>"Aeronautical engineering texts don't define their goal as making machines that fly <em>so exactly like pigeons that they can fool other pigeons</em>." Likewise, Deep Blue beats humans at chess without thinking like one.</div>
+
+        <h3>(2) Acting humanly — the Turing Test</h3>
+        <p>A machine is "intelligent" if an interrogator, exchanging text through a wall, cannot tell whether replies come from a human or a computer. To pass it needs: <strong>NLP, knowledge representation, automated reasoning, machine learning</strong> (+ computer vision &amp; robotics for the <strong>Total Turing Test</strong>).</p>
+        <ul>
+          <li><strong>Loebner Prize</strong> — annual restricted-conversation contest.</li>
+          <li><strong>Eugene Goostman</strong> — chatbot posing as a 13-year-old Ukrainian boy; first to "pass" (fooled 10 of 30 judges).</li>
+          <li>Problem: results are <em>not reproducible, constructive, or mathematically analysable</em>. And humans can be mistaken for machines (e.g. a savant like Shakuntala Devi).</li>
+        </ul>
+
+        <h3>(3) Thinking rationally — laws of thought</h3>
+        <p>Aristotle's <strong>syllogisms</strong> codified correct argument structures (3rd century BC). <em>"All boring classes → students sleep; this is a boring class; therefore students sleep here."</em> Formal logic became the basis of rational thinking. Two problems: (a) not all intelligent behaviour is logical deliberation — <strong>reflexes</strong> aren't; (b) it's computationally explosive — even a few hundred facts don't scale.</p>
+
+        <h3>(4) Acting rationally — the rational agent (our focus)</h3>
+        <p>An <strong>agent</strong> perceives and acts. A <strong>rational agent</strong> acts to achieve the best outcome, or the best <em>expected</em> outcome under uncertainty. Rationality includes correct inference, but also acting <em>without</em> inference (a reflex — pulling back from a hot stove) and acting when no provably-correct inference exists.</p>
+      </section>
+
+      <section id="rational">
+        <h2>Rationality, omniscience &amp; bounded rationality</h2>
+        <div class="box def"><div class="box-title">Ideal rational agent</div>"For each possible percept sequence, it does whatever action is <strong>expected to maximize its performance measure</strong>, given the evidence perceived so far and built-in knowledge."</div>
+        <ul>
+          <li><strong>Rationality ≠ omniscience.</strong> An omniscient agent knows the actual outcome; a rational one only maximises <em>expected</em> outcome from what it can perceive.</li>
+          <li><strong>Information gathering / exploration</strong> is rational — acting to improve future percepts.</li>
+          <li><strong>Autonomy:</strong> behaviour driven by the agent's own experience (it can learn &amp; adapt), not only by the designer's built-in knowledge.</li>
+          <li><strong>Bounded rationality:</strong> perfect rationality is unachievable with finite compute — so we design the best program for the given resources.</li>
+        </ul>
+      </section>
+
+      <section id="foundations">
+        <h2>Foundations of AI</h2>
+        <p>AI borrows from many disciplines (Textbook §1.2):</p>
+        <div class="grid cols-2">
+          <div class="card"><strong>Philosophy</strong> — logic &amp; reasoning, mind as a rule-governed physical state, foundations of learning &amp; rationality.</div>
+          <div class="card"><strong>Mathematics</strong> — formal logic, computation &amp; algorithms, probability.</div>
+          <div class="card"><strong>Economics</strong> — rational decisions, decision theory + probability, game theory, Markov decision processes.</div>
+          <div class="card"><strong>Neuroscience</strong> — how brains function and compare to computers.</div>
+          <div class="card"><strong>Psychology</strong> — cognitive psychology &amp; cognitive science: the brain as an information processor.</div>
+          <div class="card"><strong>Computer science / Control theory / Linguistics</strong> — building powerful machines; feedback &amp; cybernetics; language &amp; meaning.</div>
+        </div>
+      </section>
+
+      <section id="risks">
+        <h2>Risks of AI</h2>
+        <p>A favourite short-answer / "identify two risks" exam target.</p>
+        <div class="grid cols-2">
+          <div class="card"><strong>Lethal autonomous weapons</strong> — locate, select and kill targets with no human in the loop; the danger is <em>scalability</em>.</div>
+          <div class="card"><strong>Surveillance &amp; persuasion</strong> — mass surveillance; tailoring information flows to modify political behaviour.</div>
+          <div class="card"><strong>Biased decision-making</strong> — parole/loan models encoding race/gender bias; data reflects societal bias.</div>
+          <div class="card"><strong>Impact on employment</strong> — shifts wealth from labour to capital; can worsen inequality even as total wealth rises.</div>
+          <div class="card"><strong>Safety-critical use</strong> — driving, water systems: needs engineering/ethical standards on par with other safety fields.</div>
+          <div class="card"><strong>Cybersecurity</strong> — defends against attacks but also powers automated phishing/blackmail; plus deepfakes, sustainability.</div>
+        </div>
+      </section>
+
+      <section id="agents">
+        <h2>Agents &amp; environments</h2>
+        <p>An <strong>agent</strong> perceives its environment through <strong>sensors</strong> and acts through <strong>actuators</strong>.</p>
+        <div class="grid cols-3">
+          <div class="card"><strong>Human agent</strong><br><span class="dim">Sensors: eyes, ears. Actuators: hands, legs, mouth.</span></div>
+          <div class="card"><strong>Robotic agent</strong><br><span class="dim">Sensors: cameras, range finders. Actuators: motors.</span></div>
+          <div class="card"><strong>Software agent</strong><br><span class="dim">Senses data, reasons about goals, executes actions.</span></div>
+        </div>
+        <div class="formula">The <strong>agent function</strong> maps percept histories to actions: \( f : P^{*} \rightarrow A \). The <strong>agent program</strong> realises \(f\) on hardware: <strong>agent = architecture + program</strong>.</div>
+        <div data-diagram="agent-loop" data-caption="The agent–environment loop: percepts in through sensors, actions out through actuators, which change the environment."></div>
+        <p><strong>Vacuum-cleaner agent.</strong> Percepts = <code>[location, contents]</code> e.g. <code>[A, Dirty]</code>; Actions = <code>Left, Right, Suck, NoOp</code>.</p>
+        <div class="box warning"><div class="box-title">AI agent vs Agentic AI</div>In this course an "agent" just means a rational agent (we don't care if it's a robot or an LLM). The difference between an <em>AI agent</em> and <em>Agentic AI</em> is the <strong>level of autonomy</strong>: a scripted FAQ bot is an AI agent; a network of bots that escalate, analyse sentiment, and orchestrate sub-tasks they learned to decompose is Agentic AI.</div>
+      </section>
+
+      <section id="peas">
+        <h2>PEAS — specifying a task environment</h2>
+        <p>Before designing an agent, specify its task environment with <strong>PEAS</strong>:</p>
+        <div class="tbl-wrap"><table>
+          <tr><th>Letter</th><th>Meaning</th><th>Automated taxi example</th></tr>
+          <tr><td><b>P</b>erformance</td><td>Objective success criteria</td><td>Safe, fast, legal, comfortable trip; maximise profit</td></tr>
+          <tr><td><b>E</b>nvironment</td><td>What the agent operates in</td><td>Roads, other traffic, signals, pedestrians, customers</td></tr>
+          <tr><td><b>A</b>ctuators</td><td>How it acts</td><td>Steering, accelerator, brake, signal, horn, display</td></tr>
+          <tr><td><b>S</b>ensors</td><td>How it perceives</td><td>Cameras, sonar, speedometer, GPS, odometer, engine sensors</td></tr>
+        </table></div>
+        <div class="box exam"><div class="box-title">Exam tip</div>PEAS appears <em>every</em> paper (Q1). Write a <strong>concrete</strong> performance measure (not "works well"), list realistic sensors/actuators, and remember: the <strong>Performance measure belongs to the environment/designer</strong>, not the agent.</div>
+      </section>
+
+      <section id="worked">
+        <h2>Worked examples</h2>
+
+        <div class="solution">
+          <button class="sol-toggle"><span class="sol-badge">PEAS</span> Medical diagnosis system <span class="chev">›</span></button>
+          <div class="sol-body">
+            <ul>
+              <li><strong>Performance:</strong> healthy patient, minimise costs, minimise lawsuits.</li>
+              <li><strong>Environment:</strong> patient, hospital, staff.</li>
+              <li><strong>Actuators:</strong> screen display (questions, tests, diagnoses, treatments, referrals).</li>
+              <li><strong>Sensors:</strong> keyboard entry of symptoms, findings, patient answers.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="solution">
+          <button class="sol-toggle"><span class="sol-badge">PEAS</span> Part-picking robot <span class="chev">›</span></button>
+          <div class="sol-body">
+            <ul>
+              <li><strong>Performance:</strong> percentage of parts in correct bins.</li>
+              <li><strong>Environment:</strong> conveyor belt with parts, bins.</li>
+              <li><strong>Actuators:</strong> jointed arm and hand.</li>
+              <li><strong>Sensors:</strong> camera, joint-angle sensors.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="solution">
+          <button class="sol-toggle"><span class="sol-badge">Exercise</span> PEAS for an interactive English tutor (Grammarly-style) <span class="chev">›</span></button>
+          <div class="sol-body">
+            <ul>
+              <li><strong>Performance:</strong> improvement in student's writing accuracy/score, errors corrected, learning rate, user satisfaction.</li>
+              <li><strong>Environment:</strong> the student, their documents, the language/grammar rules, the editing app.</li>
+              <li><strong>Actuators:</strong> on-screen suggestions, highlights/underlines, explanations, corrected text, progress reports.</li>
+              <li><strong>Sensors:</strong> keyboard input (the text being typed), cursor/selection, click feedback on accept/reject.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="solution">
+          <button class="sol-toggle"><span class="sol-badge">Concept</span> Why isn't a table-lookup agent good enough? <span class="chev">›</span></button>
+          <div class="sol-body">
+            <p>A <code>TABLE-DRIVEN-AGENT</code> stores an action for every possible percept sequence. It fails because:</p>
+            <ul>
+              <li>The table is <strong>astronomically huge</strong> (percept sequences grow exponentially).</li>
+              <li>It takes far too long to build.</li>
+              <li>It has <strong>no autonomy</strong> — it can't handle anything not pre-entered.</li>
+              <li>Even with learning, it would take forever to learn every entry.</li>
+            </ul>
+            <p>This motivates compact <em>agent programs</em> (reflex, model-based, goal-based, utility-based, learning) instead of explicit tables.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="quiz">
+        <h2>Self-test</h2>
+        <div class="quiz">
+          <div class="q">
+            <div class="q-text"><span class="qn">Q1.</span> This course is primarily about which view of AI?</div>
+            <button class="opt">Thinking humanly <span class="mark"></span></button>
+            <button class="opt">Acting humanly (Turing test) <span class="mark"></span></button>
+            <button class="opt" data-correct="1">Acting rationally (rational agents) <span class="mark"></span></button>
+            <button class="opt">Thinking rationally (laws of thought) <span class="mark"></span></button>
+            <div class="explain">The whole course is framed around designing <strong>rational agents</strong> — agents that act to maximise expected performance.</div>
+          </div>
+          <div class="q">
+            <div class="q-text"><span class="qn">Q2.</span> "Rationality is the same as omniscience." This is…</div>
+            <button class="opt" data-correct="1">False — rationality maximises <em>expected</em> outcome from available percepts <span class="mark"></span></button>
+            <button class="opt">True — a rational agent always knows the result <span class="mark"></span></button>
+            <button class="opt">True only for deterministic environments <span class="mark"></span></button>
+            <button class="opt">False — they're identical in practice <span class="mark"></span></button>
+            <div class="explain">Omniscience knows the actual outcome; rationality only maximises the <em>expected</em> outcome given evidence and built-in knowledge.</div>
+          </div>
+          <div class="q">
+            <div class="q-text"><span class="qn">Q3.</span> In PEAS, the performance measure for a vacuum agent could be amount of dirt cleaned. Which letter does it correspond to?</div>
+            <button class="opt" data-correct="1">P <span class="mark"></span></button>
+            <button class="opt">E <span class="mark"></span></button>
+            <button class="opt">A <span class="mark"></span></button>
+            <button class="opt">S <span class="mark"></span></button>
+            <div class="explain">P = Performance measure. The dirt vacuumed, time taken, electricity used and noise are all candidate performance measures.</div>
+          </div>
+          <div class="q">
+            <div class="q-text"><span class="qn">Q4.</span> Which is <em>not</em> a stated risk of AI in CS1?</div>
+            <button class="opt">Lethal autonomous weapons <span class="mark"></span></button>
+            <button class="opt">Biased decision-making <span class="mark"></span></button>
+            <button class="opt" data-correct="1">Guaranteed loss of all jobs with no upside <span class="mark"></span></button>
+            <button class="opt">Mass surveillance &amp; persuasion <span class="mark"></span></button>
+            <div class="explain">The slides note AI shifts wealth from labour to capital and can worsen inequality — but also makes workers more productive/employable. "Guaranteed total job loss" is not the claim.</div>
+          </div>
+          <div class="quiz-score"></div>
+        </div>
+      </section>
+
+      <div style="margin-top:30px"><button class="btn" id="mark-complete">Mark this session complete</button></div>
+      <div class="pager" id="session-pager"></div>
+    </div>
+  </div>
+</main>
+<script src="assets/app.js"></script>
+<script src="assets/diagrams.js"></script>
+</body>
+</html>

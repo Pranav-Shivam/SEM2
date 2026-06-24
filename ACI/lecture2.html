@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L2 · Agents, PEAS, Environments & Search · ACI</title>
+<style>
+:root{
+  --bg:#0e1116; --panel:#151a22; --panel2:#1b2230; --border:#262e3d;
+  --text:#e7ebf3; --muted:#93a0b8; --accent:#7AB32E; --accent2:#4fb3e8;
+  --warn:#e8b339; --bad:#e8616b; --good:#7AB32E;
+  --p:#1B3A2D; --e:#0e7c7b; --a:#a8521b; --s:#5b3fa0;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg); color:var(--text); margin:0; padding:0;
+  line-height:1.6; font-size:16px;
+}
+.wrap{max-width:880px; margin:0 auto; padding:24px 18px 90px;}
+a{color:var(--accent2); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+header.top{padding:18px 0 8px; border-bottom:1px solid var(--border); margin-bottom:6px;}
+.crumb{font-size:13px; color:var(--muted);}
+h1{font-size:1.7rem; margin:8px 0 4px; letter-spacing:-0.01em;}
+.tagline{color:var(--muted); font-size:14.5px; margin-bottom:10px;}
+.pill-row{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 4px;}
+.pill{background:var(--panel2); border:1px solid var(--border); border-radius:20px; padding:4px 12px; font-size:12.5px; color:var(--muted);}
+
+nav.toc{display:flex; flex-wrap:wrap; gap:6px 14px; font-size:13.5px; margin:14px 0 26px; padding:12px 14px; background:var(--panel); border:1px solid var(--border); border-radius:10px;}
+nav.toc a{color:var(--text); opacity:0.78;}
+nav.toc a:hover{opacity:1; text-decoration:none; color:var(--accent2);}
+
+h2{font-size:1.3rem; margin-top:46px; padding-bottom:8px; border-bottom:1px solid var(--border); scroll-margin-top:16px;}
+h3{font-size:1.08rem; margin-top:30px; color:#cfe3a0;}
+p{color:#d7dceb;}
+.muted{color:var(--muted);}
+
+table{width:100%; border-collapse:collapse; margin:14px 0; font-size:14.5px;}
+th,td{border:1px solid var(--border); padding:8px 10px; text-align:left; vertical-align:top;}
+th{background:var(--panel2); color:#cfe3a0; font-weight:600;}
+tr:nth-child(even) td{background:#11151c;}
+
+.callout{border-radius:10px; padding:14px 16px; margin:16px 0; border:1px solid var(--border); background:var(--panel);}
+.callout.warn{border-left:4px solid var(--warn);}
+.callout.tip{border-left:4px solid var(--accent2);}
+.callout.def{border-left:4px solid var(--accent);}
+.callout b.tag{display:block; font-size:13px; text-transform:uppercase; letter-spacing:.03em; margin-bottom:6px; color:var(--muted);}
+
+details.work{background:var(--panel); border:1px solid var(--border); border-radius:10px; margin:14px 0; padding:0;}
+details.work > summary{cursor:pointer; padding:12px 16px; font-weight:600; color:#cfe3a0; list-style:none; display:flex; align-items:center; gap:8px;}
+details.work > summary::before{content:"▸"; transition:transform .15s; color:var(--accent2);}
+details.work[open] > summary::before{transform:rotate(90deg);}
+details.work .body{padding:2px 16px 16px; border-top:1px solid var(--border);}
+details.work .body{margin-top:10px;}
+
+.diagram{background:#0a0d12; border:1px solid var(--border); border-radius:10px; padding:14px; margin:16px 0; overflow-x:auto;}
+.diagram svg{display:block; margin:0 auto; max-width:100%;}
+.cap{font-size:13px; color:var(--muted); text-align:center; margin-top:8px; font-style:italic;}
+
+.quiz-q{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin:14px 0;}
+.quiz-q p.qtext{font-weight:600; margin:0 0 10px; color:#fff;}
+.opts{display:flex; flex-direction:column; gap:6px;}
+.opt{background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:8px 12px; cursor:pointer; font-size:14.5px; transition:.12s;}
+.opt:hover{border-color:var(--accent2);}
+.opt.correct{border-color:var(--good); background:#16321a; color:#d6ffd1;}
+.opt.wrong{border-color:var(--bad); background:#321616; color:#ffd6d6;}
+.rationale{display:none; margin-top:10px; padding:10px 12px; background:#0e2718; border:1px solid #1f4a2c; border-radius:8px; font-size:14px; color:#cdeec0;}
+.rationale.show{display:block;}
+
+.num-box{background:#10151d; border:1px dashed var(--border); border-radius:10px; padding:14px 16px; margin:14px 0;}
+.num-box .steps{margin-top:8px;}
+.num-box .steps div{padding:4px 0; font-family:"SF Mono", Consolas, monospace; font-size:13.7px; color:#bfe6a0;}
+
+.progress-wrap{position:sticky; top:0; z-index:20; background:var(--bg); padding:8px 0; border-bottom:1px solid var(--border);}
+.progress-bar{height:4px; background:var(--panel2); border-radius:2px; overflow:hidden;}
+.progress-fill{height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); width:0%; transition:width .2s;}
+
+.score-chip{position:fixed; bottom:18px; right:18px; background:var(--panel); border:1px solid var(--border); border-radius:30px; padding:10px 18px; font-size:14px; box-shadow:0 4px 18px rgba(0,0,0,.4); z-index:30;}
+.score-chip b{color:var(--accent);}
+
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); margin-top:10px; justify-content:center;}
+.legend span{display:inline-flex; align-items:center; gap:5px;}
+.dot{width:10px; height:10px; border-radius:50%; display:inline-block;}
+
+.flash{cursor:pointer; user-select:none;}
+.flash .face{transition:opacity .15s;}
+
+footer{margin-top:60px; padding-top:18px; border-top:1px solid var(--border); color:var(--muted); font-size:13px;}
+.exam-tag{display:inline-block; background:#3a2a10; color:var(--warn); border-radius:5px; padding:1px 7px; font-size:11px; font-weight:600; margin-left:6px; vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<div class="progress-wrap"><div class="wrap" style="padding:0 18px;"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div></div>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="crumb"><a href="https://sanskarmk.github.io/ACI_Midsem/index.html">Home</a> › Session / Lecture 2</div>
+  <h1>Agents, PEAS, Environments & Search</h1>
+  <div class="tagline">ZG557 · Rational agents → PEAS → 6 environment dimensions → 5 agent types → search problem formulation → uninformed search</div>
+  <div class="pill-row">
+    <span class="pill">AIMA Ch.2 + Ch.3</span>
+    <span class="pill">7 diagrams</span>
+    <span class="pill">3 worked numericals</span>
+    <span class="pill">10-question self-test</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#perspectives">4 Views of AI</a>
+  <a href="#agentdef">What's an Agent</a>
+  <a href="#rational">Rational Agents</a>
+  <a href="#peas">PEAS</a>
+  <a href="#envdims">6 Env Dimensions</a>
+  <a href="#agenttypes">5 Agent Types</a>
+  <a href="#vacuum">Vacuum World</a>
+  <a href="#search">Search Formulation</a>
+  <a href="#statespace">States/Nodes/Frontier</a>
+  <a href="#evalcriteria">Eval Criteria (b,d,m)</a>
+  <a href="#puzzle">8-Puzzle</a>
+  <a href="#strategies">Search Strategies</a>
+  <a href="#summary">Summary Table</a>
+  <a href="#exercises">Exercises (Original)</a>
+  <a href="#numericals">Numericals</a>
+  <a href="#quiz">Self-Test</a>
+  <a href="#extra">Worked Answers + Bonus</a>
+  <a href="#references">References</a>
+</nav>
+
+<!-- ============ SECTION: 4 PERSPECTIVES ============ -->
+<h2 id="perspectives">1. Four Views of AI — with the examples your instructor gave</h2>
+<p>Same goal (build smart machines), four different yardsticks for "smart."</p>
+
+<div class="diagram">
+<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
+  <line x1="380" y1="20" x2="380" y2="260" stroke="#262e3d" stroke-width="2"/>
+  <line x1="20" y1="140" x2="740" y2="140" stroke="#262e3d" stroke-width="2"/>
+  <text x="380" y="14" text-anchor="middle" fill="#93a0b8" font-size="12">THINKING</text>
+  <text x="380" y="274" text-anchor="middle" fill="#93a0b8" font-size="12">ACTING</text>
+  <text x="14" y="144" text-anchor="end" fill="#93a0b8" font-size="12" transform="rotate(-90 14 144)">HUMAN-LIKE</text>
+  <text x="746" y="144" text-anchor="start" fill="#93a0b8" font-size="12" transform="rotate(90 746 144)">RATIONAL</text>
+
+  <rect x="40" y="40" width="300" height="90" rx="10" fill="#1b2230" stroke="#4fb3e8" stroke-width="1.5"/>
+  <text x="190" y="62" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">Thinking Humanly</text>
+  <text x="190" y="82" text-anchor="middle" fill="#9fb3cc" font-size="11.5">"answer ~50" — gut feel,</text>
+  <text x="190" y="98" text-anchor="middle" fill="#9fb3cc" font-size="11.5">emotion/habit not pure logic</text>
+  <text x="190" y="118" text-anchor="middle" fill="#6f95c2" font-size="10.5">→ cognitive science</text>
+
+  <rect x="420" y="40" width="300" height="90" rx="10" fill="#1b2230" stroke="#4fb3e8" stroke-width="1.5"/>
+  <text x="570" y="62" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">Thinking Rationally</text>
+  <text x="570" y="82" text-anchor="middle" fill="#9fb3cc" font-size="11.5">"All ACI HW due tomorrow</text>
+  <text x="570" y="98" text-anchor="middle" fill="#9fb3cc" font-size="11.5">must be done today" — logic</text>
+  <text x="570" y="118" text-anchor="middle" fill="#6f95c2" font-size="10.5">→ "laws of thought"</text>
+
+  <rect x="40" y="150" width="300" height="90" rx="10" fill="#1b2230" stroke="#e8b339" stroke-width="1.5"/>
+  <text x="190" y="172" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">Acting Humanly</text>
+  <text x="190" y="192" text-anchor="middle" fill="#9fb3cc" font-size="11.5">Chatbot: "That sounds stressful,</text>
+  <text x="190" y="208" text-anchor="middle" fill="#9fb3cc" font-size="11.5">want to talk?" — looks empathetic</text>
+  <text x="190" y="228" text-anchor="middle" fill="#e8b339" font-size="10.5">⚠ anthropomorphism risk</text>
+
+  <rect x="420" y="150" width="300" height="90" rx="10" fill="#15281a" stroke="#7AB32E" stroke-width="2.2"/>
+  <text x="570" y="172" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">★ Acting Rationally</text>
+  <text x="570" y="192" text-anchor="middle" fill="#cfe3a0" font-size="11.5">Check Maps, pick fastest route,</text>
+  <text x="570" y="208" text-anchor="middle" fill="#cfe3a0" font-size="11.5">book cab — maximise the goal</text>
+  <text x="570" y="228" text-anchor="middle" fill="#7AB32E" font-size="10.5">→ this course's definition</text>
+</svg>
+<div class="cap">Fig 1 — Four quadrants of AI. The course commits to the bottom-right: acting rationally.</div>
+</div>
+
+<div class="callout warn">
+  <b class="tag">⚠ Anthropomorphism warning</b>
+  Attributing human traits to non-humans. Some products are deliberately tuned to feel human so you stay attached to them (dependency by design). That's exactly why "acting rationally" is the preferred standard — it does the right thing without performing humanness.
+</div>
+
+<!-- ============ SECTION: AGENT DEF ============ -->
+<h2 id="agentdef">2. What is an Agent?</h2>
+
+<div class="callout def">
+  <b class="tag">Definition</b>
+  An <b>agent</b> = anything that perceives its environment through <b>sensors</b> and acts on it through <b>actuators</b>. (AIMA §2.1)
+</div>
+
+<table>
+<tr><th>Agent</th><th>Sensors</th><th>Actuators</th></tr>
+<tr><td>Human</td><td>eyes, ears, skin...</td><td>hands, legs, mouth</td></tr>
+<tr><td>Robot</td><td>camera, lidar, sonar</td><td>motors</td></tr>
+<tr><td>Software</td><td>keyboard / voice / API input</td><td>screen / audio / API output</td></tr>
+</table>
+
+<div class="diagram">
+<svg viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg">
+  <rect x="40" y="55" width="190" height="110" rx="12" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="135" y="95" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">AGENT</text>
+  <text x="135" y="115" text-anchor="middle" fill="#9fc3e6" font-size="11">Perceives → Decides → Acts</text>
+  <text x="135" y="140" text-anchor="middle" fill="#7fb8e8" font-size="13" font-style="italic">π(a | s)</text>
+  <text x="135" y="46" text-anchor="middle" fill="#6f95c2" font-size="10">↑ Sensors</text>
+  <text x="135" y="182" text-anchor="middle" fill="#6f95c2" font-size="10">Actuators ↓</text>
+
+  <rect x="410" y="55" width="190" height="110" rx="12" fill="#13241c" stroke="#7AB32E" stroke-width="2"/>
+  <text x="505" y="95" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">ENVIRONMENT</text>
+  <text x="505" y="118" text-anchor="middle" fill="#a8d486" font-size="11">State transitions</text>
+  <text x="505" y="136" text-anchor="middle" fill="#a8d486" font-size="11">Emits rewards</text>
+
+  <line x1="230" y1="90" x2="410" y2="90" stroke="#4fb3e8" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrA)"/>
+  <text x="320" y="80" text-anchor="middle" fill="#4fb3e8" font-size="11.5">Action Aₜ</text>
+
+  <line x1="410" y1="130" x2="230" y2="130" stroke="#7AB32E" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrG)"/>
+  <text x="320" y="150" text-anchor="middle" fill="#7AB32E" font-size="11.5">Sₜ₊₁ , Rₜ₊₁</text>
+
+  <text x="320" y="200" text-anchor="middle" fill="#93a0b8" font-size="11">Trajectory: S₀,A₀,R₁,S₁,A₁,R₂,S₂...</text>
+
+  <defs>
+    <marker id="arrA" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#4fb3e8"/></marker>
+    <marker id="arrG" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#7AB32E"/></marker>
+  </defs>
+</svg>
+<div class="cap">Fig 2 — The agent-environment loop. Two probabilities matter: policy π(a|s) and model dynamics p(s′,r|s,a).</div>
+</div>
+
+<div class="callout tip">
+  <b class="tag">AIMA §2.1</b>
+  Agent = <b>architecture + program</b>. The agent function f: P* → A maps the entire percept history to an action. Rationality is judged on the design of this <i>function</i>, not on what hardware runs it.
+</div>
+
+<h3>Agent vs AI Agent vs Agentic AI</h3>
+<table>
+<tr><th></th><th>AI Agent</th><th>Agentic AI</th></tr>
+<tr><td><b>Autonomy</b></td><td>Limited — predefined scripts/logic</td><td>High — orchestrates, adapts, escalates on its own</td></tr>
+<tr><td><b>Architecture</b></td><td>Single agent on data/scripts</td><td>Network of coordinating agents</td></tr>
+<tr><td><b>Capability</b></td><td>FAQ, scripted routing</td><td>Sentiment, API calls, multi-step plans</td></tr>
+<tr><td><b>Example</b></td><td>Swiggy support bot</td><td>Full system: escalates, tracks order, contacts logistics</td></tr>
+</table>
+
+<div class="callout tip">
+  <b class="tag">📌 Important framing for this course</b>
+  When ACI says "agent," it means the broad R&N <b>rational agent</b> — anything that perceives and acts to maximise performance. <b>Not</b> specifically an LLM chatbot or an MCP-style agentic system. Don't answer exam questions as if "agent" only means an LLM agent.
+</div>
+
+<!-- ============ SECTION: RATIONAL ============ -->
+<h2 id="rational">3. Rational Agents and Ideal Rational Agents</h2>
+
+<table>
+<tr><th>Term</th><th>Definition</th><th>Key insight</th></tr>
+<tr><td><b>Agent</b></td><td>Perceives + acts</td><td>No mention of "right thing" — just perceiving/acting</td></tr>
+<tr><td><b>Rational Agent</b></td><td>Strives to do the right thing — the action that maximises performance</td><td>Correct action ≠ correct outcome every time</td></tr>
+<tr><td><b>Ideal Rational Agent</b></td><td>For every percept sequence, takes the action that maximises <i>expected</i> performance given built-in knowledge + evidence so far</td><td>Judged on what was known <i>then</i>, not in hindsight</td></tr>
+</table>
+
+<div class="callout warn">
+  <b class="tag">💡 Rationality ≠ Omniscience — the retrospection principle</b>
+  Omniscience = knowing everything in advance. Rationality only needs the best decision given <i>current</i> knowledge. "You could've done better" is not a valid criticism if the agent used all available evidence optimally at the time. A rational agent can still produce a bad outcome in hindsight — that alone doesn't make it irrational.
+</div>
+
+<!-- ============ SECTION: PEAS ============ -->
+<h2 id="peas">4. PEAS — the design spec for any agent</h2>
+<p>Define all four <b>before</b> writing a line of code.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 720 170" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="40" width="150" height="90" rx="10" fill="#1B3A2D" stroke="#7AB32E" stroke-width="1.5"/>
+  <text x="85" y="65" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">P</text>
+  <text x="85" y="82" text-anchor="middle" fill="#cfe3a0" font-size="10.5">Performance</text>
+  <text x="85" y="100" text-anchor="middle" fill="#a8c98a" font-size="9.5">success criterion</text>
+
+  <rect x="195" y="40" width="150" height="90" rx="10" fill="#0e3a39" stroke="#1ea1a0" stroke-width="1.5"/>
+  <text x="270" y="65" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">E</text>
+  <text x="270" y="82" text-anchor="middle" fill="#a0dcdc" font-size="10.5">Environment</text>
+  <text x="270" y="100" text-anchor="middle" fill="#7fbcbc" font-size="9.5">where it operates</text>
+
+  <rect x="380" y="40" width="150" height="90" rx="10" fill="#3a230f" stroke="#a8521b" stroke-width="1.5"/>
+  <text x="455" y="65" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">A</text>
+  <text x="455" y="82" text-anchor="middle" fill="#e0b48c" font-size="10.5">Actuators</text>
+  <text x="455" y="100" text-anchor="middle" fill="#cf9868" font-size="9.5">how it acts</text>
+
+  <rect x="565" y="40" width="150" height="90" rx="10" fill="#241a3a" stroke="#5b3fa0" stroke-width="1.5"/>
+  <text x="640" y="65" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">S</text>
+  <text x="640" y="82" text-anchor="middle" fill="#c2b3e6" font-size="10.5">Sensors</text>
+  <text x="640" y="100" text-anchor="middle" fill="#a292c9" font-size="9.5">how it perceives</text>
+
+  <path d="M160,85 L195,85" stroke="#666" stroke-width="2" marker-end="url(#arrP)"/>
+  <path d="M345,85 L380,85" stroke="#666" stroke-width="2" marker-end="url(#arrP)"/>
+  <path d="M530,85 L565,85" stroke="#666" stroke-width="2" marker-end="url(#arrP)"/>
+  <defs><marker id="arrP" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#888"/></marker></defs>
+  <text x="360" y="155" text-anchor="middle" fill="#93a0b8" font-size="11">Sensors observe Environment → Actuators optimise Performance</text>
+</svg>
+<div class="cap">Fig 3 — PEAS reads left→right as a design checklist, but operationally the loop is S → E → A → P.</div>
+</div>
+
+<table>
+<tr><th>Agent</th><th>Performance</th><th>Environment</th><th>Actuators</th><th>Sensors</th></tr>
+<tr><td>Automated Taxi</td><td>Safety, speed, legality, comfort, profit</td><td>Roads, traffic, signals, pedestrians</td><td>Steering, brakes, horn, indicators</td><td>Cameras, GPS, sonar, speedometer</td></tr>
+<tr><td>Medical Diagnosis</td><td>Healthy patients, min cost, no lawsuits</td><td>Patient, hospital, staff</td><td>Display, test orders</td><td>Keyboard (symptoms), lab results</td></tr>
+<tr><td>Part-Picking Robot</td><td>% correct bins, throughput</td><td>Conveyor, factory floor</td><td>Robotic arm, gripper</td><td>Camera, colour sensor, joints</td></tr>
+<tr><td>Traffic Light System</td><td>Safety, min wait, flow</td><td>Roads, vehicles, pedestrians</td><td>Lights (R/G/Y)</td><td>Cameras, pedestrian sensors</td></tr>
+</table>
+
+<div class="callout tip">
+  <b class="tag">R&N quote</b>
+  "The first step in designing an agent is always to specify the task environment as fully as possible." Every later architectural decision flows from the PEAS spec.
+</div>
+
+<!-- ============ SECTION: ENV DIMS ============ -->
+<h2 id="envdims">5. Six Environment Dimensions <span class="exam-tag">EXAM</span></h2>
+<p>Click each bar below — drag your eye left→right. The harder end (right) is where the real world sits, on <i>every</i> axis at once.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 740 360" xmlns="http://www.w3.org/2000/svg">
+  <!-- 6 rows -->
+  <!-- row template y positions -->
+  <g font-family="inherit">
+  <!-- 1 -->
+  <rect x="20" y="10" width="330" height="36" rx="6" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="185" y="29" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Fully Observable</text>
+  <text x="185" y="42" text-anchor="middle" fill="#7fb8e8" font-size="9.5">Chess, Tic-Tac-Toe</text>
+  <line x1="350" y1="28" x2="390" y2="28" stroke="#4fb3e8" stroke-width="3"/>
+  <rect x="390" y="10" width="330" height="36" rx="6" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="555" y="29" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Partially Observable</text>
+  <text x="555" y="42" text-anchor="middle" fill="#7fb8e8" font-size="9.5">Autonomous driving, poker</text>
+
+  <!-- 2 -->
+  <rect x="20" y="62" width="330" height="36" rx="6" fill="#13241c" stroke="#7AB32E"/>
+  <text x="185" y="81" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Deterministic</text>
+  <text x="185" y="94" text-anchor="middle" fill="#a8d486" font-size="9.5">Calculator, chess moves</text>
+  <line x1="350" y1="80" x2="390" y2="80" stroke="#7AB32E" stroke-width="3"/>
+  <rect x="390" y="62" width="330" height="36" rx="6" fill="#13241c" stroke="#7AB32E"/>
+  <text x="555" y="81" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Stochastic</text>
+  <text x="555" y="94" text-anchor="middle" fill="#a8d486" font-size="9.5">Weather, football, poker</text>
+
+  <!-- 3 -->
+  <rect x="20" y="114" width="330" height="36" rx="6" fill="#241a3a" stroke="#8a6fd6"/>
+  <text x="185" y="133" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Episodic</text>
+  <text x="185" y="146" text-anchor="middle" fill="#c2b3e6" font-size="9.5">Spam filter, image classifier</text>
+  <line x1="350" y1="132" x2="390" y2="132" stroke="#8a6fd6" stroke-width="3"/>
+  <rect x="390" y="114" width="330" height="36" rx="6" fill="#241a3a" stroke="#8a6fd6"/>
+  <text x="555" y="133" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Sequential</text>
+  <text x="555" y="146" text-anchor="middle" fill="#c2b3e6" font-size="9.5">Chess, Pac-Man, trading bot</text>
+
+  <!-- 4 -->
+  <rect x="20" y="166" width="330" height="36" rx="6" fill="#3a230f" stroke="#e8a04a"/>
+  <text x="185" y="185" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Static</text>
+  <text x="185" y="198" text-anchor="middle" fill="#e0b48c" font-size="9.5">Crossword, Rubik's cube</text>
+  <line x1="350" y1="184" x2="390" y2="184" stroke="#e8a04a" stroke-width="3"/>
+  <rect x="390" y="166" width="330" height="36" rx="6" fill="#3a230f" stroke="#e8a04a"/>
+  <text x="555" y="185" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Dynamic</text>
+  <text x="555" y="198" text-anchor="middle" fill="#e0b48c" font-size="9.5">Driving, stock trading</text>
+
+  <!-- 5 -->
+  <rect x="20" y="218" width="330" height="36" rx="6" fill="#3a1010" stroke="#e8616b"/>
+  <text x="185" y="237" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Discrete</text>
+  <text x="185" y="250" text-anchor="middle" fill="#e6a3a8" font-size="9.5">Chess, crossword</text>
+  <line x1="350" y1="236" x2="390" y2="236" stroke="#e8616b" stroke-width="3"/>
+  <rect x="390" y="218" width="330" height="36" rx="6" fill="#3a1010" stroke="#e8616b"/>
+  <text x="555" y="237" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Continuous</text>
+  <text x="555" y="250" text-anchor="middle" fill="#e6a3a8" font-size="9.5">Taxi speed / steering angle</text>
+
+  <!-- 6 -->
+  <rect x="20" y="270" width="330" height="36" rx="6" fill="#0e3a39" stroke="#3fc7c5"/>
+  <text x="185" y="289" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Single-Agent</text>
+  <text x="185" y="302" text-anchor="middle" fill="#9fe0df" font-size="9.5">Crossword puzzle</text>
+  <line x1="350" y1="288" x2="390" y2="288" stroke="#3fc7c5" stroke-width="3"/>
+  <rect x="390" y="270" width="330" height="36" rx="6" fill="#0e3a39" stroke="#3fc7c5"/>
+  <text x="555" y="289" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Multi-Agent</text>
+  <text x="555" y="302" text-anchor="middle" fill="#9fe0df" font-size="9.5">RoboCup, taxi fleet</text>
+  </g>
+
+  <rect x="20" y="320" width="700" height="32" rx="6" fill="#1a1300"/>
+  <text x="370" y="340" text-anchor="middle" fill="#e8b339" font-size="11.5" font-weight="600">Real world = partially observable · stochastic · sequential · dynamic · continuous · multi-agent</text>
+</svg>
+<div class="cap">Fig 4 — Six independent axes. An environment doesn't have to pick the same side on every axis.</div>
+</div>
+
+<table>
+<tr><th>Dimension</th><th>Meaning</th><th>Examples</th></tr>
+<tr><td><b>Fully vs Partially Observable</b></td><td>Do sensors give the complete state at every step?</td><td>Chess, tic-tac-toe (full) · Poker, autonomous driving (partial)</td></tr>
+<tr><td><b>Deterministic vs Stochastic</b></td><td>Is the next state fixed by current state + action alone?</td><td>Calculator (det.) · weather, football, poker (stoch.)</td></tr>
+<tr><td><b>Episodic vs Sequential</b></td><td>Are decisions independent episodes, or does the current choice affect future ones?</td><td>Spam filter, "is there a cat in this image?" (episodic) · chess, trading bot (sequential)</td></tr>
+<tr><td><b>Static vs Dynamic</b></td><td>Can the environment change while the agent is still deciding?</td><td>Crossword, Rubik's cube (static) · driving (dynamic) · chess-with-a-clock = semi-dynamic</td></tr>
+<tr><td><b>Discrete vs Continuous</b></td><td>Finite, countable percepts/states/actions, or infinite?</td><td>Chess moves (discrete) · taxi speed/steering angle (continuous)</td></tr>
+<tr><td><b>Single vs Multi-Agent</b></td><td>Are other acting entities present (cooperative, competitive, or indifferent)?</td><td>Crossword (single) · chess (competitive multi) · RoboCup (multi)</td></tr>
+</table>
+
+<div class="callout warn">
+  <b class="tag">⚠ Exam point — autonomous driving is PARTIAL, not full</b>
+  Cameras all around still can't see what's 2 km ahead, when a signal will change, or what the car behind intends. Chess: you always see the whole board. That contrast <i>is</i> the definition of full vs partial observability.
+</div>
+
+<div class="callout warn">
+  <b class="tag">⚠ Common mistake — chess is DETERMINISTIC</b>
+  Determinism is about whether the <i>same action gives the same result</i>, not about whether the game has uncertainty in outcome. Moving a bishop diagonally always does the same thing. Compare a dice roll: same action, different number → stochastic. Football: kicking the ball can go many ways because <i>other players interfere</i> → stochastic.
+</div>
+
+<div class="callout warn">
+  <b class="tag">⚠ The "semi-dynamic" trap — chess with a clock</b>
+  The board itself doesn't change while you think (so it's static, by the board alone). But your <i>score</i> — remaining time on the clock — keeps ticking whether you move or not. That in-between case is called <b>semi-dynamic</b>: the environment doesn't change, but the agent's performance measure does. Expect this exact example if the exam asks for something other than plain static/dynamic.
+</div>
+
+<details class="work">
+  <summary>Comparison table — Taxi vs Chess vs Crossword</summary>
+  <div class="body">
+  <table>
+  <tr><th>Property</th><th>Real world / Taxi</th><th>Chess (Deep Blue)</th><th>Crossword</th></tr>
+  <tr><td>Observability</td><td>Partial</td><td>Full</td><td>Full</td></tr>
+  <tr><td>Determinism</td><td>Stochastic</td><td>Deterministic</td><td>Deterministic</td></tr>
+  <tr><td>Episodes</td><td>Sequential</td><td>Sequential</td><td>Sequential</td></tr>
+  <tr><td>Static/Dynamic</td><td>Dynamic</td><td>Static</td><td>Static</td></tr>
+  <tr><td>Discrete/Cont.</td><td>Continuous</td><td>Discrete</td><td>Discrete</td></tr>
+  <tr><td>Agent count</td><td>Multi</td><td>Multi (2-player)</td><td>Single</td></tr>
+  </table>
+  </div>
+</details>
+
+<!-- ============ SECTION: AGENT TYPES ============ -->
+<h2 id="agenttypes">6. Five Agent Types — what's behind the "?"</h2>
+<p>Each type below <i>extends</i> the one above it — same building, one more floor.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg">
+  <!-- vertical connecting line -->
+  <line x1="60" y1="55" x2="60" y2="420" stroke="#262e3d" stroke-width="2"/>
+
+  <g>
+  <rect x="20" y="20" width="680" height="68" rx="8" fill="#3a1c14" stroke="#c45a3a"/>
+  <text x="44" y="44" fill="#fff" font-size="13" font-weight="700">1</text>
+  <text x="100" y="42" fill="#fff" font-size="13.5" font-weight="700">Simple Reflex</text>
+  <text x="100" y="60" fill="#e0b4a0" font-size="11">Condition→Action rule only. No memory, no goals.</text>
+  <text x="100" y="76" fill="#f0c8a0" font-size="10.5" font-style="italic">e.g. "If dirty → Suck", "If wall on left → turn right"</text>
+  </g>
+
+  <g>
+  <rect x="20" y="98" width="680" height="68" rx="8" fill="#0e2e2c" stroke="#2a9d9b"/>
+  <text x="44" y="122" fill="#fff" font-size="13" font-weight="700">2</text>
+  <text x="100" y="120" fill="#fff" font-size="13.5" font-weight="700">Model-Based Reflex</text>
+  <text x="100" y="138" fill="#a0d8d6" font-size="11">Keeps an internal model/state of how the world evolves.</text>
+  <text x="100" y="154" fill="#bce8e6" font-size="10.5" font-style="italic">e.g. Driving — remembers blind spots from earlier glances</text>
+  </g>
+
+  <g>
+  <rect x="20" y="176" width="680" height="68" rx="8" fill="#11301c" stroke="#3f9d4a"/>
+  <text x="44" y="200" fill="#fff" font-size="13" font-weight="700">3</text>
+  <text x="100" y="198" fill="#fff" font-size="13.5" font-weight="700">Goal-Based</text>
+  <text x="100" y="216" fill="#a0d8a8" font-size="11">Has explicit goals; chooses actions that move toward them (needs search/planning).</text>
+  <text x="100" y="232" fill="#bce8c0" font-size="10.5" font-style="italic">e.g. Navigation app — searches for a path to "reach office"</text>
+  </g>
+
+  <g>
+  <rect x="20" y="254" width="680" height="68" rx="8" fill="#332a08" stroke="#c9a830"/>
+  <text x="44" y="278" fill="#fff" font-size="13" font-weight="700">4</text>
+  <text x="100" y="276" fill="#fff" font-size="13.5" font-weight="700">Utility-Based</text>
+  <text x="100" y="294" fill="#e0d3a0" font-size="11">Has goal + maximises a utility (which good option is "best").</text>
+  <text x="100" y="310" fill="#ecdfb0" font-size="10.5" font-style="italic">e.g. Route optimiser — fastest AND most comfortable, not just "any route"</text>
+  </g>
+
+  <g>
+  <rect x="20" y="332" width="680" height="68" rx="8" fill="#161c33" stroke="#5a78c9"/>
+  <text x="44" y="356" fill="#fff" font-size="13" font-weight="700">5</text>
+  <text x="100" y="354" fill="#fff" font-size="13.5" font-weight="700">Learning Agent</text>
+  <text x="100" y="372" fill="#a8b8e6" font-size="11">Improves itself from feedback via a critic loop.</text>
+  <text x="100" y="388" fill="#c0cdf0" font-size="10.5" font-style="italic">e.g. Recommendation engine; RLHF feedback loop in LLMs</text>
+  </g>
+
+  <text x="360" y="430" text-anchor="middle" fill="#93a0b8" font-size="11">extends ↓ at each level: memory → goals → utility → learning</text>
+</svg>
+<div class="cap">Fig 5 — Five architectures, increasing sophistication top to bottom.</div>
+</div>
+
+<div class="callout def">
+  <b class="tag">Anatomy of a learning agent (4 parts)</b>
+  <b>Performance element</b> — chooses actions (this is "the agent" from types 1–4).<br>
+  <b>Learning element</b> — improves the performance element.<br>
+  <b>Critic</b> — scores actions against a fixed performance standard (e.g. "−2 reward").<br>
+  <b>Problem generator</b> — deliberately suggests exploratory (sub-optimal) actions so better behaviour can be discovered.
+</div>
+
+<div class="callout warn">
+  <b class="tag">🚦 The brake example — a full learning loop</b>
+  Percept: red signal at 15 m. Action: apply 17 kN brake. Result: stopped 2 m past the zebra crossing. Critique: <b>negative</b>. Learning: next time at 15 m, apply 15 kN instead.<br>
+  <b>Act → Observe → Critique → Update → do better next time.</b> This loop is literally the seed of reinforcement learning.
+</div>
+
+<!-- ============ SECTION: VACUUM ============ -->
+<h2 id="vacuum">7. Worked Example — Vacuum Cleaner Agent</h2>
+
+<table>
+<tr><th>Component</th><th>Specification</th></tr>
+<tr><td>Performance (P)</td><td>Dirt cleaned, time taken, electricity used, noise</td></tr>
+<tr><td>Environment (E)</td><td>Two rooms A & B, each Clean or Dirty</td></tr>
+<tr><td>Actuators (A)</td><td>Left, Right, Suck, No-op</td></tr>
+<tr><td>Sensors (S)</td><td>Location sensor (A or B?) + Dirt sensor (dirty?)</td></tr>
+</table>
+
+<div class="diagram">
+<svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+  <!-- 8 state nodes -->
+  <!-- top row -->
+  <circle cx="220" cy="50" r="34" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="220" y="46" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">A</text>
+  <text x="220" y="60" text-anchor="middle" fill="#9fc3e6" font-size="9">A:C B:D</text>
+
+  <circle cx="480" cy="50" r="34" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="480" y="46" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">B</text>
+  <text x="480" y="60" text-anchor="middle" fill="#9fc3e6" font-size="9">A:C B:D</text>
+
+  <circle cx="100" cy="150" r="34" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="100" y="146" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">A</text>
+  <text x="100" y="160" text-anchor="middle" fill="#9fc3e6" font-size="9">A:D B:D</text>
+
+  <circle cx="350" cy="150" r="34" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="350" y="146" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">B</text>
+  <text x="350" y="160" text-anchor="middle" fill="#9fc3e6" font-size="9">A:D B:D</text>
+
+  <circle cx="600" cy="150" r="34" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="600" y="146" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">B</text>
+  <text x="600" y="160" text-anchor="middle" fill="#9fc3e6" font-size="9">A:C B:D</text>
+
+  <circle cx="100" cy="250" r="34" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="100" y="246" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">A</text>
+  <text x="100" y="260" text-anchor="middle" fill="#9fc3e6" font-size="9">A:D B:C</text>
+
+  <circle cx="350" cy="250" r="34" fill="#13241c" stroke="#7AB32E" stroke-width="3"/>
+  <text x="350" y="246" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">A</text>
+  <text x="350" y="260" text-anchor="middle" fill="#cfe3a0" font-size="9">A:C B:C</text>
+
+  <circle cx="600" cy="250" r="34" fill="#13241c" stroke="#7AB32E" stroke-width="3"/>
+  <text x="600" y="246" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">B</text>
+  <text x="600" y="260" text-anchor="middle" fill="#cfe3a0" font-size="9">A:C B:C</text>
+
+  <!-- edges with labels -->
+  <line x1="248" y1="62" x2="452" y2="62" stroke="#888" stroke-width="1.3"/>
+  <text x="350" y="56" text-anchor="middle" fill="#aaa" font-size="9">Right</text>
+
+  <line x1="220" y1="84" x2="220" y2="116" stroke="#888" stroke-width="1.3"/>
+  <text x="232" y="102" fill="#aaa" font-size="9">Suck</text>
+
+  <line x1="480" y1="84" x2="600" y2="116" stroke="#888" stroke-width="1.3"/>
+  <text x="555" y="95" fill="#aaa" font-size="9">Suck</text>
+
+  <line x1="134" y1="150" x2="316" y2="150" stroke="#888" stroke-width="1.3"/>
+  <text x="225" y="144" text-anchor="middle" fill="#aaa" font-size="9">Right</text>
+
+  <line x1="384" y1="150" x2="566" y2="150" stroke="#888" stroke-width="1.3"/>
+  <text x="475" y="144" text-anchor="middle" fill="#aaa" font-size="9">Right</text>
+
+  <line x1="100" y1="184" x2="100" y2="216" stroke="#888" stroke-width="1.3"/>
+  <text x="60" y="202" fill="#aaa" font-size="9">[stay]</text>
+
+  <line x1="134" y1="250" x2="316" y2="250" stroke="#888" stroke-width="1.3"/>
+  <text x="225" y="244" text-anchor="middle" fill="#aaa" font-size="9">Right</text>
+
+  <line x1="384" y1="250" x2="566" y2="250" stroke="#888" stroke-width="1.3"/>
+  <text x="475" y="266" text-anchor="middle" fill="#aaa" font-size="9">Left</text>
+
+  <line x1="350" y1="184" x2="350" y2="216" stroke="#888" stroke-width="1.3"/>
+  <text x="362" y="202" fill="#aaa" font-size="9">Suck</text>
+
+  <line x1="600" y1="184" x2="600" y2="216" stroke="#888" stroke-width="1.3"/>
+  <text x="612" y="202" fill="#aaa" font-size="9">Suck</text>
+
+  <g transform="translate(420,300)">
+    <circle cx="0" cy="0" r="7" fill="#13241c" stroke="#7AB32E" stroke-width="2"/>
+    <text x="14" y="4" fill="#cfe3a0" font-size="11">= Goal state (all rooms clean)</text>
+  </g>
+</svg>
+<div class="cap">Fig 6 — All 8 reachable states. 2 locations × 2² dirt combos = 8. Green = goal.</div>
+</div>
+
+<table>
+<tr><th>Percept</th><th>Best Action</th><th>Why</th></tr>
+<tr><td>[A, Dirty]</td><td>Suck</td><td>In A and it's dirty → clean it</td></tr>
+<tr><td>[A, Clean]</td><td>Right (→B)</td><td>A is clean, go check B</td></tr>
+<tr><td>[B, Dirty]</td><td>Suck</td><td>In B and it's dirty → clean it</td></tr>
+<tr><td>[B, Clean]</td><td>Left (→A)</td><td>B is clean, go back to A</td></tr>
+<tr><td>[A,Clean],[A,Clean]</td><td>Right</td><td>A clean twice in a row → move to B</td></tr>
+<tr><td>[A,Clean],[A,Dirty]</td><td>Suck</td><td>Dirt reappeared since last percept → clean it</td></tr>
+</table>
+
+<!-- ============ SECTION: SEARCH FORMULATION ============ -->
+<h2 id="search">8. Problem-Solving Agent → Search Formulation</h2>
+
+<div class="callout def">
+  <b class="tag">Definition</b>
+  A <b>Problem Solving Agent (PSA)</b> is a goal-based agent that turns its goal into a search problem:
+  <b>(1) Formulate</b> — define the 5 components → <b>(2) Search</b> — find the action sequence → <b>(3) Execute</b> — carry it out.
+  This only works cleanly when the environment is observable, discrete, known, and deterministic.
+</div>
+
+<div class="diagram">
+<svg viewBox="0 0 740 330" xmlns="http://www.w3.org/2000/svg">
+  <g font-size="11" font-weight="600" fill="#fff">
+  <rect x="10" y="10" width="130" height="44" rx="6" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="75" y="36" text-anchor="middle">Initial State</text>
+  <rect x="165" y="10" width="130" height="44" rx="6" fill="#0e3a39" stroke="#1ea1a0"/>
+  <text x="230" y="36" text-anchor="middle">Actions</text>
+  <rect x="320" y="10" width="130" height="44" rx="6" fill="#241a3a" stroke="#8a6fd6"/>
+  <text x="385" y="36" text-anchor="middle">Transition</text>
+  <rect x="475" y="10" width="130" height="44" rx="6" fill="#3a230f" stroke="#e8a04a"/>
+  <text x="540" y="36" text-anchor="middle">Goal Test</text>
+  <rect x="630" y="10" width="100" height="44" rx="6" fill="#3a1010" stroke="#e8616b"/>
+  <text x="680" y="36" text-anchor="middle">Path Cost</text>
+  </g>
+  <path d="M140,32 L165,32" stroke="#666" stroke-width="2" marker-end="url(#arrQ)"/>
+  <path d="M295,32 L320,32" stroke="#666" stroke-width="2" marker-end="url(#arrQ)"/>
+  <path d="M450,32 L475,32" stroke="#666" stroke-width="2" marker-end="url(#arrQ)"/>
+  <path d="M605,32 L630,32" stroke="#666" stroke-width="2" marker-end="url(#arrQ)"/>
+  <defs><marker id="arrQ" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#888"/></marker></defs>
+
+  <text x="370" y="84" text-anchor="middle" fill="#93a0b8" font-size="11">State Space Graph — nodes = states, arcs = actions, numbers = step cost</text>
+
+  <circle cx="60" cy="180" r="26" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="60" y="184" text-anchor="middle" fill="#fff" font-size="11">Start</text>
+
+  <circle cx="240" cy="130" r="24" fill="#1b2230" stroke="#888"/>
+  <text x="240" y="134" text-anchor="middle" fill="#fff" font-size="11">S₁</text>
+
+  <circle cx="240" cy="240" r="24" fill="#1b2230" stroke="#888"/>
+  <text x="240" y="244" text-anchor="middle" fill="#fff" font-size="11">S₂</text>
+
+  <circle cx="420" cy="100" r="24" fill="#1b2230" stroke="#888"/>
+  <text x="420" y="104" text-anchor="middle" fill="#fff" font-size="11">S₃</text>
+
+  <circle cx="420" cy="260" r="24" fill="#1b2230" stroke="#888"/>
+  <text x="420" y="264" text-anchor="middle" fill="#fff" font-size="11">S₄</text>
+
+  <circle cx="600" cy="180" r="26" fill="#13241c" stroke="#7AB32E" stroke-width="3"/>
+  <text x="600" y="184" text-anchor="middle" fill="#fff" font-size="11">Goal</text>
+
+  <line x1="84" y1="166" x2="216" y2="138" stroke="#e0b48c" stroke-width="1.6"/>
+  <text x="145" y="140" fill="#e0b48c" font-size="11">10</text>
+
+  <line x1="84" y1="195" x2="216" y2="232" stroke="#e0b48c" stroke-width="1.6"/>
+  <text x="145" y="228" fill="#e0b48c" font-size="11">15</text>
+
+  <line x1="264" y1="124" x2="396" y2="103" stroke="#e0b48c" stroke-width="1.6"/>
+  <text x="325" y="105" fill="#e0b48c" font-size="11">8</text>
+
+  <line x1="260" y1="145" x2="400" y2="248" stroke="#444" stroke-width="1.2"/>
+  <text x="325" y="190" fill="#888" font-size="11">12</text>
+
+  <line x1="264" y1="237" x2="396" y2="262" stroke="#444" stroke-width="1.2"/>
+  <text x="325" y="262" fill="#888" font-size="11">6</text>
+
+  <line x1="444" y1="106" x2="578" y2="172" stroke="#7AB32E" stroke-width="2.2"/>
+  <text x="510" y="125" fill="#7AB32E" font-size="11" font-weight="700">9</text>
+
+  <line x1="444" y1="255" x2="578" y2="190" stroke="#444" stroke-width="1.2"/>
+  <text x="510" y="240" fill="#888" font-size="11">14</text>
+
+  <text x="370" y="310" text-anchor="middle" fill="#cfe3a0" font-size="12" font-weight="600">Optimal path: Start→S₁→S₃→Goal = 10+8+9 = 27</text>
+</svg>
+<div class="cap">Fig 7 — 5-component pipeline + a worked state-space graph. Solution = any path to goal; optimal = cheapest path.</div>
+</div>
+
+<table>
+<tr><th>Component</th><th>Meaning</th><th>Romania map</th><th>Vacuum world</th></tr>
+<tr><td>Initial state</td><td>Where agent starts</td><td>In(Arad)</td><td>In A, both rooms dirty</td></tr>
+<tr><td>Actions</td><td>Available per state</td><td>Go(Zerind), Go(Sibiu), Go(Timisoara)</td><td>Left, Right, Suck</td></tr>
+<tr><td>Transition model</td><td>Result(s,a)</td><td>Result(In(Arad),Go(Sibiu))=In(Sibiu)</td><td>Suck in dirty room → clean</td></tr>
+<tr><td>Goal test</td><td>Is current state = goal?</td><td>Is-Goal(In(Bucharest))?</td><td>Are ALL rooms clean?</td></tr>
+<tr><td>Path cost</td><td>Numeric cost of a path</td><td>Sum of road distances (km)</td><td>Number of steps taken</td></tr>
+</table>
+
+<div class="callout tip">
+  <b class="tag">Abstraction</b>
+  Real states have endless irrelevant detail (you could turn the radio on while driving Arad→Sibiu). A good problem formulation deliberately throws away anything that doesn't matter for reaching the goal.
+</div>
+
+<h2 id="statespace">8b. States, Nodes & the Frontier <span class="exam-tag">EXAM</span></h2>
+<p>Three words that look interchangeable but mean different things — a favourite place to lose easy marks.</p>
+
+<div class="callout def">
+  <b class="tag">State vs Node — not the same thing</b>
+  <b>State</b> = a configuration of the world (e.g. "In(Sibiu)" or a specific vacuum-room layout). The <b>state space</b> is the graph of all states reachable from the initial state — nodes = states, arcs = actions.<br><br>
+  <b>Node</b> = a bookkeeping data structure used by the search <i>algorithm</i>, not part of the world itself. Every node stores:
+  <code style="background:#10151d;padding:1px 6px;border-radius:4px;">n.STATE, n.PARENT, n.ACTION, n.PATH-COST g(n)</code><br><br>
+  Because a node carries a <i>path</i>, the same state can be wrapped in two different nodes if two different paths reach it — one node per path, not per state.
+</div>
+
+<div class="diagram">
+<svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg">
+  <text x="350" y="22" text-anchor="middle" fill="#93a0b8" font-size="11">Same STATE, two different NODES (two different paths got there)</text>
+
+  <circle cx="80" cy="110" r="28" fill="#15212e" stroke="#4fb3e8" stroke-width="2"/>
+  <text x="80" y="114" text-anchor="middle" fill="#fff" font-size="11">Start</text>
+
+  <circle cx="280" cy="60" r="26" fill="#1b2230" stroke="#888"/>
+  <text x="280" y="64" text-anchor="middle" fill="#fff" font-size="11">S₁</text>
+
+  <circle cx="280" cy="160" r="26" fill="#1b2230" stroke="#888"/>
+  <text x="280" y="164" text-anchor="middle" fill="#fff" font-size="11">S₂</text>
+
+  <circle cx="500" cy="110" r="30" fill="#241a3a" stroke="#8a6fd6" stroke-width="2.5"/>
+  <text x="500" y="106" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">STATE X</text>
+  <text x="500" y="122" text-anchor="middle" fill="#c2b3e6" font-size="9">(one state)</text>
+
+  <line x1="104" y1="98" x2="256" y2="68" stroke="#4fb3e8" stroke-width="1.6"/>
+  <line x1="104" y1="122" x2="256" y2="152" stroke="#4fb3e8" stroke-width="1.6"/>
+  <line x1="306" y1="68" x2="476" y2="100" stroke="#7AB32E" stroke-width="1.8"/>
+  <line x1="306" y1="152" x2="476" y2="120" stroke="#e8a04a" stroke-width="1.8"/>
+
+  <text x="600" y="80" fill="#7AB32E" font-size="10">Node A: path Start→S₁→X, g=7</text>
+  <text x="600" y="150" fill="#e8a04a" font-size="10">Node B: path Start→S₂→X, g=11</text>
+  <text x="350" y="210" text-anchor="middle" fill="#93a0b8" font-size="10.5">A good search algorithm keeps Node A (cheaper g) and discards/updates Node B for the same state.</text>
+</svg>
+<div class="cap">Fig 7b — Why "state" and "node" are not synonyms.</div>
+</div>
+
+<div class="callout def">
+  <b class="tag">The Frontier</b>
+  The <b>frontier</b> = the set of nodes that have been <i>generated</i> but not yet <i>expanded</i> ("the edge of explored territory"). How you store the frontier <i>is</i> the search strategy:
+  <ul style="margin:8px 0 0 18px; padding:0;">
+    <li><b>FIFO queue</b> (first-in-first-out) → Breadth-First Search</li>
+    <li><b>LIFO stack</b> (last-in-first-out) → Depth-First Search</li>
+    <li><b>Priority queue</b> (lowest cost / lowest f(n) first) → UCS / A*</li>
+  </ul>
+</div>
+
+<div class="diagram">
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+  <rect x="20" y="30" width="200" height="50" rx="8" fill="#13241c" stroke="#7AB32E"/>
+  <text x="120" y="58" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">EXPLORED (expanded)</text>
+
+  <rect x="250" y="30" width="200" height="50" rx="8" fill="#332a08" stroke="#e8b339" stroke-width="2.2"/>
+  <text x="350" y="58" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">FRONTIER</text>
+
+  <rect x="480" y="30" width="200" height="50" rx="8" fill="#1b2230" stroke="#444"/>
+  <text x="580" y="58" text-anchor="middle" fill="#9fb3cc" font-size="12" font-weight="600">UNEXPLORED</text>
+
+  <path d="M220,55 L250,55" stroke="#888" stroke-width="2" marker-end="url(#arrF)"/>
+  <path d="M450,55 L480,55" stroke="#888" stroke-width="2" marker-end="url(#arrF)"/>
+  <defs><marker id="arrF" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#888"/></marker></defs>
+
+  <text x="120" y="110" text-anchor="middle" fill="#a8d486" font-size="10.5">nodes already expanded —</text>
+  <text x="120" y="124" text-anchor="middle" fill="#a8d486" font-size="10.5">their children are generated</text>
+
+  <text x="350" y="110" text-anchor="middle" fill="#e8d39a" font-size="10.5">generated, waiting to be</text>
+  <text x="350" y="124" text-anchor="middle" fill="#e8d39a" font-size="10.5">expanded next — pop one,</text>
+  <text x="350" y="138" text-anchor="middle" fill="#e8d39a" font-size="10.5">move it to Explored</text>
+
+  <text x="580" y="110" text-anchor="middle" fill="#8a99b3" font-size="10.5">not yet discovered —</text>
+  <text x="580" y="124" text-anchor="middle" fill="#8a99b3" font-size="10.5">no node exists for these yet</text>
+
+  <text x="350" y="180" text-anchor="middle" fill="#93a0b8" font-size="11">Every search step: pop from frontier → goal-test → if not goal, expand → push children</text>
+</svg>
+<div class="cap">Fig 7c — Explored / Frontier / Unexplored. The frontier is the only part the algorithm actively chooses from.</div>
+</div>
+
+<h2 id="evalcriteria">8c. Evaluating a Search Strategy — 4 Criteria</h2>
+<p>Every algorithm in the next table is judged on exactly these four axes.</p>
+
+<table>
+<tr><th>Criterion</th><th>Question it answers</th></tr>
+<tr><td><b>Completeness</b></td><td>Does it always find a solution when one exists?</td></tr>
+<tr><td><b>Optimality</b></td><td>Does it always find the <i>least-cost</i> solution?</td></tr>
+<tr><td><b>Time complexity</b></td><td>How many nodes get generated?</td></tr>
+<tr><td><b>Space complexity</b></td><td>Max nodes held in memory at once?</td></tr>
+</table>
+
+<div class="callout tip">
+  <b class="tag">Notation used everywhere in Ch.3</b>
+  <b>b</b> = branching factor (children per node) · <b>d</b> = depth of the shallowest goal · <b>m</b> = maximum depth of the whole state space (can be ∞ for an infinite tree).
+</div>
+
+<!-- ============ SECTION: 8-PUZZLE ============ -->
+<h2 id="puzzle">9. The 8-Puzzle</h2>
+
+<table>
+<tr><th>Component</th><th>8-Puzzle</th></tr>
+<tr><td>Initial state</td><td>Any tile arrangement, e.g. 7,2,4 / 5,_,6 / 8,3,1</td></tr>
+<tr><td>Actions</td><td>Move blank Left/Right/Up/Down (limited by its position)</td></tr>
+<tr><td>Transition model</td><td>New arrangement after the blank moves</td></tr>
+<tr><td>Goal test</td><td>Is it 1,2,3 / 4,5,6 / 7,8,_ ?</td></tr>
+<tr><td>Path cost</td><td>Number of moves, 1 each</td></tr>
+</table>
+
+<!-- ============ SECTION: STRATEGIES ============ -->
+<h2 id="strategies">10. Search Strategies — Uninformed vs Informed</h2>
+
+<div class="diagram">
+<svg viewBox="0 0 740 220" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="10" width="720" height="14" rx="7" fill="url(#gradS)"/>
+  <defs>
+    <linearGradient id="gradS" x1="0" x2="1">
+      <stop offset="0" stop-color="#15212e"/>
+      <stop offset="1" stop-color="#13241c"/>
+    </linearGradient>
+  </defs>
+  <text x="20" y="46" fill="#9fc3e6" font-size="11">UNINFORMED (blind) — no extra knowledge beyond problem def</text>
+  <text x="720" y="46" text-anchor="end" fill="#a8d486" font-size="11">INFORMED — heuristics guide the search</text>
+
+  <g font-size="12" font-weight="600" fill="#fff">
+  <rect x="20" y="65" width="115" height="50" rx="7" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="77" y="86" text-anchor="middle">BFS</text>
+  <text x="77" y="102" text-anchor="middle" font-size="9.5" font-weight="400" fill="#9fc3e6">Breadth-First</text>
+
+  <rect x="150" y="65" width="115" height="50" rx="7" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="207" y="86" text-anchor="middle">DFS</text>
+  <text x="207" y="102" text-anchor="middle" font-size="9.5" font-weight="400" fill="#9fc3e6">Depth-First</text>
+
+  <rect x="280" y="65" width="115" height="50" rx="7" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="337" y="86" text-anchor="middle">DLS</text>
+  <text x="337" y="102" text-anchor="middle" font-size="9.5" font-weight="400" fill="#9fc3e6">Depth-Limited</text>
+
+  <rect x="410" y="65" width="115" height="50" rx="7" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="467" y="86" text-anchor="middle">IDS</text>
+  <text x="467" y="102" text-anchor="middle" font-size="9.5" font-weight="400" fill="#9fc3e6">Iter. Deepening</text>
+
+  <rect x="540" y="65" width="115" height="50" rx="7" fill="#15212e" stroke="#4fb3e8"/>
+  <text x="597" y="86" text-anchor="middle">UCS</text>
+  <text x="597" y="102" text-anchor="middle" font-size="9.5" font-weight="400" fill="#9fc3e6">Uniform Cost</text>
+
+  <rect x="85" y="135" width="135" height="50" rx="7" fill="#13241c" stroke="#7AB32E"/>
+  <text x="152" y="156" text-anchor="middle">Greedy Best-First</text>
+
+  <rect x="240" y="135" width="115" height="50" rx="7" fill="#13241c" stroke="#7AB32E" stroke-width="2.4"/>
+  <text x="297" y="156" text-anchor="middle">★ A* Search</text>
+
+  <rect x="375" y="135" width="115" height="50" rx="7" fill="#13241c" stroke="#7AB32E" stroke-width="2.4"/>
+  <text x="432" y="156" text-anchor="middle">★ AO* Search</text>
+
+  <rect x="510" y="135" width="135" height="50" rx="7" fill="#13241c" stroke="#7AB32E"/>
+  <text x="577" y="156" text-anchor="middle">Hill Climbing</text>
+  </g>
+  <text x="370" y="208" text-anchor="middle" fill="#e8b339" font-size="11.5" font-weight="600">★ This course's exam focus: A*, Best-First Search, AO*</text>
+</svg>
+<div class="cap">Fig 8 — Strategy spectrum. Next lecture starts with Best-First and A*.</div>
+</div>
+
+<table>
+<tr><th>Algorithm</th><th>Strategy</th><th>Complete?</th><th>Optimal?</th><th>Notes</th></tr>
+<tr><td>BFS</td><td>Explore level by level</td><td>Yes</td><td>Yes (equal cost)</td><td>Exponential memory</td></tr>
+<tr><td>DFS</td><td>Go deepest first, backtrack</td><td>No (loops)</td><td>No</td><td>Memory-light, may miss shortest</td></tr>
+<tr><td>DLS</td><td>DFS with depth limit ℓ</td><td>No (if goal&gt;ℓ)</td><td>No</td><td>Avoids infinite loops</td></tr>
+<tr><td>IDS</td><td>DLS with increasing limit</td><td>Yes</td><td>Yes</td><td>BFS-completeness + DFS-memory</td></tr>
+<tr><td>UCS</td><td>Expand cheapest node first</td><td>Yes</td><td>Yes</td><td>= Dijkstra's algorithm</td></tr>
+</table>
+
+<div class="callout tip">
+  <b class="tag">💡 Practice resource (instructor-recommended)</b>
+  <a href="https://aima.cs.berkeley.edu" target="_blank">aima.cs.berkeley.edu</a> — interactive BFS/DFS/UCS/A* animations. Step through node expansion order and compare strategies visually before the exam.
+</div>
+
+<!-- ============ SECTION: NUMERICALS ============ -->
+<h2 id="summary">10b. Lecture Summary — Exam-Ready Recap Table</h2>
+<p class="muted">Straight from the instructor's own cram sheet. If you only re-read one table before the exam, make it this one.</p>
+
+<table>
+<tr><th>Topic</th><th>Key Definition</th><th>Exam-Ready Statement</th></tr>
+<tr><td>Agent</td><td>Perceives via sensors, acts via actuators</td><td>Any perceiving + acting entity is an agent</td></tr>
+<tr><td>Rational Agent</td><td>Acts to maximise performance given current knowledge</td><td>Right action ≠ always correct result; judged on knowledge at the time</td></tr>
+<tr><td>Ideal Rational Agent</td><td>Maximises expected performance given all evidence so far + built-in knowledge</td><td>Rationality ≠ Omniscience</td></tr>
+<tr><td>PEAS</td><td>Performance, Environment, Actuators, Sensors</td><td>Design starts with the PEAS specification</td></tr>
+<tr><td>Fully Observable</td><td>Complete state accessible</td><td>Chess = full; autonomous driving = partial</td></tr>
+<tr><td>Deterministic</td><td>Same action → same result</td><td>Calculator = deterministic; weather = stochastic</td></tr>
+<tr><td>Episodic</td><td>Past decisions don't affect the future</td><td>Spam filter = episodic; chess = sequential</td></tr>
+<tr><td>Simple Reflex</td><td>Condition–action rules</td><td>Fastest but no memory; needs full observability</td></tr>
+<tr><td>Model-Based</td><td>Has an internal state model</td><td>Handles partial observability</td></tr>
+<tr><td>Goal-Based</td><td>Explicit goals; plans to reach them</td><td>Navigation: goal = destination</td></tr>
+<tr><td>Utility-Based</td><td>Maximises utility (best option, not just any goal)</td><td>Route: fastest AND most comfortable</td></tr>
+<tr><td>Learning Agent</td><td>Improves via feedback/critic loop</td><td>Braking example; RLHF in LLMs</td></tr>
+<tr><td>5 Search Components</td><td>Initial state, Actions, Transition, Goal Test, Path Cost</td><td>Any problem → graph search</td></tr>
+<tr><td>Uninformed Search</td><td>No extra knowledge; blind exploration</td><td>BFS (complete + optimal); DFS (memory efficient)</td></tr>
+<tr><td>A* Search</td><td>f(n) = g(n) + h(n); optimal if h is admissible</td><td>Main informed search algorithm in this course</td></tr>
+</table>
+
+<h2 id="exercises">11. Original Lecture Exercises (as given by the instructor)</h2>
+<p class="muted">Post answers in the Tuxila discussion forum — these are the actual assigned questions, not paraphrased.</p>
+
+<details class="work">
+  <summary>Exercise 1 — Satellite image analysis system</summary>
+  <div class="body">
+  <p>Write the complete PEAS specification for a satellite image analysis system. Is the environment fully or partially observable? Deterministic or stochastic? How would you design a rational agent for this?</p>
+  <p class="muted"><i>Hint: think about what "success" means for satellite analysis. Consider cloud cover obscuring images.</i></p>
+  <p style="margin-top:10px;">Worked answer in Section 13 (Extra Practice) below.</p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>Exercise 2 — Classify 5 environments along all 6 dimensions</summary>
+  <div class="body">
+  <p>Classify each of the following along all 6 dimensions, justifying each classification in one sentence:</p>
+  <p>(a) ICU patient monitoring system<br>
+  (b) Spam email filter<br>
+  (c) Chess-playing program vs human<br>
+  (d) Amazon robotic warehouse picker<br>
+  (e) Language translation system</p>
+  <p class="muted"><i>Hint: use the 6-dimension table format from Section 5. Some may be debatable — justify your reasoning either way.</i></p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>Exercise 3 — Formulate the 8-puzzle fully</summary>
+  <div class="body">
+  <p>Formulate the 8-puzzle (3×3 sliding tile puzzle) with all 5 search problem components. Then:</p>
+  <p>(a) How many total states are in the state space?<br>
+  (b) If the blank is in the centre, how many legal actions are available?<br>
+  (c) Write the goal test as a mathematical condition.</p>
+  <p class="muted"><i>Hint for (a): 9 positions, 1 blank, 8 tiles — use permutations. Raw count = 9! = 362,880 (see Worked Numericals below for the reachability nuance).</i></p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>Exercise 4 — One real example per agent type</summary>
+  <div class="body">
+  <p>For each agent type (Simple Reflex, Model-Based, Goal-Based, Utility-Based, Learning), give one example from:</p>
+  <p>(a) Your own workplace or industry<br>
+  (b) A mobile app you use regularly<br>
+  (c) A healthcare application</p>
+  <p class="muted"><i>Hint: think about what data/state the system needs to store, and what it's actually optimising for.</i></p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>Exercise 5 — [Advanced] RoboCup football robot</summary>
+  <div class="body">
+  <p>A robot plays football (RoboCup).</p>
+  <p>(a) Give the PEAS specification.<br>
+  (b) Classify all 6 environment dimensions.<br>
+  (c) What agent type architecture is most appropriate?<br>
+  (d) Suggest a heuristic h(n) for a search-based planning agent deciding which direction to kick.</p>
+  <p class="muted"><i>Hint: football is multi-agent, stochastic, partially observable, dynamic, continuous, and sequential.</i></p>
+  <p style="margin-top:10px;">Worked answer in Section 13 (Extra Practice) below.</p>
+  </div>
+</details>
+
+<h2 id="numericals">12. Worked Numericals</h2>
+
+<details class="work" open>
+  <summary>① How many states in the vacuum world?</summary>
+  <div class="body">
+  <p>Two locations, each independently Clean or Dirty, plus where the agent is.</p>
+  <div class="num-box">
+    <div class="steps">
+      <div>locations the agent can be in: 2</div>
+      <div>dirt status of room A: 2 (Clean / Dirty)</div>
+      <div>dirt status of room B: 2 (Clean / Dirty)</div>
+      <div>total states = 2 × 2 × 2 = 2 × 2² = <b style="color:#fff">8</b></div>
+    </div>
+  </div>
+  <p class="muted">Matches Fig 6 above — 8 nodes drawn, exactly 2 of them green (goal states).</p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>② How many reachable states in the 8-puzzle?</summary>
+  <div class="body">
+  <p>9 cells, 9 distinct tiles (8 numbered + 1 blank) → naive arrangements = 9!.</p>
+  <div class="num-box">
+    <div class="steps">
+      <div>naive permutations = 9! = 362,880</div>
+      <div>BUT: sliding-tile moves preserve permutation <i>parity</i></div>
+      <div>only half of all 9! arrangements are reachable from any given start</div>
+      <div>reachable states = 9! / 2 = 362,880 / 2 = <b style="color:#fff">181,440</b></div>
+    </div>
+  </div>
+  <p class="muted">Exam trap: if asked "total states" they may want 362,880 (raw); if asked "reachable from a given start," it's 181,440. Read the question carefully.</p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>③ Optimal path cost in the state-space graph (Fig 7)</summary>
+  <div class="body">
+  <p>Edges: Start→S₁ = 10, Start→S₂ = 15, S₁→S₃ = 8, S₁→S₄ = 12, S₂→S₃ = 6 <span class="muted">(not all drawn)</span>, S₂→S₄ = 6, S₃→Goal = 9, S₄→Goal = 14.</p>
+  <div class="num-box">
+    <div class="steps">
+      <div>Path A: Start→S₁→S₃→Goal = 10 + 8 + 9 = 27</div>
+      <div>Path B: Start→S₁→S₄→Goal = 10 + 12 + 14 = 36</div>
+      <div>Path C: Start→S₂→S₄→Goal = 15 + 6 + 14 = 35</div>
+      <div>minimum = Path A = <b style="color:#fff">27</b> ✓ optimal</div>
+    </div>
+  </div>
+  <p class="muted">This is exactly what UCS / Dijkstra would return — it always expands the cheapest frontier node first, so it never commits to Path B or C before checking A.</p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>④ Branching factor &amp; depth — quick BFS memory estimate</summary>
+  <div class="body">
+  <p>If branching factor b = 3 and the shallowest goal is at depth d = 4, roughly how many nodes might BFS generate in the worst case?</p>
+  <div class="num-box">
+    <div class="steps">
+      <div>worst case nodes ≈ b⁰ + b¹ + b² + b³ + b⁴</div>
+      <div>= 1 + 3 + 9 + 27 + 81</div>
+      <div>= <b style="color:#fff">121 nodes</b></div>
+    </div>
+  </div>
+  <p class="muted">This is why BFS is "complete but exponential" — b and d both push the count up fast. With b=10, d=4 this would already be ~11,111 nodes.</p>
+  </div>
+</details>
+
+<!-- ============ SECTION: QUIZ ============ -->
+<h2 id="quiz">13. Self-Test — 12 Questions</h2>
+<p class="muted">Click an option. Wrong picks turn red and the rationale opens so you can see why, right picks turn green immediately.</p>
+
+<div id="quizArea"></div>
+
+<!-- ============ MORE PRACTICE ============ -->
+<h2 id="extra">14. Extra Practice (worked answers to Exercises 1 &amp; 5, plus bonus questions)</h2>
+
+<details class="work">
+  <summary>Q. Is "playing poker online against 3 strangers" episodic or sequential? Justify.</summary>
+  <div class="body">
+  <p><b>Sequential.</b> Your bet now changes the pot, the other players' beliefs about your hand, and your own chip stack for every future round in the same game. An episodic task (like classifying one image) has no such carry-over between instances.</p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>Q. A self-driving car's environment — is it semi-dynamic, dynamic, or static? Why does this matter for design?</summary>
+  <div class="body">
+  <p><b>Dynamic.</b> Pedestrians, other vehicles, and signals change state while the car is still "thinking" (planning its next move). This forces the agent design to budget a hard real-time deadline on its decision cycle — unlike a static environment (e.g. solving a crossword) where the agent can think as long as it wants.</p>
+  </div>
+</details>
+
+<details class="work">
+  <summary>Q. Give one example each of a goal-based and a utility-based agent doing the <i>same</i> task, and explain the difference in behaviour.</summary>
+  <div class="body">
+  <p><b>Task: route planning.</b> Goal-based agent: any path that reaches the destination is equally acceptable — it stops at the first valid plan satisfying the goal test. Utility-based agent: among many valid routes, it ranks them by a utility function (e.g. 0.6×time + 0.4×comfort) and picks the highest-scoring one — it can express preference, not just success/failure.</p>
+  </div>
+</details>
+
+<details class="work" id="satellite-answer">
+  <summary>Exercise 1 worked answer — PEAS for a satellite image analysis system (cloud cover matters)</summary>
+  <div class="body">
+  <p><b>P:</b> classification accuracy, false-positive rate, processing latency, cost per image.<br>
+  <b>E:</b> incoming satellite image feed, atmospheric conditions, ground-truth labels (when available).<br>
+  <b>A:</b> tags/labels output, alert triggers, database writes.<br>
+  <b>S:</b> raw pixel sensor data, metadata (time, location, satellite orientation), cloud-cover flags.</p>
+  <p><b>Observability:</b> partial — cloud cover can hide the true ground state from the sensor at that moment, even though the satellite itself can "see" everything optically.<br>
+  <b>Determinism:</b> stochastic — atmospheric noise and sensor error mean the same ground truth doesn't always produce the same image.</p>
+  </div>
+</details>
+
+<details class="work" id="robocup-answer">
+  <summary>Exercise 5 worked answer — RoboCup robot football, agent type recommendation</summary>
+  <div class="body">
+  <p>Environment: multi-agent, stochastic, partially observable, dynamic, continuous, sequential — about as hard as it gets on every axis.</p>
+  <p><b>Best-fit architecture: utility-based (often layered with learning).</b> A simple reflex agent can't plan a pass; a pure goal-based agent treats "score a goal" as binary and can't trade off between several valid options (dribble vs pass vs shoot). A utility function lets it weigh risk of losing the ball vs probability of scoring, and a learning loop lets it adapt its utility estimates from match experience (this is exactly how real RoboCup teams use RL).</p>
+  </div>
+</details>
+
+<h2 id="references">15. References</h2>
+
+<div class="callout def">
+  <b class="tag">📚 AIMA 4th Edition — Chapter 2: Intelligent Agents</b>
+  Russell &amp; Norvig (2020, Pearson) · <a href="https://aima.cs.berkeley.edu/" target="_blank">aima.cs.berkeley.edu</a><br>
+  Core reference for this entire lecture. §2.1 (agents), §2.2 (rational agents), §2.3 (PEAS + environments), §2.4 (five agent types). All exam-relevant content traces back here.
+</div>
+
+<div class="callout def">
+  <b class="tag">📚 AIMA 4th Edition — Chapter 3: Solving Problems by Searching</b>
+  Russell &amp; Norvig (2020, Pearson) · <a href="https://aima.cs.berkeley.edu/" target="_blank">aima.cs.berkeley.edu</a><br>
+  Reference for the search-formulation half of these notes. §3.1 problem formulation, §3.2 the Romania map full example, §3.3 uninformed search (BFS/DFS/UCS), §3.4–3.5 heuristics and A*.
+</div>
+
+<div class="callout def">
+  <b class="tag">📚 AIMA Interactive Demos — All Search Algorithms Animated</b>
+  Berkeley AI Research (free, online) · <a href="https://aimacode.github.io/aima-javascript/" target="_blank">aimacode.github.io/aima-javascript</a><br>
+  Step-through visual animations for BFS, DFS, A*, and others. Explicitly recommended by the instructor — especially useful if BFS/DFS node-expansion order still feels unintuitive.
+</div>
+
+<div class="callout def">
+  <b class="tag">📚 Agents — A Modern Perspective on LLM-Powered Agents</b>
+  Chip Huyen (2025) · <a href="https://huyenchip.com/2025/01/07/agents.html" target="_blank">huyenchip.com/2025/01/07/agents.html</a><br>
+  Bridges the R&amp;N foundational agent concepts with current agentic-AI implementations — covers the AI Agent vs Agentic AI distinction discussed in Section 2.
+</div>
+
+<div class="callout def">
+  <b class="tag">📚 PEAS Specification — Detailed Guide with Examples</b>
+  Analytics Vidhya (online) · <a href="https://www.analyticsvidhya.com/blog/2022/08/simplifying-ai-models-with-thepeas-representation-system/" target="_blank">analyticsvidhya.com</a><br>
+  A practical supplementary guide to PEAS with worked examples across different agent types — good extra reading for the PEAS exercises.
+</div>
+
+<footer>
+  Source: ACI Lecture 2 (ZG557, BITS Pilani WILP) · AIMA 4th Ed. Ch.2–3 · Built to match the style of your <a href="https://sanskarmk.github.io/ACI_Midsem/session2.html" target="_blank">Session 2 midsem page</a>.
+</footer>
+
+
+</div>
+
+<div class="score-chip" id="scoreChip">Score: <b id="scoreVal">0</b> / 12</div>
+
+<script>
+// ---------- Progress bar ----------
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  document.getElementById('progressFill').style.width = scrolled + '%';
+});
+
+// ---------- Quiz data ----------
+const QUIZ = [
+  {
+    q: "1. The real world is best described as:",
+    opts: [
+      "Fully observable, deterministic, episodic, static",
+      "Partially observable, stochastic, sequential, dynamic, continuous, multi-agent",
+      "Fully observable, stochastic, sequential, discrete",
+      "Partially observable, deterministic, episodic, continuous"
+    ],
+    correct: 1,
+    why: "This exact 6-tuple is a guaranteed easy mark if it shows up — memorise it as one phrase."
+  },
+  {
+    q: "2. Chess (no clock) is deterministic. What does that mean?",
+    opts: [
+      "Every game always ends the same way",
+      "The same action from the same state always produces the same result",
+      "There is no randomness in who wins",
+      "Both players have full information"
+    ],
+    correct: 1,
+    why: "Determinism is purely about action → result, not about the unpredictability of an opponent's strategy. (Full information is a separate property — observability.)"
+  },
+  {
+    q: "3. Which agent type keeps an internal model of how the world evolves?",
+    opts: ["Simple reflex", "Model-based reflex", "Utility-based", "Goal-based"],
+    correct: 1,
+    why: "Model-based = transition model (how the world changes) + sensor model (how percepts map to state). Memory hook: 'model = remembers'."
+  },
+  {
+    q: "4. An 'ideal rational agent' that gets a bad outcome despite acting optimally on available evidence is:",
+    opts: [
+      "Irrational, because the outcome was bad",
+      "Still rational — it's judged on expected performance given what it knew, not hindsight",
+      "Only rational if the environment was deterministic",
+      "Omniscient by definition"
+    ],
+    correct: 1,
+    why: "This is the retrospection principle: rationality ≠ omniscience. 'Could have done better in hindsight' isn't a valid critique of a rational decision."
+  },
+  {
+    q: "5. In PEAS for an automated taxi, 'steering, brakes, horn, indicators' are the:",
+    opts: ["Performance measure", "Environment", "Actuators", "Sensors"],
+    correct: 2,
+    why: "Actuators = how the agent acts on the world. Sensors (cameras, GPS, sonar) are how it perceives; Performance is the success criterion (safety, speed, comfort...)."
+  },
+  {
+    q: "6. Two different search-tree nodes can correspond to the same state. Why?",
+    opts: [
+      "Never — nodes and states are identical concepts",
+      "The same state can be reached via two different paths",
+      "Only possible in stochastic environments",
+      "Because of how the goal test works"
+    ],
+    correct: 1,
+    why: "A node carries bookkeeping (PARENT, ACTION, PATH-COST g(n)). Two distinct paths reaching the same configuration = two nodes, one shared state."
+  },
+  {
+    q: "7. A spam filter classifying one email at a time, independent of past emails, is:",
+    opts: ["Sequential", "Episodic", "Dynamic", "Partially observable only"],
+    correct: 1,
+    why: "Episodic = each decision (episode) is self-contained; past classifications don't affect the next one. Compare: chess, where every move affects future options — that's sequential."
+  },
+  {
+    q: "8. UCS (Uniform Cost Search) is functionally equivalent to:",
+    opts: ["BFS with a heuristic", "A* with h(n)=0 only on the goal", "Dijkstra's algorithm", "Greedy best-first search"],
+    correct: 2,
+    why: "UCS always expands the cheapest frontier node — exactly Dijkstra's shortest-path algorithm applied to the search-tree formulation."
+  },
+  {
+    q: "9. Reachable states in the 8-puzzle from one fixed start configuration:",
+    opts: ["362,880 (=9!)", "181,440 (=9!/2)", "40,320 (=8!)", "9 × 8 × 7"],
+    correct: 1,
+    why: "9! counts ALL arrangements, but sliding-tile moves preserve permutation parity, so only half are reachable from any single starting configuration → 9!/2 = 181,440."
+  },
+  {
+    q: "10. 'Acting rationally' is preferred over 'acting humanly' in this course mainly because:",
+    opts: [
+      "Acting humanly is always less efficient",
+      "It avoids anthropomorphism — doing the right thing without pretending to be human",
+      "Humans are never rational",
+      "Acting humanly cannot be implemented in software"
+    ],
+    correct: 1,
+    why: "The lecture's anthropomorphism warning: systems tuned to feel human can create unhealthy dependency. Acting rationally sidesteps this by judging the agent on outcomes, not on how human-like it seems."
+  },
+  {
+    q: "11. A node in a search tree stores all of the following EXCEPT:",
+    opts: ["STATE", "PARENT", "the full state space graph", "PATH-COST g(n)"],
+    correct: 2,
+    why: "A node is local bookkeeping for one path: STATE, PARENT, ACTION, g(n). It never stores the entire state space — that would defeat the purpose of search (exploring incrementally)."
+  },
+  {
+    q: "12. Storing the frontier as a LIFO stack gives you:",
+    opts: ["Breadth-First Search", "Depth-First Search", "Uniform Cost Search", "A* Search"],
+    correct: 1,
+    why: "FIFO queue → BFS (oldest generated node expanded first, level by level). LIFO stack → DFS (most recently generated node expanded first, straight down one branch). Priority queue by cost → UCS/A*."
+  }
+];
+
+let score = 0;
+const answered = new Set();
+const quizArea = document.getElementById('quizArea');
+
+QUIZ.forEach((item, qi) => {
+  const box = document.createElement('div');
+  box.className = 'quiz-q';
+  const qp = document.createElement('p');
+  qp.className = 'qtext';
+  qp.textContent = item.q;
+  box.appendChild(qp);
+
+  const optsDiv = document.createElement('div');
+  optsDiv.className = 'opts';
+
+  const rationale = document.createElement('div');
+  rationale.className = 'rationale';
+  rationale.textContent = item.why;
+
+  item.opts.forEach((optText, oi) => {
+    const optDiv = document.createElement('div');
+    optDiv.className = 'opt';
+    optDiv.textContent = optText;
+    optDiv.addEventListener('click', () => {
+      if (answered.has(qi)) return;
+      answered.add(qi);
+      const allOpts = optsDiv.querySelectorAll('.opt');
+      allOpts.forEach((el, idx) => {
+        if (idx === item.correct) el.classList.add('correct');
+        else if (idx === oi) el.classList.add('wrong');
+      });
+      if (oi === item.correct) score++;
+      document.getElementById('scoreVal').textContent = score;
+      rationale.classList.add('show');
+    });
+    optsDiv.appendChild(optDiv);
+  });
+
+  box.appendChild(optsDiv);
+  box.appendChild(rationale);
+  quizArea.appendChild(box);
+});
+</script>
+
+</body>
+</html>

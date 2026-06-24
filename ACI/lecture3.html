@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Frontier — Search Algorithms, ACI Lecture 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   Palette: ink (#0B0D10), paper (#F7F5F0), signal-amber (#FF8A3D
+   = "expanding now"), frontier-blue (#5B8DEF = "queued / open
+   list"), goal-moss (#5FAD7A = "correct / reached"), alarm-rose
+   (#E8607A = "violation / wrong").
+   Type: IBM Plex Mono carries every number, node id, g/h/f value
+   — this is an algorithms tool, data should look like data.
+   Inter carries prose. No serif, no decorative display face:
+   the subject is precise and mechanical, the type should be too.
+   ============================================================ */
+:root{
+  --ink:        #0B0D10;
+  --ink-soft:   #14171C;
+  --panel:      #181B21;
+  --panel-2:    #1E2229;
+  --hairline:   rgba(247,245,240,0.09);
+  --hairline-2: rgba(247,245,240,0.16);
+  --paper:      #F7F5F0;
+  --paper-dim:  #C9C6BD;
+  --paper-faint:#8A887F;
+
+  --amber:      #FF8A3D;
+  --amber-dim:  #3D2410;
+  --amber-soft: #FFD9B8;
+
+  --blue:       #5B8DEF;
+  --blue-dim:   #1A2740;
+  --blue-soft:  #C2D3FB;
+
+  --moss:       #5FAD7A;
+  --moss-dim:   #16291D;
+  --moss-soft:  #BCE3CA;
+
+  --rose:       #E8607A;
+  --rose-dim:   #3A1620;
+  --rose-soft:  #F8C3CE;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*{box-sizing:border-box;}
+html{-webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+body{
+  margin:0; background:var(--ink); color:var(--paper);
+  font-family:var(--sans); line-height:1.6; font-size:15px;
+  -webkit-tap-highlight-color:transparent;
+}
+::selection{background:var(--amber); color:var(--ink);}
+
+a{color:var(--blue); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+button{font-family:inherit;}
+
+/* Visible keyboard focus everywhere */
+button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--amber); outline-offset:2px; border-radius:4px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+}
+
+/* ============================================================
+   LAYOUT SHELL — fixed left rail + scrolling content column.
+   The rail's progress ticks double as a literal node index,
+   echoing the subject (graph traversal) in the chrome itself.
+   ============================================================ */
+.shell{
+  display:grid;
+  grid-template-columns: 248px minmax(0,1fr);
+  min-height:100vh;
+}
+@media (max-width: 880px){
+  .shell{grid-template-columns: 1fr;}
+}
+
+/* ---------- RAIL ---------- */
+.rail{
+  position:sticky; top:0; align-self:start; height:100vh;
+  border-right:1px solid var(--hairline);
+  padding:28px 18px 28px 24px;
+  display:flex; flex-direction:column; gap:22px;
+  overflow-y:auto;
+}
+@media (max-width: 880px){
+  .rail{
+    position:relative; height:auto; border-right:none;
+    border-bottom:1px solid var(--hairline);
+    padding:18px 16px;
+  }
+}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--hairline-2); border-radius:3px;}
+
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-mark{
+  width:30px; height:30px; border-radius:7px; background:var(--amber);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.brand-mark svg{width:16px; height:16px;}
+.brand-text{display:flex; flex-direction:column; gap:1px; min-width:0;}
+.brand-text .kicker{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--paper-faint); text-transform:uppercase;}
+.brand-text .name{font-size:14px; font-weight:600; color:var(--paper); letter-spacing:-0.01em;}
+
+.exam-strip{
+  display:flex; flex-direction:column; gap:7px;
+  padding:12px 13px; border-radius:var(--r-md);
+  background:var(--panel); border:1px solid var(--hairline);
+}
+.exam-row{display:flex; align-items:baseline; justify-content:space-between; gap:8px;}
+.exam-row .label{font-size:12px; color:var(--paper-dim);}
+.exam-row .date{font-family:var(--mono); font-size:12px; color:var(--amber); font-weight:500;}
+.exam-row.today .date{color:var(--paper-faint);}
+
+nav.railnav{display:flex; flex-direction:column; gap:1px; flex:1; min-height:0; overflow-y:auto;}
+.railnav::-webkit-scrollbar{width:0;}
+.rail-item{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px; border-radius:var(--r-sm);
+  background:transparent; border:none; color:var(--paper-dim);
+  font-size:13px; text-align:left; cursor:pointer;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.rail-item:hover{background:var(--panel); color:var(--paper);}
+.rail-item.active{background:var(--panel-2); color:var(--paper);}
+.rail-item .node-id{
+  font-family:var(--mono); font-size:10.5px; color:var(--paper-faint);
+  width:20px; flex-shrink:0; text-align:right;
+}
+.rail-item.active .node-id{color:var(--amber);}
+.rail-item .lbl{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.rail-foot{
+  font-size:11px; color:var(--paper-faint); padding-top:14px;
+  border-top:1px solid var(--hairline); line-height:1.55;
+}
+
+/* ---------- CONTENT COLUMN ---------- */
+.content{padding:0; min-width:0;}
+.hero{
+  padding:64px 56px 48px;
+  border-bottom:1px solid var(--hairline);
+  position:relative; overflow:hidden;
+}
+@media (max-width:680px){ .hero{padding:40px 22px 32px;} }
+.hero-eyebrow{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--amber); margin:0 0 14px; display:flex; align-items:center; gap:8px;
+}
+.hero-eyebrow::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--amber); display:inline-block;}
+.hero h1{
+  font-size:clamp(28px, 4vw, 42px); line-height:1.08; font-weight:700;
+  letter-spacing:-0.02em; margin:0 0 16px; max-width:14ch;
+}
+.hero p.sub{
+  font-size:16px; color:var(--paper-dim); max-width:52ch; margin:0; line-height:1.65;
+}
+.hero-frontier{
+  margin-top:32px; display:flex; gap:6px; flex-wrap:wrap;
+}
+.hero-frontier .ftile{
+  font-family:var(--mono); font-size:11.5px; padding:5px 11px;
+  border-radius:20px; border:1px solid var(--hairline-2); color:var(--paper-dim);
+  background:var(--panel);
+}
+
+main.col{max-width:760px; padding:0 56px 120px;}
+@media (max-width:680px){ main.col{padding:0 22px 90px;} }
+
+section.block{
+  padding:56px 0; border-bottom:1px solid var(--hairline); scroll-margin-top:32px;
+}
+section.block:last-of-type{border-bottom:none;}
+
+.block-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:8px;}
+.block-num{
+  font-family:var(--mono); font-size:13px; color:var(--paper-faint);
+  padding-top:3px; flex-shrink:0; width:24px;
+}
+.block-head h2{
+  font-size:22px; font-weight:600; letter-spacing:-0.01em; margin:0; line-height:1.3;
+}
+.block-tag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  padding:3px 8px; border-radius:5px; flex-shrink:0; margin-top:5px; white-space:nowrap;
+}
+.block-tag.blind{background:var(--blue-dim); color:var(--blue-soft);}
+.block-tag.smart{background:var(--amber-dim); color:var(--amber-soft);}
+.block-tag.core{background:var(--moss-dim); color:var(--moss-soft);}
+.block-sub{
+  color:var(--paper-dim); font-size:14.5px; margin:0 0 28px; padding-left:38px; max-width:58ch; line-height:1.65;
+}
+
+/* ============================================================
+   PROSE COMPONENTS
+   ============================================================ */
+.callout{
+  border-radius:var(--r-md); padding:14px 18px; font-size:13.5px;
+  margin:18px 0; line-height:1.65; border:1px solid transparent;
+}
+.callout-amber{background:var(--amber-dim); color:var(--amber-soft); border-color:rgba(255,138,61,0.25);}
+.callout-moss{background:var(--moss-dim); color:var(--moss-soft); border-color:rgba(95,173,122,0.25);}
+.callout-rose{background:var(--rose-dim); color:var(--rose-soft); border-color:rgba(232,96,122,0.25);}
+.callout-blue{background:var(--blue-dim); color:var(--blue-soft); border-color:rgba(91,141,239,0.25);}
+.callout b{font-weight:600;}
+.callout .callout-kicker{
+  font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  opacity:.75; display:block; margin-bottom:5px;
+}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+table.data{
+  width:100%; border-collapse:collapse; font-size:13px; margin:18px 0;
+}
+table.data th, table.data td{
+  border-bottom:1px solid var(--hairline); padding:9px 12px; text-align:left;
+  font-family:var(--sans);
+}
+table.data th{
+  color:var(--paper-faint); font-weight:500; font-size:11px; letter-spacing:.04em; text-transform:uppercase;
+  background:var(--panel);
+}
+table.data td.mono, table.data td code{font-family:var(--mono); font-size:12.5px;}
+table.data td.yes{color:var(--moss-soft);}
+table.data td.no{color:var(--rose-soft);}
+table.data tr:hover td{background:rgba(255,255,255,0.02);}
+
+code{
+  background:var(--panel-2); padding:2px 6px; border-radius:4px; font-size:12.5px;
+  color:var(--blue-soft); font-family:var(--mono); border:1px solid var(--hairline);
+}
+
+.formula{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-md);
+  padding:20px 24px; font-family:var(--mono); font-size:16px; color:var(--paper);
+  margin:20px 0; text-align:center; letter-spacing:.01em;
+}
+.formula .ghost{
+  display:block; margin-top:8px; font-size:11px; color:var(--paper-faint); letter-spacing:0;
+}
+
+.tagrow{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0;}
+.tagrow .tg{
+  font-family:var(--mono); font-size:11px; padding:5px 11px; border-radius:14px;
+  background:var(--panel); border:1px solid var(--hairline-2); color:var(--paper-dim);
+}
+
+/* ============================================================
+   SIGNATURE COMPONENT — the Frontier Strip.
+   A literal priority queue rendered as a lane of physical tiles.
+   Stepping forward visibly pops, reorders, and inserts tiles —
+   the data structure's behaviour becomes the animation itself,
+   rather than an abstract node-link diagram explaining it.
+   ============================================================ */
+.panel{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-lg);
+  padding:22px 22px 20px; margin:22px 0;
+}
+.panel-label{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--paper-faint); margin:0 0 14px; display:flex; align-items:center; justify-content:space-between;
+}
+.panel-label .step-of{color:var(--paper-dim); letter-spacing:.02em; text-transform:none;}
+
+.stage{
+  position:relative; min-height:220px; border-radius:var(--r-md);
+  background:var(--ink-soft); border:1px solid var(--hairline);
+  overflow:hidden; margin-bottom:16px;
+}
+.stage svg{display:block; width:100%; height:auto;}
+
+.frontier-lane{
+  display:flex; gap:6px; padding:14px; border-radius:var(--r-md);
+  background:var(--ink-soft); border:1px solid var(--hairline);
+  margin-bottom:16px; min-height:56px; align-items:center;
+  overflow-x:auto; flex-wrap:nowrap;
+}
+.frontier-lane::-webkit-scrollbar{height:4px;}
+.frontier-lane .lane-caption{
+  font-family:var(--mono); font-size:10px; color:var(--paper-faint); text-transform:uppercase;
+  letter-spacing:.06em; flex-shrink:0; padding-right:6px; border-right:1px solid var(--hairline-2); margin-right:6px;
+}
+.qtile{
+  font-family:var(--mono); font-size:12px; padding:7px 12px; border-radius:7px;
+  background:var(--panel-2); border:1px solid var(--hairline-2); color:var(--paper-dim);
+  flex-shrink:0; white-space:nowrap;
+  transition:transform .32s var(--ease), background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), opacity .25s var(--ease);
+}
+.qtile.is-min{
+  background:var(--amber-dim); border-color:var(--amber); color:var(--amber-soft); font-weight:500;
+  box-shadow:0 0 0 1px rgba(255,138,61,0.15);
+}
+.qtile.is-new{animation:tile-pop .38s var(--ease);}
+@keyframes tile-pop{ from{transform:scale(0.7); opacity:0;} to{transform:scale(1); opacity:1;} }
+.lane-empty{font-family:var(--mono); font-size:12px; color:var(--paper-faint);}
+
+.narration{
+  font-size:13.5px; color:var(--paper-dim); line-height:1.6; min-height:42px;
+  padding-top:2px;
+}
+.narration .hl{color:var(--amber-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--amber-dim); padding:1px 6px; border-radius:4px;}
+.narration .hl-blue{color:var(--blue-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--blue-dim); padding:1px 6px; border-radius:4px;}
+.narration .hl-moss{color:var(--moss-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--moss-dim); padding:1px 6px; border-radius:4px;}
+
+.controls{
+  display:flex; align-items:center; gap:8px; margin-top:16px; flex-wrap:wrap;
+}
+.ctl-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--panel-2); border:1px solid var(--hairline-2); color:var(--paper);
+  padding:8px 16px; border-radius:var(--r-sm); font-size:13px; font-weight:500; cursor:pointer;
+  transition:background .15s var(--ease), border-color .15s var(--ease), transform .1s var(--ease);
+}
+.ctl-btn:hover{border-color:var(--paper-faint);}
+.ctl-btn:active{transform:scale(0.97);}
+.ctl-btn:disabled{opacity:.32; cursor:default; pointer-events:none;}
+.ctl-btn.primary{background:var(--amber); color:var(--ink); border-color:var(--amber);}
+.ctl-btn.primary:hover{background:#ff9952;}
+.ctl-btn svg{width:14px; height:14px;}
+.ctl-spacer{flex:1;}
+.step-pips{display:flex; gap:4px; align-items:center;}
+.step-pips .pip{width:5px; height:5px; border-radius:50%; background:var(--hairline-2); transition:background .2s, transform .2s;}
+.step-pips .pip.done{background:var(--paper-faint);}
+.step-pips .pip.current{background:var(--amber); transform:scale(1.5);}
+
+/* ============================================================
+   ADMISSIBILITY CALC ROWS
+   ============================================================ */
+.calc-table{margin:18px 0; border-radius:var(--r-md); overflow:hidden; border:1px solid var(--hairline-2);}
+.calc-row{
+  display:grid; grid-template-columns:48px 1fr 1fr 1.4fr; gap:10px; align-items:center;
+  padding:10px 14px; font-size:13px; border-bottom:1px solid var(--hairline);
+  background:var(--panel);
+}
+.calc-row:last-child{border-bottom:none;}
+.calc-row.head{
+  background:var(--ink-soft); font-family:var(--mono); font-size:10.5px; color:var(--paper-faint);
+  text-transform:uppercase; letter-spacing:.05em; padding:8px 14px;
+}
+.calc-row .node-tag{font-family:var(--mono); color:var(--paper); font-weight:500;}
+.calc-row input{
+  background:var(--ink-soft); border:1px solid var(--hairline-2); color:var(--paper);
+  border-radius:6px; padding:6px 10px; font-size:13px; width:100%; font-family:var(--mono);
+}
+.calc-row input:read-only{color:var(--paper-dim); border-color:var(--hairline);}
+.calc-row input::placeholder{color:var(--paper-faint);}
+.verdict{font-family:var(--mono); font-size:12px; font-weight:500; padding:4px 10px; border-radius:6px; text-align:center;}
+.verdict.ok{background:var(--moss-dim); color:var(--moss-soft);}
+.verdict.bad{background:var(--rose-dim); color:var(--rose-soft);}
+.verdict.wait{color:var(--paper-faint); background:transparent;}
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+.filterbar{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap;}
+.filterbar button{
+  background:var(--panel); border:1px solid var(--hairline-2); color:var(--paper-dim);
+  padding:6px 14px; border-radius:16px; font-size:12px; cursor:pointer;
+  transition:all .15s var(--ease);
+}
+.filterbar button.active{background:var(--amber-dim); color:var(--amber-soft); border-color:var(--amber);}
+.filterbar button:hover:not(.active){border-color:var(--paper-faint); color:var(--paper);}
+
+.quiz-progress{
+  font-family:var(--mono); font-size:11.5px; color:var(--paper-faint); margin-bottom:8px;
+  display:flex; justify-content:space-between;
+}
+.scorebar{height:3px; background:var(--panel-2); border-radius:2px; overflow:hidden; margin-bottom:24px;}
+.scorebar > div{height:100%; background:var(--amber); width:0%; transition:width .3s var(--ease);}
+
+.quiz-card{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-lg);
+  padding:20px 22px; margin-bottom:14px;
+}
+.quiz-card .qtag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--paper-faint); margin-bottom:8px; display:block;
+}
+.quiz-card .qtext{font-size:14.5px; margin-bottom:14px; font-weight:500; line-height:1.5;}
+.opt{
+  display:block; width:100%; text-align:left; background:var(--ink-soft); border:1px solid var(--hairline-2);
+  color:var(--paper); padding:10px 14px; border-radius:var(--r-sm); margin-bottom:7px; font-size:13px;
+  cursor:pointer; transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.opt:hover:not(:disabled){border-color:var(--paper-faint);}
+.opt.correct{background:var(--moss-dim); border-color:var(--moss); color:var(--moss-soft);}
+.opt.wrong{background:var(--rose-dim); border-color:var(--rose); color:var(--rose-soft);}
+.explain{
+  font-size:13px; color:var(--paper-dim); margin-top:10px; padding-top:10px;
+  border-top:1px dashed var(--hairline-2); display:none; line-height:1.6;
+}
+.explain.show{display:block; animation:fade-in .25s var(--ease);}
+@keyframes fade-in{from{opacity:0; transform:translateY(-2px);} to{opacity:1; transform:translateY(0);}}
+
+.reveal-btn{
+  margin-top:10px; font-size:12.5px; color:var(--amber-soft); background:var(--amber-dim);
+  border:1px solid rgba(255,138,61,0.25); padding:8px 14px; border-radius:var(--r-sm);
+  cursor:pointer; font-family:var(--sans); font-weight:500;
+}
+
+.code-block{
+  font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--paper-dim);
+  background:var(--ink-soft); border:1px solid var(--hairline); border-radius:var(--r-sm);
+  padding:16px 18px; margin:0; overflow-x:auto; white-space:pre;
+}
+.code-block .cm{color:var(--paper-faint); font-style:italic;}
+
+footer.colophon{
+  font-size:12px; color:var(--paper-faint); padding:40px 0 0; text-align:left; line-height:1.7;
+}
+footer.colophon a{color:var(--paper-dim);}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0B0D10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><line x1="7.6" y1="7.2" x2="10.6" y2="16.4"/><line x1="16.4" y1="7.2" x2="13.4" y2="16.4"/><line x1="8.2" y1="6" x2="15.8" y2="6"/></svg>
+      </div>
+      <div class="brand-text">
+        <span class="kicker">ACI · ZG557</span>
+        <span class="name">The Frontier</span>
+      </div>
+    </div>
+
+    <div class="exam-strip">
+      <div class="exam-row today"><span class="label">Today</span><span class="date">Jun 24</span></div>
+      <div class="exam-row"><span class="label">CV exam</span><span class="date">Jun 27</span></div>
+      <div class="exam-row"><span class="label">A&amp;CI exam</span><span class="date">Jun 28</span></div>
+    </div>
+
+    <nav class="railnav" id="railnav" aria-label="Lecture sections"></nav>
+
+    <div class="rail-foot">Lecture 3 · BFS, DFS, UCS, IDS, GBFS, A*, admissibility &amp; consistency.</div>
+  </aside>
+
+  <div class="content">
+    <header class="hero">
+      <p class="hero-eyebrow">Lecture 3 revision instrument</p>
+      <h1>Search algorithms,<br>traced by hand.</h1>
+      <p class="sub">Every frontier in this lecture — the queue, the stack, the priority list — rendered as the literal data structure it is. Step through each algorithm yourself instead of reading about it.</p>
+      <div class="hero-frontier">
+        <span class="ftile">BFS</span><span class="ftile">DFS</span><span class="ftile">UCS</span>
+        <span class="ftile">IDS</span><span class="ftile">GBFS</span><span class="ftile">A*</span>
+      </div>
+    </header>
+
+    <main class="col">
+
+      <section class="block" id="s-recap">
+        <div class="block-head">
+          <span class="block-num">00</span>
+          <h2>What three sessions of lecture are expected to produce</h2>
+          <span class="block-tag core">exam framing</span>
+        </div>
+        <p class="block-sub">Straight from the instructor's opening recap. This is the menu of question types — not a suggestion.</p>
+
+        <table class="data">
+          <tr><th>Learning outcome</th><th>Exam question type</th><th>Example</th></tr>
+          <tr><td>PEAS specification</td><td>Write P, E, A, S for a scenario</td><td>PEAS for a medical diagnosis system</td></tr>
+          <tr><td>Environment classification</td><td>Classify along 6 dimensions</td><td>Is chess static or dynamic? Deterministic?</td></tr>
+          <tr><td>Agent architecture</td><td>Identify the best agent type</td><td>Goal-based or utility-based navigation robot?</td></tr>
+          <tr><td>Problem formulation</td><td>Write the 5 components</td><td>Formulate the 8-puzzle as a search problem</td></tr>
+          <tr><td>Search tracing</td><td>Trace step by step</td><td>Trace A* showing every f(n)</td></tr>
+        </table>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Expect this</span>
+          If sessions 1–3 are in scope, plan for at least one PEAS question and one full search trace. Both are named explicitly as exam patterns.
+        </div>
+      </section>
+
+      <section class="block" id="s-uninformed">
+        <div class="block-head">
+          <span class="block-num">01</span>
+          <h2>Uninformed search — the blind algorithms</h2>
+          <span class="block-tag blind">blind</span>
+        </div>
+        <p class="block-sub">Only the problem definition is visible: initial state, goal, transitions, costs. No sense of which unexplored state looks promising.</p>
+
+        <div class="callout callout-amber">
+          <b>The instructor's words.</b> BFS is "cautious" — it finishes an entire level before going one step deeper. DFS is "aggressive" — it grabs one path and rides it to the end, backtracking only once stuck.
+        </div>
+
+        <div class="panel">
+          <div class="panel-label">BFS queue vs DFS stack <span class="step-of" id="bfsdfs-steplabel">Step 0 of 8</span></div>
+          <div class="stage"><svg id="bfsdfs-svg" viewBox="0 0 700 280"></svg></div>
+          <div class="frontier-lane" id="bfsdfs-lane-bfs"></div>
+          <div class="frontier-lane" id="bfsdfs-lane-dfs"></div>
+          <p class="narration" id="bfsdfs-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="bfsdfs-prev" onclick="bfsdfs.prev()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              Back
+            </button>
+            <button class="ctl-btn primary" id="bfsdfs-next" onclick="bfsdfs.next()">
+              Step
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+            <button class="ctl-btn" onclick="bfsdfs.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="bfsdfs-pips"></div>
+          </div>
+        </div>
+
+        <table class="data">
+          <tr><th>Property</th><th>BFS</th><th>DFS</th></tr>
+          <tr><td>Data structure</td><td class="mono">Queue (FIFO)</td><td class="mono">Stack (LIFO) / recursion</td></tr>
+          <tr><td>Complete?</td><td class="yes">Yes (finite)</td><td class="no">No (infinite loops)</td></tr>
+          <tr><td>Optimal?</td><td class="yes">Yes (equal-cost edges)</td><td class="no">No</td></tr>
+          <tr><td>Time</td><td class="mono">O(b^d)</td><td class="mono">O(b^m)</td></tr>
+          <tr><td>Space</td><td class="mono">O(b^d) — high</td><td class="mono">O(bm) — low</td></tr>
+          <tr><td>Best for</td><td>Min steps, shallow goals</td><td>Memory-limited, mazes</td></tr>
+        </table>
+        <div class="tagrow">
+          <span class="tg">BFS → shortest path, bipartite check, degrees of separation</span>
+          <span class="tg">DFS → maze solving, connectivity, topological sort, cycle detection</span>
+        </div>
+      </section>
+
+      <section class="block" id="s-ucs">
+        <div class="block-head">
+          <span class="block-num">02</span>
+          <h2>Uniform Cost Search</h2>
+          <span class="block-tag blind">blind + cost</span>
+        </div>
+        <p class="block-sub">f(n) = g(n) only. BFS with its queue replaced by a priority queue sorted on accumulated cost — always expand the cheapest path so far.</p>
+
+        <div class="callout callout-rose">
+          <b>The rule that decides this trace.</b> The goal is tested on expansion, never on generation. A goal can be generated looking cheap and still get beaten by a better path discovered afterward — watch it happen below.
+        </div>
+
+        <div class="panel">
+          <div class="panel-label">Romania map · Sibiu → Bucharest <span class="step-of" id="ucs-steplabel">Step 0 of 5</span></div>
+          <div class="stage"><svg id="ucs-svg" viewBox="0 0 700 260"></svg></div>
+          <div class="frontier-lane" id="ucs-lane"></div>
+          <p class="narration" id="ucs-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="ucs-prev" onclick="ucs.prev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+            <button class="ctl-btn primary" id="ucs-next" onclick="ucs.next()">Step<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button class="ctl-btn" onclick="ucs.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="ucs-pips"></div>
+          </div>
+        </div>
+
+        <div class="callout callout-moss">
+          <b>Optimal path: Sibiu → Rimnicu Vilcea → Pitesti → Bucharest = 278.</b> Fagaras generated Bucharest at 310 first — it got overwritten the instant Pitesti found 278. That overwrite is the entire reason UCS waits to test the goal until expansion.
+        </div>
+
+        <div class="panel">
+          <div class="panel-label">UCS pseudocode</div>
+          <pre class="code-block">frontier = priority_queue()   <span class="cm"># sorted by path cost</span>
+frontier.add(start, cost=0)
+explored = set()
+
+while frontier is not empty:
+    node = frontier.pop_min()      <span class="cm"># cheapest node</span>
+    if node == goal: return path   <span class="cm"># tested on EXPANSION</span>
+    if node in explored: continue
+    explored.add(node)
+    for each child of node:
+        frontier.add(child, cost=g(node) + edge_cost)</pre>
+        </div>
+      </section>
+
+      <section class="block" id="s-ids">
+        <div class="block-head">
+          <span class="block-num">03</span>
+          <h2>Iterative Deepening Search</h2>
+          <span class="block-tag blind">blind</span>
+        </div>
+        <p class="block-sub">DFS run repeatedly with a depth limit that grows: 0, 1, 2, 3 … BFS's guarantees at DFS's memory cost.</p>
+
+        <div class="panel">
+          <div class="panel-label">Depth limit reveal <span class="step-of" id="ids-steplabel">Limit = 0</span></div>
+          <div class="stage"><svg id="ids-svg" viewBox="0 0 700 240"></svg></div>
+          <p class="narration" id="ids-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="ids-prev" onclick="ids.prev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+            <button class="ctl-btn primary" id="ids-next" onclick="ids.next()">Step<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button class="ctl-btn" onclick="ids.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="ids-pips"></div>
+          </div>
+        </div>
+
+        <div class="callout callout-blue">
+          <b>Lecture clarification.</b> An optimised IDS does not literally restart from the root each round — it resumes where it left off. This diagram shows the textbook "restart" version because it's easier to see; the real implementation is smarter about it.
+        </div>
+
+        <table class="data">
+          <tr><th>Algorithm</th><th>Complete?</th><th>Optimal?</th><th>Time</th><th>Space</th></tr>
+          <tr><td>BFS</td><td class="yes">Yes</td><td class="yes">Yes (equal cost)</td><td class="mono">O(b^d)</td><td class="mono">O(b^d)</td></tr>
+          <tr><td>DFS</td><td class="no">No</td><td class="no">No</td><td class="mono">O(b^m)</td><td class="mono">O(bm)</td></tr>
+          <tr><td>UCS</td><td class="yes">Yes</td><td class="yes">Yes (min cost)</td><td class="mono">O(b^(1+⌊C*/ε⌋))</td><td class="mono">same</td></tr>
+          <tr><td>IDS</td><td class="yes">Yes</td><td class="yes">Yes (equal cost)</td><td class="mono">O(b^d)</td><td class="mono">O(bd) — low</td></tr>
+        </table>
+      </section>
+
+      <section class="block" id="s-heuristic">
+        <div class="block-head">
+          <span class="block-num">04</span>
+          <h2>From blind to informed — what is h(n)?</h2>
+          <span class="block-tag smart">informed</span>
+        </div>
+        <p class="block-sub">An estimate of remaining distance to the goal, supplied from outside the raw problem definition.</p>
+
+        <div class="callout callout-amber">
+          <b>The city-guide analogy.</b> Uninformed search tries every street. Informed search asks a local: "the station is roughly 3km east." Not exact — but it slashes the search space. Something is better than nothing.
+        </div>
+
+        <table class="data">
+          <tr><th>Type of h(n)</th><th>What it is</th><th>Example</th><th>Quality</th></tr>
+          <tr><td>Straight-line distance</td><td>Euclidean to goal</td><td class="mono">h(Arad)=366</td><td class="yes">Admissible</td></tr>
+          <tr><td>Manhattan distance</td><td>Horiz + vert moves</td><td>8-puzzle grid moves</td><td class="yes">Admissible (grids)</td></tr>
+          <tr><td>Misplaced tiles</td><td>Count out of place</td><td>8-puzzle tile count</td><td class="yes">Admissible, weak</td></tr>
+          <tr><td>Learned heuristic</td><td>ML predicts cost</td><td>Game-playing agents</td><td>Varies — next lecture</td></tr>
+        </table>
+        <p style="font-size:13.5px; color:var(--paper-dim)">Good heuristics often come from <b>relaxing</b> the problem: drop a constraint, solve the easier version, and its cost is automatically an admissible underestimate of the real one.</p>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Next lecture preview</span>
+          Lecture 4 covers: completing today's admissibility/consistency exercise · good heuristic design, including pattern databases · learning heuristics — algorithms that derive their own h(n) · how to judge whether a heuristic is good before applying it to a problem.
+        </div>
+      </section>
+
+      <section class="block" id="s-gbfs">
+        <div class="block-head">
+          <span class="block-num">05</span>
+          <h2>Greedy Best-First Search</h2>
+          <span class="block-tag smart">f(n) = h(n)</span>
+        </div>
+        <p class="block-sub">Trusts the heuristic alone. Cost paid so far is invisible to it. Fast — and easily betrayed.</p>
+
+        <div class="panel">
+          <div class="panel-label">Romania map · h(n) only <span class="step-of" id="gbfs-steplabel">Step 0 of 3</span></div>
+          <div class="stage"><svg id="gbfs-svg" viewBox="0 0 700 240"></svg></div>
+          <p class="narration" id="gbfs-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="gbfs-prev" onclick="gbfs.prev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+            <button class="ctl-btn primary" id="gbfs-next" onclick="gbfs.next()">Step<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button class="ctl-btn" onclick="gbfs.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="gbfs-pips"></div>
+          </div>
+        </div>
+
+        <div class="callout callout-rose">
+          GBFS reaches Bucharest via Arad → Sibiu → Fagaras → Bucharest = <b>450km</b> — not the optimal 418. It was lured by Fagaras's low h(n) and never reconsidered the real road cost.
+        </div>
+
+        <div class="panel">
+          <div class="panel-label">GBFS pseudocode</div>
+          <pre class="code-block">f(n) = h(n)   <span class="cm"># ONLY the heuristic, no actual cost</span>
+
+frontier = priority_queue sorted by h(n)
+frontier.add(start)
+
+while frontier is not empty:
+    node = frontier.pop_min_h()   <span class="cm"># smallest h(n)</span>
+    if node == goal: return path
+    for each child of node:
+        frontier.add(child, priority=h(child))</pre>
+        </div>
+      </section>
+
+      <section class="block" id="s-astar">
+        <div class="block-head">
+          <span class="block-num">06</span>
+          <h2>A* Search</h2>
+          <span class="block-tag core">f(n) = g(n) + h(n)</span>
+        </div>
+        <div class="formula">f(n) = g(n) + h(n)<span class="ghost">g = actual cost from start &nbsp;·&nbsp; h = estimated cost to goal &nbsp;·&nbsp; g(start)=0 &nbsp;·&nbsp; h(goal)=0</span></div>
+
+        <div class="panel">
+          <div class="panel-label">Romania map · full trace <span class="step-of" id="astar-steplabel">Step 0 of 5</span></div>
+          <div class="stage"><svg id="astar-svg" viewBox="0 0 700 260"></svg></div>
+          <div class="frontier-lane" id="astar-lane"></div>
+          <p class="narration" id="astar-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="astar-prev" onclick="astar.prev()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+            <button class="ctl-btn primary" id="astar-next" onclick="astar.next()">Step<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button class="ctl-btn" onclick="astar.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="astar-pips"></div>
+          </div>
+        </div>
+
+        <div class="callout callout-rose">
+          <b>The trap.</b> At one point Pitesti shows f=415, the lowest value among newly generated nodes. But Fagaras (f=417) was sitting in the open list from an earlier step. A* scans the entire open list before picking — never only the newest arrivals. Miss this and every A* trace in the exam goes wrong.
+        </div>
+
+        <div class="callout callout-moss">
+          Optimal path: Arad → Sibiu → Rimnicu Vilcea → Pitesti → Bucharest = <b>418km</b>.
+        </div>
+
+        <div class="panel">
+          <div class="panel-label">A* pseudocode</div>
+          <pre class="code-block">open_list = priority_queue sorted by f(n)
+open_list.add(start, f=h(start))
+
+while open_list is not empty:
+    node = open_list.pop_min_f()   <span class="cm"># lowest f(n)</span>
+    if node == goal: return path
+    for each successor n' of node:
+        new_g = g(node) + cost(node, n')
+        new_f = new_g + h(n')
+        if n' not in open_list or new_f < f(n'):
+            open_list.add(n', f=new_f, g=new_g)</pre>
+        </div>
+      </section>
+
+      <section class="block" id="s-compare">
+        <div class="block-head">
+          <span class="block-num">07</span>
+          <h2>Side by side — Greedy vs UCS vs A*</h2>
+          <span class="block-tag core">same graph, 3 outcomes</span>
+        </div>
+        <p class="block-sub">A second, smaller graph run through all three — the comparison most exams actually test, because it exposes the failure mode directly.</p>
+        <div class="tagrow">
+          <span class="tg">Edges: S–A 2, S–B 3, A–C 4, B–C 1, B–D 5, C–D 2, C–G 4, D–G 3</span>
+          <span class="tg">h: S=6, A=6, B=4, C=3, D=2, G=0</span>
+        </div>
+
+        <div class="grid2">
+          <div class="panel" style="margin-top:0">
+            <div class="panel-label" style="color:var(--rose-soft)">Greedy · f = h only</div>
+            <p style="font-size:13.5px; color:var(--paper-dim); margin:0">S → B (h=4, beats A's 6) → D (h=2, beats C's 3) → G.</p>
+            <p style="font-size:14px; margin:10px 0 0;"><span class="hl" style="background:var(--rose-dim); color:var(--rose-soft)">Path S–B–D–G = 3+5+3 = 11</span></p>
+            <p style="font-size:13px; color:var(--paper-faint); margin:8px 0 0">Lured by D's small h, paid for the costly B→D edge.</p>
+          </div>
+          <div class="panel" style="margin-top:0">
+            <div class="panel-label" style="color:var(--blue-soft)">UCS · f = g only</div>
+            <p style="font-size:13.5px; color:var(--paper-dim); margin:0">Expands by cheapest g: S, A(2), B(3), C(4), D(6), G(8).</p>
+            <p style="font-size:14px; margin:10px 0 0;"><span class="hl-moss">Path S–B–C–G = 3+1+4 = 8</span></p>
+            <p style="font-size:13px; color:var(--paper-faint); margin:8px 0 0">Optimal — but wastes effort expanding A, which leads nowhere useful.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-label" style="color:var(--amber-soft)">A* · f = g + h</div>
+          <table class="data">
+            <tr><th>Step</th><th>Expand</th><th>f(n)</th><th>Why</th></tr>
+            <tr><td>1</td><td class="mono">S</td><td class="mono">6</td><td>only node available</td></tr>
+            <tr><td>2</td><td class="mono">B</td><td class="mono">3+4=7</td><td>lower than A's f=2+6=8</td></tr>
+            <tr><td>3</td><td class="mono">C</td><td class="mono">4+3=7</td><td>tied-lowest in open list, expand</td></tr>
+            <tr><td>4</td><td class="mono">G</td><td class="mono">8+0=8</td><td>via S–B–C–G, matches D's path but reaches the goal</td></tr>
+          </table>
+          <div class="callout callout-moss" style="margin-bottom:0">
+            A* path: S–B–C–G = <b>8</b> (optimal) — without ever wandering toward the costly B→D edge that fooled Greedy. Optimal <i>and</i> focused, in one pass.
+          </div>
+        </div>
+
+        <h3 style="font-size:15px; font-weight:600; margin:28px 0 6px;">GBFS vs A* — the full comparison</h3>
+        <table class="data">
+          <tr><th>Property</th><th>GBFS</th><th>A*</th></tr>
+          <tr><td>Evaluation function</td><td class="mono">f(n) = h(n) — heuristic only</td><td class="mono">f(n) = g(n) + h(n)</td></tr>
+          <tr><td>Uses actual cost?</td><td class="no">No — ignores g(n)</td><td class="yes">Yes — core component</td></tr>
+          <tr><td>Uses heuristic?</td><td class="yes">Yes — primary driver</td><td class="yes">Yes — guiding component</td></tr>
+          <tr><td>Complete?</td><td class="no">No (may cycle)</td><td class="yes">Yes</td></tr>
+          <tr><td>Optimal?</td><td class="no">No — greedy, gets betrayed</td><td class="yes">Yes — if h admissible</td></tr>
+          <tr><td>Speed</td><td>Faster (fewer computations)</td><td>Slightly slower (computes g+h per node)</td></tr>
+          <tr><td>Memory</td><td>Lower</td><td>Higher</td></tr>
+          <tr><td>Best for</td><td>Quick approximate solutions, small spaces</td><td>Guaranteed optimal solutions, critical applications</td></tr>
+          <tr><td>Real-world analogy</td><td>Blindly follow the guide's advice</td><td>Use the guide's advice plus track how far you've already walked</td></tr>
+        </table>
+
+        <table class="data">
+          <tr><th>h(n) quality</th><th>Effect on A*</th></tr>
+          <tr><td>h(n) = 0 everywhere</td><td>Still optimal, degenerates into plain UCS — slow</td></tr>
+          <tr><td>Admissible but weak</td><td>Optimal, explores extra nodes</td></tr>
+          <tr><td>Admissible &amp; close to h*</td><td>Optimal and efficient — the goal</td></tr>
+          <tr><td>Overestimates (inadmissible)</td><td>Faster, may lose optimality</td></tr>
+          <tr><td>Admissible but inconsistent</td><td>Still optimal, may need to re-open closed nodes</td></tr>
+        </table>
+      </section>
+
+      <section class="block" id="s-admiss">
+        <div class="block-head">
+          <span class="block-num">08</span>
+          <h2>Admissibility &amp; consistency — interactive checker</h2>
+          <span class="block-tag core">exercise</span>
+        </div>
+
+        <div class="grid2">
+          <div>
+            <div class="formula" style="font-size:14px">h(n) ≤ h*(n)<span class="ghost">admissible — never overestimates the true cost-to-goal</span></div>
+          </div>
+          <div>
+            <div class="formula" style="font-size:14px">h(n) ≤ cost(n,n′) + h(n′)<span class="ghost">consistent — triangle inequality, h can't drop faster than the real step cost</span></div>
+          </div>
+        </div>
+
+        <div class="callout callout-moss">
+          Consistent ⟹ admissible, given h(goal)=0. Not every admissible heuristic is consistent. Most heuristics in this course — straight-line, Manhattan — satisfy both.
+        </div>
+
+        <div class="grid2">
+          <div class="panel" style="margin-top:0">
+            <div class="panel-label" style="color:var(--moss-soft)">Consistent — worked example</div>
+            <p class="mono" style="font-size:13px; color:var(--paper-dim); margin:0 0 6px">h(n)=10, cost(n→n')=3, h(n')=8</p>
+            <p class="mono" style="font-size:13px; color:var(--moss-soft); margin:0">10 ≤ 3+8 = 11 — consistent</p>
+          </div>
+          <div class="panel" style="margin-top:0">
+            <div class="panel-label" style="color:var(--rose-soft)">Not consistent — worked example</div>
+            <p class="mono" style="font-size:13px; color:var(--paper-dim); margin:0 0 6px">h(n)=10, cost(n→n')=2, h(n')=5</p>
+            <p class="mono" style="font-size:13px; color:var(--rose-soft); margin:0">10 > 2+5 = 7 — not consistent</p>
+          </div>
+        </div>
+
+        <h3 style="font-size:15px; font-weight:600; margin:28px 0 6px;">Lecture's exercise — 6 nodes, goal = node 3</h3>
+        <p style="font-size:13.5px; color:var(--paper-dim); margin:0 0 12px">Type your computed h*(n) — the true shortest path cost to goal — for an instant verdict. Pre-filled with the lecture's given h(n).</p>
+        <div class="calc-table" id="admiss-rows"></div>
+
+        <h3 style="font-size:15px; font-weight:600; margin:28px 0 6px;">A worked version</h3>
+        <p style="font-size:13.5px; color:var(--paper-dim); margin:0 0 12px">Goal = node 3. h(1)=80, h(2)=60, h(3)=0, h(4)=200, h(5)=190. Defaults shown are the worked answers.</p>
+        <div class="calc-table" id="admiss-rows2"></div>
+        <div class="callout callout-rose">
+          Node 2 (h=60) overestimates its true cost → <b>inadmissible</b>. Arc 5→1 also violates the consistency triangle inequality. One heuristic, two separate failures — admissibility and consistency are checked node-by-node and arc-by-arc, never assumed wholesale.
+        </div>
+      </section>
+
+      <section class="block" id="s-examref">
+        <div class="block-head">
+          <span class="block-num">09</span>
+          <h2>Full exam-reference table</h2>
+          <span class="block-tag core">memorize this</span>
+        </div>
+        <table class="data">
+          <tr><th>Algo</th><th>Type</th><th>f(n) =</th><th>Complete?</th><th>Optimal?</th><th>Best for</th></tr>
+          <tr><td>BFS</td><td>Uninformed</td><td class="mono">steps from root</td><td class="yes">Yes</td><td class="yes">Yes (eq. cost)</td><td>Min hops, small depth</td></tr>
+          <tr><td>DFS</td><td>Uninformed</td><td class="mono">depth</td><td class="no">No</td><td class="no">No</td><td>Memory-limited, mazes</td></tr>
+          <tr><td>UCS</td><td>Uninformed</td><td class="mono">g(n)</td><td class="yes">Yes</td><td class="yes">Yes</td><td>Min cost, Dijkstra-style</td></tr>
+          <tr><td>IDS</td><td>Uninformed</td><td class="mono">depth limit</td><td class="yes">Yes</td><td class="yes">Yes (eq. cost)</td><td>Memory efficient + complete</td></tr>
+          <tr><td>GBFS</td><td>Informed</td><td class="mono">h(n)</td><td class="no">No</td><td class="no">No</td><td>Fast approx, familiar domains</td></tr>
+          <tr><td>A*</td><td>Informed</td><td class="mono">g(n)+h(n)</td><td class="yes">Yes</td><td class="yes">Yes* (h admissible/consistent)</td><td>Optimal pathfinding, games, robotics</td></tr>
+        </table>
+        <div class="callout callout-moss">
+          <b>Tree search</b> is optimal if h is <b>admissible</b>. <b>Graph search</b> is optimal if h is <b>consistent</b>. If h satisfies neither, A* may go sub-optimal or miss the optimal path entirely.
+        </div>
+        <p style="font-size:13.5px; color:var(--paper-dim)"><b>Real-world A*:</b> game NPC pathfinding · Google Maps core component · robot motion planning · 8/15-puzzle solvers · lowest-latency network routing.</p>
+      </section>
+
+      <section class="block" id="s-exercises">
+        <div class="block-head">
+          <span class="block-num">10</span>
+          <h2>The original four exercises</h2>
+          <span class="block-tag core">from the lecture, verbatim</span>
+        </div>
+        <p class="block-sub">Exactly as given at the end of Lecture 3. Post answers to the Tuxila forum — these are laid out here to attempt properly, not auto-graded.</p>
+
+        <div class="quiz-card">
+          <span class="qtag">Exercise 1</span>
+          <div class="qtext">Problem formulation — plan a trip with a delivery drone</div>
+          <p style="font-size:13.5px; color:var(--paper-dim); margin:0 0 10px; line-height:1.7">
+          (a) Formulate as a search problem: initial state, goal, possible actions, transition model, path cost.<br>
+          (b) What is the state space? Draw a small example with 4 delivery locations.<br>
+          (c) Which search algorithm would you use, and why?<br>
+          (d) Write a PEAS specification for this drone agent.</p>
+          <div class="callout callout-blue" style="margin:0">Hint: drones fly in any direction but have battery limits. What does "path cost" mean for a drone?</div>
+        </div>
+
+        <div class="quiz-card">
+          <span class="qtag">Exercise 2</span>
+          <div class="qtext">Trace A* on this graph</div>
+          <p style="font-size:13.5px; color:var(--paper-dim); margin:0 0 10px; line-height:1.7">
+          Nodes: S, A, B, C, D, G. Start = S, goal = G.<br>
+          Edges: S→A(3), S→B(6), A→C(2), A→D(4), B→D(1), C→G(5), D→G(2)<br>
+          Heuristics: h(S)=7, h(A)=5, h(B)=4, h(C)=3, h(D)=2, h(G)=0<br>
+          For each expansion: show the open list, the node chosen, its f(n)=g(n)+h(n), and the final path. Then check admissibility.</p>
+          <div class="callout callout-blue" style="margin:0 0 10px">Hint: always compare ALL nodes in the open list, not just recently generated ones.</div>
+          <button class="reveal-btn" onclick="toggleReveal(this)">Reveal worked trace — try it yourself first</button>
+          <div class="explain">
+            <b>Step 1:</b> Expand S. f(S)=0+7=7. Generate A: g=3, h=5, f=8. Generate B: g=6, h=4, f=10. Open: [A 8, B 10]<br>
+            <b>Step 2:</b> Expand A (f=8). Generate C: g=5, h=3, f=8. Generate D: g=7, h=2, f=9. Open: [C 8, D 9, B 10]<br>
+            <b>Step 3:</b> Expand C (f=8, tied-lowest). Generate G: g=10, h=0, f=10. Open: [D 9, B 10, G 10]<br>
+            <b>Step 4:</b> Expand D (f=9, lowest). Generate G via D: g=9, f=9 — replaces the f=10 entry found via C. Open: [B 10, G 9]<br>
+            <b>Step 5:</b> Expand G (f=9, lowest). Goal reached. <b>Path: S→A→D→G, cost 9.</b><br>
+            <b>Admissibility:</b> h(S)=7 vs the true cheapest cost from S (9, via either A-D-G or B-D-G). 7 ≤ 9 ✓. Spot-check the rest the same way — this heuristic is admissible.
+          </div>
+        </div>
+
+        <div class="quiz-card">
+          <span class="qtag">Exercise 3</span>
+          <div class="qtext">Formulate clinic appointment scheduling as a search problem</div>
+          <p style="font-size:13.5px; color:var(--paper-dim); margin:0 0 10px; line-height:1.7">
+          (a) What is the initial state? What does the goal state look like?<br>
+          (b) What are the possible actions?<br>
+          (c) What is a sensible path cost function?<br>
+          (d) Suggest a heuristic h(n). Is it admissible?<br>
+          (e) What type of environment is this (the 6 dimensions from Lecture 2)?</p>
+          <div class="callout callout-blue" style="margin:0">Hint: multiple doctors, varied appointment lengths, patient priorities. The goal is a valid schedule with no conflicts.</div>
+        </div>
+
+        <div class="quiz-card">
+          <span class="qtag">Exercise 4</span>
+          <div class="qtext">Admissibility check</div>
+          <p style="font-size:13.5px; color:var(--paper-dim); margin:0 0 10px; line-height:1.7">
+          Nodes: 1→G actual=6, 2→G actual=4, 3→G actual=2, 4→G actual=5<br>
+          Heuristic values: h(1)=5, h(2)=6, h(3)=1, h(4)=4<br>
+          For each node: is the heuristic admissible? Which nodes violate it? Would A* still be optimal on this graph?</p>
+          <div class="callout callout-blue" style="margin:0 0 12px">Hint: h(n) admissible means h(n) ≤ true cost to goal. Check each node individually.</div>
+          <div class="calc-table" id="ex4-rows"></div>
+        </div>
+      </section>
+
+      <section class="block" id="s-quiz">
+        <div class="block-head">
+          <span class="block-num">11</span>
+          <h2>Quiz bank</h2>
+          <span class="block-tag core">test yourself</span>
+        </div>
+
+        <div class="filterbar" id="quiz-filterbar"></div>
+        <div class="quiz-progress"><span id="quiz-count">0 / 0 answered</span><span id="quiz-score">Score: 0</span></div>
+        <div class="scorebar"><div id="quiz-bar"></div></div>
+        <div id="quiz-container"></div>
+      </section>
+
+      <section class="block" id="s-refs">
+        <div class="block-head">
+          <span class="block-num">12</span>
+          <h2>References from the lecture</h2>
+        </div>
+        <table class="data">
+          <tr><th>Resource</th><th>What it's for</th></tr>
+          <tr><td><a href="https://aima.cs.berkeley.edu/" target="_blank">AIMA 4th Ed., Ch.3 §3.3–3.5</a></td><td>Core textbook reference — this lecture maps directly to this chapter</td></tr>
+          <tr><td><a href="https://aimacode.github.io/aima-javascript/" target="_blank">AIMA interactive demos</a></td><td>Animated BFS / DFS / UCS / A* — recommended repeatedly in lecture</td></tr>
+          <tr><td><a href="https://cs.stanford.edu/people/eroberts/courses/soco/projects/2003-04/intelligent-search/astar.html" target="_blank">Stanford CS221 — A*</a></td><td>Clear A* explanation with worked examples</td></tr>
+          <tr><td><a href="https://qiao.github.io/PathFinding.js/visual/" target="_blank">PathFinding.js visualizer</a></td><td>Draw mazes, watch BFS/DFS/A*/Dijkstra race live</td></tr>
+          <tr><td><a href="https://ieeexplore.ieee.org/document/4082128" target="_blank">Hart, Nilsson &amp; Raphael (1968)</a></td><td>The original A* paper — proves optimality under admissibility</td></tr>
+        </table>
+      </section>
+
+      <footer class="colophon">
+        Built for the A&amp;CI makeup exam, June 28. Source: ACI Lecture 3 notes plus the linked revision page.
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   RAIL NAVIGATION — generated from section data, doubles as a
+   scroll-spy. node-id mirrors the block-num shown in each
+   section heading, reinforcing the "graph index" framing.
+   ============================================================ */
+const SECTIONS = [
+  {id:'s-recap',     n:'00', label:'Exam recap'},
+  {id:'s-uninformed',n:'01', label:'Uninformed search'},
+  {id:'s-ucs',       n:'02', label:'UCS trace'},
+  {id:'s-ids',       n:'03', label:'Iterative deepening'},
+  {id:'s-heuristic', n:'04', label:'Heuristics'},
+  {id:'s-gbfs',      n:'05', label:'Greedy best-first'},
+  {id:'s-astar',     n:'06', label:'A* trace'},
+  {id:'s-compare',   n:'07', label:'Greedy vs UCS vs A*'},
+  {id:'s-admiss',    n:'08', label:'Admissibility checker'},
+  {id:'s-examref',   n:'09', label:'Exam-ready table'},
+  {id:'s-exercises', n:'10', label:'Original exercises'},
+  {id:'s-quiz',      n:'11', label:'Quiz bank'},
+  {id:'s-refs',      n:'12', label:'References'}
+];
+const railnav = document.getElementById('railnav');
+railnav.innerHTML = SECTIONS.map(s =>
+  `<button class="rail-item" data-target="${s.id}" onclick="jumpTo('${s.id}')">
+     <span class="node-id">${s.n}</span><span class="lbl">${s.label}</span>
+   </button>`
+).join('');
+function jumpTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+}
+const railItems = Array.from(document.querySelectorAll('.rail-item'));
+const sectionEls = SECTIONS.map(s => document.getElementById(s.id));
+function updateActiveRail(){
+  let activeIdx = 0;
+  const probe = window.scrollY + 140;
+  sectionEls.forEach((el, i) => { if(el.offsetTop <= probe) activeIdx = i; });
+  railItems.forEach((el,i) => el.classList.toggle('active', i===activeIdx));
+}
+window.addEventListener('scroll', updateActiveRail, {passive:true});
+updateActiveRail();
+
+/* ============================================================
+   STEPPER ENGINE + step-pip renderer
+   ============================================================ */
+function makeStepper(steps, renderFn, pipsId){
+  let i = 0;
+  function render(){
+    renderFn(steps[i], i);
+    if(pipsId){
+      const pipsEl = document.getElementById(pipsId);
+      pipsEl.innerHTML = steps.map((_,k)=>
+        `<span class="pip ${k<i?'done':''} ${k===i?'current':''}"></span>`
+      ).join('');
+    }
+  }
+  return { next(){ if(i<steps.length-1){ i++; render(); } }, prev(){ if(i>0){ i--; render(); } }, reset(){ i=0; render(); }, render };
+}
+function renderLane(containerId, caption, tiles, minValue){
+  const el = document.getElementById(containerId);
+  if(!tiles.length){
+    el.innerHTML = `<span class="lane-caption">${caption}</span><span class="lane-empty">empty</span>`;
+    return;
+  }
+  el.innerHTML = `<span class="lane-caption">${caption}</span>` + tiles.map(t => {
+    const isMin = minValue !== undefined && t.v === minValue;
+    return `<span class="qtile is-new ${isMin?'is-min':''}">${t.label}</span>`;
+  }).join('');
+}
+
+/* ============================================================
+   01 — BFS vs DFS tree trace
+   ============================================================ */
+const treeNodes = { A:{x:350,y:30}, B:{x:200,y:100}, C:{x:500,y:100},
+  D:{x:120,y:175}, E:{x:280,y:175}, F:{x:420,y:175}, G:{x:580,y:175},
+  H:{x:80,y:245}, I:{x:160,y:245} };
+const treeEdges = [['A','B'],['A','C'],['B','D'],['B','E'],['C','F'],['C','G'],['D','H'],['D','I']];
+const bfsOrder = ['A','B','C','D','E','F','G','H','I'];
+const dfsOrder = ['A','B','D','H','I','E','C','F','G'];
+function childrenOf(node){ return treeEdges.filter(e=>e[0]===node).map(e=>e[1]); }
+function frontierAtStep(order, type, idx){
+  let frontier = ['A'], visited = [];
+  for(let k=0;k<=idx;k++){
+    const cur = order[k];
+    frontier = frontier.filter(x=>x!==cur);
+    visited.push(cur);
+    const kids = childrenOf(cur);
+    frontier = type==='bfs' ? frontier.concat(kids) : kids.concat(frontier);
+  }
+  return {frontier, visited};
+}
+function drawTree(svgEl, visitedBFS, visitedDFS, frontierBFS, frontierDFS){
+  let s = `<defs><marker id="arr1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#33373f" stroke-width="1.4"/></marker></defs>`;
+  function side(offsetX, label, color, glow, visited, frontier){
+    let out = `<text x="${offsetX+170}" y="18" fill="${color}" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="middle" letter-spacing="0.5">${label}</text>`;
+    treeEdges.forEach(([a,b])=>{
+      const na=treeNodes[a], nb=treeNodes[b];
+      out += `<line x1="${na.x*0.46+offsetX}" y1="${na.y+24}" x2="${nb.x*0.46+offsetX}" y2="${nb.y+24}" stroke="#262a32" stroke-width="1.2"/>`;
+    });
+    Object.keys(treeNodes).forEach(key=>{
+      const n = treeNodes[key];
+      const cx = n.x*0.46+offsetX, cy = n.y+24;
+      const isVisited = visited.includes(key);
+      const isFrontier = frontier.includes(key) && !isVisited;
+      let fill = '#181b21', stroke = '#262a32', tcol='#8A887F';
+      if(isVisited){ fill = glow; stroke = color; tcol = '#0B0D10'; }
+      else if(isFrontier){ fill='#1E2229'; stroke=color; tcol='#F7F5F0'; }
+      out += `<circle cx="${cx}" cy="${cy}" r="15" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+      out += `<text x="${cx}" y="${cy+4}" fill="${tcol}" font-size="12" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600">${key}</text>`;
+    });
+    return out;
+  }
+  s += side(20, 'BFS — LEVEL BY LEVEL', '#5B8DEF', '#C2D3FB', visitedBFS, frontierBFS);
+  s += side(360, 'DFS — DEEP FIRST', '#FF8A3D', '#FFD9B8', visitedDFS, frontierDFS);
+  s += `<line x1="350" y1="0" x2="350" y2="280" stroke="#1E2229" stroke-width="1"/>`;
+  svgEl.innerHTML = s;
+}
+const bfsdfsSteps = bfsOrder.map((_,idx)=>idx);
+const bfsdfs = makeStepper(bfsdfsSteps, function(idx){
+  const bfsState = frontierAtStep(bfsOrder,'bfs', idx);
+  const dfsState = frontierAtStep(dfsOrder,'dfs', idx);
+  drawTree(document.getElementById('bfsdfs-svg'), bfsState.visited, dfsState.visited, bfsState.frontier, dfsState.frontier);
+  renderLane('bfsdfs-lane-bfs', 'BFS queue', bfsState.frontier.map(n=>({label:n})));
+  renderLane('bfsdfs-lane-dfs', 'DFS stack', dfsState.frontier.map(n=>({label:n})));
+  document.getElementById('bfsdfs-steplabel').textContent = `Step ${idx} of ${bfsdfsSteps.length-1}`;
+  document.getElementById('bfsdfs-prev').disabled = idx===0;
+  document.getElementById('bfsdfs-next').disabled = idx===bfsdfsSteps.length-1;
+  const bfsCur = bfsOrder[idx], dfsCur = dfsOrder[idx];
+  document.getElementById('bfsdfs-narr').innerHTML = idx===0
+    ? `Both start at <span class="hl">A</span>, the root.`
+    : `BFS just visited <span class="hl-blue">${bfsCur}</span> — next queued item. DFS just visited <span class="hl">${dfsCur}</span> — dove deeper or backtracked.`;
+}, 'bfsdfs-pips');
+bfsdfs.render();
+
+/* ============================================================
+   02 — UCS Romania trace
+   ============================================================ */
+const ucsNodes = { Sibiu:{x:90,y:130}, RV:{x:260,y:55}, Fagaras:{x:260,y:205},
+  Pitesti:{x:440,y:55}, Bucharest:{x:600,y:130} };
+const ucsEdgesData = [['Sibiu','RV',80],['Sibiu','Fagaras',99],['RV','Pitesti',97],['Fagaras','Bucharest',211],['Pitesti','Bucharest',101]];
+const ucsSteps = [
+  {expand:null, frontier:[{n:'Sibiu',g:0}], note:'Start at Sibiu, g=0. Nothing expanded yet.'},
+  {expand:'Sibiu', frontier:[{n:'RV',g:80},{n:'Fagaras',g:99}], note:'Expand Sibiu — generate RV(80), Fagaras(99).'},
+  {expand:'RV', frontier:[{n:'Fagaras',g:99},{n:'Pitesti',g:177}], note:'Expand RV (cheapest, g=80) — generate Pitesti(80+97=177).'},
+  {expand:'Fagaras', frontier:[{n:'Pitesti',g:177},{n:'Bucharest',g:310}], note:'Expand Fagaras (g=99) — generate Bucharest(310). Goal generated — NOT tested yet.'},
+  {expand:'Pitesti', frontier:[{n:'Bucharest',g:278}], note:'Expand Pitesti (g=177) — generate Bucharest(278). This REPLACES the 310 entry.'},
+  {expand:'Bucharest', frontier:[], note:'Expand Bucharest (g=278) — goal test passes now. Return path cost 278.'}
+];
+function drawUCS(svgEl, visitedSet, expandedNow){
+  let s = '';
+  ucsEdgesData.forEach(([a,b,c])=>{
+    const na=ucsNodes[a], nb=ucsNodes[b];
+    const mx=(na.x+nb.x)/2, my=(na.y+nb.y)/2;
+    s += `<line x1="${na.x}" y1="${na.y}" x2="${nb.x}" y2="${nb.y}" stroke="#262a32" stroke-width="1.2"/>`;
+    s += `<rect x="${mx-13}" y="${my-10}" width="26" height="16" fill="#14171C"/>`;
+    s += `<text x="${mx}" y="${my+2}" fill="#8A887F" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="middle">${c}</text>`;
+  });
+  Object.keys(ucsNodes).forEach(key=>{
+    const n = ucsNodes[key];
+    const visited = visitedSet.includes(key);
+    const expanding = key===expandedNow;
+    let fill='#181b21', stroke='#262a32', tcol='#F7F5F0';
+    if(visited){ fill='#16291D'; stroke='#5FAD7A'; tcol='#BCE3CA'; }
+    if(expanding){ fill='#5FAD7A'; stroke='#5FAD7A'; tcol='#0B0D10'; }
+    s += `<circle cx="${n.x}" cy="${n.y}" r="27" fill="${fill}" stroke="${stroke}" stroke-width="1.8"/>`;
+    s += `<text x="${n.x}" y="${n.y+4}" fill="${tcol}" font-size="11" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600">${key}</text>`;
+  });
+  svgEl.innerHTML = s;
+}
+const ucs = makeStepper(ucsSteps, function(step, idx){
+  const visited = [];
+  for(let k=1;k<=idx;k++){ visited.push(ucsSteps[k].expand); }
+  drawUCS(document.getElementById('ucs-svg'), visited, step.expand);
+  renderLane('ucs-lane', 'Frontier', step.frontier.map(f=>({label:`${f.n} · ${f.g}`, v:f.g})), step.frontier.length ? Math.min(...step.frontier.map(f=>f.g)) : undefined);
+  document.getElementById('ucs-steplabel').textContent = `Step ${idx} of ${ucsSteps.length-1}`;
+  document.getElementById('ucs-prev').disabled = idx===0;
+  document.getElementById('ucs-next').disabled = idx===ucsSteps.length-1;
+  document.getElementById('ucs-narr').textContent = step.note;
+}, 'ucs-pips');
+ucs.render();
+
+/* ============================================================
+   03 — IDS depth-limit reveal
+   ============================================================ */
+const idsSteps = [0,1,2,3];
+function drawIDS(svgEl, limit){
+  const depthOf = {A:0,B:1,C:1,D:2,E:2,F:2,G:2,H:3,I:3};
+  let s = '';
+  treeEdges.forEach(([a,b])=>{
+    const na=treeNodes[a], nb=treeNodes[b];
+    const visible = depthOf[b] <= limit;
+    s += `<line x1="${na.x}" y1="${na.y+10}" x2="${nb.x}" y2="${nb.y+10}" stroke="${visible?'#262a32':'#181b21'}" stroke-width="1.2"/>`;
+  });
+  Object.keys(treeNodes).forEach(key=>{
+    const n = treeNodes[key];
+    const cx=n.x, cy=n.y+10;
+    const visible = depthOf[key] <= limit;
+    const isGoal = key==='H';
+    let fill = visible ? (isGoal && limit>=3 ? '#5FAD7A' : '#181b21') : '#14171C';
+    let stroke = visible ? (isGoal && limit>=3 ? '#5FAD7A' : '#262a32') : '#181b21';
+    let tcol = visible ? (isGoal && limit>=3 ? '#0B0D10' : '#F7F5F0') : '#262a32';
+    s += `<circle cx="${cx}" cy="${cy}" r="15" fill="${fill}" stroke="${stroke}" stroke-width="1.5" opacity="${visible?1:0.3}"/>`;
+    s += `<text x="${cx}" y="${cy+4}" fill="${tcol}" font-size="12" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600" opacity="${visible?1:0.35}">${key}</text>`;
+  });
+  if(limit>=3){ s += `<text x="80" y="290" fill="#5FAD7A" font-size="12" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600">GOAL H FOUND</text>`; }
+  svgEl.innerHTML = s;
+}
+const ids = makeStepper(idsSteps, function(limit, idx){
+  drawIDS(document.getElementById('ids-svg'), limit);
+  document.getElementById('ids-steplabel').textContent = `Limit = ${limit}`;
+  document.getElementById('ids-prev').disabled = idx===0;
+  document.getElementById('ids-next').disabled = idx===idsSteps.length-1;
+  const notes = [
+    'Limit=0: only root A is explored. Goal not found.',
+    'Limit=1: root + children B, C explored. Still no goal.',
+    'Limit=2: two levels deep — D, E, F, G visible. Still no goal at this depth.',
+    'Limit=3: H and I now visible. Goal H is found — IDS stops, having done a bounded amount of re-work to get here.'
+  ];
+  document.getElementById('ids-narr').textContent = notes[limit];
+}, 'ids-pips');
+ids.render();
+
+/* ============================================================
+   05 — GBFS Romania
+   ============================================================ */
+const gbfsNodes = { Arad:{x:80,y:120}, Zerind:{x:80,y:25}, Timisoara:{x:80,y:215},
+  Sibiu:{x:260,y:120}, Oradea:{x:200,y:215},
+  Fagaras:{x:430,y:50}, RimnicuV:{x:430,y:190}, Pitesti:{x:560,y:215}, Bucharest:{x:620,y:120} };
+const gbfsH = {Arad:366, Zerind:374, Timisoara:329, Sibiu:253, Oradea:380, Fagaras:178, RimnicuV:193, Pitesti:100, Bucharest:0};
+const gbfsEdges = [['Arad','Zerind'],['Arad','Sibiu'],['Arad','Timisoara'],['Zerind','Oradea'],
+  ['Sibiu','Fagaras'],['Sibiu','RimnicuV'],['Fagaras','Bucharest'],['RimnicuV','Pitesti'],['Pitesti','Bucharest']];
+const gbfsPath = ['Arad','Sibiu','Fagaras','Bucharest'];
+const gbfsSteps=[0,1,2,3];
+function drawGBFS(svgEl, idx){
+  let s='';
+  gbfsEdges.forEach(([a,b])=>{
+    const na=gbfsNodes[a], nb=gbfsNodes[b];
+    s += `<line x1="${na.x}" y1="${na.y}" x2="${nb.x}" y2="${nb.y}" stroke="#262a32" stroke-width="1"/>`;
+  });
+  for(let k=0;k<idx;k++){
+    const a=gbfsPath[k], b=gbfsPath[k+1];
+    const na=gbfsNodes[a], nb=gbfsNodes[b];
+    s += `<line x1="${na.x}" y1="${na.y}" x2="${nb.x}" y2="${nb.y}" stroke="#FF8A3D" stroke-width="3"/>`;
+  }
+  Object.keys(gbfsNodes).forEach(key=>{
+    const n = gbfsNodes[key];
+    const pos = gbfsPath.indexOf(key);
+    const onPath = pos!==-1 && pos<=idx;
+    let fill = onPath ? '#3D2410' : '#181b21', stroke = onPath ? '#FF8A3D' : '#262a32', tcol = onPath? '#FFD9B8':'#F7F5F0';
+    s += `<circle cx="${n.x}" cy="${n.y}" r="23" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+    s += `<text x="${n.x}" y="${n.y-3}" fill="${tcol}" font-size="10" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600">${key.slice(0,4)}</text>`;
+    s += `<text x="${n.x}" y="${n.y+10}" fill="${tcol}" font-size="9" font-family="IBM Plex Mono, monospace" text-anchor="middle">h=${gbfsH[key]}</text>`;
+  });
+  svgEl.innerHTML = s;
+}
+const gbfs = makeStepper(gbfsSteps, function(idx){
+  drawGBFS(document.getElementById('gbfs-svg'), idx);
+  document.getElementById('gbfs-steplabel').textContent = `Step ${idx} of ${gbfsSteps.length-1}`;
+  document.getElementById('gbfs-prev').disabled = idx===0;
+  document.getElementById('gbfs-next').disabled = idx===gbfsSteps.length-1;
+  const notes = [
+    `At Arad, compare neighbours' h(n): Zerind=374, Sibiu=253, Timisoara=329. Sibiu is lowest — go there.`,
+    `At Sibiu: Fagaras=178, RimnicuV=193. Fagaras wins — with no idea what the road actually costs.`,
+    `At Fagaras, only Bucharest left, h=0. Go there.`,
+    `Reached Bucharest. Real cost: 140+99+211 = 450km. The optimal route was 418km — GBFS never checked.`
+  ];
+  document.getElementById('gbfs-narr').textContent = notes[idx];
+}, 'gbfs-pips');
+gbfs.render();
+
+/* ============================================================
+   06 — A* full Romania trace
+   ============================================================ */
+const astarRows = [
+  {step:1, node:'Arad', g:0, h:366, f:366, gen:'Zerind(449), Sibiu(393), Timisoara(447)', open:[{l:'Zerind',v:449},{l:'Sibiu',v:393},{l:'Timisoara',v:447}]},
+  {step:2, node:'Sibiu', g:140, h:253, f:393, gen:'RimnicuV(413), Fagaras(417), Arad(646)', open:[{l:'Zerind',v:449},{l:'Timisoara',v:447},{l:'RimnicuV',v:413},{l:'Fagaras',v:417},{l:'Arad',v:646}]},
+  {step:3, node:'RimnicuV', g:220, h:193, f:413, gen:'Pitesti(415), Craiova(526)', open:[{l:'Zerind',v:449},{l:'Timisoara',v:447},{l:'Fagaras',v:417},{l:'Pitesti',v:415},{l:'Craiova',v:526}]},
+  {step:4, node:'Fagaras', g:239, h:178, f:417, gen:'Bucharest(450)', open:[{l:'Zerind',v:449},{l:'Timisoara',v:447},{l:'Pitesti',v:415},{l:'Bucharest',v:450},{l:'Craiova',v:526}]},
+  {step:5, node:'Pitesti', g:317, h:98, f:415, gen:'Bucharest(418) replaces 450, Craiova(615)', open:[{l:'Zerind',v:449},{l:'Timisoara',v:447},{l:'Bucharest',v:418},{l:'Craiova',v:526}]},
+  {step:6, node:'Bucharest', g:418, h:0, f:418, gen:'GOAL — return path', open:[]}
+];
+const astarMap = { Arad:{x:60,y:135}, Sibiu:{x:230,y:70}, Timisoara:{x:60,y:215}, Zerind:{x:60,y:50},
+  RimnicuV:{x:380,y:50}, Fagaras:{x:380,y:155}, Pitesti:{x:530,y:70}, Bucharest:{x:640,y:135} };
+const astarEdges = [['Arad','Sibiu'],['Arad','Zerind'],['Arad','Timisoara'],['Sibiu','RimnicuV'],['Sibiu','Fagaras'],
+  ['RimnicuV','Pitesti'],['Fagaras','Bucharest'],['Pitesti','Bucharest']];
+const astarPathFull = ['Arad','Sibiu','RimnicuV','Pitesti','Bucharest'];
+function drawAstar(svgEl, idx){
+  const expandedSoFar = astarRows.slice(0, idx+1).map(r=>r.node);
+  let s='';
+  astarEdges.forEach(([a,b])=>{
+    const na=astarMap[a], nb=astarMap[b];
+    s += `<line x1="${na.x}" y1="${na.y}" x2="${nb.x}" y2="${nb.y}" stroke="#262a32" stroke-width="1"/>`;
+  });
+  for(let k=0;k<astarPathFull.length-1;k++){
+    const a=astarPathFull[k], b=astarPathFull[k+1];
+    if(expandedSoFar.includes(a) && expandedSoFar.includes(b)){
+      const na=astarMap[a], nb=astarMap[b];
+      s += `<line x1="${na.x}" y1="${na.y}" x2="${nb.x}" y2="${nb.y}" stroke="#5B8DEF" stroke-width="3"/>`;
+    }
+  }
+  Object.keys(astarMap).forEach(key=>{
+    const n = astarMap[key];
+    const expanded = expandedSoFar.includes(key);
+    const isCurrent = key === astarRows[idx].node;
+    let fill = expanded ? '#1A2740' : '#181b21', stroke = expanded ? '#5B8DEF':'#262a32', tcol = expanded? '#C2D3FB':'#F7F5F0';
+    if(isCurrent){ fill='#5B8DEF'; tcol='#0B0D10'; }
+    s += `<circle cx="${n.x}" cy="${n.y}" r="25" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+    s += `<text x="${n.x}" y="${n.y+3}" fill="${tcol}" font-size="10" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600">${key.slice(0,4)}</text>`;
+  });
+  svgEl.innerHTML = s;
+}
+const astar = makeStepper(astarRows, function(row, idx){
+  drawAstar(document.getElementById('astar-svg'), idx);
+  const minV = row.open.length ? Math.min(...row.open.map(o=>o.v)) : undefined;
+  renderLane('astar-lane', 'Open list', row.open.map(o=>({label:`${o.l} · ${o.v}`, v:o.v})), minV);
+  document.getElementById('astar-steplabel').textContent = `Step ${idx} of ${astarRows.length-1}`;
+  document.getElementById('astar-prev').disabled = idx===0;
+  document.getElementById('astar-next').disabled = idx===astarRows.length-1;
+  document.getElementById('astar-narr').innerHTML = `Expand <span class="hl-blue">${row.node}</span> — g=${row.g}, h=${row.h}, f=${row.f}. Generates: ${row.gen}`;
+}, 'astar-pips');
+astar.render();
+
+/* ============================================================
+   08 — Admissibility checker
+   ============================================================ */
+function buildAdmissRows(containerId, nodes){
+  const container = document.getElementById(containerId);
+  let html = `<div class="calc-row head"><span>Node</span><span>h(n) given</span><span>h*(n) — you compute</span><span>Verdict</span></div>`;
+  nodes.forEach(n=>{
+    html += `<div class="calc-row" data-node="${n.id}">
+      <span class="node-tag">${n.id}</span>
+      <input type="number" value="${n.h}" data-role="h" readonly>
+      <input type="number" placeholder="h-star" data-role="hstar" value="${n.hstar!==undefined?n.hstar:''}">
+      <span class="verdict wait" data-role="verdict">${n.id===n.goalId?'is goal':'enter h*'}</span>
+    </div>`;
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('input[data-role="hstar"]').forEach(inp=>{
+    inp.addEventListener('input', ()=>evaluateRow(inp));
+    if(inp.value !== ''){ evaluateRow(inp); }
+  });
+}
+function evaluateRow(inp){
+  const row = inp.closest('.calc-row');
+  const h = parseFloat(row.querySelector('[data-role="h"]').value);
+  const hstar = parseFloat(inp.value);
+  const verdictEl = row.querySelector('[data-role="verdict"]');
+  if(isNaN(hstar)){ verdictEl.textContent='enter h*'; verdictEl.className='verdict wait'; return; }
+  if(h <= hstar){ verdictEl.textContent = `${h} ≤ ${hstar} — admissible`; verdictEl.className = 'verdict ok'; }
+  else { verdictEl.textContent = `${h} > ${hstar} — not admissible`; verdictEl.className = 'verdict bad'; }
+}
+buildAdmissRows('admiss-rows', [
+  {id:'1', h:5, goalId:'3'}, {id:'2', h:3, goalId:'3'}, {id:'3', h:0, hstar:0, goalId:'3'},
+  {id:'4', h:2, goalId:'3'}, {id:'5', h:4, goalId:'3'}, {id:'6', h:1, goalId:'3'}
+]);
+buildAdmissRows('admiss-rows2', [
+  {id:'1', h:80, hstar:101, goalId:'3'}, {id:'2', h:60, hstar:55, goalId:'3'}, {id:'3', h:0, hstar:0, goalId:'3'},
+  {id:'4', h:200, hstar:210, goalId:'3'}, {id:'5', h:190, hstar:195, goalId:'3'}
+]);
+buildAdmissRows('ex4-rows', [
+  {id:'1', h:5, hstar:6, goalId:'G'}, {id:'2', h:6, hstar:4, goalId:'G'},
+  {id:'3', h:1, hstar:2, goalId:'G'}, {id:'4', h:4, hstar:5, goalId:'G'}
+]);
+
+/* ============================================================
+   Exercise reveal toggle
+   ============================================================ */
+function toggleReveal(btn){
+  const panel = btn.nextElementSibling;
+  panel.classList.toggle('show');
+  btn.textContent = panel.classList.contains('show') ? 'Hide worked trace' : 'Reveal worked trace — try it yourself first';
+}
+
+/* ============================================================
+   11 — QUIZ
+   ============================================================ */
+const QUIZ = [
+  {cat:'uninformed', q:'BFS uses which data structure for its frontier?', opts:['Stack (LIFO)','Queue (FIFO)','Priority queue by cost','Priority queue by heuristic'], ans:1, exp:'BFS = FIFO queue. This is exactly why it explores level by level — first in, first explored.'},
+  {cat:'uninformed', q:'Why is DFS not optimal in general?', opts:['It runs out of memory','It can find a goal down a long path while a shorter one exists elsewhere','It cannot handle weighted edges','It always exceeds time limits'], ans:1, exp:'DFS commits to one path; it can return the first goal it finds even if a shallower or cheaper one exists on another branch.'},
+  {cat:'uninformed', q:'UCS tests for the goal:', opts:['The moment a goal node is generated','Only on expansion, after popping the cheapest node','Never — it returns the first path found','At a fixed depth limit'], ans:1, exp:'Testing on expansion (not generation) is exactly why UCS stays optimal — a cheaper path to the same goal can still be found later.'},
+  {cat:'uninformed', q:'What is the key advantage of IDS over plain BFS?', opts:['It is always faster','It finds the goal even in infinite graphs','It gets BFS-level completeness and optimality with DFS-level O(bd) memory','It does not need a frontier'], ans:2, exp:"IDS gets BFS's guarantees (complete, optimal for equal-cost edges) but only O(bd) space, same as DFS."},
+  {cat:'uninformed', q:"In the lecture's framing, which word describes DFS?", opts:['Cautious','Aggressive','Lazy','Balanced'], ans:1, exp:'"Aggressive" — DFS grabs one path and rides it to the end before backtracking. BFS was "cautious."'},
+  {cat:'heuristic', q:'A heuristic function h(n) estimates:', opts:['The cost already paid to reach n','The cost from n to the goal','The branching factor at n','The total nodes expanded so far'], ans:1, exp:'h(n) = estimated remaining cost from n to the goal — it never looks backward at the path already taken.'},
+  {cat:'heuristic', q:'Straight-line distance is typically admissible because:', opts:['It always equals the real road distance','A real road can only be ≥ straight-line distance, so it never overestimates','It overestimates and speeds things up','It only works for grid-based puzzles'], ans:1, exp:'Straight-line distance is admissible precisely because a real path can never be shorter than the straight line between two points.'},
+  {cat:'heuristic', q:'"Relaxing" a problem to build a heuristic means:', opts:['Adding more constraints to tighten h(n)','Removing a constraint so the relaxed problem has lower-or-equal cost, giving an admissible underestimate','Running the search with no heuristic at all','Increasing the branching factor artificially'], ans:1, exp:'Relaxation drops a constraint, and the relaxed-problem cost is a guaranteed admissible underestimate of the real cost.'},
+  {cat:'astar', q:'Greedy Best-First Search uses evaluation function:', opts:['f(n) = g(n)','f(n) = h(n)','f(n) = g(n) + h(n)','f(n) = g(n) − h(n)'], ans:1, exp:'GBFS only looks at h(n) and ignores cost paid so far entirely.'},
+  {cat:'astar', q:'A* uses evaluation function:', opts:['f(n) = h(n)','f(n) = g(n)','f(n) = g(n) + h(n)','f(n) = max(g(n), h(n))'], ans:2, exp:'A* = actual cost so far plus estimated cost to go. That combination keeps it informed AND grounded in real cost.'},
+  {cat:'astar', q:'On the Romania map, why does GBFS reach Bucharest via a suboptimal 450km path?', opts:['It got stuck in an infinite loop','It picked Fagaras for its low h(n), ignoring the expensive Fagaras→Bucharest edge','It used the wrong start node','It ran out of memory before finishing'], ans:1, exp:'GBFS only compares h(n). Fagaras looked closest by heuristic, but the real edge cost from there was high — GBFS never accounts for that.'},
+  {cat:'astar', q:'Pitesti shows f=415 (just generated) while Fagaras shows f=417 (generated earlier, still open). What should A* do?', opts:['Expand Pitesti immediately — lowest among newly generated nodes','Expand whichever node is alphabetically first','Compare ALL nodes currently in the open list, then expand the global minimum','Discard Fagaras since it is no longer relevant'], ans:2, exp:'A* must scan the entire open list, not just recently generated nodes. Pitesti still wins at 415 — but only checking everything confirms that.'},
+  {cat:'astar', q:'With h(n) = 0 for every node, A* behaves exactly like:', opts:['Greedy Best-First Search','Depth-First Search','Uniform Cost Search','Iterative Deepening Search'], ans:2, exp:'f(n) = g(n) + 0 = g(n) — that is precisely UCS. A* with a zero heuristic degenerates into UCS.'},
+  {cat:'astar', q:'On a small graph (S–A 2, S–B 3, A–C 4, B–C 1, B–D 5, C–D 2, C–G 4, D–G 3; h: S=6,A=6,B=4,C=3,D=2,G=0), why does Greedy choose S–B–D–G (cost 11) over S–B–C–G (cost 8)?', opts:["Because D has a lower g(n) than C","Because D has a lower h(n)=2 than C's h(n)=3, ignoring the expensive 5-cost B→D edge","Because the graph has a cycle","Because Greedy prefers alphabetically later nodes"], ans:1, exp:"Greedy compares only h-values: D(2) looks better than C(3). It never weighs the real edge cost B→D=5, which is what makes the path expensive."},
+  {cat:'admiss', q:'A heuristic h(n) is admissible when:', opts:['h(n) ≥ h*(n) for all n','h(n) ≤ h*(n) for all n','h(n) = h*(n) exactly','h(n) is always 0'], ans:1, exp:'Admissible = never overestimates. h(n) must be ≤ the true optimal cost-to-goal for every node.'},
+  {cat:'admiss', q:'A heuristic h(n) is consistent when, for every node n and successor n′:', opts:['h(n) ≥ cost(n,n′) + h(n′)','h(n) ≤ cost(n,n′) + h(n′)','h(n) = cost(n,n′)','h(n′) = 0 always'], ans:1, exp:"This is the triangle inequality form: the estimate at n can't exceed the real step cost plus the estimate at the successor."},
+  {cat:'admiss', q:'Which relationship between admissibility and consistency is correct?', opts:['Every admissible heuristic is consistent','Every consistent heuristic is admissible (given h(goal)=0), but not vice versa','The two properties are unrelated','Consistency implies the heuristic overestimates'], ans:1, exp:'Consistency is the stronger property — it implies admissibility. The reverse is not guaranteed.'},
+  {cat:'admiss', q:'A* with tree search is guaranteed optimal if h(n) is:', opts:['Consistent','Admissible','Always zero','Equal to g(n)'], ans:1, exp:'Tree search needs only admissibility. Graph search needs the stronger consistency property.'},
+  {cat:'admiss', q:'A* with graph search is guaranteed optimal if h(n) is:', opts:['Admissible only','Consistent (monotone)','Inadmissible but fast','Exactly equal to h*(n)'], ans:1, exp:'Graph search needs consistency — it guarantees f(n) is non-decreasing along any path, so an expanded node already has its optimal path.'},
+  {cat:'admiss', q:'Given h(1)=5, h(2)=6, h(3)=1, h(4)=4, with true costs-to-goal 1→G=6, 2→G=4, 3→G=2, 4→G=5 — which node violates admissibility?', opts:['Node 1 only','Node 3 only','Node 2 only','None — all are admissible'], ans:2, exp:'Check each: 1: 5≤6 ✓. 2: 6>4 ✗ overestimates. 3: 1≤2 ✓. 4: 4≤5 ✓. Only node 2 violates admissibility.'},
+  {cat:'admiss', q:"If even one node's heuristic violates admissibility, what happens to A*'s optimality guarantee?", opts:['A* is unaffected as long as most nodes are fine','The guarantee may no longer hold — the proof requires admissibility everywhere on the relevant path','A* simply runs slower but stays optimal','A* automatically corrects the heuristic at runtime'], ans:1, exp:"The optimality proof relies on admissibility holding everywhere it matters. A single violating node on the considered path removes the guarantee."}
+];
+const CATS = [{id:'all', label:'All'}, {id:'uninformed', label:'Uninformed'}, {id:'heuristic', label:'Heuristics'}, {id:'astar', label:'A* / Greedy'}, {id:'admiss', label:'Admissibility'}];
+document.getElementById('quiz-filterbar').innerHTML = CATS.map(c =>
+  `<button class="${c.id==='all'?'active':''}" data-f="${c.id}" onclick="setFilter('${c.id}')">${c.label}</button>`
+).join('');
+
+let quizFilter = 'all';
+let quizState = {};
+function setFilter(f){
+  quizFilter = f;
+  document.querySelectorAll('.filterbar button').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  renderQuiz();
+}
+function renderQuiz(){
+  const container = document.getElementById('quiz-container');
+  const items = QUIZ.map((q,i)=>({...q, idx:i})).filter(q => quizFilter==='all' || q.cat===quizFilter);
+  container.innerHTML = items.map(q=>{
+    const state = quizState[q.idx];
+    const optsHtml = q.opts.map((opt,oi)=>{
+      let cls = 'opt';
+      if(state!==undefined){
+        if(oi===q.ans) cls += ' correct';
+        else if(oi===state) cls += ' wrong';
+      }
+      return `<button class="${cls}" onclick="answerQuiz(${q.idx},${oi})" ${state!==undefined?'disabled':''}>${opt}</button>`;
+    }).join('');
+    return `<div class="quiz-card">
+      <span class="qtag">${q.cat}</span>
+      <div class="qtext">${q.q}</div>
+      ${optsHtml}
+      <div class="explain ${state!==undefined?'show':''}">${q.exp}</div>
+    </div>`;
+  }).join('');
+  updateQuizProgress();
+}
+function answerQuiz(idx, optIdx){ quizState[idx] = optIdx; renderQuiz(); }
+function updateQuizProgress(){
+  const answered = Object.keys(quizState).length;
+  const correct = Object.entries(quizState).filter(([i,v])=>QUIZ[i].ans===v).length;
+  document.getElementById('quiz-count').textContent = `${answered} / ${QUIZ.length} answered`;
+  document.getElementById('quiz-score').textContent = `Score ${correct} / ${answered||0}`;
+  document.getElementById('quiz-bar').style.width = (QUIZ.length ? (answered/QUIZ.length*100) : 0) + '%';
+}
+renderQuiz();
+</script>
+</body>
+</html>
