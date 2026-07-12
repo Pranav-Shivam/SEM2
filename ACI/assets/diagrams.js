@@ -23,10 +23,10 @@ window.ACIDiagrams = (function () {
     return `<svg viewBox="${vb}" style="width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="ah${u}" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0L7,3L0,6Z" style="fill:var(--text-faint)"/></marker>
-        <marker id="ahA${u}" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0L7,3L0,6Z" style="fill:var(--accent)"/></marker>
+        <marker id="ahA${u}" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0L7,3L0,6Z" style="fill:var(--accent-4)"/></marker>
       </defs>${body}</svg>`;
   }
-  const ACC = "var(--accent)", ACC2 = "var(--accent-2)", ACC3 = "var(--accent-3)", GOOD = "var(--good)", BAD = "var(--bad)", DIM = "var(--text-dim)", FAINT = "var(--text-faint)";
+  const ACC = "var(--accent-4)", ACC2 = "var(--accent-2)", ACC3 = "var(--accent-3)", GOOD = "var(--good)", BAD = "var(--bad)", DIM = "var(--text-dim)", FAINT = "var(--text-faint)";
 
   // ===================== DIAGRAMS =====================
   const D = {
@@ -171,7 +171,7 @@ window.ACIDiagrams = (function () {
         vals.forEach((v, i) => { const x = 120 + i * 42; s += `<rect x="${x}" y="${y}" width="38" height="34" rx="6" style="fill:${colorFn(i)};stroke:var(--border);stroke-width:1.5"/>` + T(x + 19, y + 23, v, { s: 13, w: 700, c: "#fff" }); });
         return s;
       }
-      const blue = "var(--accent)", orange = "var(--accent-3)";
+      const blue = "var(--accent-4)", orange = "var(--accent-3)";
       const cP1 = () => blue, cP2 = () => orange, cC1 = i => i < 4 ? blue : orange, cC2 = i => i < 4 ? orange : blue;
       const cut = 120 + 4 * 42 - 2;
       return wrap(u, "0 0 560 250",

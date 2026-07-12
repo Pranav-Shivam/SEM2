@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monte Carlo Methods — BITS Pilani DRL</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
@@ -13,8 +16,70 @@
   --green:#4FCF8E;--orange:#F7944F;--purple:#A78BFA;--red:#F76F6F;--gold:#F7D94F;--blue:#4F8EF7;
   --font-d:'Space Grotesk',sans-serif;--font-b:'Inter',sans-serif;--font-m:'JetBrains Mono',monospace;
   --r:12px;--rs:8px;--tr:0.22s cubic-bezier(0.4,0,0.2,1);
+  /* shared study-hub tokens (merged, --border/--text kept from page-specific block above) */
+  color-scheme: dark;
+  --font-display: "Fraunces", serif;
+  --font-ui: "Space Grotesk", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+  --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+  --page-bg:
+    radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+    linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+  --surface: rgba(11, 20, 34, 0.78);
+  --surface-strong: rgba(15, 26, 43, 0.96);
+  --surface-soft: rgba(255, 255, 255, 0.05);
+  --surface-muted: rgba(151, 170, 199, 0.12);
+  --card-bg: rgba(13, 24, 40, 0.88);
+  --border-strong: rgba(186, 205, 232, 0.28);
+  --text-muted: #afbed4;
+  --text-faint: #7e90ab;
+  --accent: #ffb556;
+  --accent-2: #60c0ff;
+  --accent-3: #8ce7c2;
+  --accent-4: #cb9cff;
+  --success-bg: rgba(140, 231, 194, 0.14);
+  --success-text: #b9f6dd;
+  --tab-idle: rgba(255, 255, 255, 0.05);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --chip-bg: rgba(255, 255, 255, 0.07);
+  --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+  --grid-line: rgba(255, 255, 255, 0.05);
 }
-[data-theme="light"]{--bg:#F0F4FF;--bg2:#E8EDF8;--card:#FFF;--card2:#F0F4FF;--border:#D0D8F0;--text:#0A1028;--text2:#4A5480;--text3:#8892B0;}
+[data-theme="light"]{
+  --bg:#F0F4FF;--bg2:#E8EDF8;--card:#FFF;--card2:#F0F4FF;--border:#D0D8F0;--text:#0A1028;--text2:#4A5480;--text3:#8892B0;
+  color-scheme: light;
+  --page-bg:
+    radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+    linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --surface-soft: rgba(18, 42, 68, 0.05);
+  --surface-muted: rgba(38, 76, 124, 0.08);
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --border-strong: rgba(45, 80, 128, 0.24);
+  --text-muted: #4f6686;
+  --text-faint: #7185a3;
+  --accent: #de8d22;
+  --accent-2: #2483db;
+  --accent-3: #128868;
+  --accent-4: #8750df;
+  --success-bg: rgba(18, 136, 104, 0.1);
+  --success-text: #0c7258;
+  --tab-idle: rgba(19, 43, 73, 0.05);
+  --input-bg: rgba(19, 43, 73, 0.05);
+  --chip-bg: rgba(19, 43, 73, 0.07);
+  --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+  --grid-line: rgba(27, 48, 79, 0.06);
+  --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+  --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background var(--tr),color var(--tr);}
 /* NAV */
@@ -219,6 +284,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <!-- NAV -->
 <nav class="topnav">
   <div class="nav-brand">
+    <a href="../index.html" title="Back to M.Tech AIML Study Hub" style="display:flex;align-items:center;gap:6px;color:var(--accent-2);text-decoration:none;font-family:var(--font-m);font-size:11px;border-right:1px solid var(--border);padding-right:10px;margin-right:2px;white-space:nowrap;">← Hub</a>
     <span style="font-size:18px;">🎲</span>
     <span class="nav-brand-text">Monte Carlo Methods</span>
   </div>
@@ -727,9 +793,18 @@ function switchTab(t){
   document.getElementById('page-'+t).classList.add('active');
   document.querySelector('[data-tab="'+t+'"]').classList.add('active');
 }
+/* shared study-hub theme key — kept in sync with every other page in the hub */
+const STUDY_HUB_THEME_KEY='study-hub-theme';
+(function(){
+  const saved=localStorage.getItem(STUDY_HUB_THEME_KEY);
+  if(saved==='light'||saved==='dark'){
+    document.documentElement.setAttribute('data-theme',saved);
+  }
+})();
 function toggleTheme(){
-  document.documentElement.setAttribute('data-theme',
-    document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem(STUDY_HUB_THEME_KEY,next);
 }
 
 /* ====================================================

@@ -51,6 +51,7 @@
           </a>
           <button class="menu-btn" aria-label="Menu">☰</button>
           <nav class="links">
+            <a href="../index.html" class="hub-back" title="Back to Study Hub">← Study Hub</a>
             <a href="index.html" data-p="index">Home</a>
             <div class="dropdown"><a href="session1.html" data-p="sessions">Sessions</a>
               <div class="dropdown-menu">${sessLinks}</div></div>
@@ -119,7 +120,7 @@
   function toggleTheme() {
     const next = currentTheme() === "dark" ? "light" : "dark";
     applyTheme(next);
-    try { localStorage.setItem("aci-theme", next); } catch (e) {}
+    try { localStorage.setItem("study-hub-theme", next); } catch (e) {}
     refreshThemeIcon();
   }
 
