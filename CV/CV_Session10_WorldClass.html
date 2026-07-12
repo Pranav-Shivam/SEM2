@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Session 10 — Attention, Transformers &amp; Vision Transformers</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .nav-link .prev-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--violet); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV10'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:14rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-transcript { color:var(--sky); background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .src-preview { color:var(--violet); background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .demo-btn.on { color:var(--gold); border-color:rgba(212,168,83,0.5); background:var(--gold-glow); }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; }
+  .bar-num { font-family:var(--font-code); font-size:10px; color:var(--gold); margin-bottom:2px; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .reveal-btn { font-family:var(--font-code); font-size:11px; padding:6px 14px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; margin-top:0.75rem; letter-spacing:0.05em; }
+  .reveal-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  /* ---- ViT interactive lab (namespaced vit- to avoid clashing with .pipeline/.matrix above) ---- */
+  .vit-pixgrid { display:inline-grid; grid-template-columns:repeat(6,32px); gap:2px; background:var(--border); padding:2px; border-radius:6px; }
+  .vit-pix { width:32px; height:32px; background:#000; cursor:pointer; border-radius:2px; }
+  .vit-pipeline { display:flex; overflow-x:auto; gap:0.35rem; padding:1rem 0; margin-bottom:0.5rem; }
+  .vit-pipe-node { flex:0 0 auto; font-family:var(--font-code); font-size:10.5px; text-align:center; padding:8px 10px; border:1px solid var(--border2); border-radius:8px; background:var(--bg3); color:var(--text3); cursor:pointer; min-width:88px; white-space:pre-line; line-height:1.35; transition:all 0.15s; }
+  .vit-pipe-node:hover { color:var(--text); }
+  .vit-pipe-node.active { color:var(--gold); border-color:var(--gold); background:var(--gold-dim); box-shadow:0 0 0 1px rgba(212,168,83,0.25); }
+  .vit-pipe-node.done { color:var(--teal); }
+  .vit-pipe-arrow { align-self:center; color:var(--text3); font-size:14px; flex:0 0 auto; }
+  .vit-controls { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+  .vit-stage-progress { font-family:var(--font-code); font-size:11px; color:var(--text3); margin-left:auto; }
+  .vit-token-row-wrap { position:relative; overflow-x:auto; padding-top:70px; }
+  .vit-token-row { display:flex; gap:10px; position:relative; z-index:2; }
+  .vit-token-box { flex:0 0 68px; text-align:center; cursor:pointer; border:1px solid var(--border2); border-radius:8px; background:var(--bg3); padding:6px 4px; transition:all 0.15s; position:relative; }
+  .vit-token-box:hover { border-color:rgba(212,168,83,0.5); }
+  .vit-token-box.sel { border-color:var(--gold); box-shadow:0 0 0 2px rgba(212,168,83,0.25); }
+  .vit-tlabel { font-family:var(--font-code); font-size:10px; color:var(--text2); margin-bottom:4px; }
+  .vit-mini { display:inline-grid; grid-template-columns:repeat(2,10px); gap:1px; margin:0 auto; }
+  .vit-mini div { width:10px; height:10px; background:#000; border-radius:1px; }
+  .vit-cls-star { font-size:16px; color:var(--gold); line-height:20px; }
+  svg.vit-arcs { position:absolute; top:0; left:0; width:100%; height:70px; z-index:1; pointer-events:none; }
+  .vit-vecstrip { display:flex; gap:2px; flex-wrap:wrap; }
+  .vit-vcell { width:26px; height:26px; border-radius:3px; display:flex; align-items:center; justify-content:center; font-family:var(--font-code); font-size:8px; color:var(--bg); border:1px solid var(--border); }
+  .vit-vec-block { margin-bottom:0.6rem; }
+  .vit-vec-tag { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-bottom:3px; display:block; }
+  .vit-matrix { display:inline-grid; gap:1px; background:var(--border); padding:1px; border-radius:4px; }
+  .vit-mcell { width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:7px; color:var(--bg); font-family:var(--font-code); }
+  .vit-mrow-sel { outline:2px solid var(--gold); outline-offset:-2px; }
+  .vit-bar-pct { font-family:var(--font-code); font-size:11px; color:var(--gold); margin-bottom:3px; }
+  .vit-note { font-size:13px; color:var(--text3); margin-top:0.75rem; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") {
+    root.setAttribute("data-theme", saved);
+  }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 10 — Attention &amp; Vision Transformers</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Grounded in Session 10 Lecture</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Recap &amp; Why Attention Now</a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Sequence-to-Sequence Models</a>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Attention Mechanism<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Self-Attention &amp; Query/Key/Value</a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · Multi-Headed Attention<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Positional Embeddings &amp; Transformer Block</a>
+  <a href="#s7" class="nav-link" data-section="s7">07 · Vision Transformer (ViT)<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s8" class="nav-link" data-section="s8">08 · Interactive Lab — Full ViT Forward Pass<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s9" class="nav-link" data-section="s9">09 · Live Demo — nanoGPT &amp; ViT-from-Scratch</a>
+  <a href="#s10" class="nav-link" data-section="s10">10 · Limitations &amp; Live Q&amp;A</a>
+  <span class="nav-group-label">Next-Session Preview</span>
+  <a href="#s11" class="nav-link" data-section="s11">11 · Towards Segmentation<span class="prev-dot"></span></a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s12" class="nav-link" data-section="s12">Exam Quiz (12 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 10 · S2-25</span>
+    <h1>Attention &amp; Transformers<br><span>Seq2Seq → Self-Attention → Vision Transformer</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">The bridge session: why a single context vector breaks sequence models, how attention fixes it with a dynamic per-word context, how Vaswani's self-attention and QKV vectors became "Attention Is All You Need," and how the same recipe — tokenize, embed, add position, attend — turns a 16×16 image patch into a transformer input.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Lecture</strong>Jul 11, 2026</div>
+      <div class="hero-meta-item"><strong>Prof</strong>Dhruba Adhikary</div>
+      <div class="hero-meta-item"><strong>Duration</strong>2h 0m</div>
+      <div class="hero-meta-item"><strong>Format</strong>Live recording + PyTorch notebook demo</div>
+      <div class="hero-meta-item"><strong>Next up</strong>Session 11 · Image Segmentation</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Encoder-Decoder</span>
+      <span class="topic-chip">Context Vector Bottleneck</span>
+      <span class="topic-chip">Attention Scoring</span>
+      <span class="topic-chip">Self-Attention</span>
+      <span class="topic-chip">Query / Key / Value</span>
+      <span class="topic-chip">Scaled Dot-Product</span>
+      <span class="topic-chip">Multi-Headed Attention</span>
+      <span class="topic-chip">Positional Embedding</span>
+      <span class="topic-chip">Residual + LayerNorm</span>
+      <span class="topic-chip">Vision Transformer (ViT)</span>
+      <span class="topic-chip">Patch Embedding</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide — source honesty</h3>
+      <p>Built <strong>entirely from the live transcript</strong> of the Jul 11, 2026 session — no slide deck was shared; Prof taught this on a whiteboard plus a live PyTorch notebook (a from-scratch ViT implementation and a tiny nanoGPT-style character model).</p>
+      <p><span class="src-badge src-transcript">Transcript</span> &nbsp;= Prof's live words / derivations. &nbsp; <span class="src-badge src-lab">Code</span> &nbsp;= the PyTorch notebooks he walked through live. &nbsp; <span class="src-badge src-preview">Preview</span> &nbsp;= flagged by Prof as belonging to a future session but referenced here for continuity.</p>
+      <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--rose)">Reality check:</strong> the call had a rocky start — a power/Wi-Fi outage cut Prof off mid-explanation of attention scoring for a couple of minutes, and several proper nouns are almost certainly mis-transcribed by auto-captioning (e.g. an LLM described as using "RoPE"-style positional embeddings was very likely <strong>LLaMA</strong>, not the transcript's phonetic rendering; an attention paper attributed by name in the audio doesn't match any real publication — flagged inline below). Where the transcript is ambiguous, this guide says so rather than guessing confidently.</p>
+    </div>
+
+    <div class="annotation">
+      <div class="annotation-label">Housekeeping from the start of class</div>
+      <p>Assignment 2 rollout was delayed slightly (TAs still finishing backlog grading on mid-sem papers) but promised same-day or next-day, with the usual <strong>3-week window</strong>: implement, record a video, and be ready to defend your design decisions verbally — same evaluation process as Assignment 1. Prof also raised a concern from Assignment 1: a few teams had uneven collaboration, and a few individual students were marked down as a result. His ask for Assignment 2: divide responsibilities explicitly up front, and don't let teammates down — "it's a learning opportunity," not just a grade.</p>
+    </div>
+
+    <!-- ============ SECTION 01 ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Recap &amp; Why Attention, Why Now</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Where Session 9 left off</h3>
+        <p>The pipeline so far: data-driven approach → train/val/test with cross-validation → metrics (precision/recall/F1 for classification, RMSE/R² for regression) → loss functions (softmax, sigmoid) → K-Nearest Neighbors (~20% accuracy on CIFAR-10) → linear classifiers (~40%, roughly double K-NN). Prof's framing of the ceiling: <strong>classical ML techniques cap out around the 40–50% mark</strong> — that ceiling is exactly why deep learning entered the picture.</p>
+        <p>CNNs themselves were deliberately <em>not</em> re-taught this session — "all of you have done convolutional neural networks in your conventional... deep learning programs" already. Convolution/deconvolution gets revisited later, in the segmentation unit. Instead, by student request, Session 10 goes back to fill in a gap: <strong>attention</strong> — the mechanism driving today's industry, from sequence models through to Vision Transformers.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Session roadmap, as stated live</h3>
+        <ol class="pipeline">
+          <li><strong>Sequence-to-sequence models</strong><p>RNNs/LSTMs as the baseline — what problem they solve, and where they break.</p></li>
+          <li><strong>Attention mechanism</strong><p>The mathematical fix for the seq2seq bottleneck, covered from scratch.</p></li>
+          <li><strong>Self-attention &amp; multi-headed attention</strong><p>Vaswani et al.'s 2017 reformulation — "Attention Is All You Need."</p></li>
+          <li><strong>Vision Transformer (ViT)</strong><p>The core topic of the day — how attention crosses over from language into images, plus a live demo.</p></li>
+        </ol>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Attribution, as given in lecture</div>
+        <p>Prof was explicit that today's material is <strong>not</strong> from the course's usual reference textbooks (Sonka &amp; Zelensky, Milan) but adapted from <strong>Cornell Tech</strong> teaching material — the recording's garbled "Noah's Navalty" is almost certainly <strong>Noah Snavely</strong>, Professor at Cornell Tech and long-time instructor of Cornell's CS5670 Introduction to Computer Vision, whose public course materials match the attention→ViT arc taught here.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced — grounding the 40% ceiling</span>
+        <p>The K-NN→linear→CNN progression Prof narrates (~20% → ~40% → ~55–58% on CIFAR-10) mirrors the historical ImageNet story at larger scale: hand-crafted-feature + linear/SVM pipelines plateaued near 70–74% top-5 accuracy on ILSVRC through 2011, and <cite>AlexNet (Krizhevsky, Sutskever &amp; Hinton, NeurIPS 2012)</cite> broke that ceiling to 84.7% top-5 (15.3% error) in one submission. The pattern repeats again at the sequence-modeling layer this session covers: RNN/LSTM seq2seq models plateaued on machine-translation BLEU scores through the early 2010s until <cite>Bahdanau, Cho &amp; Bengio, "Neural Machine Translation by Jointly Learning to Align and Translate," ICLR 2015</cite> — the paper that introduced attention <em>to machine translation</em> as the fix for the fixed-context-vector bottleneck (the paper itself calls it "alignment"; soft-attention precursors existed in handwriting synthesis and visual attention, Graves 2013 / Mnih et al. 2014) — and then <cite>Vaswani et al., "Attention Is All You Need," NeurIPS 2017</cite> replaced recurrence entirely with self-attention. Every "classical technique plateaus, a new architecture doubles it" beat in this course has a real, dated precedent.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Sequence-to-Sequence Models</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Encoder + decoder, defined by analogy</h3>
+        <p>Every sequence model — autoencoders, RNNs, LSTMs, and now transformers — has two components: an <strong>encoder</strong> and a <strong>decoder</strong>. Prof's analogy: the encoder is you <em>learning</em> the multiplication table of 2. The decoder is the <em>exam</em> — someone asks "what is 2 × 3?" and you produce "6." The encoder compresses input into a representation; the decoder uses that representation, plus a question, to produce output.</p>
+        <p>Concretely for a sentence "I am teaching CV": each word is an input to the encoder. The encoder transforms the sequence into bits and bytes, and in the process produces a single <strong>context vector</strong> — a compressed summary of the whole input (what action is happening, what language it's in, etc). That context is handed to the decoder, which combines it with a specific query (e.g. "what am I doing?") to produce an answer ("teaching").</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Worked example — translation pipeline</h3>
+        <p>Input: <em>"The green witch arrived"</em> (English). Standard steps, common to RNNs and LSTMs alike:</p>
+        <ol class="pipeline">
+          <li><strong>Tokenization</strong><p>Break the sentence into individual words/sub-words; each token gets a token ID (can be represented in hex, binary, or any base — the number itself is arbitrary, just an index).</p></li>
+          <li><strong>Embedding</strong><p>Each token ID is mapped to a vector — dimension can be 32, 64, 512, 1024, anything. This is what "embedding" means: a numeric, vector-space representation of a token.</p></li>
+          <li><strong>Encoding</strong><p>Embeddings flow through the encoder's hidden layers, producing one context vector for the whole input.</p></li>
+          <li><strong>Decoding, step by step</strong><p>The same context vector is sent to the decoder at <em>every</em> time step (D1, D2, D3... — unrolled time steps of one recurrent decoder, not stacked layers). Each step predicts the probability of the next output token, given that shared context and the previous output — a softmax over the entire vocabulary, like an election across every word in the dictionary where softmax converts raw scores into vote shares summing to 100%. (Precision note: feeding the context at every step is the Cho et al. 2014 variant; in Sutskever et al. 2014 the context vector only <em>initializes</em> the decoder's hidden state.)</p></li>
+        </ol>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header">
+          <span class="exam-badge">The bottleneck — identified live by the class</span>
+          <h4>One context vector, shared by everyone, with equal weight</h4>
+        </div>
+        <ul class="exam-list">
+          <li><strong>No matter how long the sequence, there is exactly one context vector</strong>, and it is broadcast identically to every decoder layer. A 500-character sentence still compresses to one vector. (Student answers accepted live: "length of the sequence" and "context is small.")</li>
+          <li><strong>Equal weighting of every word</strong> — the pronoun "I" gets the same influence on that single context as the semantically important word "teaching." NLP preprocessing tricks like stop-word removal and stemming exist precisely to fight this, by removing words that shouldn't matter as much.</li>
+          <li><strong>Forgetting under length</strong> — Prof's live example: "I am teaching CV. I want to grow as a professor and give the best quality education to my pupils." Ask what the second word was, and even the speaker can't recall it instantly. As context grows, a single vector loses the earliest information; LSTMs' gated memory mitigates this somewhat but don't remove the fundamental one-context-vector ceiling.</li>
+        </ul>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">S S Rama Kishore Namala, nailing the diagnosis live</div>
+        <p>"I think context is being fed to every output instead of leaving the unimportant ones." Prof's response: "Exactly, so Rama nailed it" — this single sentence is the entire motivation for attention.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced — the papers behind this section</span>
+        <p>The seq2seq architecture described here has two origin papers the lecture didn't name: <cite>Sutskever, Vinyals &amp; Le, "Sequence to Sequence Learning with Neural Networks," NeurIPS 2014</cite> (LSTM encoder-decoder) and <cite>Cho et al., "Learning Phrase Representations using RNN Encoder-Decoder," EMNLP 2014</cite> — the paper that coined the term <strong>context vector</strong> and introduced the GRU. The bottleneck is not just anecdote, it was measured: <cite>Cho et al., "On the Properties of Neural Machine Translation," SSST-8 2014</cite> showed BLEU translation scores collapse sharply once sentences exceed ~20–30 words without attention, and Bahdanau's Figure 2 shows the attention model (RNNsearch) holding flat exactly where the plain encoder-decoder (RNNencdec) falls off a cliff. One training detail worth knowing for exams: decoders are trained with <strong>teacher forcing</strong> — during training, each step receives the <em>ground-truth</em> previous token rather than the model's own (possibly wrong) previous prediction, which stabilizes and speeds up learning.</p>
+        <p>Also verified: AlexNet's 2012 result was 15.3% top-5 error against the runner-up's 26.2% — a ~11-point single-year gap, the sharpest discontinuity in the benchmark's history and the concrete version of the "ceiling breaks" pattern Prof narrates.</p>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">In Plain Words — layman anchors for this section</div>
+        <p><strong>Hidden state</strong> = the running mental note you keep while reading a sentence word-by-word — updated after each word, holding everything you've decided to remember so far. <strong>Context vector</strong> = summarizing an entire movie into one tweet, then asking someone to answer <em>any</em> question about the movie from the tweet alone — that's exactly what the decoder is being asked to do. <strong>Embedding</strong> = GPS coordinates for words: words with similar meanings get nearby coordinates, so "king" and "queen" live on the same street.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">The Attention Mechanism</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-lab">Interactive</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The fix: a dynamic, per-word context</h3>
+        <p>Rather than one static context vector broadcast to every decoder layer, attention computes a <strong>variable context c<sub>i</sub></strong> for each decoder step — dynamically derived from the previous or next words, not fixed at encoding time. Prof's disambiguation example: <em>"He went to the bank to find his bank account was empty, then he went to the river bank and cried."</em> The two "bank"s are morphologically identical tokens but semantically opposite. A dynamic context lets each occurrence derive its meaning from its own neighbors — "bank account" pulls the first toward finance; "river bank" pulls the second toward geography. A single shared context vector cannot do this.</p>
+        <p>Live follow-up question: which model family looks at <em>both</em> the previous and next words when building this context? Answer, confirmed by Prof: <strong>bidirectional encoders (BERT)</strong>. Precision note on the framing: unmasked self-attention is <em>naturally</em> bidirectional — encoder-only models (BERT) simply use it as-is, while decoder-only models (the GPT family, most modern LLMs) deliberately apply a <strong>causal mask</strong> that blocks attention to future tokens so the model can't cheat while generating left-to-right. Bidirectionality isn't an exotic variant; one-directional attention is the explicitly imposed restriction.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Calculating attention, step by step</h3>
+        <ol class="pipeline">
+          <li><strong>Score = similarity via dot product</strong><p>Take one decoder hidden state and take the dot product against <em>every</em> encoder hidden state. High dot product ⇒ high similarity between the decoder's current "question" and that encoder position.</p></li>
+          <li><strong>Problem — unnormalized scores</strong><p>Raw dot products aren't bounded: one score might come out as 20, another 0.1, another 200. A single large value can dominate everything else even when the smaller values are still relevant. ("Classical ML problem — certain values are way greater than other values, and as a result our result is skewed.")</p></li>
+          <li><strong>Normalize with softmax → α<sub>ij</sub></strong><p>Apply softmax across all the raw scores for a given decoder position, producing a weight vector (e.g. 0.1, 0.3, ..., 0.7) that sums to 1 — this is the attention weight α<sub>ij</sub>, telling you how much each encoder position matters <em>for this specific decoder step</em>.</p></li>
+          <li><strong>Weighted sum → context vector c<sub>i</sub></strong><p>Multiply each α<sub>ij</sub> by its corresponding encoder hidden state and sum — this produces a context vector that is different for every decoder position, unlike the old single shared vector.</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Attention — the mathematical formulation Prof derived on the whiteboard</div>
+<span class="formula-line"><span class="f-dim">Raw score:</span>  <span class="f-gold">score(h_d, h_e) = h_d · h_e</span>   <span class="f-dim">— dot product of one decoder hidden state with every encoder hidden state</span></span>
+<span class="formula-line"><span class="f-dim">Normalized weight:</span>  <span class="f-teal">α_ij = softmax(score(h_di, h_ej))</span>   <span class="f-dim">— across all j for a fixed decoder position i</span></span>
+<span class="formula-line"><span class="f-dim">Dynamic context:</span>  <span class="f-lime">c_i = Σ_j α_ij · h_ej</span>   <span class="f-dim">— a different context vector for every decoder position i</span></span>
+      </div>
+
+      <div class="interactive-demo">
+        <h4>Interactive — from raw dot-product scores to attention weights</h4>
+        <p class="demo-sub">Prof's decoder query is "where am I going?" scored against four encoder tokens from "I am going to the bank." Drag the raw similarity scores (unnormalized dot products — can be any value, that's the problem) and watch softmax squash them into a proper attention distribution α<sub>ij</sub> that sums to 1.</p>
+        <div class="slider-row"><span class="slider-label">score("I")</span><input type="range" id="attS0" min="-5" max="20" value="2" oninput="updateAttention()"><span class="slider-val" id="attV0">2</span></div>
+        <div class="slider-row"><span class="slider-label">score("am")</span><input type="range" id="attS1" min="-5" max="20" value="1" oninput="updateAttention()"><span class="slider-val" id="attV1">1</span></div>
+        <div class="slider-row"><span class="slider-label">score("going")</span><input type="range" id="attS2" min="-5" max="20" value="3" oninput="updateAttention()"><span class="slider-val" id="attV2">3</span></div>
+        <div class="slider-row"><span class="slider-label">score("bank")</span><input type="range" id="attS3" min="-5" max="20" value="20" oninput="updateAttention()"><span class="slider-val" id="attV3">20</span></div>
+        <div class="bar-chart" id="attBars"></div>
+        <div class="demo-output" id="attOut">Raw scores normalize into a probability distribution — try pushing one slider to 20 and watch it dominate before normalization, then see softmax rescale everything into a sane 0–1 weight vector.</div>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key Insight — this is exactly what Q&amp;A live asked about</div>
+        <p>Bhawani asked: "do we learn alpha over time?" Yes and no, precisely: α<sub>ij</sub> itself is <em>computed</em> (by softmax) at every forward pass, never stored — what's learned are the parameters producing the hidden states (the RNN weights here; W_Q/W_K in transformers) that the scores come from, trained end-to-end via backpropagation. This is <em>attention</em> in encoder-decoder <strong>cross-attention</strong> form (decoder attends to encoder) — Vaswani's team adapts the same idea into self-attention in the next section.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced — additive vs. multiplicative, and the word "alignment"</span>
+        <p>One historical precision the lecture skipped: the <em>original</em> attention paper (<cite>Bahdanau et al., 2014/ICLR 2015</cite>) did <strong>not</strong> score with a dot product — it used <strong>additive attention</strong>, a tiny learned MLP: score = v<sub>a</sub>ᵀ·tanh(W<sub>a</sub>[h<sub>d</sub>; h<sub>e</sub>]). The dot-product (<strong>multiplicative</strong>) scoring taught here was introduced a year later by <cite>Luong et al., EMNLP 2015</cite> as a faster, simpler alternative — and it's Luong's version that transformers scaled up. Bahdanau's paper also calls the scoring function an <strong>alignment model</strong>, and the α<sub>ij</sub> matrix an <em>alignment</em> — exam questions often use this word; plotted as a heatmap it shows which source word each output word "looked at" (the paper's famous Figure 3, with English-French word alignments lighting up along the diagonal). One more distinction relevant to a CV course: softmax gives <strong>soft attention</strong> — a little of everything, fully differentiable, trainable by ordinary backprop; <strong>hard attention</strong> (<cite>Xu et al., "Show, Attend and Tell," ICML 2015</cite>) picks exactly one location and requires reinforcement-learning tricks to train.</p>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">In Plain Words — layman anchors for this section</div>
+        <p><strong>Softmax</strong> = turns any list of scores into percentages that sum to 100% — raw votes into vote shares. <strong>Dot product as similarity</strong> = two arrows pointing the same way overlap a lot → big value; perpendicular arrows → zero. <strong>Attention weights α</strong> = a highlighter budget: exactly 100% of the ink, split across the source words — important words get thick highlight, filler words get almost none.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Self-Attention &amp; Query / Key / Value</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>From cross-attention to self-attention</h3>
+        <p>In 2017, Vaswani and team ("Attention Is All You Need") adapted the attention mechanism above into <strong>self-attention</strong>: instead of comparing a decoder state against encoder states, compare tokens <em>within the same sequence</em> to each other. Prof's example, referenced live: <em>"The animal didn't cross the street because it was too tired."</em> (Attribution check: this sentence is <em>not</em> in the "Attention Is All You Need" paper itself — it comes from Google's August 2017 Transformer announcement blog post by Jakob Uszkoreit, later popularized by Jay Alammar's Illustrated Transformer, and is routinely mis-attributed to the paper.) The word "it" needs to resolve to "animal," not "street" or "tired." Self-attention computes, for every word, a similarity score against every other word in the sequence — "it" · "animal" comes out highest, so "it" derives most of its contextual meaning from "animal."</p>
+        <p>Crucially: self-attention needs <strong>no labeled data and no defined end-task</strong> at the point attention is computed. "I do not have any kind of output vector or anything planned in the encoder state... within the sequence, 'am' derives its attention from 'I,' 'going' derives its attention from 'am' and 'I.'" Prof called this "more of an unsupervised kind of learning mechanism" — the encoder doesn't need to know what downstream task (translation, classification, Q&amp;A) it will ultimately serve. Precision note: self-attention is an architectural <em>mechanism</em>, not a learning paradigm — W_Q/W_K/W_V still get trained by whatever objective the network has (the original Transformer was fully supervised translation). What Prof gestures at is that attention needs no attention-level labels, and that this property later enabled <strong>self-supervised</strong> pretraining (BERT's masked words, GPT's next-token prediction) — "self-supervised" is the exact term, not "unsupervised."</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof, clarifying attention vs. self-attention (asked twice, live)</div>
+        <p>"Self-attention is just an implementation of attention. Attention is a mathematical concept... Vaswani and his team took that same concept and said I can create variable context out of it... rather than [comparing] a decoder state to an encoder state, you look within the sequence itself."</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Query, Key, Value — the YouTube search analogy</h3>
+        <p>Vaswani's team operationalized self-attention through three learned vectors per token: <strong>Query (Q)</strong>, <strong>Key (K)</strong>, and <strong>Value (V)</strong>. Prof's analogy: searching YouTube for "transformers deep learning."</p>
+        <table class="he-table">
+          <thead><tr><th>Vector</th><th>YouTube analogy</th><th>Transformer role</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Query</td><td>What you typed into the search bar</td><td>What the current token is "asking for," contextually</td></tr>
+            <tr><td style="color:var(--sky)">Key</td><td>The indexed titles/tags of every candidate video</td><td>A matchable reference for every other token in the sequence</td></tr>
+            <tr><td style="color:var(--lime)">Value</td><td>The video content you get once you click a result</td><td>The actual information retrieved once similarity picks a match</td></tr>
+          </tbody>
+        </table>
+        <p>Prof's exam-answer framing: "First and foremost, we calculate the similarity between all the keys that are available and the query" — same dot-product-then-softmax recipe as plain attention, just renamed and formalized. Prof's information-retrieval framing (in response to a direct question): you don't scan a textbook slide-by-slide for "image classification" — you jump straight to the section header (the key) that you already know holds the answer (the value). That's what Q/K/V similarity is doing mathematically.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Scaled dot-product self-attention — Vaswani et al., 2017</div>
+<span class="formula-line"><span class="f-gold">Q = X·W_Q</span>&nbsp;&nbsp;&nbsp;<span class="f-sky">K = X·W_K</span>&nbsp;&nbsp;&nbsp;<span class="f-lime">V = X·W_V</span>   <span class="f-dim">— learned weight matrices, multiplied with input embedding X</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-violet">Attention(Q,K,V) = softmax( Q·Kᵀ / √d_k ) · V</span></span>
+<span class="formula-line"><span class="f-dim">√d_k scales down the raw dot product</span> — <span class="f-dim">"very similar to batch normalization... doing the same job" of stopping one large value from dominating.</span></span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Correction — what √d_k actually does (the paper's own words)</div>
+        <p>Prof's batch-norm comparison captures the <em>spirit</em> (tame large values) but not the mechanism: batch norm is a learned normalization layer using per-batch statistics, while √d_k is a <strong>fixed constant rescale</strong>. The paper's stated reason (§3.2.1): "for large values of d_k, the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradients" — a near-one-hot softmax whose gradients vanish. Dividing by √d_k keeps score variance ~1 regardless of dimension, keeping softmax in its trainable zone. Exam-safe answer: <em>gradient health of softmax</em>, not normalization statistics.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Live Q&amp;A — Bhawani's question, and where students landed</div>
+        <p>"Isn't query the input itself, or is input different from query?" Prof: no — Q, K, and V are each produced by multiplying the input embedding with a <em>separate learned weight matrix</em> (W_Q, W_K, W_V). None of them are the raw input; all three (and the weight matrices that produce them) are trained jointly with the rest of the network. Sujoy Saha's later question — whether multi-headed attention shares one Q/K/V set or uses separate ones per head — Prof confirmed: <strong>every head gets its own separate Q, K, and V vectors</strong>, never shared.</p>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">In Plain Words — why three matrices, and what Q·Kᵀ really computes</div>
+        <p><strong>Why not compare raw embeddings directly?</strong> Because one word needs to wear three different hats: how it <em>asks</em> ("what am I looking for?" — Q), how it <em>advertises itself</em> to others ("how should you find me?" — K), and what it <em>actually contributes</em> once matched ("here's my content" — V). The same person phrases a question differently than they'd answer one — three learned projections let one embedding play all three roles. <strong>Q·Kᵀ in one shot</strong> = every query dot-producted against every key simultaneously — a full n×n "compatibility scoreboard" of all word pairs. That n×n scoreboard is also the transformer's Achilles heel: comparing every token to every other token means cost grows <strong>quadratically</strong> with sequence length — O(n²) — covered under Limitations (Section 10). Defining self- vs cross-attention in one line: <strong>self-attention</strong> = Q, K, V all derived from the <em>same</em> sequence X; <strong>cross-attention</strong> = Q from the decoder, K and V from the encoder (Section 03's original formulation).</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Multi-Headed Attention</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-lab">Interactive</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The bottleneck of a single attention layer</h3>
+        <p>One self-attention layer captures one "view" of the sentence. Prof's example — a sentence with three occurrences of the word "bank" (river bank, bank account, banking road) plus an implicit question "where is the user going?": a single attention layer can disambiguate the three banks semantically, <em>or</em> track where the user is going, but human comprehension does several of these analyses <strong>simultaneously</strong> ("three thought processes captured together"). One attention mechanism, run once, isn't enough to capture semantic disambiguation, grammatical correctness, and intent-tracking all at once.</p>
+        <p>The fix: rather than defining a separate encoder/decoder for each sub-task, run <strong>several self-attention layers in parallel</strong> — a <strong>multi-headed attention</strong> block. Each head is free to specialize on a different aspect: word-sense disambiguation, grammatical correctness, "where is the user going," tone, or anything else the data makes useful — Prof likened this to a "mixture of experts," and noted this specialization is <strong>learned</strong>, not hand-assigned during training.</p>
+      </div>
+
+      <div class="interactive-demo">
+        <h4>Interactive — what different heads "look at"</h4>
+        <p class="demo-sub">Sentence: <em>"I am going to the bank."</em> Toggle between heads to see a stylized attention pattern each one might learn — word-sense, intent, and grammar are three separate lenses on the same six tokens.</p>
+        <button class="demo-btn on" onclick="showHead(0,this)">Head 1 — Word sense</button>
+        <button class="demo-btn" onclick="showHead(1,this)">Head 2 — Intent ("going where?")</button>
+        <button class="demo-btn" onclick="showHead(2,this)">Head 3 — Grammar</button>
+        <div class="mgrid" id="headGrid" style="grid-template-columns:repeat(6,1fr);margin-top:1rem;"></div>
+        <div class="demo-output" id="headOut"></div>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Live Q&amp;A — combining heads: concatenate or add?</div>
+        <p>Bhawani asked whether aggregating across heads dilutes what each head individually learned. Prof's answer: the <strong>original Transformer paper concatenates</strong> head outputs (not averages/adds), which preserves each head's distinct signal rather than blending it away — the nanoGPT-style demo notebook shown live does exactly this. But he noted it's an architectural choice, not a law: some implementations use addition instead, purely as a compute/design trade-off, and it's the original-paper default (concatenation) that's taught as canonical.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>The canonical multi-head formula is <cite>Vaswani et al., 2017</cite>: each head computes its own scaled dot-product attention over its own Q, K, V (each typically of reduced dimension d_model/h, e.g. 512/8=64), the h outputs are <strong>concatenated</strong>, then passed through one more learned linear projection W_O — concatenation-then-project, not simple averaging, is what lets the model recombine specialized per-head signals into one output vector without just diluting them. Interpretability work since then (e.g. <cite>Clark et al., "What Does BERT Look At?", ACL Workshop 2019</cite>) shows individual BERT heads do specialize in exactly the way Prof describes — some heads attend almost entirely to direct syntactic dependents, others to the previous token, others to what resembles coreference resolution (matching Prof's "it → animal" example) — providing empirical backing for the "mixture of experts" framing beyond analogy. Layman anchor for the concat + W_O step: eight specialists each write a short memo about the same sentence; W_O is the editor who merges eight memos into one coherent paragraph — nothing any specialist wrote gets averaged away before the editor sees it.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Positional Embeddings &amp; the Transformer Block</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why position must be injected explicitly</h3>
+        <p>Self-attention has no built-in sense of order — unlike RNNs, which process tokens sequentially, a transformer looks at all tokens "at once." So the model needs to be told, separately, <em>where</em> each token sits in the sequence: a <strong>positional embedding</strong>. Prof: "if you say what is the meaning of the word at position 3, a transformer will be able to tell you" — but only because position was explicitly encoded and added to the token embedding, not because the architecture infers order on its own. Layman anchor: a book with its page numbers torn off and the pages shuffled — the transformer reads all pages simultaneously, so each page needs its number stamped back on. (Formal term: without positional information, self-attention is <strong>permutation-equivariant</strong> — shuffle the input tokens and the outputs shuffle identically, order invisible.)</p>
+        <p>Prof noted that major LLMs differ specifically in <em>how</em> they encode position — this is one of the real architectural differences between model families, not just branding. He referenced an LLM using rotary-style embeddings (the transcript's phonetic rendering doesn't match a real model name — almost certainly a mis-transcription of <strong>LLaMA</strong>, whose <strong>RoPE (Rotary Position Embedding)</strong> scheme, from <cite>Su et al., "RoFormer," 2021</cite>, is well documented) as differing from earlier GPT-style absolute positional embeddings, and noted Gemini and Claude/Anthropic use their own undisclosed schemes.</p>
+        <p>The lecture skipped the <em>original</em> scheme, which exams love: <cite>Vaswani et al. 2017</cite> used <strong>sinusoidal positional encoding</strong> — fixed (not learned) sine/cosine waves of geometrically increasing wavelengths, PE(pos, 2i) = sin(pos/10000<sup>2i/d</sup>), PE(pos, 2i+1) = cos(·). Each position gets a unique interference pattern of frequencies (like a clock with many hands moving at different speeds — the combination of hand angles uniquely identifies the time), and relative offsets become simple linear transforms, which is why it generalizes to sequence lengths never seen in training. The family tree: <strong>sinusoidal (fixed)</strong> → original Transformer; <strong>learned absolute</strong> → BERT, GPT-1/2/3, ViT; <strong>rotary (RoPE)</strong> → LLaMA, PaLM, most modern open LLMs.</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof, on why embeddings themselves are a competitive moat</div>
+        <p>"None of these companies release their embeddings ever, because that is where the money lies." His "King" example: a rich embedding might encode gender, nationality, "has-a-queen," royalty — a poorly trained embedding of the same dimension can fail to capture those same latent attributes, even at identical vector size. Embedding <em>quality</em>, training data, and dimensionality all directly determine downstream model quality — two teams running "the same model" on differently-processed data will not get the same results, exactly as two students running the same ML algorithm on differently-preprocessed data get different scores.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Nuance on "never release embeddings"</div>
+        <p>True for closed frontier models (GPT-4/5-class, Gemini, Claude — internal weights including embeddings stay private), but open-weight models (<strong>LLaMA, Mistral, Gemma</strong>) ship their full embedding matrices publicly, and OpenAI/Google <em>sell</em> standalone embedding APIs (text-embedding-3, Gemini embeddings) as products. Prof's underlying point survives: embedding quality is a competitive asset — it's just monetized either as a moat (closed weights) or as a product (embedding APIs), not universally hidden.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Assembling the transformer block</h3>
+        <ol class="pipeline">
+          <li><strong>Input embedding + positional embedding</strong><p>Token embedding and positional embedding are combined by element-wise <strong>summation</strong> — the standard in the original Transformer, BERT, GPT, and ViT alike. (Concatenation is a rarely-used alternative; the transcript's "concatenated" phrasing is loose — summing is what every canonical architecture does.)</p></li>
+          <li><strong>Multi-headed self-attention</strong><p>As covered above — several parallel Q/K/V attention heads.</p></li>
+          <li><strong>Residual connection</strong><p>Add the block's input back to its output before normalizing. Sujoy Saha's answer, confirmed by Prof: this exists to <strong>address the vanishing-gradient problem</strong> and smooth the loss landscape — the same reason ResNet-101 uses skip connections. Layman anchor: a highway bypass — information and gradients can skip past each layer's "local roads," so the signal survives a 96-layer journey.</p></li>
+          <li><strong>Layer normalization</strong><p>Normalize activations at each layer — same <em>motivation</em> as batch norm, different mechanism: <strong>LayerNorm normalizes across the features of each token independently; BatchNorm normalizes across the batch</strong>. Transformers use LN because variable-length sequences and small/streaming batches make batch statistics unreliable.</p></li>
+          <li><strong>Feed-forward network (MLP)</strong><p>A position-wise fully-connected network applied after attention + norm, at every transformer block — typically expanding <strong>4×</strong> (d_ff = 2048 vs d_model = 512 in the original paper): Linear → ReLU/GELU → Linear. Why it must exist: attention only <em>mixes</em> information between tokens (a weighted average — linear); the FFN is where each token gets its own nonlinear processing. Without it, stacked attention collapses toward one big linear operation. Layman anchor: attention is the meeting where tokens exchange notes; the FFN is each token going home to think it over alone.</p></li>
+          <li><strong>Stack N blocks, then softmax</strong><p>Multiple transformer blocks stack sequentially; the final layer produces a softmax distribution — over the vocabulary for language, or over classes for classification.</p></li>
+        </ol>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Pre-LN vs Post-LN — a detail worth one line</div>
+        <p>The order described above (sub-layer → add residual → <em>then</em> normalize) is the original paper's <strong>Post-LN</strong>. GPT-2 and virtually every modern LLM moved the LayerNorm <em>before</em> each sub-layer (<strong>Pre-LN</strong>, formalized by <cite>Xiong et al., ICML 2020</cite>) because it keeps gradients stable in very deep stacks without the delicate learning-rate warm-up Post-LN requires.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Prof's aside — "we have actually run out of physical data in the world to train a transformer... right now we are training them using synthetic data, which will eventually corrupt it" — reflects a real, actively-debated concern. <cite>Villalobos et al., "Will We Run Out of Data?", arXiv 2022 (updated 2024; ICML 2024 position paper)</cite> estimated (80% confidence interval) the stock of public human-generated text could be fully utilized for training between 2026 and 2032 depending on compute-scaling assumptions. The corruption risk Prof flags has a formal name and mechanism: <strong>model collapse</strong> — <cite>Shumailov et al., "AI models collapse when trained on recursively generated data," Nature 631, 2024</cite> (the earlier 2023 arXiv preprint carried the catchier title "The Curse of Recursion") shows training successive model generations increasingly on their own (or other models') synthetic output progressively narrows the tail of the data distribution, degrading diversity and factual accuracy over generations. Labs mitigate this today by mixing synthetic data with curated human data and strong filtering rather than avoiding synthetic data outright — but the underlying risk Prof names is a real, published finding, not speculation.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Vision Transformer (ViT)</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-lab">Interactive</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>"CNNs are now Robin to Transformer's Batman"</h3>
+        <p>The Vision Transformer paper (ICLR 2021) is, in Prof's words, the reason CNNs — while still important, especially as feature extractors — are no longer the default choice for state-of-the-art image classification. The core idea: treat an image exactly like a sentence. Break it into fixed-size patches, flatten each patch into a vector, add a positional embedding per patch, and feed the whole thing into a standard transformer encoder — the same architecture from Sections 04–06, unmodified. The paper's title <em>is</em> the layman explanation: "An Image Is Worth 16×16 Words" — cut the photo into jigsaw pieces and treat each piece as a word in a sentence.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>From pixels to patch tokens — worked exactly as in lecture</h3>
+        <ol class="pipeline">
+          <li><strong>Split into 16×16 patches</strong><p>Whatever the image's overall dimensions, divide it into a grid of 16×16-pixel blocks — the patch size used throughout the original ViT paper (other variants use 14×14 or 32×32).</p></li>
+          <li><strong>Flatten each patch</strong><p>16 × 16 = 256 values per channel; for a 3-channel color image that's 256×3 = 768 values — flattened into one row vector, "awfully similar to your CSV kind of data."</p></li>
+          <li><strong>Add an absolute positional embedding per patch</strong><p>Patch 1, patch 2, patch 3... each gets a position index, just like word position in a sentence — otherwise the transformer has no way to know patch 1 is "the top-left of the image" versus anywhere else.</p></li>
+          <li><strong>Linear projection — required, not optional</strong><p>Correction to the transcript's framing: in the actual ViT paper (Eq. 1), the flattened patch is always multiplied by a <strong>trainable linear projection matrix E</strong> mapping it to the model dimension D — this <em>is</em> the patch embedding, the image analogue of a word-embedding lookup, never skipped. The 16×16×3 = 768 coincidence (which happens to equal ViT-Base's hidden dim) makes bare flattening <em>look</em> sufficient, but E is learned and required — and for ViT-Large/Huge, D ≠ 768 anyway. Layman anchor: not just unrolling the puzzle piece into a list of numbers, but passing it through a learned <em>translator</em> that rewrites raw pixels into the transformer's vocabulary. Prof's separate remark about using a CNN layer instead of a bare flatten is the paper's own <strong>hybrid ViT</strong> variant — ResNet feature maps as input tokens.</p></li>
+          <li><strong>Feed to a standard transformer encoder</strong><p>Once tokenized + positionally embedded, the transformer does not care whether the underlying modality was text, image, audio, or video — "any modality in this world can be passed through a transformer... and voila, I will give you a response."</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">ViT-Base dimensions, exactly as configured in the live demo</div>
+<span class="formula-line"><span class="f-dim">Patch:</span> <span class="f-gold">16 × 16 × 3</span> → flattened <span class="f-gold">768-dim</span> vector per patch</span>
+<span class="formula-line"><span class="f-dim">Embedding dim:</span> <span class="f-teal">768</span>  &nbsp;&nbsp; <span class="f-dim">Layers:</span> <span class="f-teal">12</span>  &nbsp;&nbsp; <span class="f-dim">Heads:</span> <span class="f-sky">12</span>  &nbsp;&nbsp; <span class="f-dim">MLP dim:</span> <span class="f-sky">3072</span>  &nbsp;&nbsp; <span class="f-dim">Params:</span> <span class="f-violet">~86M (ViT-Base)</span></span>
+<span class="formula-line"><span class="f-dim">128×128 demo image, 16×16 patches</span> → <span class="f-lime">64 patches + 1 class token = 65 tokens</span>, each 768-dim</span>
+<span class="formula-line"><span class="f-dim">CLS token = a learnable vector prepended at position 0 (borrowed from BERT's [CLS]) — it carries no image content itself; through attention it soaks up information from every patch, and the classification head reads only it. Layman: a blank delegate seated at position 0 who listens to every patch in every meeting (layer), then walks out and reports what the image is.</span></span>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Go deeper — full interactive ViT forward pass</div>
+        <p>The two demos below are quick illustrations. For a complete, real (small-scale, seeded, untrained-but-genuine matrix math) step-through of every ViT stage — patchify → linear projection → positional embedding → layer norm → multi-head self-attention with clickable query tokens and live attention arcs → residual → MLP → classification head — jump to <a href="#s8" style="color:var(--gold);font-weight:600;">Section 08, the Interactive Lab, immediately below →</a>, built in the style of <a href="https://bbycroft.net/llm" style="color:var(--sky);" target="_blank" rel="noopener">bbycroft.net/llm</a>.</p>
+      </div>
+
+      <div class="interactive-demo">
+        <h4>Interactive — does flattening destroy neighbor information?</h4>
+        <p class="demo-sub">Ayush's exact live question: when you flatten a 16×16 patch grid into a row of tokens, doesn't the 2D neighborhood relationship get lost? Prof's answer: positional embedding tells the model which patch came from where, and <strong>self-attention recovers semantic adjacency across layers</strong> — nearby, related patches learn high mutual attention even after flattening. Click through the layers below to see attention to a fixed patch (★) sharpen onto its true neighbors over depth.</p>
+        <button class="demo-btn on" onclick="showVitLayer(0,this)">Layer 1 (raw)</button>
+        <button class="demo-btn" onclick="showVitLayer(1,this)">Layer 2</button>
+        <button class="demo-btn" onclick="showVitLayer(2,this)">Layer 3 (converged)</button>
+        <div class="mgrid" id="vitGrid" style="grid-template-columns:repeat(7,1fr);margin-top:1rem;"></div>
+        <div class="demo-output" id="vitOut"></div>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof, addressing the neighbor-relationship concern directly</div>
+        <p>"The transformer clearly has an idea based on positional embedding that this particular pixel belongs to the first block... but within that patch, the transformer would still be able to understand — because there is a self-attention mechanism — that this and this are semantically similar." Caveat conceded to Ayush's follow-up: for very zoomed-out, crowded scenes (e.g. a distant street with several people inside one patch), fine-grained separation can genuinely suffer — that's exactly the case where a specialized detector (YOLO, Faster R-CNN) still beats a generic ViT.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>ViT vs. ResNet — the actual numbers from lecture</h3>
+        <p>Correction to the transcript's numbers: ResNet-152 hit <strong>77–78% top-1</strong> on ImageNet-1k already at release (He et al., 2015), and by 2021 modern training recipes pushed ResNets to <strong>~80–83%</strong> — the "70–75%" range cited live better describes smaller ResNet-18/34-class models or 2015-era nets. ViT variants using 32×32, 16×16, or 14×14 patch sizes, even the base configuration, land in the same range or better — with ResNet historically inching up toward ~85% and ViT variants pushing toward the 90% mark on more recent/larger pretraining. Prof's framing: ViT doesn't uniquely lose information relative to CNNs — "we will not miss any more than what ResNet will miss" — but it does require far more training data to get there: "you do not train it on 1 million images, you train it on 1 billion, in fact 1 trillion."</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced — citation and numbers checked</span>
+        <p><cite>Dosovitskiy et al., "An Image Is Worth 16x16 Words: Transformers for Image Recognition at Scale," ICLR 2021</cite> — the correct citation for the paper Prof describes. Its actual headline result: ViT-Huge/14 pretrained on the (then-proprietary) JFT-300M dataset reached 88.55% top-1 on ImageNet, matching or beating contemporary CNNs (BiT-L/Noisy Student ResNets, ~87–88%) — but critically, ViT <em>underperformed</em> ResNets of comparable size when pretrained only on ImageNet-1k itself; the data-hungry caveat Prof stresses is the paper's own headline finding, not an exaggeration. The gap closes with scale: <cite>Zhai et al., "Scaling Vision Transformers," CVPR 2022</cite> pushed ViT to ~90.45% top-1 with a 2-billion-parameter model. Prof's ResNet ceiling (~85%) matches published ResNet-152/ResNeXt numbers with modern training recipes; his ViT ceiling (~90%) is consistent with scaled ViT variants, not the original base configuration alone. One scale correction: "1 trillion images" is hyperbole — JFT-300M is 300 million images, its successor JFT-3B is 3 billion; no vision dataset approaches a trillion. And the data-hunger story has a famous counterpunch worth knowing: <cite>Touvron et al., "DeiT," ICML 2021</cite> trained ViT on ImageNet-1k <em>alone</em> — no JFT — to 83.1% top-1 (85.2% distilled) using a distillation token plus aggressive augmentation, proving the hunger is a training-recipe problem as much as a raw-data one.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced — the missing word: inductive bias</span>
+        <p>The ViT paper's own explanation for the data hunger — a term this lecture never used but exams almost certainly will: <strong>inductive bias</strong>. CNNs bake two assumptions directly into the architecture: <em>locality</em> (nearby pixels relate — enforced by small kernels) and <em>translation equivariance</em> (a cat detector works anywhere in the frame — enforced by weight sharing). ViT has <em>neither</em> built in; self-attention is global and position-agnostic from the start, so everything CNNs get for free must be <strong>learned from data</strong>. That is precisely why ViT loses to ResNets when pretrained only on ImageNet-1k and wins once pretrained on 300M+ images — the paper's central finding, restated: <em>large-scale data beats hand-built inductive bias, but only once you actually have the data</em>. Layman anchor: a CNN is born wearing glasses that only see small neighborhoods — a helpful prejudice; ViT is born with no assumptions at all and must be shown millions of images to learn what the CNN knew from birth.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — one architecture, every modality</div>
+        <p>"Any modality in this world can be passed by transformer and this is where transformers become what they are." Before ViT, vision (ResNet/VGG/Inception/AlexNet) and language (RNN/LSTM/GRU) were entirely separate research tracks, each with bespoke architectures. Once tokenized + positionally embedded, a transformer is modality-agnostic — this is the architectural reason today's multimodal models (image-captioning, visual Q&amp;A, text-to-image) exist at all; they're not stitched-together pipelines but one shared attention mechanism operating over mixed token streams.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 — INTERACTIVE LAB (merged from CV_Session10_ViT_Interactive.html) ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Interactive Lab — Full ViT Forward Pass</h2>
+        <span class="src-badge src-lab">Live demo</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>One real forward pass, computed live in your browser</h3>
+        <p>Inspired by <a href="https://bbycroft.net/llm" style="color:var(--sky);" target="_blank" rel="noopener">bbycroft.net/llm</a>'s idea of showing genuine numbers flowing through a real network rather than a cartoon. Draw a tiny 6×6 image below, then step through every stage of a Vision Transformer — patchify → flatten → linear projection → positional embedding → layer norm → multi-head self-attention → residual → MLP → classification head — with the actual matrix math computed live at every click.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header">
+          <span class="exam-badge">Honesty check</span>
+          <h4>The math is real; the "classification" is not</h4>
+        </div>
+        <p style="color:var(--text2);font-size:15px;">The weight matrices here are small and <strong>randomly initialized once</strong> (seeded, so they're stable across reloads) — this is <em>not</em> a trained model, and the final class probabilities are not meaningful predictions. What <em>is</em> real: every number below is computed by actual matrix multiplication, softmax, and layer normalization exactly as the architecture defines them. The mechanism is genuine; the classification is not.</p>
+      </div>
+
+      <div class="interactive-demo">
+        <h4>Step 0 · Build a toy 6×6 image</h4>
+        <p class="demo-sub">Click a cell to cycle black → gray → white. This 6×6 grayscale image splits into a 3×3 grid of 2×2 patches (9 patches), plus one CLS token — 10 tokens altogether, exactly like a real ViT's patch tokens plus its classification token.</p>
+        <div class="vit-pixgrid" id="vitPixGrid"></div>
+        <div style="margin-top:1rem;">
+          <button class="demo-btn" onclick="window.vitLoadPreset('cross')">Preset: Cross</button>
+          <button class="demo-btn" onclick="window.vitLoadPreset('ring')">Preset: Ring</button>
+          <button class="demo-btn" onclick="window.vitLoadPreset('diag')">Preset: Diagonal</button>
+          <button class="demo-btn" onclick="window.vitLoadPreset('random')">Preset: Random</button>
+          <button class="demo-btn" onclick="window.vitLoadPreset('clear')">Clear</button>
+        </div>
+        <p class="vit-note">Toy class labels used purely for illustration: <code>Cross</code>, <code>Ring</code>, <code>Diagonal</code>. Since the head is untrained, don't expect the softmax at the end to actually pick the "right" one — watch the <em>mechanism</em>, not the answer.</p>
+      </div>
+
+      <div class="interactive-demo">
+        <h4>Forward pass — step through the pipeline</h4>
+        <div class="vit-controls">
+          <button class="demo-btn" id="vitBtnPrev" onclick="window.vitPrev()">◀ Prev</button>
+          <button class="demo-btn" id="vitBtnPlay" onclick="window.vitTogglePlay()">▶ Play</button>
+          <button class="demo-btn" id="vitBtnNext" onclick="window.vitNext()">Next ▶</button>
+          <span class="vit-stage-progress" id="vitStageProgress"></span>
+        </div>
+        <div class="vit-pipeline" id="vitPipeline"></div>
+        <div id="vitStageDetail"></div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Live Demo — nanoGPT &amp; ViT-from-Scratch</h2>
+        <span class="src-badge src-lab">Live demo</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Toy character-level transformer (nanoGPT-style)</h3>
+        <p>Prof's first demo used a tiny character-level sequence ("cbab", "bc" etc.) to make every step of the pipeline visible at toy scale: each character → token ID (a=0, b=1, c=2...) → token embedding, concatenated with a positional embedding → 3 parallel multi-headed attention heads, each with its own Q/K/V → attention output → residual connection → feed-forward (MLP) → repeated across transformer blocks → final softmax over the character vocabulary, trained to predict the next character.</p>
+        <pre># Toy character-level transformer, as walked through live
+tokens = {'a':0,'b':1,'c':2,'d':3, ...}          # simplistic char-level tokenization
+tok_emb = embedding_table[tokens]                # learned token embedding
+pos_emb = positional_table[range(seq_len)]       # learned/fixed positional embedding
+x = tok_emb + pos_emb                            # combined input
+
+for block in transformer_blocks:                 # e.g. 2 blocks in the toy demo
+    attn_out = multi_head_attention(x, n_heads=3) # separate Q,K,V per head
+    x = layer_norm(x + attn_out)                  # residual + norm
+    ff_out = mlp(x)
+    x = layer_norm(x + ff_out)                    # residual + norm
+
+logits = final_linear(x)
+probs = softmax(logits)                          # P(next char | context)
+# Output on an untuned toy run: input "cbab" -> output drifts to "ccmbainai"
+# first characters correct, later ones wander -- expected at this scale/training</pre>
+        <p>Prof's honest framing of the (deliberately under-trained) output: the initial characters predicted correctly, later ones didn't — showing the mechanics work but the toy model needs far more training/data/scale to converge, exactly the same lesson as the CIFAR-10 demos in Session 9.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>ViT-from-scratch notebook (PyTorch), CIFAR-10-trained</h3>
+        <p>The main event: a from-scratch PyTorch implementation of the original ViT paper (not calling a pre-built library transformer), so every tensor shape is visible and testable. Steps Prof walked through live:</p>
+        <ol class="pipeline">
+          <li><strong>Patchify + flatten</strong><p>128×128 input image, 16×16 patches → 64 patches, each flattened to a 768-dim vector (256 pixels × 3 channels); Prof visualized 10 example flattened patches directly.</p></li>
+          <li><strong>Patch + positional embedding, concatenated</strong><p>Unit-tested live: "65 patches, 768 dimension, one" — confirming shapes before proceeding (64 patches + 1 class token).</p></li>
+          <li><strong>Custom self-attention class</strong><p>Written from scratch rather than using PyTorch's built-in attention — "a good exercise... it will resolve a lot of your issues." Defines Q, K, V as learned NumPy/Torch linear layers over the 768-dim embedding, computes Kᵀ·Q divided by √d_k, then softmax.</p></li>
+          <li><strong>Custom multi-headed attention class</strong><p>Splits embedding dim by number of heads, runs the self-attention class per head in parallel, concatenates, projects, and returns.</p></li>
+          <li><strong>Residual + MLP (feed-forward) block</strong><p>Attention output + residual → MLP → residual again, matching Section 06's transformer block recipe exactly.</p></li>
+          <li><strong>MLP classification head</strong><p>A dedicated output vector (the class token) is passed through a small MLP to predict the final class label — this is what makes ViT directly usable for classification out-of-the-box.</p></li>
+        </ol>
+        <pre># Training config, as run live
+model = ViT(patch_size=16, embed_dim=768, num_heads=12, num_classes=10)
+# NOTE: transcript cites "~170M parameters" for this run -- inconsistent with this
+# exact config, which is ViT-Base (~86M, see Section 07). 170M matches no standard
+# variant (ViT-Large is 307M); likely misheard or misspoken. Treat 86M as correct.
+optimizer = torch.optim.SGD(model.parameters(), lr=...)
+criterion = nn.CrossEntropyLoss()
+# Trained on CIFAR-10 (kept small deliberately -- "did not want to waste too much compute power")
+# Loss: 1.69 -> 0.48 over training
+# Final accuracy: ~80% on CIFAR-10 held-out data</pre>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key Insight — you don't retrain the encoder per task</div>
+        <p>Prof's closing point on the demo: once the ViT encoder has learned a good data representation, you can reuse it for other queries entirely — "fetch me all airplane images that you have" — without retraining the encoder. Only the small decoder/head needs to change per task. The standard vocabulary for this, worth having ready in an exam: <strong>transfer learning</strong> (reuse a pretrained model on a new task), a <strong>frozen backbone</strong> (encoder weights locked, untouched), a <strong>linear probe</strong> (train only a single linear layer on top of frozen features — the cheapest test of representation quality), and <strong>fine-tuning</strong> (unfreeze and continue training some or all encoder weights on the new task, at a low learning rate). Prof's "fetch me all airplane images without retraining" is a frozen-backbone retrieval scenario. One connection back to the demo: a from-scratch ViT on CIFAR-10 needs heavy augmentation precisely because, with no CNN inductive biases and only 50k images, it otherwise overfits — Section 07's data-hunger point playing out live at toy scale.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 ============ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Limitations &amp; Live Q&amp;A</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header">
+          <span class="exam-badge">Two limitations Prof named explicitly, twice</span>
+          <h4>Data hunger and compute cost</h4>
+        </div>
+        <ul class="exam-list">
+          <li><strong>Data hunger:</strong> transformers need orders of magnitude more training examples than CNNs to reach comparable or better accuracy — "you train it on 1 billion images, in fact 1 trillion images. That is the scale at which transformers learn."</li>
+          <li><strong>Compute cost:</strong> "you are literally melting your GPUs just to run a normal transformer model" — and transformers are only economical at scale/high query volume, which is why GPU access has become a competitive bottleneck across the industry.</li>
+        </ul>
+      </div>
+
+      <div class="theory-block">
+        <h3>The mechanism behind "melting GPUs" — quadratic attention cost</h3>
+        <p>The textbook limitation the lecture's compute point rests on, never named live: self-attention compares <strong>every token with every other token</strong>, so the attention score matrix is n×n — time and memory grow <strong>quadratically, O(n²)</strong>, with sequence length. Double the sequence (or image resolution, since patches = tokens), quadruple the cost. Layman anchor: a room where everyone must shake hands with everyone — 10 people is 45 handshakes, 100 people is 4,950; double the room, quadruple the handshakes. This is <em>the</em> reason long documents and high-resolution images are hard for vanilla transformers, why LLM context windows are a headline spec, and what an entire efficiency literature attacks: <strong>Swin Transformer</strong> restricts attention to shifted local windows (cost linear in image size — only shake hands at your own table), and <strong>FlashAttention</strong> reorders the exact same math to be GPU-memory-friendly without approximating anything. Near-certain exam question: "state the computational complexity of self-attention with respect to sequence length, and why" — answer: O(n²), because the n×n score matrix requires every pairwise dot product.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Invariances — handled by data, not architecture</h3>
+        <p>Raghunandan asked directly about translation/rotation invariance. Prof's answer: every neural network handles some baseline translational/rotational invariance, but for transformers specifically, robustness to viewpoint/orientation changes comes largely from <strong>data augmentation and volume</strong> — feeding millions of examples across different cat orientations, lighting, and poses — rather than being architecturally guaranteed the way, say, convolution's weight-sharing gives CNNs built-in translation equivariance.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Hallucination, defined the way Prof frames it</h3>
+        <p>Bhawani's example, borrowed from Prof: ask an image model to "make me as tall as my wife" and you get a bizarre result — because the model has no real context for who "your wife" is; rather than refusing, it <strong>invents</strong> a plausible-looking substitute. Prof's definition: "this model is probabilistic in nature, and what you call as hallucination... there is a chance that if a model does not have context about a particular item, it may invent that context." Layman anchor: a student bluffing an exam answer — never writes "I don't know," always produces something fluent and plausible-looking, because it was only ever graded on producing likely-sounding continuations, never on admitting ignorance. His broader claim, offered as personal opinion rather than settled fact: transformers alone won't reach AGI, and the field may eventually move toward <strong>world models</strong> — but transformers remain the first architecture to genuinely unify multiple data modalities under one mechanism, "and it is good to understand it."</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Prof's "world models" aside tracks a real, active research direction rather than idle speculation: <cite>Ha &amp; Schmidhuber, "World Models," 2018</cite> introduced the term for architectures that learn a compressed simulation of environment dynamics rather than only next-token statistics; more recently <cite>LeCun, "A Path Towards Autonomous Machine Intelligence," 2022</cite> makes an explicit public argument that autoregressive LLMs/transformers are structurally unsuited to genuine world understanding and proposes JEPA-style predictive world models as an alternative research direction — this is a live, contested debate among senior researchers, not a settled consensus, and Prof's framing sits squarely inside it.</p>
+        <p>On hallucination specifically: the mechanism Prof describes — invented plausible content filling a context gap — matches the standard technical definition in the literature, e.g. <cite>Ji et al., "Survey of Hallucination in Natural Language Generation," ACM Computing Surveys, 2023</cite>, which frames hallucination as generated content that is fluent and plausible but unfaithful to the source/context, precisely because the model optimizes for likely-next-token continuation rather than verified factual grounding. The survey's useful split: <strong>intrinsic</strong> hallucination contradicts the given source; <strong>extrinsic</strong> hallucination adds content the source can't verify either way — Prof's "invented wife" example is extrinsic.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — PREVIEW ============ -->
+    <section class="section" id="s11">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Towards Image Segmentation — Next Session</h2>
+        <span class="src-badge src-preview">Preview</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Explicitly stated as the roadmap, live</div>
+        <p>"I'll see you guys on your next lecture, we'll start with image segmentation." This matches the "what → where → track" three-stage framing the course has followed since Session 9: classification ("what") is done; segmentation and detection ("where") come next, followed eventually by tracking ("where is it going," temporal).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>What carries forward unchanged</h3>
+        <p>Everything built this session — tokenize/patchify, embed, add positional information, attend, residual + norm, feed-forward, stack blocks — is the same recipe segmentation and detection transformers (e.g. Segment Anything, DETR-style detectors) reuse; only the task-specific head changes. Convolution/deconvolution, explicitly deferred from Session 9 and not covered this session either, is expected to resurface directly in the segmentation unit, where upsampling and dense per-pixel prediction become the central problem.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 11 — QUIZ ============ -->
+    <section class="section" id="s12">
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <h2 class="section-title">Exam Quiz</h2>
+        <span class="src-badge src-transcript">12 Questions</span>
+      </div>
+
+      <!-- Q1 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Seq2seq bottleneck</span>
+          <div class="quiz-q-text">What exactly is wrong with the standard encoder-decoder sequence-to-sequence architecture, as diagnosed live by the class?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>It cannot be trained with backpropagation</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>One single context vector is shared, with equal weighting, across every decoder layer regardless of sequence length — so it forgets early context and can't emphasize important words over unimportant ones</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>It only works for images, not text</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>It requires labeled data, unlike attention</li>
+        </ul>
+        <div class="quiz-reveal">Rama's live answer, confirmed by Prof: context is "being fed to every output instead of leaving the unimportant ones" — a single static context vector, shared identically across all decoder steps, treats every word (e.g. "I" vs. "teaching") with equal weight and degrades as sequence length grows.<span class="mistake">Common mistake</span>Thinking the problem is sequence length alone — length matters, but the deeper issue is equal weighting and a single shared vector, not just size.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q2 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Attention scoring</span>
+          <div class="quiz-q-text">Why is softmax applied to raw attention dot-product scores before computing the context vector, rather than using the raw scores directly?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Softmax makes the scores negative</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Raw dot products are always already between 0 and 1</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Raw dot-product scores are unbounded (e.g. 0.1, 20, 200) and one large value would dominate the context vector; softmax normalizes them into a proper weight distribution that sums to 1</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Softmax is only needed for classification, not attention</li>
+        </ul>
+        <div class="quiz-reveal">Prof's exact point: "a score of 20 will overpower all the other values, which may be infinitesimally small but they are still relevant." Softmax converts arbitrary-scale similarity scores into a normalized α_ij weight vector.<span class="mistake">Common mistake</span>Assuming dot products are naturally bounded — they are not; that's precisely the problem softmax solves.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q3 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Self-attention</span>
+          <div class="quiz-q-text">What is the key difference between plain (encoder-decoder) attention and self-attention?</div></div>
+        <ul class="quiz-options" data-correct="0">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Self-attention compares tokens within the same sequence to each other; plain attention compares a decoder state against separate encoder states</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Self-attention requires labeled data; plain attention does not</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>They are mathematically unrelated concepts</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Self-attention only works on images</li>
+        </ul>
+        <div class="quiz-reveal">Prof: "self-attention is just an implementation of attention... rather than a decoder state compared to an encoder state, you look within the sequence itself." Both use the same dot-product-then-softmax math; the difference is what gets compared to what.<span class="mistake">Common mistake</span>Treating them as unrelated ideas rather than the same mechanism applied to a different comparison set.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q4 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Query/Key/Value</span>
+          <div class="quiz-q-text">Using the YouTube-search analogy from lecture, which vector corresponds to which part of a search?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Query = the video content; Key = your search text; Value = the indexed titles</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Query = what you typed into search; Key = the indexed titles/tags you're matched against; Value = the actual video content you get once you click a match</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Query, Key, and Value are all identical to the raw input embedding</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Key = your search text; Query = the video content; Value = the indexed titles</li>
+        </ul>
+        <div class="quiz-reveal">Prof's analogy directly: query is what you search for, keys are the matchable index of candidates, and the value is what you actually retrieve once a key matches well. Bhawani's follow-up confirmed Q, K, V are each separate learned projections of the input, not the raw input itself.<span class="mistake">Common mistake</span>Assuming "query" means the raw input token — it's a learned projection (X·W_Q) of it, not the token itself.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q5 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Scaled dot-product</span>
+          <div class="quiz-q-text">In Attention(Q,K,V) = softmax(Q·Kᵀ/√d_k)·V, what is the purpose of dividing by √d_k?</div></div>
+        <ul class="quiz-options" data-correct="3">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>It converts the attention output into probabilities directly, without softmax</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>It has no real effect and is only kept for historical reasons</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>It increases the dimensionality of Q and K</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>It rescales the raw dot product down before softmax, preventing any single large value from dominating — Prof compared this role directly to what batch normalization does elsewhere in deep learning</li>
+        </ul>
+        <div class="quiz-reveal">Prof: "this dimension vector is doing the same job [as] batch normalization... scaling it from arbitrarily large values." Without the √d_k scale-down, large-dimension dot products grow large and push softmax into a near-one-hot, poorly-behaved gradient regime.<span class="mistake">Common mistake</span>Confusing the √d_k scaling with the softmax step itself — they're two separate operations in the same formula.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q6 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Multi-head attention</span>
+          <div class="quiz-q-text">Why does a transformer use multiple attention heads instead of one, and how are their Q/K/V vectors organized?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Multiple heads exist purely to speed up training on GPUs; they all share one Q/K/V set</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Each head must attend to a manually pre-assigned linguistic feature, fixed before training</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>A single attention layer can only capture one "view" of the sequence at a time; multiple parallel heads, each with its own separate learned Q/K/V, let the model capture several aspects (sense, grammar, intent...) simultaneously</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Multi-head attention removes the need for positional embeddings</li>
+        </ul>
+        <div class="quiz-reveal">Prof's "three thought processes" example and Sujoy's confirmed question: each head gets its own separate Q, K, V — never shared — and what each head specializes in is learned during training, not pre-assigned ("mixture of experts").<span class="mistake">Common mistake</span>Assuming heads share one Q/K/V set to save parameters — each head has its own, by design.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q7 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Residual connections</span>
+          <div class="quiz-q-text">Why does every transformer block include a residual (skip) connection around its attention and feed-forward sub-layers?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>To reduce the number of parameters in the model</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>To address the vanishing-gradient problem and smooth the loss landscape, allowing much deeper stacks to train — the same reason ResNet uses skip connections</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>To replace the need for a loss function</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>To make positional embeddings unnecessary</li>
+        </ul>
+        <div class="quiz-reveal">Sujoy Saha's answer, confirmed by Prof: residual connections exist to smoothen the loss topology and fight vanishing gradients, directly analogous to ResNet-101's skip connections.<span class="mistake">Common mistake</span>Confusing residual connections with normalization — they're complementary, not the same mechanism (residual adds the input back; layer norm rescales activations).</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q8 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">ViT patch embedding</span>
+          <div class="quiz-q-text">For a ViT using 16×16 patches on a 3-channel color image, what is the flattened dimension of a single patch, and why is a positional embedding still needed per patch?</div></div>
+        <ul class="quiz-options" data-correct="0">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>16×16×3 = 768 values per patch; positional embedding is needed because flattening loses the patch's 2D location in the original image, which the transformer must be told explicitly</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>16×16 = 256 values, and positional embedding is optional since attention infers position automatically</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>3 values per patch, one per channel, no positional embedding needed</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>16×3 = 48 values, and position is encoded by patch color alone</li>
+        </ul>
+        <div class="quiz-reveal">16×16×3 = 768. Prof was explicit that positional embedding tells the model "this pixel belongs to the first block, or the second block" — self-attention alone doesn't know spatial order without it, exactly as in the language case.<span class="mistake">Common mistake</span>Forgetting to multiply by the channel count (×3 for RGB) when computing patch dimension.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q9 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">ViT neighbor relationships</span>
+          <div class="quiz-q-text">Ayush asked live: doesn't flattening a 16×16 patch destroy the neighbor-pixel relationship? What was Prof's answer?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Yes, and there is no fix — ViT simply loses all spatial structure</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>No, flattening never loses any information at all</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Positional embedding preserves which block each patch came from, and self-attention across layers learns which patches are semantically adjacent/similar — recovering neighborhood information, though not perfectly (e.g. very crowded distant scenes can still lose fine detail, favoring specialized detectors)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Neighbor relationships only matter for text, not images</li>
+        </ul>
+        <div class="quiz-reveal">Prof conceded the concern is valid at the raw-flattening step, but argued self-attention (plus positional embedding) recovers most of it by learning high attention weights between truly-adjacent/similar patches over successive layers — while also conceding real degradation in dense, small-object scenes where a specialized detector (YOLO, Faster R-CNN) still wins.<span class="mistake">Common mistake</span>Treating this as a solved non-issue — Prof explicitly flagged real caveats, not a clean "no problem at all" answer.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q10 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Limitations</span>
+          <div class="quiz-q-text">What two limitations of transformers/ViT did Prof name explicitly as the field's current bottlenecks?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Inability to do classification, and inability to use GPUs</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Data hunger (needing on the order of billions/trillions of training images to reach full potential) and extreme compute cost (GPU-intensive, only economical at scale)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Transformers cannot be used for images at all, only text</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Transformers require no training data, unlike CNNs</li>
+        </ul>
+        <div class="quiz-reveal">Prof, twice, in direct response to student questions: "the obvious limitations... is like the computation and the data set size." Transformers need enormous data volume and GPU compute relative to CNNs, which is why CNNs remain the practical backbone for many resource-constrained production settings.<span class="mistake">Common mistake</span>Citing accuracy or classification ability as the limitation — Prof was clear ViT's accuracy is competitive with or better than CNNs; the real bottlenecks are data and compute.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q11 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q11</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Inductive bias</span>
+          <div class="quiz-q-text">Why does ViT need orders of magnitude more pretraining data than a CNN to reach the same accuracy? Name the concept.</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>ViT has more parameters than any CNN, so it needs more data to fill them</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Patch flattening destroys information that only extra data can restore</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>CNNs have built-in inductive biases — locality (small kernels) and translation equivariance (weight sharing) — that ViT lacks entirely; everything a CNN assumes for free, ViT must learn from data</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>ViT uses a slower optimizer that converges only with more examples</li>
+        </ul>
+        <div class="quiz-reveal">The ViT paper's own explanation: transformers have far weaker image-specific <strong>inductive bias</strong> than CNNs. With ImageNet-1k alone, ViT loses to comparable ResNets; with 300M+ pretraining images, it wins — large-scale data beats hand-built bias, but only once the data exists. DeiT later showed clever training (distillation + augmentation) can substitute for much of that data.<span class="mistake">Common mistake</span>Answering "more parameters" — ViT-Base (86M) is comparable to big ResNets; the gap is architectural assumptions, not raw size.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q12 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q12</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Attention complexity</span>
+          <div class="quiz-q-text">What is the computational complexity of self-attention with respect to sequence length n, and why?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>O(n) — each token is processed once</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>O(n²) — every token attends to every other token, producing an n×n score matrix in both time and memory</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>O(log n) — attention uses a tree structure over tokens</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>O(n³) — because of the three matrices Q, K, and V</li>
+        </ul>
+        <div class="quiz-reveal">Q·Kᵀ computes all pairwise dot products — n tokens each scored against n tokens = n² entries. Double the sequence (or image resolution), quadruple the cost — the mechanistic reason behind "melting GPUs," limited context windows, and fixes like Swin's windowed attention (linear in image size) and FlashAttention (exact math, memory-efficient ordering).<span class="mistake">Common mistake</span>Guessing O(n³) from the three Q/K/V matrices — the projections are cheap; the pairwise score matrix is the bottleneck.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="theory-block" style="margin-top:2rem;text-align:center;border-color:rgba(212,168,83,0.3);">
+        <h3 style="color:var(--gold);">You've reached the end · CV Session 10</h3>
+        <p style="color:var(--text2);">Core arc: seq2seq's single shared context vector → attention's dynamic per-word context (dot product → softmax → weighted sum) → self-attention within a sequence → Query/Key/Value as learned projections → scaled dot-product attention → multi-headed attention as parallel specialized views → positional embeddings restoring order → the full transformer block (attention + residual + norm + feed-forward) → Vision Transformer applying the identical recipe to 16×16 image patches. Preview flagged for Session 11: image segmentation, with convolution/deconvolution finally revisited.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs (kept for structural parity with other session pages) ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  const panel = document.getElementById(panelId);
+  if(panel) panel.classList.add('active');
+  if(!btn) return;
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('easy')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('medium')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Attention scoring demo (Section 03) ---------- */
+function updateAttention(){
+  const labels = ['I','am','going','bank'];
+  const raw = [0,1,2,3].map(i => parseFloat(document.getElementById('attS'+i).value));
+  raw.forEach((v,i)=> document.getElementById('attV'+i).textContent = v);
+  const exps = raw.map(v => Math.exp(v));
+  const sum = exps.reduce((a,b)=>a+b,0);
+  const weights = exps.map(e => e/sum);
+  const barWrap = document.getElementById('attBars');
+  barWrap.innerHTML = '';
+  weights.forEach((w,i)=>{
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+    const pct = Math.max(2, Math.round(w*100));
+    col.innerHTML = '<div class="bar-num">'+(w*100).toFixed(1)+'%</div><div class="bar-fill" style="height:'+pct+'%"></div><div class="bar-label">'+labels[i]+'</div>';
+    barWrap.appendChild(col);
+  });
+  const dominant = labels[weights.indexOf(Math.max(...weights))];
+  const spread = Math.max(...raw) - Math.min(...raw);
+  document.getElementById('attOut').textContent = 'Raw scores span '+spread.toFixed(1)+' units (unnormalized, unbounded). After softmax, attention concentrates most heavily on "'+dominant+'" — this becomes the dominant term in the dynamic context vector c_i for this decoder step.';
+}
+
+/* ---------- Multi-head attention demo (Section 05) ---------- */
+const HEAD_PATTERNS = [
+  { name:'Word sense', cells:['I','am','going','to','the','bank'], hot:[5], keep:[2], desc:'Head 1 resolves word-sense ambiguity: "bank" pulls its strongest attention from "going" (motion toward a destination) to disambiguate financial vs. geographic sense.' },
+  { name:'Intent tracking', cells:['I','am','going','to','the','bank'], hot:[0,2], keep:[5], desc:'Head 2 tracks "where is the user going?" — strong mutual attention between "I," "going," and the destination "bank," answering the implicit intent question.' },
+  { name:'Grammar', cells:['I','am','going','to','the','bank'], hot:[1], keep:[0,2], desc:'Head 3 tracks grammatical structure — subject "I" agrees with auxiliary "am," which governs the verb "going," checking the sentence is well-formed.' }
+];
+function showHead(idx, btn){
+  document.querySelectorAll('#s5 .demo-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const p = HEAD_PATTERNS[idx];
+  const grid = document.getElementById('headGrid');
+  grid.innerHTML = '';
+  p.cells.forEach((c,i)=>{
+    const div = document.createElement('div');
+    let cls = 'cell';
+    if(p.hot.includes(i)) cls += ' hot';
+    else if(p.keep.includes(i)) cls += ' keep';
+    else cls += ' none';
+    div.className = cls;
+    div.textContent = c;
+    grid.appendChild(div);
+  });
+  document.getElementById('headOut').textContent = p.desc;
+}
+
+/* ---------- ViT neighbor-recovery demo (Section 07) ---------- */
+const VIT_LAYERS = [
+  { label:'Layer 1', desc:'Raw flattened order — patch ★ (center) has no learned relation to any neighbor yet; attention is effectively uniform/random.', hotIdx:[] },
+  { label:'Layer 2', desc:'Attention begins concentrating on the true spatial neighbors of ★ (directly adjacent patches), even though the sequence itself is flat.', hotIdx:[9,10,11,16,18,23,24,25] },
+  { label:'Layer 3', desc:'By a deeper layer, attention has sharply converged onto the semantically/spatially related neighborhood around ★ — recovering most of the 2D adjacency that flattening initially discarded.', hotIdx:[10,11,16,18,24,25] }
+];
+function showVitLayer(idx, btn){
+  document.querySelectorAll('#s7 .demo-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const L = VIT_LAYERS[idx];
+  const grid = document.getElementById('vitGrid');
+  grid.innerHTML = '';
+  const center = 17;
+  for(let i=0;i<35;i++){
+    const div = document.createElement('div');
+    let cls = 'cell';
+    if(i===center) { cls += ' strong'; div.textContent = '★'; }
+    else if(L.hotIdx.includes(i)) { cls += ' hot'; div.textContent = '·'; }
+    else { cls += ' none'; div.textContent=''; }
+    div.className = cls;
+    grid.appendChild(div);
+  }
+  document.getElementById('vitOut').textContent = L.desc;
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+    const b = reveal.nextElementSibling;
+    if(b && b.classList.contains('reveal-btn')) b.textContent='Hide Explanation';
+  }
+}
+function toggleReveal(btn, id){
+  const reveal = id ? document.getElementById(id) : btn.previousElementSibling;
+  if(!reveal) return;
+  const shown = reveal.classList.toggle('shown');
+  if(id){ reveal.style.display = shown ? 'block' : 'none'; }
+  btn.textContent = shown ? 'Hide Explanation' : 'Show Explanation';
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', ()=>{ onScroll(); updateAttention(); showHead(0, document.querySelector('#s5 .demo-btn')); showVitLayer(0, document.querySelector('#s7 .demo-btn')); });
+</script>
+
+<!-- ============ SECTION 08 INTERACTIVE LAB — SCRIPT (merged from CV_Session10_ViT_Interactive.html, namespaced in an IIFE) ============ -->
+<script>
+(function(){
+  /* ---- config ---- */
+  const N=6, P=2, G=3, NUM_PATCHES=G*G, PATCH_DIM=P*P, EMBED_DIM=8, HEADS=2, HEAD_DIM=EMBED_DIM/HEADS,
+        MLP_HIDDEN=16, NUM_CLASSES=3, NUM_TOKENS=NUM_PATCHES+1;
+  const CLASS_LABELS=['Cross','Ring','Diagonal'];
+
+  /* ---- seeded RNG (mulberry32) + gaussian ---- */
+  function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  const rng = mulberry32(20260711);
+  function randn(){ let u=Math.max(rng(),1e-9), v=Math.max(rng(),1e-9); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
+  function mat(rows,cols,scale){ const m=[]; for(let i=0;i<rows;i++){ const r=[]; for(let j=0;j<cols;j++) r.push(randn()*scale); m.push(r); } return m; }
+  function vec(n,scale){ const v=[]; for(let i=0;i<n;i++) v.push(randn()*scale); return v; }
+
+  /* ---- fixed weights (seeded, stable across reloads) ---- */
+  const W = {
+    embed: mat(PATCH_DIM, EMBED_DIM, 0.5), embedBias: vec(EMBED_DIM,0.2),
+    cls: vec(EMBED_DIM,0.5),
+    pos: mat(NUM_TOKENS, EMBED_DIM, 0.3),
+    Wq: [mat(EMBED_DIM,HEAD_DIM,0.4), mat(EMBED_DIM,HEAD_DIM,0.4)],
+    Wk: [mat(EMBED_DIM,HEAD_DIM,0.4), mat(EMBED_DIM,HEAD_DIM,0.4)],
+    Wv: [mat(EMBED_DIM,HEAD_DIM,0.4), mat(EMBED_DIM,HEAD_DIM,0.4)],
+    Wo: mat(EMBED_DIM,EMBED_DIM,0.4), bo: vec(EMBED_DIM,0.1),
+    W1: mat(EMBED_DIM,MLP_HIDDEN,0.4), b1: vec(MLP_HIDDEN,0.1),
+    W2: mat(MLP_HIDDEN,EMBED_DIM,0.4), b2: vec(EMBED_DIM,0.1),
+    Wh: mat(EMBED_DIM,NUM_CLASSES,0.5), bh: vec(NUM_CLASSES,0.1)
+  };
+
+  /* ---- math helpers ---- */
+  function matVec(Wm, x, bias){ const cols=Wm[0].length; const out=new Array(cols).fill(0);
+    for(let i=0;i<x.length;i++){ const row=Wm[i]; for(let j=0;j<cols;j++) out[j]+=x[i]*row[j]; }
+    if(bias) for(let j=0;j<cols;j++) out[j]+=bias[j];
+    return out; }
+  function addVec(a,b){ return a.map((v,i)=>v+b[i]); }
+  function dot(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
+  function softmax(arr){ const m=Math.max(...arr); const ex=arr.map(v=>Math.exp(v-m)); const s=ex.reduce((a,b)=>a+b,0); return ex.map(v=>v/s); }
+  function layerNorm(x){ const mean=x.reduce((a,b)=>a+b,0)/x.length; const vr=x.reduce((a,b)=>a+(b-mean)*(b-mean),0)/x.length; return x.map(v=>(v-mean)/Math.sqrt(vr+1e-5)); }
+  function relu(x){ return x.map(v=>Math.max(0,v)); }
+
+  /* ---- state ---- */
+  const STATE = { pixels: new Array(N*N).fill(0), step:0, selQuery:0, selHead:0, playing:false, playTimer:null, forward:null };
+
+  const STAGES = [
+    {key:'image', label:'0 · Image'},
+    {key:'patchify', label:'1 · Patchify'},
+    {key:'embed', label:'2 · Flatten +\nLinear Proj'},
+    {key:'pos', label:'3 · + Positional\nEmbedding'},
+    {key:'ln1', label:'4 · LayerNorm\n(pre-attn)'},
+    {key:'mhsa', label:'5 · Multi-Head\nSelf-Attention'},
+    {key:'res1', label:'6 · Residual\nAdd (1)'},
+    {key:'ln2', label:'7 · LayerNorm\n(pre-MLP)'},
+    {key:'mlp', label:'8 · MLP\n(Feed-Forward)'},
+    {key:'res2', label:'9 · Residual\nAdd (2)'},
+    {key:'head', label:'10 · CLS → Head\n→ Softmax'}
+  ];
+
+  /* ---- presets ---- */
+  function loadPreset(name){
+    const g=(x,y)=>y*N+x;
+    const px = new Array(N*N).fill(0);
+    if(name==='cross'){
+      for(let i=0;i<N;i++){ px[g(i,2)]=1; px[g(i,3)]=1; px[g(2,i)]=1; px[g(3,i)]=1; }
+    } else if(name==='ring'){
+      for(let x=0;x<N;x++) for(let y=0;y<N;y++){ if(x===0||y===0||x===N-1||y===N-1) px[g(x,y)]=1; }
+    } else if(name==='diag'){
+      for(let i=0;i<N;i++) px[g(i,i)]=1;
+    } else if(name==='random'){
+      for(let i=0;i<N*N;i++) px[i]=Math.random()>0.5?1:0;
+    }
+    STATE.pixels = px;
+    renderPixGrid();
+    recompute();
+  }
+
+  /* ---- pixel grid UI ---- */
+  function shade(v){ const g=Math.round(v*255); return `rgb(${g},${g},${g})`; }
+  function renderPixGrid(){
+    const grid=document.getElementById('vitPixGrid');
+    if(!grid) return;
+    grid.innerHTML='';
+    for(let i=0;i<N*N;i++){
+      const d=document.createElement('div');
+      d.className='vit-pix';
+      d.style.background=shade(STATE.pixels[i]);
+      d.onclick=()=>{ STATE.pixels[i] = STATE.pixels[i]===0?0.5:(STATE.pixels[i]===0.5?1:0); renderPixGrid(); recompute(); };
+      grid.appendChild(d);
+    }
+  }
+
+  /* ---- forward pass ---- */
+  function computeForward(){
+    const patches=[];
+    for(let pr=0;pr<G;pr++){
+      for(let pc=0;pc<G;pc++){
+        const vals=[];
+        for(let dy=0;dy<P;dy++) for(let dx=0;dx<P;dx++){
+          const x=pc*P+dx, y=pr*P+dy;
+          vals.push(STATE.pixels[y*N+x]);
+        }
+        patches.push(vals);
+      }
+    }
+    const patchEmbeds = patches.map(p=>matVec(W.embed,p,W.embedBias));
+    const tokensRaw = [addVec(W.cls, W.pos[0])];
+    for(let i=0;i<NUM_PATCHES;i++) tokensRaw.push(addVec(patchEmbeds[i], W.pos[i+1]));
+
+    const ln1 = tokensRaw.map(layerNorm);
+
+    const attn=[]; const headOut=[];
+    for(let h=0;h<HEADS;h++){
+      const Q=ln1.map(t=>matVec(W.Wq[h],t)), K=ln1.map(t=>matVec(W.Wk[h],t)), V=ln1.map(t=>matVec(W.Wv[h],t));
+      const scores = Q.map(q=>K.map(k=>dot(q,k)/Math.sqrt(HEAD_DIM)));
+      const a = scores.map(softmax);
+      const out = a.map(row => {
+        const o=new Array(HEAD_DIM).fill(0);
+        row.forEach((w,s)=>{ for(let d=0;d<HEAD_DIM;d++) o[d]+=w*V[s][d]; });
+        return o;
+      });
+      attn.push(a); headOut.push(out);
+    }
+    const concatOut = ln1.map((_,t)=> [].concat(...headOut.map(h=>h[t])) );
+    const mhsaOut = concatOut.map(c=>matVec(W.Wo,c,W.bo));
+    const res1 = tokensRaw.map((t,i)=>addVec(t,mhsaOut[i]));
+    const ln2 = res1.map(layerNorm);
+    const mlpHiddenVals = ln2.map(t=>relu(matVec(W.W1,t,W.b1)));
+    const mlpOut = mlpHiddenVals.map(t=>matVec(W.W2,t,W.b2));
+    const res2 = res1.map((t,i)=>addVec(t,mlpOut[i]));
+    const clsFinal = res2[0];
+    const logits = matVec(W.Wh, clsFinal, W.bh);
+    const probs = softmax(logits);
+
+    return { patches, patchEmbeds, tokensRaw, ln1, attn, headOut, concatOut, mhsaOut, res1, ln2, mlpHiddenVals, mlpOut, res2, clsFinal, logits, probs };
+  }
+  function recompute(){ STATE.forward = computeForward(); renderStage(); }
+
+  /* ---- pipeline strip ---- */
+  function renderPipeline(){
+    const wrap=document.getElementById('vitPipeline');
+    if(!wrap) return;
+    wrap.innerHTML='';
+    STAGES.forEach((s,i)=>{
+      if(i>0){ const ar=document.createElement('span'); ar.className='vit-pipe-arrow'; ar.textContent='→'; wrap.appendChild(ar); }
+      const n=document.createElement('div');
+      n.className='vit-pipe-node'+(i===STATE.step?' active':(i<STATE.step?' done':''));
+      n.textContent=s.label;
+      n.onclick=()=>stepTo(i);
+      wrap.appendChild(n);
+    });
+    const prog=document.getElementById('vitStageProgress');
+    if(prog) prog.textContent = `Stage ${STATE.step+1} / ${STAGES.length}`;
+    const bp=document.getElementById('vitBtnPrev'), bn=document.getElementById('vitBtnNext');
+    if(bp) bp.disabled = STATE.step===0;
+    if(bn) bn.disabled = STATE.step===STAGES.length-1;
+  }
+
+  function stepTo(i){
+    if(i<0||i>=STAGES.length) return;
+    STATE.step=i;
+    renderPipeline();
+    renderStage();
+  }
+  function togglePlay(){
+    const btn=document.getElementById('vitBtnPlay');
+    if(STATE.playing){ clearInterval(STATE.playTimer); STATE.playing=false; if(btn) btn.textContent='▶ Play'; return; }
+    STATE.playing=true; if(btn) btn.textContent='⏸ Pause';
+    STATE.playTimer=setInterval(()=>{
+      if(STATE.step>=STAGES.length-1){ togglePlay(); return; }
+      stepTo(STATE.step+1);
+    }, 2400);
+  }
+
+  /* ---- generic vector heatmap ---- */
+  function vecColor(v){
+    const clamp=Math.max(-1.5,Math.min(1.5,v));
+    if(clamp>=0){ const t=clamp/1.5; return `rgba(212,168,83,${0.15+0.75*t})`; }
+    const t=-clamp/1.5; return `rgba(78,201,176,${0.15+0.75*t})`;
+  }
+  function renderVec(container, arr, tag){
+    const block=document.createElement('div'); block.className='vit-vec-block';
+    if(tag){ const t=document.createElement('span'); t.className='vit-vec-tag'; t.textContent=tag; block.appendChild(t); }
+    const strip=document.createElement('div'); strip.className='vit-vecstrip';
+    arr.forEach(v=>{
+      const c=document.createElement('div'); c.className='vit-vcell';
+      c.style.background=vecColor(v); c.title=v.toFixed(3);
+      c.textContent=v.toFixed(1);
+      strip.appendChild(c);
+    });
+    block.appendChild(strip);
+    container.appendChild(block);
+  }
+
+  /* ---- token row (optional attention tint + arcs) ---- */
+  function tokenLabel(t){ return t===0?'CLS':'P'+t; }
+  function renderTokenRow(container, opts){
+    opts = opts||{};
+    const wrapDiv=document.createElement('div'); wrapDiv.className='vit-token-row-wrap';
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('class','vit-arcs');
+    wrapDiv.appendChild(svg);
+    const row=document.createElement('div'); row.className='vit-token-row';
+    wrapDiv.appendChild(row);
+    container.appendChild(wrapDiv);
+
+    const attnRow = opts.showAttention ? STATE.forward.attn[STATE.selHead][STATE.selQuery] : null;
+
+    for(let t=0;t<NUM_TOKENS;t++){
+      const box=document.createElement('div');
+      box.className='vit-token-box'+(opts.showAttention && t===STATE.selQuery ? ' sel':'');
+      if(opts.showAttention){
+        const w = attnRow[t];
+        box.style.background = `rgba(212,168,83,${0.08+0.8*w})`;
+      }
+      const lab=document.createElement('div'); lab.className='vit-tlabel'; lab.textContent=tokenLabel(t);
+      box.appendChild(lab);
+      if(t===0){
+        const star=document.createElement('div'); star.className='vit-cls-star'; star.textContent='★';
+        box.appendChild(star);
+      } else {
+        const mini=document.createElement('div'); mini.className='vit-mini';
+        STATE.forward.patches[t-1].forEach(v=>{ const d=document.createElement('div'); d.style.background=shade(v); mini.appendChild(d); });
+        box.appendChild(mini);
+      }
+      if(opts.showAttention){
+        const pct=document.createElement('div'); pct.style.fontFamily='var(--font-code)'; pct.style.fontSize='9px'; pct.style.color='var(--gold)'; pct.style.marginTop='3px';
+        pct.textContent=(attnRow[t]*100).toFixed(0)+'%';
+        box.appendChild(pct);
+      }
+      if(opts.clickable){
+        box.style.cursor='pointer';
+        box.onclick=()=>{ STATE.selQuery=t; renderStage(); };
+      }
+      row.appendChild(box);
+    }
+
+    if(opts.showAttention){
+      requestAnimationFrame(()=>{
+        const boxes = row.querySelectorAll('.vit-token-box');
+        const rowRect = row.getBoundingClientRect();
+        const centers = Array.from(boxes).map(b=>{ const r=b.getBoundingClientRect(); return r.left - rowRect.left + r.width/2; });
+        svg.setAttribute('viewBox', `0 0 ${row.scrollWidth} 70`);
+        svg.innerHTML='';
+        const qx = centers[STATE.selQuery];
+        centers.forEach((kx,t)=>{
+          if(t===STATE.selQuery) return;
+          const w = attnRow[t];
+          if(w<0.03) return;
+          const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+          const midx=(qx+kx)/2, arcHeight = 66 - Math.min(56, Math.abs(kx-qx)*0.15);
+          path.setAttribute('d', `M ${qx} 68 Q ${midx} ${68-arcHeight} ${kx} 68`);
+          path.setAttribute('stroke', 'rgba(212,168,83,'+(0.15+0.75*w)+')');
+          path.setAttribute('stroke-width', String(1+5*w));
+          path.setAttribute('fill','none');
+          svg.appendChild(path);
+        });
+      });
+    }
+  }
+
+  /* ---- NxN attention matrix ---- */
+  function renderMatrix(container, headIdx){
+    const m = STATE.forward.attn[headIdx];
+    const wrap=document.createElement('div');
+    wrap.innerHTML = '<span class="vit-vec-tag">Attention matrix — head '+(headIdx+1)+' (row = query, col = key, rows sum to 1)</span>';
+    const grid=document.createElement('div'); grid.className='vit-matrix';
+    grid.style.gridTemplateColumns = `repeat(${NUM_TOKENS}, 22px)`;
+    for(let i=0;i<NUM_TOKENS;i++){
+      for(let j=0;j<NUM_TOKENS;j++){
+        const c=document.createElement('div'); c.className='vit-mcell'+(i===STATE.selQuery?' vit-mrow-sel':'');
+        const w=m[i][j];
+        c.style.background = `rgba(212,168,83,${0.08+0.85*w})`;
+        c.title = tokenLabel(i)+' → '+tokenLabel(j)+': '+w.toFixed(3);
+        grid.appendChild(c);
+      }
+    }
+    wrap.appendChild(grid);
+    container.appendChild(wrap);
+  }
+
+  /* ---- stage detail ---- */
+  function renderStage(){
+    const el=document.getElementById('vitStageDetail');
+    if(!el) return;
+    el.innerHTML='';
+    const f=STATE.forward;
+    const stage=STAGES[STATE.step].key;
+
+    if(stage==='image'){
+      el.innerHTML = `<h3>The raw input</h3><p class="vit-note">Nothing computed yet — this is your 6×6 pixel grid above, about to be sliced into patches. Step forward to begin the pipeline.</p>`;
+    }
+
+    else if(stage==='patchify'){
+      const h3=document.createElement('h3'); h3.textContent='9 patches of 2×2 pixels each'; el.appendChild(h3);
+      const p=document.createElement('p'); p.className='vit-note'; p.textContent='Each patch below is a real 2×2 slice of your image, shown in raster order (left-to-right, top-to-bottom), exactly as a ViT would slice it before flattening. Compare each mini-thumbnail to the full image above.';
+      el.appendChild(p);
+      const row=document.createElement('div'); row.style.display='flex'; row.style.gap='10px'; row.style.flexWrap='wrap'; row.style.marginTop='.75rem';
+      f.patches.forEach((patch,i)=>{
+        const box=document.createElement('div'); box.style.textAlign='center';
+        const lab=document.createElement('div'); lab.style.fontFamily='var(--font-code)'; lab.style.fontSize='10px'; lab.style.color='var(--text2)'; lab.textContent='P'+(i+1);
+        const mini=document.createElement('div'); mini.className='vit-mini'; mini.style.gridTemplateColumns='repeat(2,16px)';
+        patch.forEach(v=>{ const d=document.createElement('div'); d.style.width='16px'; d.style.height='16px'; d.style.background=shade(v); mini.appendChild(d); });
+        box.appendChild(lab); box.appendChild(mini);
+        row.appendChild(box);
+      });
+      el.appendChild(row);
+    }
+
+    else if(stage==='embed'){
+      el.innerHTML = `<h3>Flatten (2×2 → 4 values) then linear-project (4 → 8 dims)</h3>
+        <p class="vit-note">Each patch's 4 pixel values are flattened into a row vector, then multiplied by a fixed 4×8 weight matrix <code>W_embed</code> plus bias — <code>f(x) = x·W_embed + b</code> — exactly the score-function shape from Session 9's linear classifier, just producing an embedding instead of a class score.</p>`;
+      f.patchEmbeds.forEach((emb,i)=> renderVec(el, emb, 'Patch '+(i+1)+' embedding (8-dim)'));
+    }
+
+    else if(stage==='pos'){
+      el.innerHTML = `<h3>Add a positional embedding, prepend the CLS token</h3>
+        <p class="vit-note">A fixed 8-dim vector is added elementwise per position (patch 1's embedding always gets position-1's vector added, etc.) so the transformer — which has no inherent sense of order — knows where each patch sat in the image. A learned <strong>CLS token</strong> is also prepended; its final-layer output is what the classification head reads.</p>`;
+      renderTokenRow(el, {showAttention:false});
+      f.tokensRaw.forEach((t,i)=> renderVec(el, t, tokenLabel(i)+' = patch/CLS embedding + position'));
+    }
+
+    else if(stage==='ln1'){
+      el.innerHTML = `<h3>LayerNorm before attention (pre-LN, as in the original ViT paper)</h3>
+        <p class="vit-note">Each token's 8 values are normalized to zero mean / unit variance <em>independently of the other tokens</em> — this keeps the numbers well-scaled before they hit the attention weights, the same anti-vanishing-gradient logic behind residual connections.</p>`;
+      f.ln1.forEach((t,i)=> renderVec(el, t, tokenLabel(i)+' normalized'));
+    }
+
+    else if(stage==='mhsa'){
+      el.innerHTML = `<h3>Multi-head self-attention — click a token to make it the query</h3>
+        <p class="vit-note">Select any token as the <strong>query</strong> and a head below. Arcs show how strongly that query attends to every other token (thicker/brighter = higher weight); the background tint of each token box mirrors the same weight; the matrix beneath shows the full 10×10 picture with the selected row outlined.</p>`;
+      const headRow=document.createElement('div');
+      headRow.innerHTML = `<button class="demo-btn${STATE.selHead===0?' on':''}" onclick="window.vitSetHead(0)">Head 1</button><button class="demo-btn${STATE.selHead===1?' on':''}" onclick="window.vitSetHead(1)">Head 2</button>`;
+      el.appendChild(headRow);
+      renderTokenRow(el, {showAttention:true, clickable:true});
+      renderMatrix(el, STATE.selHead);
+      const note=document.createElement('p'); note.className='vit-note';
+      note.textContent = `Query = ${tokenLabel(STATE.selQuery)}. Each head has its own separate Q/K/V weight matrices (never shared) — that's why switching heads can reshuffle which tokens ${tokenLabel(STATE.selQuery)} attends to most.`;
+      el.appendChild(note);
+    }
+
+    else if(stage==='res1'){
+      el.innerHTML = `<h3>Residual add — attention output + original token</h3>
+        <p class="vit-note"><code>res1 = token + MHSA(LayerNorm(token))</code>. The skip connection means attention only has to learn a <em>correction</em> to add on top of the original embedding, not reconstruct it from scratch — this is what keeps deep stacks of these blocks trainable.</p>`;
+      f.res1.forEach((t,i)=> renderVec(el, t, tokenLabel(i)+' after residual add'));
+    }
+
+    else if(stage==='ln2'){
+      el.innerHTML = `<h3>LayerNorm before the MLP</h3>
+        <p class="vit-note">Same operation as stage 4, applied again — normalizing before the feed-forward network for the same stability reason.</p>`;
+      f.ln2.forEach((t,i)=> renderVec(el, t, tokenLabel(i)+' normalized'));
+    }
+
+    else if(stage==='mlp'){
+      el.innerHTML = `<h3>Feed-forward MLP — 8 → 16 (ReLU) → 8</h3>
+        <p class="vit-note">A two-layer fully-connected network applied identically, token-by-token: expand to 16 hidden units, apply ReLU (values below zero shown teal, clipped to 0), project back down to 8. This is where the model can mix information within a single token's own features after attention has mixed information <em>across</em> tokens.</p>`;
+      f.mlpHiddenVals.forEach((t,i)=> renderVec(el, t, tokenLabel(i)+' hidden layer (16-dim, post-ReLU)'));
+    }
+
+    else if(stage==='res2'){
+      el.innerHTML = `<h3>Residual add — MLP output + pre-MLP value</h3>
+        <p class="vit-note"><code>res2 = res1 + MLP(LayerNorm(res1))</code>. This is the final output of one full transformer encoder block. A real ViT stacks many of these in sequence (ViT-Base uses 12); this demo shows a single block so every operation stays visible.</p>`;
+      f.res2.forEach((t,i)=> renderVec(el, t, tokenLabel(i)+' — encoder block output'));
+    }
+
+    else if(stage==='head'){
+      el.innerHTML = `<h3>Classification head — CLS token only</h3>
+        <p class="vit-note">Only the <strong>CLS token's</strong> final vector is read by the classification head — a small linear layer projecting 8 dims down to 3 class logits, then softmax. Every patch token's information had to flow into CLS via attention for this to work at all; that's the entire reason CLS exists.</p>`;
+      renderVec(el, f.clsFinal, 'CLS final vector (8-dim)');
+      const bars=document.createElement('div'); bars.className='bar-chart';
+      f.probs.forEach((p,i)=>{
+        const col=document.createElement('div'); col.className='bar-col';
+        col.innerHTML = `<div class="vit-bar-pct">${(p*100).toFixed(1)}%</div><div class="bar-fill" style="height:${Math.max(2,p*100)}%"></div><div class="bar-label">${CLASS_LABELS[i]}</div>`;
+        bars.appendChild(col);
+      });
+      el.appendChild(bars);
+      const note=document.createElement('p'); note.className='vit-note';
+      note.textContent = 'Remember: Wh/bh are random, untrained weights. These probabilities exercise the real softmax(Wx+b) mechanism from Session 9 — they are not a trained classifier\'s opinion.';
+      el.appendChild(note);
+    }
+  }
+
+  /* ---- exposed API for inline HTML handlers ---- */
+  window.vitLoadPreset = loadPreset;
+  window.vitStepTo = stepTo;
+  window.vitPrev = ()=>stepTo(STATE.step-1);
+  window.vitNext = ()=>stepTo(STATE.step+1);
+  window.vitTogglePlay = togglePlay;
+  window.vitSetHead = (h)=>{ STATE.selHead=h; renderStage(); };
+
+  /* ---- init ---- */
+  loadPreset('cross');
+  renderPipeline();
+})();
+</script>
+
+</body>
+</html>
