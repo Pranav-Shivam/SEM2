@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Session 9 — Image Classification · KNN, Linear Classifiers, Loss Functions</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .nav-link .prev-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--violet); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV9'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:14rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-transcript { color:var(--sky); background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .src-preview { color:var(--violet); background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .reveal-btn { font-family:var(--font-code); font-size:11px; padding:6px 14px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; margin-top:0.75rem; letter-spacing:0.05em; }
+  .reveal-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") {
+    root.setAttribute("data-theme", saved);
+  }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 9 — Image Classification</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Grounded in Session 9 Lecture</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · The Classification Problem</a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Label Types &amp; Datasets</a>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Bag of Words &amp; Data-Driven ML</a>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Nearest Neighbor &amp; K-NN</a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · Train / Val / Test &amp; Cross-Validation</a>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Linear Classifiers</a>
+  <a href="#s7" class="nav-link" data-section="s7">07 · Loss Functions</a>
+  <a href="#s8" class="nav-link" data-section="s8">08 · CIFAR-10 Code Walkthrough<span class="lab-dot" title="PyTorch"></span></a>
+  <span class="nav-group-label">Next-Session Preview</span>
+  <a href="#s9" class="nav-link" data-section="s9">09 · Towards CNNs<span class="prev-dot"></span></a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s10" class="nav-link" data-section="s10">Exam Quiz (10 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 9 · S2-25</span>
+    <h1>Image Classification<br><span>KNN → Linear Classifiers → Loss</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">The pivot session: classical features hand off to the deep-learning arc. Data-driven approach, K-nearest neighbors, and the linear score function f(x,W)=Wx+b that becomes every neural network's last layer.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Lecture</strong>Jul 4, 2026</div>
+      <div class="hero-meta-item"><strong>Prof</strong>Dhruba Adhikary</div>
+      <div class="hero-meta-item"><strong>Duration</strong>1h 47m</div>
+      <div class="hero-meta-item"><strong>Format</strong>Live recording + Q&amp;A</div>
+      <div class="hero-meta-item"><strong>Next up</strong>Session 10 · CNNs &amp; ViT</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">3-Stage Pipeline</span>
+      <span class="topic-chip">Multi-Label Classification</span>
+      <span class="topic-chip">CIFAR-10</span>
+      <span class="topic-chip">Bag of Words</span>
+      <span class="topic-chip">K-NN</span>
+      <span class="topic-chip">L1 / L2 Distance</span>
+      <span class="topic-chip">Cross-Validation</span>
+      <span class="topic-chip">Score Function Wx+b</span>
+      <span class="topic-chip">Softmax / Cross-Entropy</span>
+      <span class="topic-chip">SVM Max-Margin</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide — source honesty</h3>
+      <p>This guide is built <strong>entirely from the live transcript</strong> of the Jul 4, 2026 session (no slide deck was supplied for Session 9) — Prof. Dhruba taught this one conversationally, on a whiteboard, working through the reasoning live rather than reading slides.</p>
+      <p><span class="src-badge src-transcript">Transcript</span> &nbsp;= Prof. Dhruba's live words / worked derivations, Jul 4 2026. &nbsp; <span class="src-badge src-lab">Code</span> &nbsp;= the PyTorch/CIFAR-10 demo Prof walked through live. &nbsp; <span class="src-badge src-preview">Preview</span> &nbsp;= explicitly flagged by Prof as Session 10 content (CNNs, Vision Transformers) but referenced here for continuity.</p>
+      <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--rose)">Reality check:</strong> Prof opened with exam feedback (answer keys released, a disputed Harris-corner "strong/weak" question flagged for review with Prof Sugata and the TAs) before starting new content around minute 15. That Q&amp;A is summarized briefly below since it affects how you should read your own mid-sem scripts, but the bulk of this guide is the image-classification pipeline itself.</p>
+    </div>
+
+    <div class="annotation">
+      <div class="annotation-label">Housekeeping from the start of class</div>
+      <p>Answer keys for mid-sem released same day. Ayush raised that the PPTs are far terser than the live teaching — Prof agreed slide decks are space-constrained and pointed students back to Sonka &amp; Zelensky's textbook for depth, and said he'd try to add more notes. Dhileepan flagged a makeup-paper question that asked students to classify edges as "strong/weak" using <em>Harris</em> corner detection — Prof confirmed strong/weak classification belongs to <strong>Canny's hysteresis step</strong>, not Harris (which only distinguishes flat / edge / corner), and said he'd raise it with Prof Sugata and the TAs for possible remarking.</p>
+    </div>
+
+    <!-- ============ SECTION 01 ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">The Classification Problem</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why this session is a pivot</h3>
+        <p>Everything up to Session 8 built <em>features</em> — edges, corners, SIFT keypoints, HoG descriptors, RANSAC-fitted models. Session 9 asks: now that you have features, how do you actually decide <em>what the object is</em>? This is where classical computer vision (90s–2000s) hands off to the deep learning arc. Prof was explicit: today repeats the pipeline you already know from ML — collect data, train, predict — because that repetition is what sets the context for how the field evolved into CNNs and eventually Vision Transformers.</p>
+        <p>Computer vision scientists build every algorithm in three stages, in this order: <strong>what</strong> (classification — is a dog present), <strong>where</strong> (detection/segmentation — where is the dog in the image), <strong>track</strong> (temporal — where is the dog going). Session 9 is entirely about the first stage.</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba, on why computers struggle where humans don't</div>
+        <p>"For us, it is a lot more easier. For computers, it is particularly a tough problem." — on the shape/color distinctiveness challenge (a green tank against green background vs. a grasshopper on grass).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The recognition challenges (why this is hard)</h3>
+        <p>These are the same "nuisance" factors introduced pre-mid-sem with SIFT, now re-applied to whole-image classification:</p>
+        <table class="he-table">
+          <thead><tr><th>Challenge</th><th>Prof's example</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Viewpoint variation</td><td>Cat photographed from afar, low light, from behind — is it a cat or a mountain lion?</td></tr>
+            <tr><td style="color:var(--gold)">Illumination</td><td>Same object, different lighting → very different pixel intensities</td></tr>
+            <tr><td style="color:var(--gold)">Deformation</td><td>Cat sleeping on its back — hard to distinguish from a leopard's pose</td></tr>
+            <tr><td style="color:var(--gold)">Occlusion</td><td>Predators are "very good in hiding" — subject partly hidden behind clutter</td></tr>
+            <tr><td style="color:var(--gold)">Intra-class variation</td><td>"Not every dog is the same" — many breeds, one label</td></tr>
+            <tr><td style="color:var(--gold)">Scale</td><td>Same object, near vs. far — same problem SIFT solves for keypoints</td></tr>
+            <tr><td style="color:var(--gold)">Background clutter</td><td>Subject blending into a busy scene</td></tr>
+            <tr><td style="color:var(--gold)">Texture / colour distinctiveness</td><td>"The grass is green and the grasshopper is also green. Are these the same object? Absolutely no."</td></tr>
+            <tr><td style="color:var(--gold)">Shape distinctiveness</td><td>"This is a cliff, not the back of a donkey in water" — but how does a computer know?</td></tr>
+            <tr><td style="color:var(--gold)">Real-world size</td><td>"We have all taken the photo in front of Taj Mahal, holding the tip... does that mean I am the same size as Taj Mahal's height? Absolutely not."</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — this is the managed-service you already use</div>
+        <p>Prof cited Google Cloud Vision as a real product built on exactly this pipeline — upload an image, get back a label with a confidence score (e.g. "woodwind instrument," "flute"). Every cloud "auto-tag this photo" feature is image classification wearing a UI.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>This exact challenge taxonomy — viewpoint, illumination, deformation, occlusion, intra-class variation, background clutter — traces to Stanford's <cite>CS231n image classification notes (Karpathy, Fei-Fei Li et al., cs231n.github.io/classification)</cite>, not folklore; it's been copied into a decade of CV syllabi since. What's missing from the classic framing is the implied arc that better architectures would retire it. They haven't.</p>
+        <p><strong>Foundation models still measurably degrade on these exact axes.</strong> A 2023 study of CLIP on real-world assistive-tech benchmarks (ORBIT, VizWiz — low-vision users' photos) found occlusion cut accuracy by 9–14 points, viewpoint by 8–9, and lighting by up to 23 points relative to clean images. <cite>SAM2 (Ravi et al., Meta, 2024)</cite> had to add a dedicated occlusion-prediction token/head to its architecture specifically because the original SAM couldn't reliably say an object was currently hidden — and even with the fix, SAM2 still documents failures on occlusion from clutter like branches and leaves. DINOv2 fares better on viewpoint/illumination invariance, but only because heavy multi-crop augmentation was deliberately baked into its training — a targeted fix, not evidence the problem dissolved on its own.</p>
+        <p>The dataset built to make this unambiguous is <cite>ObjectNet (Barbu et al., NeurIPS 2019)</cite>: 50,000 images with viewpoint, rotation, and background deliberately randomized as experimental controls. Detectors that looked state-of-the-art on ImageNet/COCO dropped roughly 40–45% in accuracy the moment those three CS231n-named variables were decoupled from the correlations models had learned to exploit. The classic list wasn't a beginner's problem statement — it remains the benchmark.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Label Types &amp; Datasets</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Three kinds of classification</h3>
+        <table class="he-table">
+          <thead><tr><th>Type</th><th>Definition</th><th>Loss used</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--lime)">Binary</td><td>Two labels (cat / not-cat)</td><td>Sigmoid + binary cross-entropy</td></tr>
+            <tr><td style="color:var(--gold)">Multi-class</td><td>One label out of N (cat, dog, plane, truck, ...)</td><td>Softmax + cross-entropy</td></tr>
+            <tr><td style="color:var(--sky)">Multi-label</td><td>A label <em>and</em> a sub-label — e.g. dog → then which breed; defect → then which defect type</td><td>Stage 1 (binary or multi-class) → stage 2 (multi-class) chained</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Live Q&amp;A — Deshmukh's question on multi-label ordering</div>
+        <p>Deshmukh asked whether multi-label classification must always run binary-then-multi-class, in that fixed order. Prof's answer: no — <strong>stage one can itself be either binary or multi-class</strong>, depending on the problem. Example given: a visual quality-inspection system first asks a <em>binary</em> question (defect / no defect), and only if "defect" does it run a second-stage <em>multi-class</em> model (scratch vs. dent vs. crack). "Depending on your problem statement, your multi-label will change." The two stages are not always binary→multiclass; sometimes it's multiclass→multiclass, chained however many times the problem needs.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Benchmark datasets referenced</h3>
+        <p>Prof grouped these as the "primary mainstay" datasets computer vision has standardized on — every published result you'll compare against is measured on one of these:</p>
+        <table class="he-table">
+          <thead><tr><th>Dataset</th><th>Role in the lecture</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">MNIST</td><td>Referenced as the "you've already seen this" baseline — digit images, one label per image</td></tr>
+            <tr><td style="color:var(--gold)">CIFAR-10</td><td>The dataset used for <strong>every demo in this session</strong>: 60,000 images total (50,000 train / 10,000 test), 32×32×3, 10 classes (airplane, automobile, bird, cat, deer, ...)</td></tr>
+            <tr><td style="color:var(--gold)">Fashion-MNIST</td><td>Mentioned as another "curated" benchmark students would already have encountered</td></tr>
+            <tr><td style="color:var(--gold)">PASCAL</td><td>Named as a primary CV benchmark (detection/segmentation-oriented)</td></tr>
+            <tr><td style="color:var(--gold)">ImageNet</td><td>Named as a primary CV benchmark — the dataset behind the ILSVRC accuracy race that produced AlexNet, VGG, ResNet</td></tr>
+            <tr><td style="color:var(--gold)">COCO</td><td>Named as a primary CV benchmark, typically for detection/segmentation tasks</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key Insight</div>
+        <p>Prof's framing: "these data sets help in benchmarking" — the same reason you compare an LLM against a fixed eval set, computer vision compares algorithms against a fixed image set. Datasets aren't incidental — they <em>are</em> the yardstick.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Exact numbers behind the names:</strong> <cite>MNIST</cite> — 70,000 28×28 grayscale digit images, 60k train/10k test, remixed from NIST Special Databases 1 &amp; 3 (LeCun, Bottou, Bengio &amp; Haffner, <em>Proc. IEEE</em>, 1998). <cite>CIFAR-10</cite> — 60,000 32×32 colour images, 10 classes, 6,000 each, drawn from the 80-Million Tiny Images corpus (Krizhevsky, 2009, supervised by Hinton). <cite>PASCAL VOC</cite> — ran as an annual challenge 2005–2012; VOC2012 has ~11,530 images, 27,450 annotated objects, 20 classes (Everingham et al., <em>IJCV</em>, 2010). <cite>ImageNet</cite> — 14M+ hand-labeled images across ~21,800 WordNet synsets (Deng, Dong, Socher, Li, Li &amp; Fei-Fei Li, CVPR 2009); its ILSVRC subset (2010–2017) used 1,000 classes and ~1.28M training images. <cite>COCO</cite> — ~328,000 images, 2.5M labeled instances, 91 categories, emphasizing scene context over isolated objects (Lin et al., Microsoft, ECCV 2014).</p>
+        <p><strong>The 2012 inflection point, precisely:</strong> AlexNet (Krizhevsky, Sutskever &amp; Hinton, NeurIPS 2012) cut ILSVRC-2012 top-5 error to 15.3%, against 26.2% for the next-best entry — a hand-engineered SIFT+Fisher-vector pipeline. That ~11-point absolute drop is still the largest single-year jump in the challenge's history: an 8-layer CNN trained on two GTX 580 GPUs with ReLU and dropout, shrinking training time from weeks to about a week.</p>
+        <p><strong>Where these stand in 2026:</strong> none are deprecated, but most are saturated relative to their original purpose. MNIST/CIFAR-10 now mainly serve as teaching/unit-test sets (models exceed ~99.7%/~99.5% accuracy). ImageNet-1k top-1 accuracy plateaued near 90–91% (e.g. CoCa, Google, 2022) — near estimated human performance — which is why ILSVRC itself ended in 2017; papers now report robustness variants (ImageNet-A/R/Sketch, ObjectNet) or foundation-model suites (VTAB, MMMU) instead of a bare top-1 number. COCO and PASCAL VOC remain standard for detection/segmentation, but COCO has effectively superseded VOC, and the harder long-tail LVIS dataset is increasingly cited alongside it for current SOTA detection claims.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Bag of Words &amp; the Data-Driven Approach</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The data-driven approach, in two functions</h3>
+        <p>Since no rule can be hand-coded for "catness," the field pivoted to <strong>supervised, data-driven learning</strong>: collect N images per label (different orientations, occlusions, illuminations — "the more the merrier"), then reduce the whole problem to two functions:</p>
+        <ol class="pipeline">
+          <li><strong>train(images, labels) → classifier</strong>
+            <p>Extract features from every training image (edges, corners, HoG, SIFT — whatever you already know how to compute), feed them with their labels to a classifier algorithm, and store the learned parameters.</p></li>
+          <li><strong>predict(image) → label</strong>
+            <p>Extract the same features from a new image, run them through the learned classifier, and output a class score / probability.</p></li>
+        </ol>
+      </div>
+
+      <div class="theory-block">
+        <h3>Bag of Words — the first classification algorithm</h3>
+        <p>Prof traced today's pipeline back to <strong>Bag of Words (Bo\W)</strong>, first developed for computer vision before it became an NLP staple. The recipe:</p>
+        <ol class="pipeline">
+          <li><strong>Detect key patches</strong><p>Blobs from SIFT — regions of interest rather than the whole image.</p></li>
+          <li><strong>Extract features per patch</strong><p>x, y, σ (scale), and principal orientation — i.e. the SIFT + HoG feature set you already built.</p></li>
+          <li><strong>Compute a histogram</strong><p>Flatten every patch's features into one row; stack rows across patches into a table (rows = keypoints, columns = feature dims) — "awfully similar to your CSV kind of data."</p></li>
+          <li><strong>Classify the histogram</strong><p>Feed the histogram table to any classifier — SVM, random forest, or (today's focus) nearest neighbor.</p></li>
+        </ol>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Attribution, as given in lecture (auto-transcript, unverified)</div>
+        <p>Prof credited this Bag-of-Words methodology to a paper he referred to (heard in the recording as "Sarska") published via Springer around 2006–2007, and said it originated in computer vision before NLP adopted the name. The reference book he named for full depth is <strong>Milan Sonka &amp; Zelensky's</strong> textbook.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced — citation corrected</span>
+        <p>The "Sarska, Springer, 2006–2007" attribution doesn't correspond to any real paper in this literature. The correct originating work is <cite>Csurka, Dance, Fan, Willamowski &amp; Bray, "Visual Categorization with Bags of Keypoints," ECCV Workshop on Statistical Learning in Computer Vision, Prague, 2004</cite> — the paper that coined "bag of keypoints" and first paired SIFT-like local descriptors, k-means vector quantization into a visual vocabulary, and an SVM classifier over the resulting histogram. It builds directly on <cite>Sivic &amp; Zisserman, "Video Google," ICCV 2003</cite>, which introduced the visual-word vocabulary and inverted-index retrieval a year earlier, for video retrieval rather than categorization. "Sarska" is almost certainly a mis-transcription of "Csurka."</p>
+        <p><strong>The claimed direction is also reversed:</strong> bag-of-words originated in text/information retrieval, not computer vision. The term traces to distributional linguistics (Zellig Harris, 1954) and the vector-space model for document retrieval (Salton and colleagues, 1960s–70s), well before vision researchers adopted it — Sivic &amp; Zisserman explicitly borrowed the text-retrieval analogy (word counts, inverted files, tf-idf-style weighting) to build "Video Google." CV imported the framework from NLP, not the other way around.</p>
+        <p><strong>What replaced it:</strong> better feature-aggregation schemes — Fisher vectors (Perronnin &amp; Dance, CVPR 2007) and VLAD (Jégou, Douze, Schmid &amp; Pérez, CVPR 2010) — and then, from roughly 2012–2014 onward, end-to-end learned CNN embeddings (AlexNet and successors), which made hand-crafted SIFT-plus-quantization pipelines largely obsolete for classification by the mid-2010s.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — you already did this in Assignment 1</div>
+        <p>"You have taken a set of SIFT features or edges, corners or whatever be it. You have computed a histogram and then you have applied say SVM or say a random forest... and you have classified urban versus rural image." Session 9's theory is a formal name for the pipeline your own assignment already implemented.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Nearest Neighbor &amp; K-Nearest Neighbors</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-lab">CIFAR-10 demo</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The core idea — distance as similarity</h3>
+        <p>"Nearest neighbor algorithms — these are distance-based algorithms." Prof's framing example: given a human face, another human face, and a cat, the distance between the two human faces will always be smaller than the distance between either face and the cat. Classification becomes: <em>find the closest match in a labeled dictionary and copy its label.</em></p>
+        <p>Training a K-NN model is literally just storing a dictionary — <code>{label: [feature vectors of every training image with that label]}</code>. There is no fitting, no optimization at train time.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">K-NN — distance metrics</div>
+<span class="formula-line"><span class="f-dim">L1 / Manhattan (Hamming, in Prof's phrasing):</span>  <span class="f-gold">d₁(I₁,I₂) = Σ |I₁ᵖ − I₂ᵖ|</span>   <span class="f-dim">— pixelwise absolute difference, summed</span></span>
+<span class="formula-line"><span class="f-dim">L2 / Euclidean:</span>  <span class="f-teal">d₂(I₁,I₂) = √( Σ (I₁ᵖ − I₂ᵖ)² )</span>   <span class="f-dim">— square root of summed squared difference</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Decision rule:</span>  <span class="f-lime">label(x) = label( argmin_i d(x, xᵢ) )</span>   <span class="f-dim">for K=1; for K&gt;1, majority vote among the K closest</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Worked walk-through, as Prof described it</h3>
+        <p>Take a training set with images already labeled boat / dog / frog / cat / plane. An incoming test image is compared against <em>every</em> stored image, producing a distance score for each (e.g. 0.1, 0.01, 0.3, 0.99, ...). The closest score wins — "this image and this image, they are similar" — and the test image inherits that neighbor's label. Prof was explicit that the match need not be exact: a same-species image at a different scale, or a same-family aquatic animal in a different color, can still register as the closest match by a comfortable margin (e.g. 0.8 vs. the next-best 0.7).</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header">
+          <span class="exam-badge">Two core problems with K-NN</span>
+          <h4>Both are exam-testable in one sentence each</h4>
+        </div>
+        <ul class="exam-list">
+          <li><strong>Inverted time complexity:</strong> training is O(1) — you just record images, features, and labels. But inference is O(N) — one test image is compared against <em>every</em> stored training image (60,000 comparisons for CIFAR-10), then argmax over all distances. "Normally it needs to be opposite — your training time can be lengthy, but your inference time should be as fast and real-time as possible."</li>
+          <li><strong>Poor generalization — pure intensity-to-intensity matching:</strong> shift an image by a few pixels, or occlude/paint part of a face, and raw K-NN (without SIFT/HoG on top) sees a completely different intensity pattern and fails, even though a human sees the same object instantly. "It is just computing matching distance to distance."</li>
+        </ul>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba, on the flipped-face example</div>
+        <p>"If I take my image right now, and I just flip the image... the images are not a match. It will not be able to give me that, okay, this is the image or the face of Dhruba." A pure distance metric has zero invariance to transformations a human ignores instinctively.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — 20% was a big deal in its era</div>
+        <p>Running Prof's demo notebook (CIFAR-10, raw-pixel K-NN, no SIFT/HoG preprocessing) gives roughly <strong>20% accuracy</strong> — it fails 80% of the time. Prof's point: at the time this was still meaningful. "If I'm even able to reduce the accidents by 20%, that's a huge KPI win" in a shop-floor safety-monitoring setting. K-NN was the <em>first real attempt</em> at automated image classification, not a good one by modern standards — but a necessary stepping stone.</p>
+        <pre># Prof's live demo, PyTorch + CIFAR-10 (torchvision)
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(...)])
+train_data, test_data = load_cifar10(transform)          # 50,000 train / 10,000 test
+train_data, val_data = split(train_data, 40000, 10000)   # 90/10 split of the training set
+
+def nearest_neighbor_predict(train_x, train_y, test_x):
+    preds = []
+    for t in test_x:
+        dists = l1_distance(train_x, t)      # or l2_distance
+        preds.append(train_y[argmin(dists)])
+    return preds
+# accuracy ≈ 0.20 — intensity-to-intensity matching only</pre>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Where this generalizes</span>
+        <p><strong>Every distance-based retrieval system today inherits this exact weakness and this exact fix-in-progress.</strong> Prof's own aside: "the entire world is using distance-based methodology only for everything... say for instance, you are doing retrieval using LLMs, right? That is distance based only, right? How closely two chunks are." RAG's cosine-similarity chunk retrieval is K-NN with an embedding space swapped in for raw pixels — the embedding is what buys the invariance raw pixels never had.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Train / Validation / Test &amp; Cross-Validation</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why two-way train/test isn't enough</h3>
+        <p>K-NN's hyperparameter is K. Setting K=1 collapses everything into effectively one decision per point — "that does not work out good enough for you." Prof asked the class directly what goes wrong with a plain train/test split, and Patil's answer was accepted as correct: <em>"we tweak parameters as per the test data, which ultimately biases the model towards the test data and not unseen data."</em></p>
+        <p>Prof's teaching analogy: "I teach you the table of two... say for instance, one of you says 2 × 2 is 5. It is incorrect, but I do not pay heed to it and you directly go to the exams and make a mistake — that's a concept of train and test, there is no real-time correction." The <strong>validation set</strong> is that real-time correction — it's used <em>during</em> training to tune hyperparameters, exactly like a teacher correcting a mistake before the exam.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Three-way split — what each part is actually for</div>
+<span class="formula-line"><span class="f-gold">Train</span>       → fit the model's parameters</span>
+<span class="formula-line"><span class="f-teal">Validation</span>  → tune hyperparameters (e.g. K in K-NN) — "correction," done during training</span>
+<span class="formula-line"><span class="f-sky">Test</span>        → measure generalization only, touched once, at the very end</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Why cross-validation specifically (live Q&amp;A, several students)</div>
+        <p>Raghavendra's answer, which Prof endorsed: cross-validation exists so the model is exposed to <em>all</em> the population variation the data represents, not just one arbitrary split. Prof's own example: facial data spans Asian, African, Caucasian, Hispanic — and within India, North/South/East/West Indian — and a single train/test split can accidentally put all of one group only in test. Folds are random subsamples of the full population, each with its own class balance (e.g. one fold 5 true/3 false, another 3 true/5 false) — training across folds forces the model to learn variance robustly rather than overfitting to one lucky (or biased) split.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Choosing the number of folds</h3>
+        <p>Sweep fold count (1, 2, 3, 5, 6, ...) and track cross-validation accuracy (averaged across folds at each fold-count). Accuracy rises, peaks, then drops. The fold count at the peak is your optimal K-fold value — Prof's illustrative number was 7, but stressed it's dataset-dependent ("in your data's case, it might be 4; in some other case, three").</p>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key Insight — the three-way split, restated for the exam</div>
+        <p>"Train is to train the model, validation is to tune the hyperparameters, and test is to understand the generalizability of the model" — is it applicable in India, Europe, China, the Americas? That's literally the question test-set performance answers. Hyperparameter tuning happens on validation, <strong>never</strong> on test — using test to tune anything reintroduces exactly the bias the three-way split exists to prevent.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Modern deep learning has largely moved away from k-fold CV when datasets are large. At ImageNet scale, a single held-out validation split is standard — the variance in performance estimates across different splits shrinks as sample size grows, so k-fold's variance reduction rarely justifies training k separate models at k× the compute <cite>(Raschka, "Model Evaluation, Model Selection, and Algorithm Selection in ML," 2018)</cite>. The calculus reverses for small datasets, especially medical imaging: with only hundreds or low-thousands of scans, a single random split gives unreliable estimates, so k-fold (or repeated k-fold) is near-mandatory — the GaNDLF clinical deep-learning framework <cite>(Pati et al., 2021)</cite> builds it in by default for exactly this reason.</p>
+        <p><strong>Data leakage</strong> — information from outside training improperly influencing it — has caused well-documented real failures. <cite>Zech et al., PLOS Medicine, 2018</cite>: CNNs trained to detect pneumonia across NIH, Mount Sinai, and Indiana hospital systems partly learned to recognize which hospital produced the scan (portable X-rays correlate with sicker patients), so accuracy dropped sharply on an unseen hospital's data. <cite>Winkler et al., JAMA Dermatology, 2019</cite>: a market-approved melanoma-detection CNN's accuracy was significantly skewed by surgical skin markings and rulers present in training images — it had partly learned to key off annotation artifacts, not the lesion.</p>
+        <p><strong>Nested cross-validation</strong> (an outer loop for performance estimation wrapping an inner loop for hyperparameter tuning) is necessary only when you must both tune and report an unbiased estimate from the same limited dataset — reusing ordinary k-fold for both inflates reported accuracy <cite>(Cawley &amp; Talbot, 2010)</cite>. With a separate, sufficiently large test set, it's usually overkill.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Linear Classifiers</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>From data-driven distance to a parametric approach</h3>
+        <p>K-NN stores the entire dataset and compares at inference time — a <em>data-driven</em>, non-parametric approach. Linear classifiers instead learn a fixed, compact set of <strong>weights and biases</strong> that summarize the training set — a <em>parametric</em> approach. Once trained, prediction needs only one matrix multiply, not N comparisons — this directly fixes K-NN's inverted time-complexity problem.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">The score function — CIFAR-10 dimensions, worked exactly as in lecture</div>
+<span class="formula-line"><span class="f-dim">Image:</span>  <span class="f-gold">32 × 32 × 3</span>  <span class="f-dim">(3 = RGB channels)</span></span>
+<span class="formula-line"><span class="f-dim">Flatten:</span>  <span class="f-gold">x ∈ ℝ^3072</span>  <span class="f-dim">(32×32×3 = 3072, a single 1×3072 row vector)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Score function:</span>  <span class="f-lime">f(x, W) = Wx + b</span>   <span class="f-dim">— literally y = mx + c, generalized to matrices</span></span>
+<span class="formula-line"><span class="f-dim">Weight matrix:</span>  <span class="f-teal">W ∈ ℝ^(10 × 3072)</span>  <span class="f-dim">— one 3072-length weight row per class, for CIFAR-10's 10 classes</span></span>
+<span class="formula-line"><span class="f-dim">Bias vector:</span>  <span class="f-sky">b ∈ ℝ^(10 × 1)</span></span>
+<span class="formula-line"><span class="f-dim">Output:</span>  <span class="f-violet">f(x,W) ∈ ℝ^(10 × 1)</span>  <span class="f-dim">— one raw class score per class ("10×3072 · 3072×1 → 10×1")</span></span>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Prof. Dhruba, connecting this to what you already write</div>
+        <p>"If you remember your deep learning final layers, right, what do you do before you put it to softmax or sigmoid? You resize all images to the same size... and then you flatten the entire image." Every "Flatten()" layer you've written in Keras/PyTorch is this exact step — the linear classifier isn't new machinery, it's the last layer of every network you've already built, in isolation.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Toy worked example (4-pixel image, 3 classes)</h3>
+        <p>Prof worked a small numeric example: 3 classes (cat, dog, sheep), an image with only 4 pixels. Weight matrix is 3×4, multiplied by the 4×1 flattened pixel vector, plus a 3×1 bias, giving a 3×1 class-score vector. The class with the extreme (in his example, most negative, since he hadn't yet applied softmax) score is read off as the winner — "for a given weight vector" this is <em>before</em> any loss function has been applied; it's purely the raw score.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header">
+          <span class="exam-badge">Limitation flagged live</span>
+          <h4>Linear classifiers can't bend a decision boundary</h4>
+        </div>
+        <ul class="exam-list">
+          <li>A linear classifier draws one hyperplane per class — it has no way to carve out a non-linear region (Prof's example: concentric circles alternating positive/negative labels — "there's no way you can draw and classify it using a single decision boundary").</li>
+          <li>Asked what fixes this, students answered <strong>SVM with a kernel function</strong> (correct) — but Prof noted SVMs only scale to small datasets (~10k–50k) because kernel optimization needs many hyperparameters.</li>
+          <li>The actual fix, teed up for Session 10: pass <code>Wx+b</code> through a <strong>non-linear activation function</strong> before the next layer — this is precisely what turns a stack of linear classifiers into a neural network capable of curved/folded decision boundaries.</li>
+        </ul>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Visualizing the rows of W as images is one of the clearest diagnostics for what a linear classifier actually learned — Stanford's <cite>CS231n Linear Classification notes (Karpathy et al.)</cite> give the canonical CIFAR-10 example. The learned "ship" template comes out saturated blue (ships are usually photographed against ocean/sky); "car" comes out reddish (red cars are overrepresented in the training set); most tellingly, "horse" looks like a two-headed horse, because the dataset has horses facing both directions and a linear classifier has only one row per class — it can't represent both poses, so it blurs them into one composite. That's the template-matching view's core weakness: all intra-class appearance variation collapses into a single static prototype per class.</p>
+        <p>This rigidity is exactly why one linear classifier can't solve XOR: its positive/negative classes aren't linearly separable — no single hyperplane can split four XOR points correctly, the same failure mode as concentric circles. <cite>Minsky &amp; Papert, "Perceptrons," 1969</cite> proved this formally for single-layer perceptrons, and the result is widely credited with redirecting funding away from neural networks and contributing to the first AI winter — until backpropagation and multilayer networks <cite>(Rumelhart, Hinton &amp; Williams, 1986)</cite> revived the field by showing hidden layers overcome exactly this limitation.</p>
+        <p>Linear classifiers remain in production use today, chiefly as a lightweight final layer on frozen deep features. "Linear probing" — training logistic regression on frozen CNN/ViT embeddings — is the standard evaluation protocol for self-supervised representation learning (SimCLR, MoCo, DINO), since linear-probe accuracy correlates strongly with downstream transfer quality.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Loss Functions</h2>
+        <span class="src-badge src-transcript">Transcript</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>What a loss function is actually doing</h3>
+        <p>Ground truth is a one-hot vector — for a cat image, "cat" = 1, every other class = 0. The loss function measures how far the predicted score vector is from that one-hot target, averaged over the whole dataset, and that average is what gets minimized via backpropagation + an optimizer (SGD in Prof's demo).</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Loss functions covered — binary vs multi-class vs margin</div>
+<span class="formula-line"><span class="f-dim">Sigmoid (binary):</span>  <span class="f-gold">σ(z) = 1 / (1 + e^(−z))</span>   <span class="f-dim">→ paired with binary cross-entropy for cat/not-cat style problems</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Softmax (multi-class):</span>  <span class="f-teal">P(class i) = e^(zᵢ) / Σⱼ e^(zⱼ)</span>   <span class="f-dim">— exponentiate each class's score, divide by the sum over all classes</span></span>
+<span class="formula-line"><span class="f-dim">→ paired with</span>  <span class="f-teal">cross-entropy loss</span>  <span class="f-dim">— the loss used for CIFAR-10's 10-way problem</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">SVM / max-margin:</span>  <span class="f-lime">maximize the distance (Δ, the margin) from the hyperplane to the nearest point of either class</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why margin matters — the two-zero-loss-hyperplanes problem</h3>
+        <p>Prof's whiteboard example: two candidate decision boundaries can both achieve <em>zero</em> classification loss (every point correctly separated), yet one keeps every point comfortably far from the boundary while the other barely squeaks by. "A good loss function should not give me ambiguity between multiple decision points" — of the two zero-loss lines, the one with the larger margin generalizes better. This is exactly what SVM optimizes for, and why it "works better" than an arbitrary zero-loss hyperplane picked by chance.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — picking a loss isn't cosmetic</div>
+        <p>Binary problem → sigmoid + binary cross-entropy. Multi-class → softmax + cross-entropy (today's CIFAR-10 case). Want maximum-margin separation instead of just any zero-loss boundary → SVM/hinge loss. Prof: "I can go with max margin, I can go with cross entropy, I can go with anything else... but cross entropy is the most popular one of these." Once you have <em>a</em> differentiable loss, training is the same recipe every time: forward pass → compute loss → backprop → optimizer step → repeat.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Softmax cross-entropy and multiclass SVM hinge loss (Weston-Watkins or Crammer-Singer formulations) penalize scores differently. SVM loss charges <code>max(0, s_j − s_yi + margin)</code> per wrong class — once the correct class beats every wrong class by the margin, loss for that example is exactly zero; it "does not micromanage" scores beyond that <cite>(Karpathy, CS231n notes)</cite>. Softmax cross-entropy minimizes <code>−log(p_yi)</code>, which only reaches zero as p_yi→1 — it never stops pushing probability toward the correct class, even on already-correct examples. This is a large part of why modern deep learning almost universally uses softmax cross-entropy: its smooth, everywhere-nonzero gradients suit SGD better than hinge loss's flat, piecewise-linear landscape, and its calibrated probabilities are useful outputs in their own right <cite>(Lapin et al., CVPR 2016)</cite>.</p>
+        <p>A common refinement on top of softmax cross-entropy is <strong>label smoothing</strong>: soften the one-hot target to a mixture with the uniform distribution (typically ε=0.1), introduced because one-hot targets drive networks toward increasingly extreme, overconfident logits that hurt generalization and calibration <cite>(Szegedy et al., "Rethinking the Inception Architecture," CVPR 2016)</cite>.</p>
+        <p>Before 2012, the dominant pipeline paired hand-crafted features (SIFT, HoG, Fisher Vectors) with a linear/hinge-loss SVM — the ILSVRC-2012 runner-up used exactly this, at ~26.2% top-5 error. AlexNet, trained end-to-end with softmax cross-entropy rather than a separately-trained SVM on fixed features, cut that to ~15.3% — the loss-function choice and end-to-end learning, not just depth, is a key reason softmax cross-entropy displaced SVM+hand-crafted-feature pipelines as the field's default.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">CIFAR-10 Code Walkthrough &amp; Results</h2>
+        <span class="src-badge src-lab">Live demo</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The linear-classifier training loop, as Prof ran it</h3>
+        <p>Same CIFAR-10 setup as the K-NN demo, but now the model is a single linear layer (input dim 3072, output dim 10), trained with cross-entropy loss and an SGD optimizer for 5 epochs. "You can run it for much more, but it won't help" was Prof's aside — 5 epochs was enough to show the loss dropping and plateauing for a linear model's actual capacity.</p>
+        <pre>model = nn.Linear(3072, 10)                 # W: 10x3072, b: 10x1
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=...)
+
+for epoch in range(5):
+    for images, labels in train_loader:
+        images = images.view(images.size(0), -1)   # flatten 32x32x3 -> 3072
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+# evaluation: no loss/backprop, just forward pass + argmax vs. validation/test accuracy</pre>
+      </div>
+
+      <div class="theory-block">
+        <h3>The accuracy jump — the whole point of the session</h3>
+        <table class="he-table">
+          <thead><tr><th>Method</th><th>Accuracy (CIFAR-10)</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--rose)">K-NN (raw pixels)</td><td>~20%</td><td>Pure intensity-to-intensity distance, no learned parameters</td></tr>
+            <tr><td style="color:var(--gold)">Linear classifier</td><td>~40%</td><td>"100% better than KNN-based methodologies" — parametric W,b learned via cross-entropy + SGD</td></tr>
+            <tr><td style="color:var(--teal)">Linear + L2 regularization</td><td>~45–48%</td><td>Prevents overfitting; same pipeline, added regularization term</td></tr>
+            <tr><td style="color:var(--violet)">CNN (LeNet-era, preview)</td><td>~55–58%</td><td>Non-linear activation after Wx+b at every layer — Session 10 territory</td></tr>
+          </tbody>
+        </table>
+        <p>Prof's framing of this table is the thesis of the entire session: "until the arrival of CNNs, we were at 40% accuracy, and as soon as CNNs came, we jumped to 55, 58% accuracy using LeNet... this is where we were and this is a fundamental building block. They already had the linear classifiers. They just took a non-linear function at every layer, called an activation layer, and they were able to get better accuracy."</p>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key Insight — K-NN's instability across folds</div>
+        <p>Prof also tried visualizing K-NN's decision boundaries across different cross-validation folds; K-NN's accuracy swung between 0.14 and 0.25 depending on the fold, while the linear classifier stayed stable around 0.40 across populations. Stability under cross-validation, not just raw accuracy, is part of why linear classifiers were the next serious step, not just a marginal improvement.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 — PREVIEW ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Towards CNNs — Session 10 Preview</h2>
+        <span class="src-badge src-preview">Preview</span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Explicitly deferred by Prof to Session 10</div>
+        <p>"We will start with the actual CNNs... we'll see how to replace both of these technologies [K-NN and linear classifiers], and we'll be moving towards Transformers and towards Vision Transformers, which are the state of art today." Prof also flagged that Transformers get comparatively less classroom weight because they're "relatively yet untested within the imaging world" for many production tasks — YOLO (detection) and U-Net (segmentation) remain the dominant non-Transformer architectures in practice, even though Transformers dominate the rest of deep learning.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced — LeNet vs. AlexNet</span>
+        <p><cite>LeNet-5 (LeCun, Bottou, Bengio &amp; Haffner, 1998)</cite> was built for practical, narrow-domain optical character recognition — not general image classification. It powered handwritten digit recognition for postal codes and bank-check reading systems, reportedly processing millions of checks per day in the late 1990s. Its significance is architectural, not empirical at scale: it introduced the now-standard CNN template of alternating convolution and pooling layers, but was trained on small, clean, low-resolution grayscale data (MNIST-scale), not natural images. CNNs didn't become mainstream for large-scale image classification until <cite>AlexNet (Krizhevsky, Sutskever &amp; Hinton, 2012)</cite> won ILSVRC-2012 at 15.3% top-5 error versus 26.2% for the runner-up — roughly 14 years after LeNet-5.</p>
+      </div>
+
+      <div class="research-insight" style="border-color:rgba(248,113,113,0.3);">
+        <span class="ri-badge" style="color:var(--rose);background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.25);">Reality check — this framing is now outdated</span>
+        <p>Prof's framing that ViT is "relatively untested" for imaging was accurate in earlier years but should be flagged as <strong>outdated by 2026</strong>. <cite>Vision Transformer (Dosovitskiy et al., 2020, "An Image is Worth 16x16 Words")</cite> showed transformers match or beat CNNs on classification given enough pretraining data, and by 2024–2025 ViT-based and hybrid architectures are competitive with or ahead of pure CNNs on most classification leaderboards (recent ViT variants report ~86% top-1 on ImageNet).</p>
+        <p>More importantly, the two domains Prof named as CNN's territory — detection and segmentation — are exactly where ViTs have become dominant. <cite>Segment Anything (SAM, Meta, 2023)</cite> and SAM 2 are ViT-based foundation models and are now the de facto standard for promptable, general-purpose segmentation, effectively superseding classic U-Net-style approaches for many tasks. <cite>DINOv2 (Meta, 2023)</cite> is a ViT backbone trained via self-supervised distillation on 142M images, now used off-the-shelf across classification, segmentation, and depth estimation. Even in detection, transformer-hybrid variants (ViT-YOLO) report competitive or superior mAP versus pure-CNN YOLO on COCO/VOC — though pure-CNN YOLO retains an efficiency edge for real-time, low-latency edge deployment. Net: CNNs keep the advantage for cheap real-time inference, but "untested" no longer describes ViTs — they're now the backbone of the leading segmentation and self-supervised vision foundation models, and are competitive-to-SOTA in classification and detection too.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">What bridges Session 9 → Session 10</span>
+        <p>The single sentence to hold onto: a linear classifier is <code>Wx + b</code>; a neural network layer is <code>activation(Wx + b)</code>. Everything else Session 9 built — the flattening, the weight/bias shapes, the softmax + cross-entropy loss, the SGD training loop — carries over unchanged into CNNs. What changes is (a) the non-linear activation after each linear layer, and (b) convolution replacing full flattening so spatial structure isn't thrown away before the first layer even sees it.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Course roadmap, as stated live</h3>
+        <p>After Session 10 (CNNs + Vision Transformers), the course proceeds to <strong>segmentation</strong>, then <strong>detection</strong>, then <strong>tracking</strong> — mirroring the "what → where → track" three-stage framing Prof opened this session with.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — QUIZ ============ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Exam Quiz</h2>
+        <span class="src-badge src-transcript">10 Questions</span>
+      </div>
+
+      <!-- Q1 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Classification types</span>
+          <div class="quiz-q-text">Which loss/activation pair is used for standard multi-class image classification (e.g. CIFAR-10, 10 mutually exclusive classes)?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Sigmoid + binary cross-entropy</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Softmax + cross-entropy</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>ReLU + MSE</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Tanh + hinge loss</li>
+        </ul>
+        <div class="quiz-reveal">Softmax converts raw class scores into a probability distribution over all mutually exclusive classes; cross-entropy then measures the distance from the one-hot ground truth. Sigmoid+BCE (<strong>A</strong>) is for binary/independent-label problems, not mutually exclusive multi-class.<span class="mistake">Common mistake</span>Using sigmoid per-class when classes are mutually exclusive — that's for multi-label, not multi-class.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q2 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Multi-label</span>
+          <div class="quiz-q-text">A visual-inspection system first predicts defect/no-defect, then if defective predicts scratch/dent/crack. What kind of classification pipeline is this, and does it have to start with binary?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Multi-class only; binary classification is never used in multi-label pipelines</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Multi-label; it must always start with binary classification</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Multi-label; stage one can be binary OR multi-class depending on the problem</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Binary classification repeated twice</li>
+        </ul>
+        <div class="quiz-reveal">This is Deshmukh's exact live question. Prof confirmed multi-label pipelines chain two classification stages, but stage one is whatever the problem calls for — binary (defect/no-defect) here, multi-class elsewhere (e.g. dog → breed). <strong>B</strong> overstates it as mandatory-binary-first, which Prof explicitly denied.<span class="mistake">Common mistake</span>Assuming multi-label always means "binary then multi-class" as a fixed template.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q3 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">K-NN</span>
+          <div class="quiz-q-text">What is the time complexity relationship for K-NN, and why is this backwards from what you want?</div></div>
+        <ul class="quiz-options" data-correct="0">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Training is O(1) (just store data); inference is O(N) (compare against every stored image) — but inference should be the fast one</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Training is O(N); inference is O(1) — this is ideal</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Both training and inference are O(N log N)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Training and inference are both O(1)</li>
+        </ul>
+        <div class="quiz-reveal">K-NN "training" only records images+labels — O(1). Inference must distance-compare the query against all N training images — O(N). Prof: "your training time can be lengthy, but your inference time should be as fast and real time as possible" — K-NN inverts this, which is disqualifying for real deployments.<span class="mistake">Common mistake</span>Assuming K-NN is cheap overall just because training is instant — the cost moved, it didn't disappear.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q4 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">K-NN generalization</span>
+          <div class="quiz-q-text">Why does raw-pixel K-NN fail on a slightly shifted or partly-occluded version of an otherwise identical image?</div></div>
+        <ul class="quiz-options" data-correct="3">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>K-NN can't handle more than 2 classes</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>K-NN requires GPU acceleration to detect shifts</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>The distance metric used is always L2, which is shift-invariant by design</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>K-NN does pure intensity-to-intensity distance computation with no notion of shift/occlusion invariance — a shift creates large pixelwise differences even though a human still sees the same object</li>
+        </ul>
+        <div class="quiz-reveal">Prof's flipped-face example: shifting or partially painting-over an image changes many individual pixel intensities even though the semantic content is identical. Since K-NN only measures raw pixelwise distance, this reads as a "different" image entirely.<span class="mistake">Common mistake</span>Thinking a different distance metric (L1 vs L2) fixes this — neither is shift-invariant; the fix is better features (SIFT/HoG) or, eventually, learned convolutional features.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q5 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Train/Val/Test</span>
+          <div class="quiz-q-text">Why is a validation set needed in addition to train and test sets?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>It's only needed for deep learning, not classical ML</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Tuning hyperparameters directly on the test set biases the model toward the test set instead of unseen data — validation gives real-time correction during training without touching test</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Validation sets replace the need for cross-validation</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Validation is only used to compute the final reported accuracy</li>
+        </ul>
+        <div class="quiz-reveal">Patil's answer, confirmed by Prof: tuning on test data leaks test-set information into the model, defeating the purpose of holding out a test set at all. Validation is the "correction" step during training. Test is touched once, only to report generalization.<span class="mistake">Common mistake</span>Reporting test accuracy after having tuned hyperparameters on that same test set — this number is no longer a valid generalization estimate.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q6 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Cross-validation</span>
+          <div class="quiz-q-text">Why does cross-validation use multiple random folds rather than one fixed train/test split?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Folds make training strictly faster</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>A single split is mathematically impossible for K-NN</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Each fold is a random subsample of the population; averaging performance across folds ensures the model is evaluated against the full variance of the population (e.g. across demographic groups), not one arbitrary — possibly skewed — split</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Folds are required by law for published ML benchmarks</li>
+        </ul>
+        <div class="quiz-reveal">Prof's facial-recognition example: a population spans multiple ethnicities/regions; one unlucky split could concentrate an entire subgroup into test-only or train-only. Folds force exposure to the full population's variance, which single-split evaluation can't guarantee.<span class="mistake">Common mistake</span>Treating cross-validation as purely a "more data efficient" trick — its real purpose is bias reduction across population variance, not just data reuse.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q7 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Linear classifier dims</span>
+          <div class="quiz-q-text">For CIFAR-10 (32×32×3 images, 10 classes) using a linear score function f(x,W)=Wx+b, what are the shapes of x, W, and b?</div></div>
+        <ul class="quiz-options" data-correct="0">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>x: 3072×1, W: 10×3072, b: 10×1 → output 10×1</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>x: 10×1, W: 3072×10, b: 3072×1 → output 3072×1</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>x: 32×32, W: 32×32, b: 1×1 → output 32×32</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>x: 3×1, W: 10×3, b: 10×1 → output 10×1</li>
+        </ul>
+        <div class="quiz-reveal">32×32×3 flattens to 3072. W must map 3072 input dims to 10 output class scores, so W is 10×3072; matrix-multiplying 10×3072 by 3072×1 gives 10×1, plus a 10×1 bias, one score per class.<span class="mistake">Common mistake</span>Transposing W's dimensions — remember W's row count = number of classes, column count = flattened input length.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q8 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Loss / margin</span>
+          <div class="quiz-q-text">Two hyperplanes both perfectly separate the training data (zero classification loss). Why would an SVM-style max-margin objective still prefer one over the other?</div></div>
+        <ul class="quiz-options" data-correct="3">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>It wouldn't — zero loss means both are equally good</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>SVM always prefers the hyperplane closest to the origin</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>SVM picks randomly among zero-loss hyperplanes</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>The hyperplane with the larger margin (distance to the nearest point of either class) generalizes better — a boundary that barely separates the training points is fragile to small perturbations on unseen data</li>
+        </ul>
+        <div class="quiz-reveal">Prof's exact point: "a good loss function should not give me ambiguity between multiple decision points" — among zero-loss boundaries, maximizing the margin (Δ) is what SVM specifically optimizes for, which is why it "works better" than an arbitrary zero-loss separator.<span class="mistake">Common mistake</span>Assuming zero training loss is the only criterion that matters — margin size is a proxy for generalization robustness, not captured by loss alone.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q9 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Results table</span>
+          <div class="quiz-q-text">On CIFAR-10, roughly what accuracy did Prof's live demos show for K-NN vs. the linear classifier?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>K-NN ~40%, linear ~20% (linear is worse)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>K-NN ~20%, linear ~40% (linear roughly doubles K-NN)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Both around 90%</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Both around 10% (chance level)</li>
+        </ul>
+        <div class="quiz-reveal">Prof's demo: raw-pixel K-NN ≈ 20%; the linear classifier (Wx+b, softmax+cross-entropy, SGD, 5 epochs) ≈ 40% — described live as "100% better than KNN-based methodologies." L2 regularization pushed it further to ~45–48%.<span class="mistake">Common mistake</span>Confusing this with the later CNN jump to ~55–58% (LeNet) — that's a *further* jump, still ahead of linear classifiers, and is Session 10 content.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <!-- Q10 -->
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Linear → CNN bridge</span>
+          <div class="quiz-q-text">What single architectural change turns a linear classifier into the first building block of a neural network capable of non-linear decision boundaries?</div></div>
+        <ul class="quiz-options" data-correct="2">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Using a bigger dataset</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Switching from softmax to sigmoid</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Applying a non-linear activation function to Wx+b before passing it to the next layer</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Increasing the learning rate</li>
+        </ul>
+        <div class="quiz-reveal">Prof's bridge sentence to Session 10: CNNs "already had the linear classifiers. They just took a non-linear function at every layer, called as an activation layer" — this is precisely what lets a stack of linear layers represent curved/folded decision boundaries (e.g. concentric-circle class regions) that a single linear classifier structurally cannot.<span class="mistake">Common mistake</span>Thinking depth (stacking more linear layers) alone helps — stacked linear layers without a non-linearity between them collapse algebraically into one linear layer.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="theory-block" style="margin-top:2rem;text-align:center;border-color:rgba(212,168,83,0.3);">
+        <h3 style="color:var(--gold);">You've reached the end · CV Session 9</h3>
+        <p style="color:var(--text2);">Core arc: data-driven approach → Bag of Words → K-NN (distance-based, O(N) inference, ~20% accuracy) → linear classifier (parametric, Wx+b, softmax/cross-entropy, ~40% accuracy) → loss functions (sigmoid/BCE, softmax/CE, SVM margin) → train/val/test discipline and cross-validation. Preview flagged for Session 10: CNNs, activation functions, and Vision Transformers. Also revisit the makeup-paper Harris-vs-Canny strong/weak edge question raised in the Q&amp;A — it may be remarked.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs (kept for structural parity with other session pages) ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  const panel = document.getElementById(panelId);
+  if(panel) panel.classList.add('active');
+  if(!btn) return;
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('easy')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('medium')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+    const b = reveal.nextElementSibling;
+    if(b && b.classList.contains('reveal-btn')) b.textContent='Hide Explanation';
+  }
+}
+function toggleReveal(btn, id){
+  const reveal = id ? document.getElementById(id) : btn.previousElementSibling;
+  if(!reveal) return;
+  const shown = reveal.classList.toggle('shown');
+  if(id){ reveal.style.display = shown ? 'block' : 'none'; }
+  btn.textContent = shown ? 'Hide Explanation' : 'Show Explanation';
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+</script>
+
+</body>
+</html>
