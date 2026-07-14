@@ -377,6 +377,23 @@
         <p>Computer vision scientists build every algorithm in three stages, in this order: <strong>what</strong> (classification — is a dog present), <strong>where</strong> (detection/segmentation — where is the dog in the image), <strong>track</strong> (temporal — where is the dog going). Session 9 is entirely about the first stage.</p>
       </div>
 
+      <div class="key-insight">
+        <div class="ki-label">What actually matters in recognition (the three axes)</div>
+        <p>Every recognition result is a function of three things pulling together: the <strong>machine learning method</strong> (linear classifiers, deep nets), the <strong>representation</strong> (raw pixels, SIFT/HoG, or deep-learned features), and the <strong>data</strong> (PASCAL, ImageNet, COCO). Session 9 mostly varies the first axis while holding representation fixed at "raw pixels" — which is exactly why accuracy stays capped until Session 10 changes the representation itself (learned convolutional features).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The semantic gap — what the computer actually sees</h3>
+        <p>Formally, this is the <strong>semantic gap</strong>: to a human, a photo of a cat is unmistakably "a cat." To a computer, that same photo is nothing but a large 2D array of numbers — pixel intensities, no different in kind from a spreadsheet of digits ("what the computer sees" is literally a grid like <code>08, 02, 22, 97, 38...</code>). There is no "catness" anywhere in that array. Image classification, end to end, is the discipline of building a function that bridges from raw pixel numbers to a semantic label.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">The semantic gap, as a pipeline</div>
+<span class="formula-line"><span class="f-dim">Input:</span>  <span class="f-gold">cat photo → pixel grid [08, 02, 22, 97, 38, ...]</span></span>
+<span class="formula-line"><span class="f-dim">Classification pipeline</span>  <span class="f-teal">f(x, W)  →</span></span>
+<span class="formula-line"><span class="f-dim">Output (class probabilities):</span>  <span class="f-lime">82% cat · 15% dog · 2% hat · 1% mug</span></span>
+      </div>
+
       <div class="prof-quote">
         <div class="prof-quote-label">Prof. Dhruba, on why computers struggle where humans don't</div>
         <p>"For us, it is a lot more easier. For computers, it is particularly a tough problem." — on the shape/color distinctiveness challenge (a green tank against green background vs. a grasshopper on grass).</p>
@@ -541,8 +558,58 @@
       </div>
 
       <div class="theory-block">
+        <h3>From 1-NN to k-NN — majority vote smooths the boundary</h3>
+        <p>Plain nearest-neighbor (NN) copies the label of the single closest training point. <strong>k-NN generalizes this</strong>: find the k closest training points, and take a majority vote among their labels. Both the distance metric <em>and</em> k are themselves hyperparameters — neither is learned by gradient descent, both must be set by search (Section 05). On a synthetic 2D three-class dataset, 1-NN produces jagged, overfit decision regions — small "islands" of one color appear inside another class's region wherever a single noisy outlier point sits. Raising k to 5 smooths those boundaries out; the islands mostly disappear, at the cost of introducing small ambiguous/tie regions where the vote is split.</p>
+      </div>
+
+      <div class="theory-block">
         <h3>Worked walk-through, as Prof described it</h3>
         <p>Take a training set with images already labeled boat / dog / frog / cat / plane. An incoming test image is compared against <em>every</em> stored image, producing a distance score for each (e.g. 0.1, 0.01, 0.3, 0.99, ...). The closest score wins — "this image and this image, they are similar" — and the test image inherits that neighbor's label. Prof was explicit that the match need not be exact: a same-species image at a different scale, or a same-family aquatic animal in a different color, can still register as the closest match by a comfortable margin (e.g. 0.8 vs. the next-best 0.7).</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">What nearest-neighbor retrieval actually looks like on CIFAR-10</div>
+        <p>For a given test image (ship, dog, deer, cat, horse, ...), plotting its top-9 nearest neighbors by pixel distance shows the retrieval is often visually plausible but semantically wrong — a red car and a red-and-white dog can register as "close" purely because of matching background color, not because they're the same object. Once the top-1 match is colored green (correct) or red (incorrect) against ground truth, most rows come back red: raw-pixel distance is dominated by color/background similarity, not by what the object actually is — the same failure mode Prof's flipped-face example makes below.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Worked example — L1 distance by hand (4×4 patch)</h3>
+        <p>Subtract corresponding pixels between a test patch and a training patch, take the absolute value of each difference, then sum every cell:</p>
+        <div class="demo-canvas-wrap">
+          <div>
+            <div class="formula-label" style="margin-bottom:.4rem;">test image</div>
+            <div class="mgrid" style="grid-template-columns:repeat(4,42px);">
+              <div class="cell">56</div><div class="cell">32</div><div class="cell">10</div><div class="cell">18</div>
+              <div class="cell">90</div><div class="cell">23</div><div class="cell">128</div><div class="cell">133</div>
+              <div class="cell">24</div><div class="cell">26</div><div class="cell">178</div><div class="cell">200</div>
+              <div class="cell">2</div><div class="cell">0</div><div class="cell">255</div><div class="cell">220</div>
+            </div>
+          </div>
+          <div>
+            <div class="formula-label" style="margin-bottom:.4rem;">training image</div>
+            <div class="mgrid" style="grid-template-columns:repeat(4,42px);">
+              <div class="cell">10</div><div class="cell">20</div><div class="cell">24</div><div class="cell">17</div>
+              <div class="cell">8</div><div class="cell">10</div><div class="cell">89</div><div class="cell">100</div>
+              <div class="cell">12</div><div class="cell">16</div><div class="cell">178</div><div class="cell">170</div>
+              <div class="cell">4</div><div class="cell">32</div><div class="cell">233</div><div class="cell">112</div>
+            </div>
+          </div>
+          <div>
+            <div class="formula-label" style="margin-bottom:.4rem;">|difference|</div>
+            <div class="mgrid" style="grid-template-columns:repeat(4,42px);">
+              <div class="cell hot">46</div><div class="cell hot">12</div><div class="cell hot">14</div><div class="cell hot">1</div>
+              <div class="cell hot">82</div><div class="cell hot">13</div><div class="cell hot">39</div><div class="cell hot">33</div>
+              <div class="cell hot">12</div><div class="cell hot">10</div><div class="cell hot">0</div><div class="cell hot">30</div>
+              <div class="cell hot">2</div><div class="cell hot">32</div><div class="cell hot">22</div><div class="cell hot">108</div>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:1rem;">Sum every cell in the difference grid → <strong style="color:var(--gold);">d₁ = 456</strong>. This single number is this training image's L1 distance to the test image; the training image with the <em>smallest</em> such sum across the whole training set wins the vote.</p>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key Insight — L1 vs L2 isn't cosmetic, it reshapes the decision boundary</div>
+        <p>Distance metric is itself a hyperparameter. Plotted on the same 2D toy dataset, L1 (Manhattan) decision regions have edges that align with the coordinate axes — angular, diamond-like boundaries — because L1's value depends on the coordinate system's orientation. L2 (Euclidean) decision regions are smoother and rotationally symmetric, since Euclidean distance doesn't care which axis a difference falls on. Neither is universally "correct" — the right choice depends on whether the underlying feature dimensions are independent/axis-meaningful (favor L1) or freely rotatable (favor L2).</p>
       </div>
 
       <div class="exam-alert">
@@ -559,6 +626,11 @@
       <div class="prof-quote">
         <div class="prof-quote-label">Prof. Dhruba, on the flipped-face example</div>
         <p>"If I take my image right now, and I just flip the image... the images are not a match. It will not be able to give me that, okay, this is the image or the face of Dhruba." A pure distance metric has zero invariance to transformations a human ignores instinctively.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Textbook illustration — identical L2 distance, wildly different images</div>
+        <p>The canonical version of this failure (Karpathy/Fei-Fei Li's course slides): take one portrait photo, then produce three variants — <strong>shifted</strong> a few pixels sideways, <strong>occluded</strong> (three black boxes over the eyes/mouth), and <strong>darkened</strong> (reduced brightness). All three variants land at <em>exactly the same L2 distance</em> from the original. A metric that can't tell "shifted a bit" apart from "half the face covered" apart from "photographed in dim light" isn't measuring identity or content at all — it's purely measuring raw intensity difference. That's precisely why k-NN is never deployed directly on raw pixels in practice.</p>
       </div>
 
       <div class="why-matters">
@@ -596,6 +668,20 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
         <h3>Why two-way train/test isn't enough</h3>
         <p>K-NN's hyperparameter is K. Setting K=1 collapses everything into effectively one decision per point — "that does not work out good enough for you." Prof asked the class directly what goes wrong with a plain train/test split, and Patil's answer was accepted as correct: <em>"we tweak parameters as per the test data, which ultimately biases the model towards the test data and not unseen data."</em></p>
         <p>Prof's teaching analogy: "I teach you the table of two... say for instance, one of you says 2 × 2 is 5. It is incorrect, but I do not pay heed to it and you directly go to the exams and make a mistake — that's a concept of train and test, there is no real-time correction." The <strong>validation set</strong> is that real-time correction — it's used <em>during</em> training to tune hyperparameters, exactly like a teacher correcting a mistake before the exam.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The four ideas for setting hyperparameters — and why the first three fail</h3>
+        <ol class="pipeline">
+          <li><strong>Idea #1 — tune on the whole dataset</strong>
+            <p>Choose whatever hyperparameter works best on your one undivided dataset. <span style="color:var(--rose)">Bad:</span> for K-NN, K=1 always achieves 100% "accuracy" here, because every training point's nearest neighbor is itself. This tells you nothing about generalization.</p></li>
+          <li><strong>Idea #2 — split train/test, tune on test</strong>
+            <p>Split into train and test, pick whatever hyperparameter scores best on test. <span style="color:var(--rose)">Bad:</span> you now have no idea how the model performs on genuinely new data — the test set has been used to select the model, so it can no longer measure generalization. This is exactly the mistake Patil flagged below.</p></li>
+          <li><strong>Idea #3 — split train/val/test, tune on val</strong>
+            <p>Tune hyperparameters on a held-out validation split; touch test only once, at the very end, purely to report generalization. <span style="color:var(--lime)">Better.</span> This is the three-way split formalized just below.</p></li>
+          <li><strong>Idea #4 — cross-validation</strong>
+            <p>Split the non-test data into folds; rotate which fold plays "validation" across rounds, train on the rest each time, and average results across rounds to pick hyperparameters. More robust than a single validation split, especially on small datasets — but rarely used at deep-learning scale, where one large validation split already gives a low-variance estimate at a fraction of the compute (training k models for k folds is expensive).</p></li>
+        </ol>
       </div>
 
       <div class="formula-block">
@@ -657,9 +743,45 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
         <p>"If you remember your deep learning final layers, right, what do you do before you put it to softmax or sigmoid? You resize all images to the same size... and then you flatten the entire image." Every "Flatten()" layer you've written in Keras/PyTorch is this exact step — the linear classifier isn't new machinery, it's the last layer of every network you've already built, in isolation.</p>
       </div>
 
+      <div class="key-insight">
+        <div class="ki-label">Three viewpoints on the same linear classifier</div>
+        <p><code>f(x,W) = Wx + b</code> can be read three equivalent ways, worth holding in mind simultaneously: <strong>algebraic</strong> (a matrix multiply producing one score per class, worked numerically below), <strong>visual</strong> (each class's weight row reshaped back into image dimensions — template matching, see the research note further down), and <strong>geometric</strong> (each class's weights define a hyperplane cutting through pixel space, with images as points).</p>
+      </div>
+
       <div class="theory-block">
-        <h3>Toy worked example (4-pixel image, 3 classes)</h3>
-        <p>Prof worked a small numeric example: 3 classes (cat, dog, sheep), an image with only 4 pixels. Weight matrix is 3×4, multiplied by the 4×1 flattened pixel vector, plus a 3×1 bias, giving a 3×1 class-score vector. The class with the extreme (in his example, most negative, since he hadn't yet applied softmax) score is read off as the winner — "for a given weight vector" this is <em>before</em> any loss function has been applied; it's purely the raw score.</p>
+        <h3>Worked example — 4-pixel image, 3 classes (algebraic viewpoint)</h3>
+        <p>Toy image with only 4 pixels, stretched into a column vector <code>x = [56, 231, 24, 2]ᵀ</code>. Classes: cat, dog, ship.</p>
+        <table class="he-table">
+          <thead><tr><th>Class</th><th>w₁</th><th>w₂</th><th>w₃</th><th>w₄</th><th>bias</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">cat</td><td>0.2</td><td>-0.5</td><td>0.1</td><td>2.0</td><td>1.1</td></tr>
+            <tr><td style="color:var(--gold)">dog</td><td>1.5</td><td>1.3</td><td>2.1</td><td>0.0</td><td>3.2</td></tr>
+            <tr><td style="color:var(--gold)">ship</td><td>0</td><td>0.25</td><td>0.2</td><td>-0.3</td><td>-1.2</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:.75rem;">Computing <code>f(x;W,b) = Wx + b</code> for each row:</p>
+        <table class="he-table">
+          <thead><tr><th>Class</th><th>Score</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">cat</td><td>-96.8</td></tr>
+            <tr><td style="color:var(--rose)">dog</td><td><strong>437.9</strong></td></tr>
+            <tr><td style="color:var(--gold)">ship</td><td>61.95</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:.75rem;color:var(--text2);">With this arbitrary (untrained) W, the classifier scores <strong>dog</strong> highest — even though the image is actually a cat. That's the whole point of an <em>untrained</em> weight matrix: nothing guarantees the scores are meaningful until a loss function has been used to fit W and b (Section 07).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Geometric viewpoint — images as points, classifiers as hyperplanes</h3>
+        <p>Treat every image as a single point in a very high-dimensional space (3072 dimensions for a flattened 32×32×3 CIFAR-10 image — illustrated in 2D for intuition). Each class's row of W defines a line (a hyperplane in the full-dimensional case) through this space; moving in the direction of that class's weight vector increases that class's score. On a toy 2D plot, an "airplane" classifier line separates the airplane/boat cluster from everything else, "car" separates the car cluster, and "deer" separates the animal cluster — each with an arrow pointing toward higher score for its own class.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Separating hyperplane — the decision rule</div>
+<span class="formula-line"><span class="f-lime">x positive:</span>  <span class="f-gold">x·w + b ≥ 0</span></span>
+<span class="formula-line"><span class="f-rose">x negative:</span>  <span class="f-teal">x·w + b &lt; 0</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Open question every one of Prof's hyperplane diagrams poses:</span>  <span class="f-violet">many different hyperplanes can achieve zero training error — which one is "best"? A loss function is what answers this (Section 07).</span></span>
       </div>
 
       <div class="exam-alert">
@@ -669,6 +791,7 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
         </div>
         <ul class="exam-list">
           <li>A linear classifier draws one hyperplane per class — it has no way to carve out a non-linear region (Prof's example: concentric circles alternating positive/negative labels — "there's no way you can draw and classify it using a single decision boundary").</li>
+          <li>Three canonical patterns are structurally impossible for one linear boundary: <strong>XOR</strong> (classes occupying diagonally-opposite quadrants), a <strong>ring/annulus</strong> (one class forms a ring around the other), and <strong>disjoint modes</strong> (one class scattered across several separate blobs) — no single straight line/hyperplane can carve out any of the three.</li>
           <li>Asked what fixes this, students answered <strong>SVM with a kernel function</strong> (correct) — but Prof noted SVMs only scale to small datasets (~10k–50k) because kernel optimization needs many hyperparameters.</li>
           <li>The actual fix, teed up for Session 10: pass <code>Wx+b</code> through a <strong>non-linear activation function</strong> before the next layer — this is precisely what turns a stack of linear classifiers into a neural network capable of curved/folded decision boundaries.</li>
         </ul>
@@ -691,8 +814,36 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
       </div>
 
       <div class="theory-block">
+        <h3>So far: a score function. Is this W good or bad?</h3>
+        <p>Plugging three CIFAR-10 images (cat, automobile, frog) through some particular W gives a 10-way score for each — bolded cells mark each image's true class:</p>
+        <table class="he-table">
+          <thead><tr><th>Class</th><th>Cat image</th><th>Car image</th><th>Frog image</th></tr></thead>
+          <tbody>
+            <tr><td>airplane</td><td>-3.45</td><td>-0.51</td><td>3.42</td></tr>
+            <tr><td>automobile</td><td>-8.87</td><td><strong style="color:var(--lime)">6.04</strong></td><td>4.64</td></tr>
+            <tr><td>bird</td><td>0.09</td><td>5.31</td><td>2.65</td></tr>
+            <tr><td>cat</td><td><strong style="color:var(--lime)">2.9</strong></td><td>-4.22</td><td>5.1</td></tr>
+            <tr><td>deer</td><td>4.48</td><td>-4.19</td><td>2.64</td></tr>
+            <tr><td>dog</td><td>8.02</td><td>3.58</td><td>5.55</td></tr>
+            <tr><td>frog</td><td>3.78</td><td>4.49</td><td><strong style="color:var(--rose)">-4.34</strong></td></tr>
+            <tr><td>horse</td><td>1.06</td><td>-4.37</td><td>-1.5</td></tr>
+            <tr><td>ship</td><td>-0.36</td><td>-2.09</td><td>-4.79</td></tr>
+            <tr><td>truck</td><td>-0.72</td><td>-2.93</td><td>6.14</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:.75rem;">The cat image's own "cat" score (2.9) is barely positive and far from the max; the frog image's own "frog" score is actually <strong style="color:var(--rose)">negative</strong> (-4.34) — this W is clearly bad. But "bad" needs a number to be optimized against. That number is a <strong>loss function</strong>.</p>
+      </div>
+
+      <div class="theory-block">
         <h3>What a loss function is actually doing</h3>
         <p>Ground truth is a one-hot vector — for a cat image, "cat" = 1, every other class = 0. The loss function measures how far the predicted score vector is from that one-hot target, averaged over the whole dataset, and that average is what gets minimized via backpropagation + an optimizer (SGD in Prof's demo).</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Loss function — dataset notation</div>
+<span class="formula-line"><span class="f-dim">Dataset:</span>  <span class="f-gold">{(xᵢ, yᵢ)}, i = 1...N</span>   <span class="f-dim">— xᵢ is an image, yᵢ is its (integer) ground-truth label</span></span>
+<span class="formula-line"><span class="f-dim">Per-example loss:</span>  <span class="f-teal">Lᵢ(f(xᵢ, W), yᵢ)</span>   <span class="f-dim">— how unhappy we are with the score vector for example i</span></span>
+<span class="formula-line"><span class="f-dim">Total loss:</span>  <span class="f-lime">L = (1/N) Σᵢ Lᵢ(f(xᵢ, W), yᵢ)</span>   <span class="f-dim">— average per-example loss over the whole training set; this is what training minimizes</span></span>
       </div>
 
       <div class="formula-block">
@@ -700,19 +851,29 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
 <span class="formula-line"><span class="f-dim">Sigmoid (binary):</span>  <span class="f-gold">σ(z) = 1 / (1 + e^(−z))</span>   <span class="f-dim">→ paired with binary cross-entropy for cat/not-cat style problems</span></span>
 <span class="formula-line"> </span>
 <span class="formula-line"><span class="f-dim">Softmax (multi-class):</span>  <span class="f-teal">P(class i) = e^(zᵢ) / Σⱼ e^(zⱼ)</span>   <span class="f-dim">— exponentiate each class's score, divide by the sum over all classes</span></span>
+<span class="formula-line"><span class="f-dim">Worked example:</span>  <span class="f-lime">[1, −2, 0] → [e¹, e⁻², e⁰] = [2.71, 0.14, 1.00] → normalize → [0.70, 0.04, 0.26]</span>   <span class="f-dim">— squashes raw scores into a probability distribution summing to 1</span></span>
 <span class="formula-line"><span class="f-dim">→ paired with</span>  <span class="f-teal">cross-entropy loss</span>  <span class="f-dim">— the loss used for CIFAR-10's 10-way problem</span></span>
 <span class="formula-line"> </span>
 <span class="formula-line"><span class="f-dim">SVM / max-margin:</span>  <span class="f-lime">maximize the distance (Δ, the margin) from the hyperplane to the nearest point of either class</span></span>
       </div>
 
       <div class="theory-block">
-        <h3>Why margin matters — the two-zero-loss-hyperplanes problem</h3>
-        <p>Prof's whiteboard example: two candidate decision boundaries can both achieve <em>zero</em> classification loss (every point correctly separated), yet one keeps every point comfortably far from the boundary while the other barely squeaks by. "A good loss function should not give me ambiguity between multiple decision points" — of the two zero-loss lines, the one with the larger margin generalizes better. This is exactly what SVM optimizes for, and why it "works better" than an arbitrary zero-loss hyperplane picked by chance.</p>
+        <h3>Why margin matters — from counting mistakes to the two-zero-loss-hyperplanes problem</h3>
+        <p>The most naive loss function you could write is simply <strong>counting misclassified points</strong>: a boundary that gets everything right scores 0, one that misses two points scores 2. This has two problems that rule it out — it's <strong>discrete</strong> (a small nudge to the boundary rarely changes the count, so there's no smooth gradient to optimize), and it <strong>can't break ties</strong>: two very different boundaries can both score a perfect 0 even though one clearly separates the classes with a wider safety margin than the other.</p>
+        <p>Prof's whiteboard example is exactly this tie: two candidate decision boundaries can both achieve <em>zero</em> classification loss (every point correctly separated), yet one keeps every point comfortably far from the boundary while the other barely squeaks by. "A good loss function should not give me ambiguity between multiple decision points" — of the two zero-loss lines, the one with the larger margin generalizes better. This is exactly what SVM optimizes for, and why it "works better" than an arbitrary zero-loss hyperplane picked by chance.</p>
       </div>
 
       <div class="why-matters">
         <div class="why-matters-label">Why This Matters — picking a loss isn't cosmetic</div>
         <p>Binary problem → sigmoid + binary cross-entropy. Multi-class → softmax + cross-entropy (today's CIFAR-10 case). Want maximum-margin separation instead of just any zero-loss boundary → SVM/hinge loss. Prof: "I can go with max margin, I can go with cross entropy, I can go with anything else... but cross entropy is the most popular one of these." Once you have <em>a</em> differentiable loss, training is the same recipe every time: forward pass → compute loss → backprop → optimizer step → repeat.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">The full training objective — cross-entropy + L2 regularization</div>
+<span class="formula-line"><span class="f-gold">L = (1/N) Σᵢ −log( e^(f_yi) / Σⱼ e^(fⱼ) )</span>  <span class="f-dim">+</span>  <span class="f-teal">λ Σₖ Σₗ W²ₖ,ₗ</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">First term:</span>  <span class="f-lime">average cross-entropy loss over all N training examples</span>  <span class="f-dim">— −log(softmax probability of the correct class), driven toward 0 only as that probability → 1</span></span>
+<span class="formula-line"><span class="f-dim">Second term:</span>  <span class="f-rose">L2 regularization</span>  <span class="f-dim">— λ penalizes large weights, trading a little training accuracy for better generalization (this is exactly the ~40% → ~45–48% jump in Section 08's results table)</span></span>
       </div>
 
       <div class="research-insight">
@@ -766,6 +927,11 @@ for epoch in range(5):
       <div class="key-insight">
         <div class="ki-label">Key Insight — K-NN's instability across folds</div>
         <p>Prof also tried visualizing K-NN's decision boundaries across different cross-validation folds; K-NN's accuracy swung between 0.14 and 0.25 depending on the fold, while the linear classifier stayed stable around 0.40 across populations. Stability under cross-validation, not just raw accuracy, is part of why linear classifiers were the next serious step, not just a marginal improvement.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Additional readings — as given on the closing slides</h3>
+        <p>Stanford CS231n (<a href="http://cs231n.stanford.edu/" style="color:var(--sky);">cs231n.stanford.edu</a>) is the primary reference this session's structure and worked examples are drawn from. The CIFAR-10/100 dataset page (<a href="https://www.cs.toronto.edu/~kriz/cifar.html" style="color:var(--sky);">cs.toronto.edu/~kriz/cifar.html</a>) is the canonical dataset source. A hands-on companion notebook was also referenced live — <em>CV9_Image_Classification.ipynb</em> — mirroring the K-NN and linear-classifier demos walked through in this session.</p>
       </div>
     </section>
 

@@ -389,8 +389,9 @@
     <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
       <h3>How to read this guide — source honesty</h3>
       <p>Built <strong>entirely from the live transcript</strong> of the Jul 11, 2026 session — no slide deck was shared; Prof taught this on a whiteboard plus a live PyTorch notebook (a from-scratch ViT implementation and a tiny nanoGPT-style character model).</p>
-      <p><span class="src-badge src-transcript">Transcript</span> &nbsp;= Prof's live words / derivations. &nbsp; <span class="src-badge src-lab">Code</span> &nbsp;= the PyTorch notebooks he walked through live. &nbsp; <span class="src-badge src-preview">Preview</span> &nbsp;= flagged by Prof as belonging to a future session but referenced here for continuity.</p>
+      <p><span class="src-badge src-transcript">Transcript</span> &nbsp;= Prof's live words / derivations. &nbsp; <span class="src-badge src-lab">Code</span> &nbsp;= the PyTorch notebooks he walked through live. &nbsp; <span class="src-badge src-slides">Slides</span> &nbsp;= the accompanying slide deck (Cornell Tech / Justin Johnson EECS498-style diagrams) that was later recovered and cross-checked against the audio — used for the formal equations, worked numeric examples, and charts that the live audio only gestured at. &nbsp; <span class="src-badge src-preview">Preview</span> &nbsp;= flagged by Prof as belonging to a future session but referenced here for continuity.</p>
       <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--rose)">Reality check:</strong> the call had a rocky start — a power/Wi-Fi outage cut Prof off mid-explanation of attention scoring for a couple of minutes, and several proper nouns are almost certainly mis-transcribed by auto-captioning (e.g. an LLM described as using "RoPE"-style positional embeddings was very likely <strong>LLaMA</strong>, not the transcript's phonetic rendering; an attention paper attributed by name in the audio doesn't match any real publication — flagged inline below). Where the transcript is ambiguous, this guide says so rather than guessing confidently.</p>
+      <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--gold)">Update:</strong> a first pass of this guide leaned almost entirely on the spoken transcript and under-covered material that only appears on the slides themselves — the full worked numeric example for causal self-attention, the QKᵀ causal-masking matrix, the LayerNorm formula, the multi-head attention formula, and the complete ViT-vs-ResNet pretraining-scale chart with training-compute numbers. All of these are now filled in below, tagged <span class="src-badge src-slides">Slides</span>, alongside the original transcript-only material.</p>
     </div>
 
     <div class="annotation">
@@ -497,6 +498,32 @@
       </div>
 
       <div class="theory-block">
+        <h3>Naming it precisely — the "representational bottleneck" <span class="src-badge src-slides">Slides</span></h3>
+        <p>The slide deck gives Section 02's problem an exact name: the <strong>representational bottleneck</strong>. Requiring the context <em>c</em> to be nothing more than the encoder's final hidden state forces the <em>entire</em> source sentence — however long — through one fixed-size vector. The deck's diagram draws this literally: encoder units chain e→e→e→e→e, and that <em>last</em> unit (circled, labeled "bottleneck") is the only thing the decoder chain ever sees; dashed arrows from that single bottleneck node fan out identically to every decoder unit.</p>
+        <p>The deck also gives the without/with comparison as one formal line each — worth memorizing verbatim for exams:</p>
+        <div class="formula-block">
+          <div class="formula-label">Without vs. with attention — the decoder's hidden-state update rule</div>
+<span class="formula-line"><span class="f-rose">Without attention:</span>  <span class="f-dim">h</span><sup>d</sup><sub>t</sub> <span class="f-dim">= g(ŷ</span><sub>t-1</sub><span class="f-dim">, h</span><sup>d</sup><sub>t-1</sub><span class="f-dim">,</span> <span class="f-rose">c</span><span class="f-dim">)</span>   <span class="f-dim">— same static c at every step t</span></span>
+<span class="formula-line"><span class="f-lime">With attention:</span>  <span class="f-dim">h</span><sup>d</sup><sub>i</sub> <span class="f-dim">= g(ŷ</span><sub>i-1</sub><span class="f-dim">, h</span><sup>d</sup><sub>i-1</sub><span class="f-dim">,</span> <span class="f-lime">c</span><sub>i</sub><span class="f-dim">)</span>   <span class="f-dim">— a fresh c_i, function of ALL encoder states, at every step i</span></span>
+        </div>
+        <p>The only symbol that changes between the two equations is the context term — <em>c</em> becomes <em>c<sub>i</sub></em> — but that one subscript is the entire fix: the decoder's hidden-state recurrence <em>g</em> is unchanged, only what it's allowed to look at per step changes.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Worked numeric illustration — "bank" under a static vs. dynamic context <span class="src-badge src-slides">Slides</span></div>
+        <p>The deck attaches literal numbers to the "bank" ambiguity so it's not just hand-waving. With one static context (no attention), the model's sense distribution for "bank" sits wherever training-data frequency puts it — skewed financial regardless of sentence:</p>
+        <table class="he-table">
+          <thead><tr><th>Sense of "bank"</th><th>P (static context, no attention)</th><th>P (dynamic c₁, for "bank of river")</th></tr></thead>
+          <tbody>
+            <tr><td>financial</td><td>0.9</td><td>0.1</td></tr>
+            <tr><td>river</td><td>0.05</td><td>0.85</td></tr>
+            <tr><td>curvature of road</td><td>0.05</td><td>0.05</td></tr>
+          </tbody>
+        </table>
+        <p>A single fixed context cannot move those numbers no matter what follows "bank" in the sentence. A dynamic <em>c<sub>i</sub></em>, recomputed per decoder step from the encoder states actually near "river," swings the distribution almost entirely onto the correct sense — this is the numeric version of the "he went to the bank... river bank" example above.</p>
+      </div>
+
+      <div class="theory-block">
         <h3>The fix: a dynamic, per-word context</h3>
         <p>Rather than one static context vector broadcast to every decoder layer, attention computes a <strong>variable context c<sub>i</sub></strong> for each decoder step — dynamically derived from the previous or next words, not fixed at encoding time. Prof's disambiguation example: <em>"He went to the bank to find his bank account was empty, then he went to the river bank and cried."</em> The two "bank"s are morphologically identical tokens but semantically opposite. A dynamic context lets each occurrence derive its meaning from its own neighbors — "bank account" pulls the first toward finance; "river bank" pulls the second toward geography. A single shared context vector cannot do this.</p>
         <p>Live follow-up question: which model family looks at <em>both</em> the previous and next words when building this context? Answer, confirmed by Prof: <strong>bidirectional encoders (BERT)</strong>. Precision note on the framing: unmasked self-attention is <em>naturally</em> bidirectional — encoder-only models (BERT) simply use it as-is, while decoder-only models (the GPT family, most modern LLMs) deliberately apply a <strong>causal mask</strong> that blocks attention to future tokens so the model can't cheat while generating left-to-right. Bidirectionality isn't an exotic variant; one-directional attention is the explicitly imposed restriction.</p>
@@ -510,6 +537,7 @@
           <li><strong>Normalize with softmax → α<sub>ij</sub></strong><p>Apply softmax across all the raw scores for a given decoder position, producing a weight vector (e.g. 0.1, 0.3, ..., 0.7) that sums to 1 — this is the attention weight α<sub>ij</sub>, telling you how much each encoder position matters <em>for this specific decoder step</em>.</p></li>
           <li><strong>Weighted sum → context vector c<sub>i</sub></strong><p>Multiply each α<sub>ij</sub> by its corresponding encoder hidden state and sum — this produces a context vector that is different for every decoder position, unlike the old single shared vector.</p></li>
         </ol>
+        <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--gold)">Plus, a more powerful scoring function</strong> <span class="src-badge src-slides">Slides</span> — the deck adds one refinement to Step 1: instead of a bare dot product, parameterize the score with its own trainable weight matrix <strong>W<sub>s</sub></strong>: <code>score(h<sup>d</sup><sub>i-1</sub>, h<sup>e</sup><sub>j</sub>) = h<sup>d</sup><sub>i-1</sub> · W<sub>s</sub> · h<sup>e</sup><sub>j</sub></code>. W<sub>s</sub> is trained end-to-end along with everything else, and it gives the network the freedom to learn <em>which</em> aspects of decoder/encoder similarity actually matter for the task at hand, rather than trusting a raw, unweighted dot product. This is the direct ancestor of Q/K/V's learned projections in Section 04 — same idea (make the comparison learnable), one matrix earlier.</p>
       </div>
 
       <div class="formula-block">
@@ -552,7 +580,41 @@
         <span class="section-num">04</span>
         <h2 class="section-title">Self-Attention &amp; Query / Key / Value</h2>
         <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-slides">Slides</span>
       </div>
+
+      <div class="theory-block">
+        <h3>Definitions, precisely — attention vs. self-attention <span class="src-badge src-slides">Slides</span></h3>
+        <p>The deck states both definitions as one-liners worth quoting exactly:</p>
+        <div class="formula-block">
+          <div class="formula-label">Definitions (Vaswani et al., 2017, NeurIPS — "Attention Is All You Need")</div>
+<span class="formula-line"><span class="f-gold">Attention</span> <span class="f-dim">= the ability to compare an item of interest to a collection of other items in a way that reveals their relevance in the current context.</span></span>
+<span class="formula-line"><span class="f-lime">Self-attention</span> <span class="f-dim">= the comparisons are to other elements within the SAME sequence; those comparisons compute the output for the current input.</span></span>
+        </div>
+        <p>The deck also states the transformer's headline architectural claim in three short bullets that are easy to lose under all the Q/K/V mechanics: transformers <strong>map sequences of input vectors to sequences of output vectors of the same length</strong> — n words in, n contextualized vectors out, never a different count. They're built from stacked <strong>transformer blocks</strong>, whose key ingredient is the self-attention layer ("self-attention allows a network to directly extract and use information from arbitrarily large contexts"). And critically, transformers are <strong>not based on recurrent connections</strong> — no h<sub>t</sub> waiting on h<sub>t-1</sub> — so every position's computation is independent of every other position's, which is exactly what makes parallel implementation (and therefore scaling to huge models) possible, unlike an LSTM that must process token 47 only after token 46 finishes.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">The BERT-style visualization behind "it → animal" <span class="src-badge src-slides">Slides</span></div>
+        <p>The deck backs the "it → animal" example with an actual BertViz-style attention visualization across two layers of the sentence <em>"The animal didn't cross the street because it was too tired."</em> Reading the diagram layer by layer shows self-attention <em>converging</em> on the right referent rather than getting it immediately:</p>
+        <table class="he-table">
+          <thead><tr><th>Layer</th><th>What "it" attends to</th><th>Strength</th></tr></thead>
+          <tbody>
+            <tr><td>Layer 6 (shallower)</td><td>"The," "animal," "didn't," "cross," "the," "street," "because" — broadly spread</td><td>diffuse, no clear winner yet</td></tr>
+            <tr><td>Layer 5 (deeper in the stack shown)</td><td>"animal" — dark/strong highlight</td><td><span style="color:var(--lime)">strong</span></td></tr>
+            <tr><td>Layer 5 (same layer)</td><td>"The," "street" — light highlight</td><td><span style="color:var(--gold)">weak, residual</span></td></tr>
+          </tbody>
+        </table>
+        <p>The takeaway the visualization is built to make concrete: pronoun resolution isn't a single lookup — it's built up progressively as "it" passes through more self-attention layers, with the representation sharpening onto "animal" and away from the grammatically-plausible-but-wrong "street." This is the same phenomenon Section 05's multi-head interpretability research (Clark et al., 2019) later formalizes as heads specializing in coreference resolution.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">The unparameterized precursor — self-attention before Q/K/V is introduced <span class="src-badge src-slides">Slides</span></div>
+<span class="formula-line"><span class="f-gold">score(x_i, x_j) = x_i · x_j</span>   <span class="f-dim">— raw dot product between two input embeddings, no learned projection yet</span></span>
+<span class="formula-line"><span class="f-teal">α_ij = softmax(score(x_i, x_j))  ∀ j ≤ i</span>   <span class="f-dim">— causal: position i only compares against itself and earlier positions</span></span>
+<span class="formula-line"><span class="f-lime">y_i = Σ_(j≤i) α_ij · x_j</span>   <span class="f-dim">— weighted sum of the SAME embeddings used for scoring (no separate value vector yet)</span></span>
+      </div>
+      <p style="color:var(--text2);font-size:14px;">This is the deck's bare-bones self-attention layer — each output box "b<sub>i</sub>" attends to input box 1 through i only (a triangular, causal fan-in: b1 sees x1; b2 sees x1,x2; ...; b5 sees x1...x5), producing one y<sub>i</sub> per position, all computable in parallel since none of the b<sub>i</sub> depend on each other's outputs. The very next step — the one Vaswani's team actually shipped — replaces the reused x<sub>i</sub> in both the scoring role and the value role with three <em>separate</em> learned projections. That's Q, K, V, covered next.</p>
 
       <div class="theory-block">
         <h3>From cross-attention to self-attention</h3>
@@ -601,6 +663,43 @@
         <div class="ki-label">In Plain Words — why three matrices, and what Q·Kᵀ really computes</div>
         <p><strong>Why not compare raw embeddings directly?</strong> Because one word needs to wear three different hats: how it <em>asks</em> ("what am I looking for?" — Q), how it <em>advertises itself</em> to others ("how should you find me?" — K), and what it <em>actually contributes</em> once matched ("here's my content" — V). The same person phrases a question differently than they'd answer one — three learned projections let one embedding play all three roles. <strong>Q·Kᵀ in one shot</strong> = every query dot-producted against every key simultaneously — a full n×n "compatibility scoreboard" of all word pairs. That n×n scoreboard is also the transformer's Achilles heel: comparing every token to every other token means cost grows <strong>quadratically</strong> with sequence length — O(n²) — covered under Limitations (Section 10). Defining self- vs cross-attention in one line: <strong>self-attention</strong> = Q, K, V all derived from the <em>same</em> sequence X; <strong>cross-attention</strong> = Q from the decoder, K and V from the encoder (Section 03's original formulation).</p>
       </div>
+
+      <div class="examples-section">
+        <div class="tab-panel active" style="border-radius:var(--radius);">
+          <div class="example-q">Fully worked example — computing y₃ for "I am studying" via causal self-attention <span class="src-badge src-slides">Slides</span></div>
+          <p style="color:var(--text2);font-size:14px;margin-bottom:1rem;">The single most exam-relevant walkthrough in the deck: three tokens, x₁="I", x₂="am", x₃="studying". We compute the third output vector y₃ end to end. Because attention is causal here, y₃ is allowed to look at positions 1, 2, and 3 — not position 4 onward (there isn't one, but the rule is the same one used for longer sequences).</p>
+          <ol class="step-list">
+            <li><p><strong>Generate Q, K, V for every token.</strong> Each x<sub>i</sub> is multiplied by the same three learned matrices: q<sub>i</sub>=W<sup>Q</sup>x<sub>i</sub>, k<sub>i</sub>=W<sup>K</sup>x<sub>i</sub>, v<sub>i</sub>=W<sup>V</sup>x<sub>i</sub>. This produces (q₁,k₁,v₁), (q₂,k₂,v₂), (q₃,k₃,v₃) — nine vectors total from three input embeddings.</p></li>
+            <li><p><strong>Compare q₃ against every key up to position 3.</strong> Since we're computing y₃, the query is q₃. Score it against k₁, k₂, k₃ (not k₄ or beyond — causal masking, Section 04's matrix view below): <code>q₃·k₁/√d_k</code>, <code>q₃·k₂/√d_k</code>, <code>q₃·k₃/√d_k</code> — three raw, scaled similarity scores.</p></li>
+            <li><p><strong>Softmax the three scores → α<sub>3,j</sub>.</strong> The deck's own worked numbers: softmax turns the three raw scores into <code>α₃,₁=0.1 ("I"), α₃,₂=0.2 ("am"), α₃,₃=0.7 ("study")</code> — summing to 1.0. Position 3 ("studying") ends up attending mostly to itself, with a smaller pull from "am" and the least from "I."</p></li>
+            <li><p><strong>Weight and sum the VALUE vectors (not the keys).</strong> <code>y₃ = α₃,₁·v₁ + α₃,₂·v₂ + α₃,₃·v₃ = 0.1·v₁ + 0.2·v₂ + 0.7·v₃</code>. Note precisely which vectors get summed here — the α's were computed by comparing queries to <em>keys</em>, but what actually gets blended into the output is the corresponding <em>values</em>. This Q-for-comparing/V-for-blending split is the entire reason Q/K/V are three separate matrices instead of one.</p></li>
+          </ol>
+          <div class="answer-box">
+            <span class="answer-label">Result</span>
+            <span class="answer-val">y₃ = 0.1·v₁ + 0.2·v₂ + 0.7·v₃ — a single output vector for position 3, computed independently of y₁ and y₂ (each of <em>those</em> ran its own q<sub>i</sub>-vs-keys-up-to-i comparison in parallel). Every y<sub>i</sub> in the sequence is produced this same way, simultaneously — this is exactly what "entire process can be parallelized, unlike RNNs which are sequential in nature" (the deck's own annotation) means in practice.</span>
+          </div>
+          <div class="key-insight">
+            <div class="ki-label">Common mistake to watch for</div>
+            <p>Summing the <em>keys</em> instead of the <em>values</em> in the last step, or forgetting the causal restriction and including k₄/v₄ (or beyond) when computing y₃ — causal self-attention at position i only ever sees j ≤ i, never future positions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">The matrix view of the same computation — QKᵀ with causal masking <span class="src-badge src-slides">Slides</span></div>
+        <p>Doing the y₃ computation above for every position at once, across a slightly longer 5-token sequence, is exactly what <code>SelfAttention(Q,K,V) = softmax(QKᵀ/√d_k)·V</code> computes in one shot. Pack all N token embeddings into a matrix <strong>X ∈ ℝ<sup>N×d</sup></strong> (one row per token), then <strong>Q=XW<sup>Q</sup>, K=XW<sup>K</sup>, V=XW<sup>V</sup></strong>. The product <strong>QKᵀ</strong> is an <strong>N×N</strong> matrix — row i, column j is exactly <code>q_i·k_j</code>. Causal masking sets every entry <em>above</em> the diagonal (future positions j &gt; i) to −∞ <em>before</em> softmax, so softmax turns those into exactly 0:</p>
+        <table class="he-table">
+          <thead><tr><th></th><th>col 1</th><th>col 2</th><th>col 3</th><th>col 4</th><th>col 5</th></tr></thead>
+          <tbody>
+            <tr><td><strong>row 1</strong></td><td>q1·k1</td><td>−∞</td><td>−∞</td><td>−∞</td><td>−∞</td></tr>
+            <tr><td><strong>row 2</strong></td><td>q2·k1</td><td>q2·k2</td><td>−∞</td><td>−∞</td><td>−∞</td></tr>
+            <tr><td><strong>row 3</strong></td><td>q3·k1</td><td>q3·k2</td><td>q3·k3</td><td>−∞</td><td>−∞</td></tr>
+            <tr><td><strong>row 4</strong></td><td>q4·k1</td><td>q4·k2</td><td>q4·k3</td><td>q4·k4</td><td>−∞</td></tr>
+            <tr><td><strong>row 5</strong></td><td>q5·k1</td><td>q5·k2</td><td>q5·k3</td><td>q5·k4</td><td>q5·k5</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text2);font-size:14px;">Row 3 of this matrix, after softmax, is exactly the (α₃,₁, α₃,₂, α₃,₃, 0, 0) computed above — the y₃ walkthrough is literally "read off row 3." The −∞ trick is what makes GPT-style decoder-only models causal: mask the upper triangle, and no amount of training can ever let position i peek at position j&gt;i, because the gradient through those entries is always exactly zero.</p>
+      </div>
     </section>
 
     <!-- ============ SECTION 05 ============ -->
@@ -617,6 +716,23 @@
         <p>One self-attention layer captures one "view" of the sentence. Prof's example — a sentence with three occurrences of the word "bank" (river bank, bank account, banking road) plus an implicit question "where is the user going?": a single attention layer can disambiguate the three banks semantically, <em>or</em> track where the user is going, but human comprehension does several of these analyses <strong>simultaneously</strong> ("three thought processes captured together"). One attention mechanism, run once, isn't enough to capture semantic disambiguation, grammatical correctness, and intent-tracking all at once.</p>
         <p>The fix: rather than defining a separate encoder/decoder for each sub-task, run <strong>several self-attention layers in parallel</strong> — a <strong>multi-headed attention</strong> block. Each head is free to specialize on a different aspect: word-sense disambiguation, grammatical correctness, "where is the user going," tone, or anything else the data makes useful — Prof likened this to a "mixture of experts," and noted this specialization is <strong>learned</strong>, not hand-assigned during training.</p>
       </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Multi-head attention — the formal definition <span class="src-badge src-slides">Slides</span></div>
+<span class="formula-line"><span class="f-gold">head_i = SelfAttention(Q_i, K_i, V_i)</span>   <span class="f-dim">— one ordinary scaled dot-product attention per head i</span></span>
+<span class="formula-line"><span class="f-sky">Q_i = X·W_i^Q</span>&nbsp;&nbsp;&nbsp;<span class="f-sky">K_i = X·W_i^K</span>&nbsp;&nbsp;&nbsp;<span class="f-sky">V_i = X·W_i^V</span>   <span class="f-dim">— head i's OWN weight matrices, never shared with any other head</span></span>
+<span class="formula-line"><span class="f-lime">MultiHeadAttention(X) = (head_1 ⊕ head_2 ⊕ ... ⊕ head_h) · W^O</span>   <span class="f-dim">— ⊕ = concatenate along the feature dimension, then one shared output projection W^O</span></span>
+        </div>
+        <table class="he-table">
+          <thead><tr><th>Component</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td>Head 1: W<sub>Q1</sub>, W<sub>K1</sub>, W<sub>V1</sub></td><td>Independent self-attention over the full input sequence — its own view</td></tr>
+            <tr><td>Head 2: W<sub>Q2</sub>, W<sub>K2</sub>, W<sub>V2</sub></td><td>A second, independently-parameterized view of the same sequence</td></tr>
+            <tr><td>Head 3, Head 4, ... Head h</td><td>Same pattern, run fully in parallel — no head depends on another's output</td></tr>
+            <tr><td>Concatenate → W<sup>O</sup></td><td>Stack all h head outputs side by side, then project back down to dimension d with one learned matrix W<sup>O</sup> — this is what keeps the block's output the same size as its input, so blocks can be stacked</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text2);font-size:14px;">Every one of the h heads is provided its own independent set of Q/K/V weight matrices (Sujoy Saha's question, confirmed live) — this is what the formula's per-head subscript i on W<sub>i</sub><sup>Q</sup>/W<sub>i</sub><sup>K</sup>/W<sub>i</sub><sup>V</sup> is doing. Vaswani et al.'s original configuration: d_model=512, h=8 heads, each head dimension d_k=d_v=512/8=64 — so concatenating 8 heads of 64 dims each reconstructs exactly 512 before W<sup>O</sup> is applied.</p>
 
       <div class="interactive-demo">
         <h4>Interactive — what different heads "look at"</h4>
@@ -674,6 +790,19 @@
           <li><strong>Feed-forward network (MLP)</strong><p>A position-wise fully-connected network applied after attention + norm, at every transformer block — typically expanding <strong>4×</strong> (d_ff = 2048 vs d_model = 512 in the original paper): Linear → ReLU/GELU → Linear. Why it must exist: attention only <em>mixes</em> information between tokens (a weighted average — linear); the FFN is where each token gets its own nonlinear processing. Without it, stacked attention collapses toward one big linear operation. Layman anchor: attention is the meeting where tokens exchange notes; the FFN is each token going home to think it over alone.</p></li>
           <li><strong>Stack N blocks, then softmax</strong><p>Multiple transformer blocks stack sequentially; the final layer produces a softmax distribution — over the vocabulary for language, or over classes for classification.</p></li>
         </ol>
+        <div class="formula-block">
+          <div class="formula-label">The transformer block, as two compact equations <span class="src-badge src-slides">Slides</span></div>
+<span class="formula-line"><span class="f-gold">z = LayerNorm(x + SelfAttention(x))</span>   <span class="f-dim">— attention sub-layer + residual, then normalize</span></span>
+<span class="formula-line"><span class="f-teal">y = LayerNorm(z + FFN(z))</span>   <span class="f-dim">— feed-forward sub-layer + residual, then normalize again</span></span>
+        </div>
+        <div class="formula-block">
+          <div class="formula-label">LayerNorm, expanded <span class="src-badge src-slides">Slides</span></div>
+<span class="formula-line"><span class="f-sky">μ = (1/d_h) Σ x_i</span>   <span class="f-dim">— mean, taken across the hidden dimension d_h of ONE token's vector (not across the batch)</span></span>
+<span class="formula-line"><span class="f-sky">σ = √( (1/d_h) Σ (x_i − μ)² )</span>   <span class="f-dim">— standard deviation, same axis</span></span>
+<span class="formula-line"><span class="f-lime">x̂ = (x − μ) / σ</span>   <span class="f-dim">— normalize to zero mean, unit variance</span></span>
+<span class="formula-line"><span class="f-violet">LayerNorm(x) = γ·x̂ + β</span>   <span class="f-dim">— learned scale γ and shift β restore the model's freedom to un-normalize if that helps</span></span>
+        </div>
+        <p style="color:var(--text2);font-size:14px;">The axis is the whole point: LayerNorm's μ and σ are computed <em>per token</em>, across that token's own d_h features — completely independent of every other token in the sequence and every other example in the batch. That's precisely what makes it robust to variable-length sequences and small/streaming batches, where BatchNorm's cross-batch statistics would be noisy or undefined.</p>
       </div>
 
       <div class="annotation">
@@ -684,6 +813,16 @@
       <div class="research-insight">
         <span class="ri-badge">Research Enhanced</span>
         <p>Prof's aside — "we have actually run out of physical data in the world to train a transformer... right now we are training them using synthetic data, which will eventually corrupt it" — reflects a real, actively-debated concern. <cite>Villalobos et al., "Will We Run Out of Data?", arXiv 2022 (updated 2024; ICML 2024 position paper)</cite> estimated (80% confidence interval) the stock of public human-generated text could be fully utilized for training between 2026 and 2032 depending on compute-scaling assumptions. The corruption risk Prof flags has a formal name and mechanism: <strong>model collapse</strong> — <cite>Shumailov et al., "AI models collapse when trained on recursively generated data," Nature 631, 2024</cite> (the earlier 2023 arXiv preprint carried the catchier title "The Curse of Recursion") shows training successive model generations increasingly on their own (or other models') synthetic output progressively narrows the tail of the data distribution, degrading diversity and factual accuracy over generations. Labs mitigate this today by mixing synthetic data with curated human data and strong filtering rather than avoiding synthetic data outright — but the underlying risk Prof names is a real, published finding, not speculation.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Transformers as language models <span class="src-badge src-slides">Slides</span></h3>
+        <p>The deck closes the pure-Transformer arc (before crossing into vision) with the architecture that everything above was building toward: an <strong>autoregressive language model</strong>. Input embeddings for a running sequence ("So", "long", "and", "thanks", "for", ...) each attend causally over every prior token (never future ones — the same −∞-masked triangle from Section 04), pass through a transformer block, then a final <strong>linear layer</strong> projects to vocabulary size, and <strong>softmax over the vocabulary</strong> turns that into a probability for every possible next word — "long," "and," "thanks," "for," "all," etc., each getting its own predicted probability at its position.</p>
+        <div class="formula-block">
+          <div class="formula-label">Language-modeling loss</div>
+<span class="formula-line"><span class="f-gold">L = (1/T) Σ_(t=1)^T L_CE</span>   <span class="f-dim">— average cross-entropy loss over every position t in the sequence, exactly the same per-token softmax + −log(P(correct)) recipe as Section 02's seq2seq loss</span></span>
+        </div>
+        <p style="color:var(--text2);font-size:14px;">This is precisely the recipe the nanoGPT-style live demo in Section 09 runs at toy scale: predict the next character, one causal position at a time, penalized by cross-entropy — and it is also, unmodified, the exact recipe ViT reuses in Section 07, just swapping "next word" for "class label" at the output head. Same block, same loss family, different head.</p>
       </div>
     </section>
 
@@ -712,12 +851,36 @@
         </ol>
       </div>
 
+      <div class="annotation">
+        <div class="annotation-label">The instructor's word-embedding analogy for patch projection <span class="src-badge src-slides">Slides</span></div>
+        <p>The slide margin draws the patch-embedding step as a direct parallel to word embeddings in NLP, using the exact same running examples word2vec courses use — worth having ready because it's the single clearest mental model for "why does flattening a patch and multiplying by a learned matrix count as an embedding at all":</p>
+        <ul class="exam-list" style="margin-top:0.75rem;">
+          <li><strong>Vocabulary size ↔ patch count:</strong> a word-embedding table might index ~50,000 vocabulary words; a ViT's patch-embedding matrix plays the same indexing role for every possible flattened-patch input, except it's a continuous linear map (shared weights) rather than a discrete lookup table.</li>
+          <li><strong>"King," "Queen" ↔ any patch:</strong> the classic word2vec example — nearby vectors for related concepts — is the same property a good patch embedding should have: two patches showing similar visual content (fur texture, sky, edge) should land near each other in the D-dimensional embedding space.</li>
+          <li><strong>Named dimensions (Admin, Warrior, Gender, Royalty, Country, Death/Alive):</strong> the informal idea that individual embedding dimensions can (loosely) correspond to semantic attributes — the same intuition extends to patch embeddings, where individual learned dimensions may end up correlating with texture, edge orientation, or color statistics, even though nothing forces this interpretability.</li>
+          <li><strong>"Bank = institution / road / river":</strong> the same polysemy example used throughout this guide, redeployed here to make the point that even patch tokens are context-dependent — a patch of grass could be "field," "golf course," or "park" depending on what the rest of the image (and self-attention) resolves it to.</li>
+        </ul>
+      </div>
+
       <div class="formula-block">
         <div class="formula-label">ViT-Base dimensions, exactly as configured in the live demo</div>
 <span class="formula-line"><span class="f-dim">Patch:</span> <span class="f-gold">16 × 16 × 3</span> → flattened <span class="f-gold">768-dim</span> vector per patch</span>
 <span class="formula-line"><span class="f-dim">Embedding dim:</span> <span class="f-teal">768</span>  &nbsp;&nbsp; <span class="f-dim">Layers:</span> <span class="f-teal">12</span>  &nbsp;&nbsp; <span class="f-dim">Heads:</span> <span class="f-sky">12</span>  &nbsp;&nbsp; <span class="f-dim">MLP dim:</span> <span class="f-sky">3072</span>  &nbsp;&nbsp; <span class="f-dim">Params:</span> <span class="f-violet">~86M (ViT-Base)</span></span>
 <span class="formula-line"><span class="f-dim">128×128 demo image, 16×16 patches</span> → <span class="f-lime">64 patches + 1 class token = 65 tokens</span>, each 768-dim</span>
 <span class="formula-line"><span class="f-dim">CLS token = a learnable vector prepended at position 0 (borrowed from BERT's [CLS]) — it carries no image content itself; through attention it soaks up information from every patch, and the classification head reads only it. Layman: a blank delegate seated at position 0 who listens to every patch in every meeting (layer), then walks out and reports what the image is.</span></span>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header">
+          <span class="exam-badge">Myth vs. reality <span class="src-badge src-slides" style="margin-left:0.4rem;">Slides</span></span>
+          <h4>"A computer vision model with no convolutions!" — not quite</h4>
+        </div>
+        <p style="color:var(--text2);font-size:15px;margin-bottom:0.75rem;">The deck states ViT's headline marketing claim in green text, then immediately annotates its own claim in red ink with two corrections. Both are genuinely examinable, and both are a favorite "gotcha" question:</p>
+        <ul class="exam-list">
+          <li><strong>Patch embedding IS a convolution.</strong> With patch size p, splitting the image into non-overlapping p×p patches and linearly projecting each one to D dimensions is mathematically identical to a single <code>Conv2D(kernel=p×p, in_channels=3, out_channels=D, stride=p)</code> layer. Non-overlapping stride-p patches are exactly what a stride-p convolution produces — ViT's very first operation is a (single-layer) convolution, just not a deep stack of them.</li>
+          <li><strong>The Transformer's MLPs are also convolutions.</strong> The position-wise feed-forward sublayer inside every transformer block applies the identical weights to every token/position independently — which is precisely what a <strong>1×1 convolution</strong> does when applied across a spatial grid (or, here, a sequence). So the "no convolutions" claim survives only in a narrow sense: no <em>multi-scale, overlapping, large-receptive-field</em> convolutions of the CNN kind — but convolution-equivalent operations are present at both ends of the architecture.</li>
+        </ul>
+        <p style="color:var(--text2);font-size:14px;margin-top:0.75rem;">Exam-safe framing: ViT removes the <em>deep stack</em> of convolutions that gives CNNs their inductive bias (see the inductive-bias discussion below) — it does not remove convolution-equivalent math entirely. "No convolutions" is a slogan, not a literal architectural fact.</p>
       </div>
 
       <div class="why-matters">
@@ -741,6 +904,26 @@
       </div>
 
       <div class="theory-block">
+        <h3>Patch size is a real memory/compute trade-off, with real numbers <span class="src-badge src-slides">Slides</span></h3>
+        <p>Section 04 already flagged that self-attention's N×N score matrix makes cost grow quadratically in sequence length; ViT is where "sequence length" literally means "how many patches you chose to cut the image into" — so patch size is not a cosmetic hyperparameter, it's a direct memory/compute dial. The deck works this out with concrete numbers for a standard 224×224 input image:</p>
+        <table class="he-table">
+          <thead><tr><th>Patch size</th><th>Grid</th><th>Tokens N</th><th>Attention matrix (N×N)</th><th>Size @ 4 bytes/entry</th></tr></thead>
+          <tbody>
+            <tr><td>16×16</td><td>14×14</td><td>196</td><td>196² = 14⁴ = 38,416 entries</td><td>≈ 150 KB</td></tr>
+            <tr><td>14×14</td><td>16×16</td><td>256</td><td>256² = 16⁴ = 65,536 entries</td><td>≈ 256 KB</td></tr>
+          </tbody>
+        </table>
+        <p>That's <em>one</em> attention matrix, for one head, in one layer. Scale it up to a full ViT-Huge-class model — <strong>48 layers × 16 heads/layer = 768 attention matrices total</strong>:</p>
+        <div class="formula-block">
+          <div class="formula-label">Total attention memory across all layers and heads</div>
+<span class="formula-line"><span class="f-gold">Total = layers × heads × (attention matrix size)</span></span>
+<span class="formula-line"><span class="f-teal">196-token case:</span> 768 × 150 KB ≈ <span class="f-lime">112 MB</span>   <span class="f-dim">(16×16 patches → smaller grid, cheaper)</span></span>
+<span class="formula-line"><span class="f-teal">256-token case:</span> 768 × 256 KB ≈ <span class="f-lime">192 MB</span>   <span class="f-dim">(14×14 patches → finer grid, ~1.7× the memory)</span></span>
+        </div>
+        <p style="color:var(--text2);font-size:14px;">Halving patch size roughly doubles the grid in each spatial dimension, which roughly quadruples token count N — and since the attention matrix scales as N², that's a much steeper cost curve than the linear "more tokens, more compute" intuition suggests. This is precisely why practical ViT variants (B/32, B/16, L/16, H/14 — Section 07's ViT-vs-ResNet chart below) trade off patch granularity against training/inference cost rather than always using the smallest possible patch.</p>
+      </div>
+
+      <div class="theory-block">
         <h3>ViT vs. ResNet — the actual numbers from lecture</h3>
         <p>Correction to the transcript's numbers: ResNet-152 hit <strong>77–78% top-1</strong> on ImageNet-1k already at release (He et al., 2015), and by 2021 modern training recipes pushed ResNets to <strong>~80–83%</strong> — the "70–75%" range cited live better describes smaller ResNet-18/34-class models or 2015-era nets. ViT variants using 32×32, 16×16, or 14×14 patch sizes, even the base configuration, land in the same range or better — with ResNet historically inching up toward ~85% and ViT variants pushing toward the 90% mark on more recent/larger pretraining. Prof's framing: ViT doesn't uniquely lose information relative to CNNs — "we will not miss any more than what ResNet will miss" — but it does require far more training data to get there: "you do not train it on 1 million images, you train it on 1 billion, in fact 1 trillion."</p>
       </div>
@@ -753,6 +936,34 @@
       <div class="research-insight">
         <span class="ri-badge">Research Enhanced — the missing word: inductive bias</span>
         <p>The ViT paper's own explanation for the data hunger — a term this lecture never used but exams almost certainly will: <strong>inductive bias</strong>. CNNs bake two assumptions directly into the architecture: <em>locality</em> (nearby pixels relate — enforced by small kernels) and <em>translation equivariance</em> (a cat detector works anywhere in the frame — enforced by weight sharing). ViT has <em>neither</em> built in; self-attention is global and position-agnostic from the start, so everything CNNs get for free must be <strong>learned from data</strong>. That is precisely why ViT loses to ResNets when pretrained only on ImageNet-1k and wins once pretrained on 300M+ images — the paper's central finding, restated: <em>large-scale data beats hand-built inductive bias, but only once you actually have the data</em>. Layman anchor: a CNN is born wearing glasses that only see small neighborhoods — a helpful prejudice; ViT is born with no assumptions at all and must be shown millions of images to learn what the CNN knew from birth.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The full ViT-vs-ResNet chart, as the deck builds it across three pretraining scales <span class="src-badge src-slides">Slides</span></h3>
+        <p>The deck's centerpiece is one scatter chart (ImageNet Top-1 accuracy vs. pretraining dataset), revealed in stages across several slides. Model naming key first — <strong>B</strong>=Base, <strong>L</strong>=Large, <strong>H</strong>=Huge; the trailing <strong>/32, /16, /14</strong> is patch size, and smaller patch size means a bigger effective model (more patches, per the memory/compute table above).</p>
+        <table class="he-table">
+          <thead><tr><th>Pretraining dataset</th><th>Scale</th><th>ResNet</th><th>ViT-B/16</th><th>ViT-L/16</th><th>ViT-H/14</th></tr></thead>
+          <tbody>
+            <tr><td>ImageNet</td><td>1k categories, 1.2M images</td><td>≈81%</td><td>≈78%</td><td>≈77%</td><td>—</td></tr>
+            <tr><td>ImageNet-21k</td><td>21k categories, 14M images</td><td>≈80%</td><td>≈84%</td><td>≈85% (highest here)</td><td>—</td></tr>
+            <tr><td>JFT-300M</td><td>300M images (internal Google dataset)</td><td>≈79%</td><td>≈81%</td><td>≈87%</td><td>≈88% (highest overall)</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text2);font-size:14px;">Read across each row for the crossover: at small-scale ImageNet-only pretraining, <strong>ResNets win</strong>; once pretraining hits ImageNet-21k, big ViTs already <strong>match</strong> big ResNets; by JFT-300M, large ViTs <strong>decisively beat</strong> large ResNets, while ResNet accuracy actually drifts slightly <em>down</em> (81%→80%→79%) at the largest scale — CNNs don't get much further benefit from more data past a point; ViTs keep climbing.</p>
+        <div class="formula-block">
+          <div class="formula-label">Training compute cost — the efficiency argument</div>
+<span class="formula-line"><span class="f-lime">ViT-H/14:</span> ≈ 2.5k TPU-v3 core-days of training</span>
+<span class="formula-line"><span class="f-rose">ResNet (comparable JFT-300M run):</span> ≈ 9.9k TPU-v3 core-days of training</span>
+<span class="formula-line"><span class="f-dim">≈ 4× less compute for a HIGHER-accuracy result — "ViTs make more efficient use of GPU/TPU hardware; matrix multiply is more hardware-friendly than convolution."</span></span>
+        </div>
+        <div class="annotation">
+          <div class="annotation-label">The slide's own skepticism about "inductive bias" <span class="src-badge src-slides">Slides</span></div>
+          <p>Worth knowing this exists, because it's an unusually candid moment for a course slide: right next to the standard inductive-bias explanation above, the deck adds its own instructor pushback — <em>"Not sure I buy this explanation: 'inductive bias' is not a well-defined concept we can measure!"</em> The point being made isn't that the explanation is wrong, it's that "inductive bias" is often used as a label for a real, measured empirical gap (ViT needs more data than ResNet) without a rigorous, quantifiable definition backing the term itself — a fair methodological caution to remember before repeating "inductive bias" as if it settles the question.</p>
+        </div>
+        <div class="key-insight">
+          <div class="ki-label">The open question the deck ends on</div>
+          <p>The final slide of the deck closes not with an answer but a live discussion prompt, chart annotated with a green highlight box around the underperforming ImageNet-only column: <strong>"How can we improve the performance of ViT models on ImageNet?"</strong> — i.e., without access to JFT-300M-scale proprietary data. This is exactly the gap later work (DeiT's distillation-token training recipe, cited above; hybrid CNN-ViT architectures; heavier augmentation) was built to close, and is a legitimate exam/discussion question in its own right.</p>
+        </div>
       </div>
 
       <div class="why-matters">
