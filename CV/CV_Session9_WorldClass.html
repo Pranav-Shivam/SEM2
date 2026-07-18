@@ -353,9 +353,10 @@
 
     <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
       <h3>How to read this guide — source honesty</h3>
-      <p>This guide is built <strong>entirely from the live transcript</strong> of the Jul 4, 2026 session (no slide deck was supplied for Session 9) — Prof. Dhruba taught this one conversationally, on a whiteboard, working through the reasoning live rather than reading slides.</p>
-      <p><span class="src-badge src-transcript">Transcript</span> &nbsp;= Prof. Dhruba's live words / worked derivations, Jul 4 2026. &nbsp; <span class="src-badge src-lab">Code</span> &nbsp;= the PyTorch/CIFAR-10 demo Prof walked through live. &nbsp; <span class="src-badge src-preview">Preview</span> &nbsp;= explicitly flagged by Prof as Session 10 content (CNNs, Vision Transformers) but referenced here for continuity.</p>
+      <p>This guide started <strong>entirely from the live transcript</strong> of the Jul 4, 2026 session — Prof. Dhruba taught this one conversationally, on a whiteboard, working through the reasoning live rather than reading slides. The accompanying slide deck (the same Karpathy/Fei-Fei Li CS231n-style deck referenced throughout, "CV Session 9 &amp; 10 — Image Classification") has since been recovered and cross-checked against the transcript.</p>
+      <p><span class="src-badge src-transcript">Transcript</span> &nbsp;= Prof. Dhruba's live words / worked derivations, Jul 4 2026. &nbsp; <span class="src-badge src-slides">Slides</span> &nbsp;= the accompanying slide deck — used below for the exact worked numeric examples, formulas, and tables the live audio only gestured at. &nbsp; <span class="src-badge src-lab">Code</span> &nbsp;= the PyTorch/CIFAR-10 demo Prof walked through live. &nbsp; <span class="src-badge src-preview">Preview</span> &nbsp;= explicitly flagged by Prof as Session 10 content (CNNs, Vision Transformers) but referenced here for continuity.</p>
       <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--rose)">Reality check:</strong> Prof opened with exam feedback (answer keys released, a disputed Harris-corner "strong/weak" question flagged for review with Prof Sugata and the TAs) before starting new content around minute 15. That Q&amp;A is summarized briefly below since it affects how you should read your own mid-sem scripts, but the bulk of this guide is the image-classification pipeline itself.</p>
+      <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--gold)">Update:</strong> a first pass of this guide leaned almost entirely on the spoken transcript and under-covered material that only appears on the slides themselves — the semantic-gap pipeline numbers, the L1-distance worked patch example, the four-ideas hyperparameter progression, the 4-pixel/3-class worked score example, the geometric/separating-hyperplane view, the cat/car/frog 10-class score table, the loss-function notation, the softmax worked example, and the full cross-entropy+regularization objective. All of these are now filled in below, tagged <span class="src-badge src-slides">Slides</span>, alongside the original transcript-only material.</p>
     </div>
 
     <div class="annotation">
@@ -383,7 +384,7 @@
       </div>
 
       <div class="theory-block">
-        <h3>The semantic gap — what the computer actually sees</h3>
+        <h3>The semantic gap — what the computer actually sees <span class="src-badge src-slides">Slides</span></h3>
         <p>Formally, this is the <strong>semantic gap</strong>: to a human, a photo of a cat is unmistakably "a cat." To a computer, that same photo is nothing but a large 2D array of numbers — pixel intensities, no different in kind from a spreadsheet of digits ("what the computer sees" is literally a grid like <code>08, 02, 22, 97, 38...</code>). There is no "catness" anywhere in that array. Image classification, end to end, is the discipline of building a function that bridges from raw pixel numbers to a semantic label.</p>
       </div>
 
@@ -540,6 +541,7 @@
         <span class="section-num">04</span>
         <h2 class="section-title">Nearest Neighbor &amp; K-Nearest Neighbors</h2>
         <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-slides">Slides</span>
         <span class="src-badge src-lab">CIFAR-10 demo</span>
       </div>
 
@@ -573,7 +575,7 @@
       </div>
 
       <div class="theory-block">
-        <h3>Worked example — L1 distance by hand (4×4 patch)</h3>
+        <h3>Worked example — L1 distance by hand (4×4 patch) <span class="src-badge src-slides">Slides</span></h3>
         <p>Subtract corresponding pixels between a test patch and a training patch, take the absolute value of each difference, then sum every cell:</p>
         <div class="demo-canvas-wrap">
           <div>
@@ -662,6 +664,7 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
         <span class="section-num">05</span>
         <h2 class="section-title">Train / Validation / Test &amp; Cross-Validation</h2>
         <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-slides">Slides</span>
       </div>
 
       <div class="theory-block">
@@ -671,7 +674,7 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
       </div>
 
       <div class="theory-block">
-        <h3>The four ideas for setting hyperparameters — and why the first three fail</h3>
+        <h3>The four ideas for setting hyperparameters — and why the first three fail <span class="src-badge src-slides">Slides</span></h3>
         <ol class="pipeline">
           <li><strong>Idea #1 — tune on the whole dataset</strong>
             <p>Choose whatever hyperparameter works best on your one undivided dataset. <span style="color:var(--rose)">Bad:</span> for K-NN, K=1 always achieves 100% "accuracy" here, because every training point's nearest neighbor is itself. This tells you nothing about generalization.</p></li>
@@ -720,6 +723,7 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
         <span class="section-num">06</span>
         <h2 class="section-title">Linear Classifiers</h2>
         <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-slides">Slides</span>
       </div>
 
       <div class="theory-block">
@@ -749,7 +753,7 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
       </div>
 
       <div class="theory-block">
-        <h3>Worked example — 4-pixel image, 3 classes (algebraic viewpoint)</h3>
+        <h3>Worked example — 4-pixel image, 3 classes (algebraic viewpoint) <span class="src-badge src-slides">Slides</span></h3>
         <p>Toy image with only 4 pixels, stretched into a column vector <code>x = [56, 231, 24, 2]ᵀ</code>. Classes: cat, dog, ship.</p>
         <table class="he-table">
           <thead><tr><th>Class</th><th>w₁</th><th>w₂</th><th>w₃</th><th>w₄</th><th>bias</th></tr></thead>
@@ -772,12 +776,12 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
       </div>
 
       <div class="theory-block">
-        <h3>Geometric viewpoint — images as points, classifiers as hyperplanes</h3>
+        <h3>Geometric viewpoint — images as points, classifiers as hyperplanes <span class="src-badge src-slides">Slides</span></h3>
         <p>Treat every image as a single point in a very high-dimensional space (3072 dimensions for a flattened 32×32×3 CIFAR-10 image — illustrated in 2D for intuition). Each class's row of W defines a line (a hyperplane in the full-dimensional case) through this space; moving in the direction of that class's weight vector increases that class's score. On a toy 2D plot, an "airplane" classifier line separates the airplane/boat cluster from everything else, "car" separates the car cluster, and "deer" separates the animal cluster — each with an arrow pointing toward higher score for its own class.</p>
       </div>
 
       <div class="formula-block">
-        <div class="formula-label">Separating hyperplane — the decision rule</div>
+        <div class="formula-label">Separating hyperplane — the decision rule <span class="src-badge src-slides">Slides</span></div>
 <span class="formula-line"><span class="f-lime">x positive:</span>  <span class="f-gold">x·w + b ≥ 0</span></span>
 <span class="formula-line"><span class="f-rose">x negative:</span>  <span class="f-teal">x·w + b &lt; 0</span></span>
 <span class="formula-line"> </span>
@@ -787,7 +791,7 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
       <div class="exam-alert">
         <div class="exam-alert-header">
           <span class="exam-badge">Limitation flagged live</span>
-          <h4>Linear classifiers can't bend a decision boundary</h4>
+          <h4>Linear classifiers can't bend a decision boundary <span class="src-badge src-slides" style="margin-left:0.4rem;">Slides</span></h4>
         </div>
         <ul class="exam-list">
           <li>A linear classifier draws one hyperplane per class — it has no way to carve out a non-linear region (Prof's example: concentric circles alternating positive/negative labels — "there's no way you can draw and classify it using a single decision boundary").</li>
@@ -811,10 +815,11 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
         <span class="section-num">07</span>
         <h2 class="section-title">Loss Functions</h2>
         <span class="src-badge src-transcript">Transcript</span>
+        <span class="src-badge src-slides">Slides</span>
       </div>
 
       <div class="theory-block">
-        <h3>So far: a score function. Is this W good or bad?</h3>
+        <h3>So far: a score function. Is this W good or bad? <span class="src-badge src-slides">Slides</span></h3>
         <p>Plugging three CIFAR-10 images (cat, automobile, frog) through some particular W gives a 10-way score for each — bolded cells mark each image's true class:</p>
         <table class="he-table">
           <thead><tr><th>Class</th><th>Cat image</th><th>Car image</th><th>Frog image</th></tr></thead>
@@ -840,14 +845,14 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
       </div>
 
       <div class="formula-block">
-        <div class="formula-label">Loss function — dataset notation</div>
+        <div class="formula-label">Loss function — dataset notation <span class="src-badge src-slides">Slides</span></div>
 <span class="formula-line"><span class="f-dim">Dataset:</span>  <span class="f-gold">{(xᵢ, yᵢ)}, i = 1...N</span>   <span class="f-dim">— xᵢ is an image, yᵢ is its (integer) ground-truth label</span></span>
 <span class="formula-line"><span class="f-dim">Per-example loss:</span>  <span class="f-teal">Lᵢ(f(xᵢ, W), yᵢ)</span>   <span class="f-dim">— how unhappy we are with the score vector for example i</span></span>
 <span class="formula-line"><span class="f-dim">Total loss:</span>  <span class="f-lime">L = (1/N) Σᵢ Lᵢ(f(xᵢ, W), yᵢ)</span>   <span class="f-dim">— average per-example loss over the whole training set; this is what training minimizes</span></span>
       </div>
 
       <div class="formula-block">
-        <div class="formula-label">Loss functions covered — binary vs multi-class vs margin</div>
+        <div class="formula-label">Loss functions covered — binary vs multi-class vs margin <span class="src-badge src-slides">Slides</span></div>
 <span class="formula-line"><span class="f-dim">Sigmoid (binary):</span>  <span class="f-gold">σ(z) = 1 / (1 + e^(−z))</span>   <span class="f-dim">→ paired with binary cross-entropy for cat/not-cat style problems</span></span>
 <span class="formula-line"> </span>
 <span class="formula-line"><span class="f-dim">Softmax (multi-class):</span>  <span class="f-teal">P(class i) = e^(zᵢ) / Σⱼ e^(zⱼ)</span>   <span class="f-dim">— exponentiate each class's score, divide by the sum over all classes</span></span>
@@ -869,7 +874,7 @@ def nearest_neighbor_predict(train_x, train_y, test_x):
       </div>
 
       <div class="formula-block">
-        <div class="formula-label">The full training objective — cross-entropy + L2 regularization</div>
+        <div class="formula-label">The full training objective — cross-entropy + L2 regularization <span class="src-badge src-slides">Slides</span></div>
 <span class="formula-line"><span class="f-gold">L = (1/N) Σᵢ −log( e^(f_yi) / Σⱼ e^(fⱼ) )</span>  <span class="f-dim">+</span>  <span class="f-teal">λ Σₖ Σₗ W²ₖ,ₗ</span></span>
 <span class="formula-line"> </span>
 <span class="formula-line"><span class="f-dim">First term:</span>  <span class="f-lime">average cross-entropy loss over all N training examples</span>  <span class="f-dim">— −log(softmax probability of the correct class), driven toward 0 only as that probability → 1</span></span>
@@ -901,7 +906,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=...)
 
 for epoch in range(5):
     for images, labels in train_loader:
-        images = images.view(images.size(0), -1)   # flatten 32x32x3 -> 3072
+        images = images.view(images.size(0), -1)   # flatten 32x32x3 -&gt; 3072
         outputs = model(images)
         loss = criterion(outputs, labels)
         optimizer.zero_grad()
@@ -930,7 +935,7 @@ for epoch in range(5):
       </div>
 
       <div class="theory-block">
-        <h3>Additional readings — as given on the closing slides</h3>
+        <h3>Additional readings — as given on the closing slides <span class="src-badge src-slides">Slides</span></h3>
         <p>Stanford CS231n (<a href="http://cs231n.stanford.edu/" style="color:var(--sky);">cs231n.stanford.edu</a>) is the primary reference this session's structure and worked examples are drawn from. The CIFAR-10/100 dataset page (<a href="https://www.cs.toronto.edu/~kriz/cifar.html" style="color:var(--sky);">cs.toronto.edu/~kriz/cifar.html</a>) is the canonical dataset source. A hands-on companion notebook was also referenced live — <em>CV9_Image_Classification.ipynb</em> — mirroring the K-NN and linear-classifier demos walked through in this session.</p>
       </div>
     </section>

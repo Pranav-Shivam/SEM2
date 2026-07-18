@@ -1045,7 +1045,7 @@ for block in transformer_blocks:                 # e.g. 2 blocks in the toy demo
 
 logits = final_linear(x)
 probs = softmax(logits)                          # P(next char | context)
-# Output on an untuned toy run: input "cbab" -> output drifts to "ccmbainai"
+# Output on an untuned toy run: input "cbab" -&gt; output drifts to "ccmbainai"
 # first characters correct, later ones wander -- expected at this scale/training</pre>
         <p>Prof's honest framing of the (deliberately under-trained) output: the initial characters predicted correctly, later ones didn't — showing the mechanics work but the toy model needs far more training/data/scale to converge, exactly the same lesson as the CIFAR-10 demos in Session 9.</p>
       </div>
@@ -1069,7 +1069,7 @@ model = ViT(patch_size=16, embed_dim=768, num_heads=12, num_classes=10)
 optimizer = torch.optim.SGD(model.parameters(), lr=...)
 criterion = nn.CrossEntropyLoss()
 # Trained on CIFAR-10 (kept small deliberately -- "did not want to waste too much compute power")
-# Loss: 1.69 -> 0.48 over training
+# Loss: 1.69 -&gt; 0.48 over training
 # Final accuracy: ~80% on CIFAR-10 held-out data</pre>
       </div>
 
