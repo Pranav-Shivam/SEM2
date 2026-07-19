@@ -1031,7 +1031,7 @@
       <div class="theory-block">
         <h3>Toy character-level transformer (nanoGPT-style)</h3>
         <p>Prof's first demo used a tiny character-level sequence ("cbab", "bc" etc.) to make every step of the pipeline visible at toy scale: each character → token ID (a=0, b=1, c=2...) → token embedding, concatenated with a positional embedding → 3 parallel multi-headed attention heads, each with its own Q/K/V → attention output → residual connection → feed-forward (MLP) → repeated across transformer blocks → final softmax over the character vocabulary, trained to predict the next character.</p>
-        <pre># Toy character-level transformer, as walked through live
+        <pre style="text-wrap: auto"># Toy character-level transformer, as walked through live
 tokens = {'a':0,'b':1,'c':2,'d':3, ...}          # simplistic char-level tokenization
 tok_emb = embedding_table[tokens]                # learned token embedding
 pos_emb = positional_table[range(seq_len)]       # learned/fixed positional embedding
@@ -1061,7 +1061,7 @@ probs = softmax(logits)                          # P(next char | context)
           <li><strong>Residual + MLP (feed-forward) block</strong><p>Attention output + residual → MLP → residual again, matching Section 06's transformer block recipe exactly.</p></li>
           <li><strong>MLP classification head</strong><p>A dedicated output vector (the class token) is passed through a small MLP to predict the final class label — this is what makes ViT directly usable for classification out-of-the-box.</p></li>
         </ol>
-        <pre># Training config, as run live
+        <pre style="text-wrap: auto"># Training config, as run live
 model = ViT(patch_size=16, embed_dim=768, num_heads=12, num_classes=10)
 # NOTE: transcript cites "~170M parameters" for this run -- inconsistent with this
 # exact config, which is ViT-Base (~86M, see Section 07). 170M matches no standard
