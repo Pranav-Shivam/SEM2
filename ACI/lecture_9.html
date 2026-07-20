@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Knowledge Base — Logic &amp; the Wumpus World, ACI Lecture 9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN TOKENS — identical palette/type system to Lecture 3
+   ("The Frontier"), reused so the Study Hub reads as one system.
+   ink (#0B0D10), paper (#F7F5F0), signal-amber (#FF8A3D = "agent /
+   currently perceiving"), frontier-blue (#5B8DEF = "breeze / KB
+   fact"), goal-moss (#5FAD7A = "safe / entailed"), alarm-rose
+   (#E8607A = "pit / wumpus / not entailed").
+   IBM Plex Mono carries every literal, coordinate, truth value —
+   this is a logic tool, symbols should look like symbols.
+   ============================================================ */
+:root{
+  --ink:        #0B0D10;
+  --ink-soft:   #14171C;
+  --panel:      #181B21;
+  --panel-2:    #1E2229;
+  --hairline:   rgba(247,245,240,0.09);
+  --hairline-2: rgba(247,245,240,0.16);
+  --paper:      #F7F5F0;
+  --paper-dim:  #C9C6BD;
+  --paper-faint:#8A887F;
+
+  --amber:      #FF8A3D;
+  --amber-dim:  #3D2410;
+  --amber-soft: #FFD9B8;
+
+  --blue:       #5B8DEF;
+  --blue-dim:   #1A2740;
+  --blue-soft:  #C2D3FB;
+
+  --moss:       #5FAD7A;
+  --moss-dim:   #16291D;
+  --moss-soft:  #BCE3CA;
+
+  --rose:       #E8607A;
+  --rose-dim:   #3A1620;
+  --rose-soft:  #F8C3CE;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---- shared M.Tech AIML Study Hub tokens (cross-page palette engine) ---- */
+  color-scheme: dark;
+  --font-display: "Fraunces", serif;
+  --font-ui: "Space Grotesk", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+  --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+  --page-bg:
+    radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+    linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+  --surface: rgba(11, 20, 34, 0.78);
+  --surface-strong: rgba(15, 26, 43, 0.96);
+  --surface-soft: rgba(255, 255, 255, 0.05);
+  --surface-muted: rgba(151, 170, 199, 0.12);
+  --card-bg: rgba(13, 24, 40, 0.88);
+  --border: rgba(160, 184, 218, 0.16);
+  --border-strong: rgba(186, 205, 232, 0.28);
+  --text: #edf4ff;
+  --text-muted: #afbed4;
+  --text-faint: #7e90ab;
+  --accent: #ffb556;
+  --accent-2: #60c0ff;
+  --accent-3: #8ce7c2;
+  --accent-4: #cb9cff;
+  --success-bg: rgba(140, 231, 194, 0.14);
+  --success-text: #b9f6dd;
+  --tab-idle: rgba(255, 255, 255, 0.05);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --chip-bg: rgba(255, 255, 255, 0.07);
+  --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+  --grid-line: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --page-bg:
+    radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+    linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --surface-soft: rgba(18, 42, 68, 0.05);
+  --surface-muted: rgba(38, 76, 124, 0.08);
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --border: rgba(48, 82, 130, 0.14);
+  --border-strong: rgba(45, 80, 128, 0.24);
+  --text: #10233e;
+  --text-muted: #4f6686;
+  --text-faint: #7185a3;
+  --accent: #de8d22;
+  --accent-2: #2483db;
+  --accent-3: #128868;
+  --accent-4: #8750df;
+  --success-bg: rgba(18, 136, 104, 0.1);
+  --success-text: #0c7258;
+  --tab-idle: rgba(19, 43, 73, 0.05);
+  --input-bg: rgba(19, 43, 73, 0.05);
+  --chip-bg: rgba(19, 43, 73, 0.07);
+  --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+  --grid-line: rgba(27, 48, 79, 0.06);
+  --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+  --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+}
+
+/* ---- hub header bar (shared across every page in the study hub) ---- */
+.hub-topbar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:10px 20px; background:var(--surface-strong); border-bottom:1px solid var(--border);
+  backdrop-filter:blur(10px); box-shadow:var(--shadow-soft);
+  font-family:var(--font-ui);
+}
+.hub-brand{display:flex; align-items:center; gap:10px; color:var(--text); font-size:13.5px; font-weight:500;}
+.hub-brand-badge{
+  width:24px; height:24px; border-radius:8px; background:var(--accent-4); color:#0B0D10;
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-ui);
+  font-size:11px; font-weight:700; flex-shrink:0;
+}
+.hub-theme-toggle{
+  display:inline-flex; align-items:center; gap:7px; background:var(--surface-soft);
+  border:1px solid var(--border-strong); color:var(--text); font-family:var(--font-ui);
+  font-size:12.5px; font-weight:500; padding:7px 14px; border-radius:999px; cursor:pointer;
+  transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.hub-theme-toggle:hover{border-color:var(--accent-4); color:var(--accent-4);}
+.hub-theme-toggle svg{flex-shrink:0;}
+
+*{box-sizing:border-box;}
+html{-webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+body{
+  margin:0; background:var(--ink); color:var(--paper);
+  font-family:var(--sans); line-height:1.6; font-size:15px;
+  -webkit-tap-highlight-color:transparent;
+}
+::selection{background:var(--amber); color:var(--ink);}
+
+a{color:var(--blue); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+button{font-family:inherit;}
+
+button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--amber); outline-offset:2px; border-radius:4px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+}
+
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+.shell{
+  display:grid;
+  grid-template-columns: 248px minmax(0,1fr);
+  min-height:100vh;
+}
+@media (max-width: 880px){
+  .shell{grid-template-columns: 1fr;}
+}
+
+.rail{
+  position:sticky; top:0; align-self:start; height:100vh;
+  border-right:1px solid var(--hairline);
+  padding:28px 18px 28px 24px;
+  display:flex; flex-direction:column; gap:22px;
+  overflow-y:auto;
+}
+@media (max-width: 880px){
+  .rail{
+    position:relative; height:auto; border-right:none;
+    border-bottom:1px solid var(--hairline);
+    padding:18px 16px;
+  }
+}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--hairline-2); border-radius:3px;}
+
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-mark{
+  width:30px; height:30px; border-radius:7px; background:var(--amber);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  font-family:var(--mono); font-size:15px; font-weight:600; color:var(--ink);
+}
+.brand-text{display:flex; flex-direction:column; gap:1px; min-width:0;}
+.brand-text .kicker{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--paper-faint); text-transform:uppercase;}
+.brand-text .name{font-size:14px; font-weight:600; color:var(--paper); letter-spacing:-0.01em;}
+
+.exam-strip{
+  display:flex; flex-direction:column; gap:7px;
+  padding:12px 13px; border-radius:var(--r-md);
+  background:var(--panel); border:1px solid var(--hairline);
+}
+.exam-row{display:flex; align-items:baseline; justify-content:space-between; gap:8px;}
+.exam-row .label{font-size:12px; color:var(--paper-dim);}
+.exam-row .date{font-family:var(--mono); font-size:12px; color:var(--amber); font-weight:500;}
+.exam-row.today .date{color:var(--paper-faint);}
+
+nav.railnav{display:flex; flex-direction:column; gap:1px; flex:1; min-height:0; overflow-y:auto;}
+.railnav::-webkit-scrollbar{width:0;}
+.rail-item{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px; border-radius:var(--r-sm);
+  background:transparent; border:none; color:var(--paper-dim);
+  font-size:13px; text-align:left; cursor:pointer;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.rail-item:hover{background:var(--panel); color:var(--paper);}
+.rail-item.active{background:var(--panel-2); color:var(--paper);}
+.rail-item .node-id{
+  font-family:var(--mono); font-size:10.5px; color:var(--paper-faint);
+  width:20px; flex-shrink:0; text-align:right;
+}
+.rail-item.active .node-id{color:var(--amber);}
+.rail-item .lbl{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.rail-foot{
+  font-size:11px; color:var(--paper-faint); padding-top:14px;
+  border-top:1px solid var(--hairline); line-height:1.55;
+}
+
+.content{padding:0; min-width:0;}
+.hero{
+  padding:64px 56px 48px;
+  border-bottom:1px solid var(--hairline);
+  position:relative; overflow:hidden;
+}
+@media (max-width:680px){ .hero{padding:40px 22px 32px;} }
+.hero-eyebrow{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--amber); margin:0 0 14px; display:flex; align-items:center; gap:8px;
+}
+.hero-eyebrow::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--amber); display:inline-block;}
+.hero h1{
+  font-size:clamp(28px, 4vw, 42px); line-height:1.08; font-weight:700;
+  letter-spacing:-0.02em; margin:0 0 16px; max-width:16ch;
+}
+.hero p.sub{
+  font-size:16px; color:var(--paper-dim); max-width:56ch; margin:0; line-height:1.65;
+}
+.hero-frontier{
+  margin-top:32px; display:flex; gap:6px; flex-wrap:wrap;
+}
+.hero-frontier .ftile{
+  font-family:var(--mono); font-size:11.5px; padding:5px 11px;
+  border-radius:20px; border:1px solid var(--hairline-2); color:var(--paper-dim);
+  background:var(--panel);
+}
+
+main.col{max-width:760px; padding:0 56px 120px;}
+@media (max-width:680px){ main.col{padding:0 22px 90px;} }
+
+section.block{
+  padding:56px 0; border-bottom:1px solid var(--hairline); scroll-margin-top:32px;
+}
+section.block:last-of-type{border-bottom:none;}
+
+.block-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:8px;}
+.block-num{
+  font-family:var(--mono); font-size:13px; color:var(--paper-faint);
+  padding-top:3px; flex-shrink:0; width:24px;
+}
+.block-head h2{
+  font-size:22px; font-weight:600; letter-spacing:-0.01em; margin:0; line-height:1.3;
+}
+.block-tag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  padding:3px 8px; border-radius:5px; flex-shrink:0; margin-top:5px; white-space:nowrap;
+}
+.block-tag.blind{background:var(--blue-dim); color:var(--blue-soft);}
+.block-tag.smart{background:var(--amber-dim); color:var(--amber-soft);}
+.block-tag.core{background:var(--moss-dim); color:var(--moss-soft);}
+.block-sub{
+  color:var(--paper-dim); font-size:14.5px; margin:0 0 28px; padding-left:38px; max-width:58ch; line-height:1.65;
+}
+
+.callout{
+  border-radius:var(--r-md); padding:14px 18px; font-size:13.5px;
+  margin:18px 0; line-height:1.65; border:1px solid transparent;
+}
+.callout-amber{background:var(--amber-dim); color:var(--amber-soft); border-color:rgba(255,138,61,0.25);}
+.callout-moss{background:var(--moss-dim); color:var(--moss-soft); border-color:rgba(95,173,122,0.25);}
+.callout-rose{background:var(--rose-dim); color:var(--rose-soft); border-color:rgba(232,96,122,0.25);}
+.callout-blue{background:var(--blue-dim); color:var(--blue-soft); border-color:rgba(91,141,239,0.25);}
+.callout b{font-weight:600;}
+.callout .callout-kicker{
+  font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  opacity:.75; display:block; margin-bottom:5px;
+}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+table.data{
+  width:100%; border-collapse:collapse; font-size:13px; margin:18px 0;
+}
+table.data th, table.data td{
+  border-bottom:1px solid var(--hairline); padding:9px 12px; text-align:left;
+  font-family:var(--sans);
+}
+table.data th{
+  color:var(--paper-faint); font-weight:500; font-size:11px; letter-spacing:.04em; text-transform:uppercase;
+  background:var(--panel);
+}
+table.data td.mono, table.data td code{font-family:var(--mono); font-size:12.5px;}
+table.data td.yes{color:var(--moss-soft);}
+table.data td.no{color:var(--rose-soft);}
+table.data tr:hover td{background:rgba(255,255,255,0.02);}
+
+code{
+  background:var(--panel-2); padding:2px 6px; border-radius:4px; font-size:12.5px;
+  color:var(--blue-soft); font-family:var(--mono); border:1px solid var(--hairline);
+}
+
+.formula{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-md);
+  padding:20px 24px; font-family:var(--mono); font-size:16px; color:var(--paper);
+  margin:20px 0; text-align:center; letter-spacing:.01em;
+}
+.formula .ghost{
+  display:block; margin-top:8px; font-size:11px; color:var(--paper-faint); letter-spacing:0;
+}
+
+.tagrow{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0;}
+.tagrow .tg{
+  font-family:var(--mono); font-size:11px; padding:5px 11px; border-radius:14px;
+  background:var(--panel); border:1px solid var(--hairline-2); color:var(--paper-dim);
+}
+
+.panel{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-lg);
+  padding:22px 22px 20px; margin:22px 0;
+}
+.panel-label{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--paper-faint); margin:0 0 14px; display:flex; align-items:center; justify-content:space-between;
+}
+.panel-label .step-of{color:var(--paper-dim); letter-spacing:.02em; text-transform:none;}
+
+.stage{
+  position:relative; min-height:220px; border-radius:var(--r-md);
+  background:var(--ink-soft); border:1px solid var(--hairline);
+  overflow:hidden; margin-bottom:16px;
+}
+.stage svg{display:block; width:100%; height:auto;}
+
+.frontier-lane{
+  display:flex; gap:6px; padding:14px; border-radius:var(--r-md);
+  background:var(--ink-soft); border:1px solid var(--hairline);
+  margin-bottom:16px; min-height:56px; align-items:center;
+  overflow-x:auto; flex-wrap:nowrap;
+}
+.frontier-lane::-webkit-scrollbar{height:4px;}
+.frontier-lane .lane-caption{
+  font-family:var(--mono); font-size:10px; color:var(--paper-faint); text-transform:uppercase;
+  letter-spacing:.06em; flex-shrink:0; padding-right:6px; border-right:1px solid var(--hairline-2); margin-right:6px;
+}
+.qtile{
+  font-family:var(--mono); font-size:12px; padding:7px 12px; border-radius:7px;
+  background:var(--panel-2); border:1px solid var(--hairline-2); color:var(--paper-dim);
+  flex-shrink:0; white-space:nowrap;
+  transition:transform .32s var(--ease), background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), opacity .25s var(--ease);
+}
+.qtile.is-min{
+  background:var(--amber-dim); border-color:var(--amber); color:var(--amber-soft); font-weight:500;
+  box-shadow:0 0 0 1px rgba(255,138,61,0.15);
+}
+.lane-empty{font-family:var(--mono); font-size:12px; color:var(--paper-faint);}
+
+.narration{
+  font-size:13.5px; color:var(--paper-dim); line-height:1.6; min-height:42px;
+  padding-top:2px;
+}
+.narration .hl{color:var(--amber-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--amber-dim); padding:1px 6px; border-radius:4px;}
+.narration .hl-blue{color:var(--blue-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--blue-dim); padding:1px 6px; border-radius:4px;}
+.narration .hl-moss{color:var(--moss-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--moss-dim); padding:1px 6px; border-radius:4px;}
+
+.controls{
+  display:flex; align-items:center; gap:8px; margin-top:16px; flex-wrap:wrap;
+}
+.ctl-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--panel-2); border:1px solid var(--hairline-2); color:var(--paper);
+  padding:8px 16px; border-radius:var(--r-sm); font-size:13px; font-weight:500; cursor:pointer;
+  transition:background .15s var(--ease), border-color .15s var(--ease), transform .1s var(--ease);
+}
+.ctl-btn:hover{border-color:var(--paper-faint);}
+.ctl-btn:active{transform:scale(0.97);}
+.ctl-btn:disabled{opacity:.32; cursor:default; pointer-events:none;}
+.ctl-btn.primary{background:var(--amber); color:var(--ink); border-color:var(--amber);}
+.ctl-btn.primary:hover{background:#ff9952;}
+.ctl-btn svg{width:14px; height:14px;}
+.ctl-spacer{flex:1;}
+.step-pips{display:flex; gap:4px; align-items:center;}
+.step-pips .pip{width:5px; height:5px; border-radius:50%; background:var(--hairline-2); transition:background .2s, transform .2s;}
+.step-pips .pip.done{background:var(--paper-faint);}
+.step-pips .pip.current{background:var(--amber); transform:scale(1.5);}
+
+.calc-table{margin:18px 0; border-radius:var(--r-md); overflow:hidden; border:1px solid var(--hairline-2);}
+.calc-row{
+  display:grid; grid-template-columns:48px 1fr 1fr 1.4fr; gap:10px; align-items:center;
+  padding:10px 14px; font-size:13px; border-bottom:1px solid var(--hairline);
+  background:var(--panel);
+}
+.calc-row:last-child{border-bottom:none;}
+.calc-row.head{
+  background:var(--ink-soft); font-family:var(--mono); font-size:10.5px; color:var(--paper-faint);
+  text-transform:uppercase; letter-spacing:.05em; padding:8px 14px;
+}
+.calc-row .node-tag{font-family:var(--mono); color:var(--paper); font-weight:500;}
+.verdict{font-family:var(--mono); font-size:12px; font-weight:500; padding:4px 10px; border-radius:6px; text-align:center;}
+.verdict.ok{background:var(--moss-dim); color:var(--moss-soft);}
+.verdict.bad{background:var(--rose-dim); color:var(--rose-soft);}
+.verdict.wait{color:var(--paper-faint); background:transparent;}
+
+.filterbar{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap;}
+.filterbar button{
+  background:var(--panel); border:1px solid var(--hairline-2); color:var(--paper-dim);
+  padding:6px 14px; border-radius:16px; font-size:12px; cursor:pointer;
+  transition:all .15s var(--ease);
+}
+.filterbar button.active{background:var(--amber-dim); color:var(--amber-soft); border-color:var(--amber);}
+.filterbar button:hover:not(.active){border-color:var(--paper-faint); color:var(--paper);}
+
+.quiz-progress{
+  font-family:var(--mono); font-size:11.5px; color:var(--paper-faint); margin-bottom:8px;
+  display:flex; justify-content:space-between;
+}
+.scorebar{height:3px; background:var(--panel-2); border-radius:2px; overflow:hidden; margin-bottom:24px;}
+.scorebar > div{height:100%; background:var(--amber); width:0%; transition:width .3s var(--ease);}
+
+.quiz-card{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-lg);
+  padding:20px 22px; margin-bottom:14px;
+}
+.quiz-card .qtag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--paper-faint); margin-bottom:8px; display:block;
+}
+.quiz-card .qtext{font-size:14.5px; margin-bottom:14px; font-weight:500; line-height:1.5;}
+.opt{
+  display:block; width:100%; text-align:left; background:var(--ink-soft); border:1px solid var(--hairline-2);
+  color:var(--paper); padding:10px 14px; border-radius:var(--r-sm); margin-bottom:7px; font-size:13px;
+  cursor:pointer; transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.opt:hover:not(:disabled){border-color:var(--paper-faint);}
+.opt.correct{background:var(--moss-dim); border-color:var(--moss); color:var(--moss-soft);}
+.opt.wrong{background:var(--rose-dim); border-color:var(--rose); color:var(--rose-soft);}
+.explain{
+  font-size:13px; color:var(--paper-dim); margin-top:10px; padding-top:10px;
+  border-top:1px dashed var(--hairline-2); display:none; line-height:1.6;
+}
+.explain.show{display:block; animation:fade-in .25s var(--ease);}
+@keyframes fade-in{from{opacity:0; transform:translateY(-2px);} to{opacity:1; transform:translateY(0);}}
+
+.code-block{
+  font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--paper-dim);
+  background:var(--ink-soft); border:1px solid var(--hairline); border-radius:var(--r-sm);
+  padding:16px 18px; margin:0; overflow-x:auto; white-space:pre;
+}
+.code-block .cm{color:var(--paper-faint); font-style:italic;}
+
+footer.colophon{
+  font-size:12px; color:var(--paper-faint); padding:40px 0 0; text-align:left; line-height:1.7;
+}
+footer.colophon a{color:var(--paper-dim);}
+</style>
+</head>
+<body>
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark">⊢</div>
+      <div class="brand-text">
+        <span class="kicker">ACI · ZG557</span>
+        <span class="name">The Knowledge Base</span>
+      </div>
+    </div>
+
+    <div class="exam-strip">
+      <div class="exam-row today"><span class="label">Session</span><span class="date">9 of 16</span></div>
+      <div class="exam-row"><span class="label">Mid-sem</span><span class="date">done</span></div>
+      <div class="exam-row"><span class="label">Sessions left</span><span class="date">7</span></div>
+    </div>
+
+    <nav class="railnav" id="railnav" aria-label="Lecture sections"></nav>
+
+    <div class="rail-foot">Session 9 · Knowledge-based agents, Wumpus World, propositional logic, entailment, theorem proving, CNF, resolution, DPLL.</div>
+  </aside>
+
+  <div class="content">
+    <header class="hero">
+      <p class="hero-eyebrow">Session 9 revision instrument</p>
+      <h1>Logic,<br>reasoned by hand.</h1>
+      <p class="sub">One percept in one cell — "you are OK" — and an agent can already know things it never sensed directly. This session traces that reasoning through the Wumpus World, formalizes it as propositional logic, then proves the same fact three different ways: truth tables, equivalence laws, and resolution — with DPLL closing the loop.</p>
+      <div class="hero-frontier">
+        <span class="ftile">Knowledge base</span><span class="ftile">Wumpus World</span><span class="ftile">Connectives</span>
+        <span class="ftile">Truth tables</span><span class="ftile">Entailment</span><span class="ftile">Theorem proving</span>
+        <span class="ftile">CNF · Resolution</span><span class="ftile">DPLL</span>
+      </div>
+    </header>
+
+    <main class="col">
+
+      <section class="block" id="s-recap">
+        <div class="block-head">
+          <span class="block-num">00</span>
+          <h2>Where the course stands</h2>
+          <span class="block-tag core">context</span>
+        </div>
+        <p class="block-sub">Mid-semester is over — evaluations are underway, revaluation requests open in the same portal. This class is the pivot point: search and games are behind us, knowledge and reasoning are ahead.</p>
+
+        <table class="data">
+          <tr><th>Already covered</th><th>Starting now (this module)</th><th>Later this semester</th></tr>
+          <tr><td>PEAS, agent types, environments</td><td>Knowledge-based agents, KB, TELL/ASK</td><td>Multi-agent systems</td></tr>
+          <tr><td>Uninformed &amp; informed search</td><td>Wumpus World as a reasoning problem</td><td>Probabilistic reasoning</td></tr>
+          <tr><td>Evolutionary / genetic algorithms</td><td>Propositional logic &amp; connectives</td><td>Reasoning over time</td></tr>
+          <tr><td>Adversarial search, game playing</td><td>Entailment, truth tables, theorem proving</td><td>AI ethics (final class)</td></tr>
+        </table>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">The instructor's framing</span>
+          "How do these agents create and infer new knowledge?" — that question hadn't been asked yet. Search and games assumed the tree, the board, the state space were just <i>given</i>. This module asks where an agent's knowledge actually comes from, and how it updates it.
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Exam hygiene, repeated from the recording</span>
+          The rubric is a sample, not the only path to credit — a correctly reasoned different route still scores. Genetic algorithm questions asked for the <i>steps</i> (selection, crossover, next-generation), not implementation. Slides alone get you to roughly 50%; the textbook gets you further.
+        </div>
+      </section>
+
+      <section class="block" id="s-kb">
+        <div class="block-head">
+          <span class="block-num">01</span>
+          <h2>Knowledge-based agents</h2>
+          <span class="block-tag core">foundation</span>
+        </div>
+        <p class="block-sub">Every knowledge-based agent centres on one component: a KB. Not a database of English sentences — a set of sentences in a formal knowledge-representation language.</p>
+
+        <table class="data">
+          <tr><th>Operation</th><th>Meaning</th><th>Database analogue</th></tr>
+          <tr><td class="mono">TELL</td><td>Inform the KB about a percept it just received</td><td>INSERT</td></tr>
+          <tr><td class="mono">ASK</td><td>Query the KB for what action to take, or whether a fact holds</td><td>SELECT</td></tr>
+          <tr><td class="mono">UPDATE</td><td>Revise the KB with something newly inferred</td><td>UPDATE</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          A <b>sentence</b> is knowledge expressed in a knowledge-representation language. An <b>axiom</b> is a sentence taken as given, not derived from others. Every knowledge-based agent, at its core, does exactly three things: tell, ask, or update — the CRUD of reasoning.
+        </div>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">Where this shows up in the lab</span>
+          Prolog — a logic-programming language built for exactly this — is covered in the coming webinar. You write facts and rules using AND/OR directly, then ask queries and get true/false back. Higher-level languages can do it, but it's clumsy; Prolog is built for it.
+        </div>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Research notes — beyond the slides</span>
+          <b>The loop has a second TELL.</b> AIMA's KB-agent cycle is TELL(percept) → ASK(action) → <b>TELL(action)</b> → execute — "the second TELL is necessary to let the knowledge base know that the hypothetical action has actually been executed." Without it the KB can't track its own location, arrow, or time step. Students routinely list only one TELL; the second one earns marks.<br><br>
+          <b>The knowledge level (Newell, 1982).</b> A KB agent can be described purely by <i>what it knows and wants</i>, independent of implementation — "it doesn't matter whether its geographical knowledge is implemented as linked lists or pixel maps." That's the declarative approach; the procedural approach hard-codes behaviours directly. The 1970s–80s fought heated wars over which is right — AIMA's verdict: "a successful agent must combine both declarative and procedural elements," even compiling declarative knowledge into reflexes once inferences become routine.
+        </div>
+      </section>
+
+      <section class="block" id="s-wumpus">
+        <div class="block-head">
+          <span class="block-num">02</span>
+          <h2>The Wumpus World</h2>
+          <span class="block-tag core">the running example</span>
+        </div>
+        <p class="block-sub">A 4×4 grid. The agent starts at (1,1) facing right. Somewhere in the grid: pits, one wumpus, one gold. The goal isn't just grabbing the gold — it's <i>discovering</i> where the danger is before ever stepping near it.</p>
+
+        <table class="data">
+          <tr><th>Feature</th><th>Rule</th></tr>
+          <tr><td>Pit</td><td>Falling in kills the agent. Every cell adjacent to a pit (up/down/left/right) feels <b>breeze</b>.</td></tr>
+          <tr><td>Wumpus</td><td>One only, static, eats the agent on contact. Every adjacent cell feels <b>stench</b>.</td></tr>
+          <tr><td>Gold</td><td>One only. <b>Glitter</b> is perceived only in the same cell — it does not radiate outward.</td></tr>
+          <tr><td>Percepts</td><td>Always a 5-tuple: <span class="mono">[Stench?, Breeze?, Glitter?, Bump?, Scream?]</span> — e.g. <span class="mono">[Stench, Breeze, None, None, None]</span>. Sensed locally, one cell at a time. Bump = walked into a wall; Scream = the wumpus died, heard from anywhere.</td></tr>
+          <tr><td>Actuators</td><td>Forward, TurnLeft / TurnRight by 90°, Grab (gold in this cell), Shoot (the single arrow flies straight until it hits a wall or kills the wumpus), Climb (exit the cave — only from (1,1)).</td></tr>
+          <tr><td>Performance measure</td><td><b>+1000</b> climbing out with the gold · <b>−1000</b> falling into a pit or being eaten · <b>−1</b> per action · <b>−10</b> for using the arrow.</td></tr>
+        </table>
+
+        <table class="data">
+          <tr><th>Environment property</th><th>Answer</th><th>Why</th></tr>
+          <tr><td>Fully observable?</td><td class="no">No</td><td>Only the current cell's percepts are known — never the full board</td></tr>
+          <tr><td>Deterministic?</td><td class="yes">Yes</td><td>Outcomes are exact: step into a pit, you fall, every time</td></tr>
+          <tr><td>Episodic or sequential?</td><td class="mono">Sequential</td><td>Each action affects what's rational to do next</td></tr>
+          <tr><td>Static?</td><td class="yes">Yes</td><td>Pits, wumpus, and gold never move once placed</td></tr>
+          <tr><td>Discrete?</td><td class="yes">Yes</td><td>A finite grid, finite actions per step</td></tr>
+          <tr><td>Single or multi-agent?</td><td class="mono">Single</td><td>The wumpus is treated as a hazard of nature, not a competing agent</td></tr>
+        </table>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">The goal, precisely</span>
+          "Discover the location of wumpus, pits and gold so the agent can navigate to gold without falling prey to either." Grabbing gold is a search problem. Reasoning your way to that knowledge, one cell at a time, without needing to physically visit every square, is what this whole module is about.
+        </div>
+
+        <div class="callout callout-rose">
+          <span class="callout-kicker">Two classification traps (from the official AIMA answer key)</span>
+          <b>It IS single-agent</b> — the wumpus never decides anything; Russell's own slides call it "essentially a natural feature", terrain with teeth. <b>It IS deterministic</b> — every action's outcome is exactly specified. The world only <i>feels</i> random to the agent because of partial observability; "the environment is stochastic" is the classic wrong answer. Uncertainty about the world ≠ randomness in the world.
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Research notes — where this game came from</span>
+          Gregory Yob wrote <i>Hunt the Wumpus</i> in BASIC in 1972–73 (published in <i>Creative Computing</i>, 1975) — and he built it specifically because he was bored of hide-and-seek games on square grids: his cave was a <b>dodecahedron</b>, 20 rooms with 3 tunnels each. AIMA's authors note the irony of putting it "back in the boring old grid." Michael Genesereth (Stanford) was the first to suggest it as an AI agent testbed. One more AIMA fact worth knowing: about <b>21% of randomly generated wumpus worlds are utterly unfair</b> — the gold sits in a pit or is surrounded by pits — so even a perfect logical agent can't win them all.
+        </div>
+      </section>
+
+      <section class="block" id="s-trace">
+        <div class="block-head">
+          <span class="block-num">03</span>
+          <h2>Reasoning by hand — step through it</h2>
+          <span class="block-tag core">signature walkthrough</span>
+        </div>
+        <p class="block-sub">The agent never sees the board below — this reveal is for you. Watch how "OK", then "breeze", then "stench" alone pin down exactly where the pit and the wumpus are, without ever stepping on them.</p>
+
+        <div class="panel">
+          <div class="panel-label">4×4 grid · agent starts at (1,1) <span class="step-of" id="trace-steplabel">Step 0 of 3</span></div>
+          <div class="stage"><svg id="trace-svg" viewBox="0 0 400 350"></svg></div>
+          <div class="frontier-lane" id="trace-percepts"></div>
+          <p class="narration" id="trace-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="trace-prev" onclick="wtrace.prev()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              Back
+            </button>
+            <button class="ctl-btn primary" id="trace-next" onclick="wtrace.next()">
+              Step
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+            <button class="ctl-btn" onclick="wtrace.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="trace-pips"></div>
+          </div>
+        </div>
+
+        <div class="callout callout-rose">
+          <b>This is not probability.</b> "This is seen evidence." When (2,1) felt no stench, that eliminates the wumpus from (2,2) with total certainty — not a likelihood. Definitive logic doesn't need to visit a cell to rule it out; a percept somewhere adjacent is proof enough.
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">A question worth sitting with</span>
+          Is any of this actually intelligent, or "just programmed"? The instructor's answer: fifty years ago automatic doors were called intelligent too, until people realised it was just two sensors and a motor. Whether rule-following like this counts as intelligence is the same question from session one — rationality, not mimicry, is the bar.
+        </div>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Research notes — what if NOTHING is provably safe?</span>
+          AIMA's full HYBRID-WUMPUS-AGENT answers the case this walkthrough never hits. Its priority list: grab on glitter → route to a provably-safe unvisited cell → shoot at possible wumpus cells → and if the plan is still empty, the pseudocode's literal comment fires: <span class="mono">// no choice but to take a risk</span> — it targets cells that are merely <i>not provably unsafe</i> (ASK returns "can't prove ¬OK") → else walk back to (1,1) and climb out empty-handed. Logic tells you when certainty runs out; it doesn't make the gamble for you. Related standard exercise (AIMA 7.2): after the exact percept sequence above, enumerate the 2³ = 8 worlds for the three unknown cells and show KB ⊨ "no pit in (2,2)" by model checking — the same walkthrough, done by table.
+        </div>
+      </section>
+
+      <section class="block" id="s-formalize">
+        <div class="block-head">
+          <span class="block-num">04</span>
+          <h2>Formalizing the rules — why AND, why OR</h2>
+          <span class="block-tag core">the subtle part</span>
+        </div>
+        <p class="block-sub">Two directions of the same relationship look almost identical on the page — and use opposite connectives. This is the single most common place to slip.</p>
+
+        <div class="formula">Pit(x,y) ⇒ Breeze(x+1,y) ∧ Breeze(x−1,y) ∧ Breeze(x,y+1) ∧ Breeze(x,y−1)
+<span class="ghost">forward direction — a pit guarantees breeze in ALL four neighbours, so it's AND</span></div>
+
+        <div class="formula">Breeze(x,y) ⇒ Pit(x+1,y) ∨ Pit(x−1,y) ∨ Pit(x,y+1) ∨ Pit(x,y−1)
+<span class="ghost">backward direction — a felt breeze only means SOME neighbour has a pit, so it's OR</span></div>
+
+        <div class="formula">Wumpus(x,y) ⇒ Stench(x+1,y) ∧ Stench(x−1,y) ∧ Stench(x,y+1) ∧ Stench(x,y−1)</div>
+        <div class="formula">Stench(x,y) ⇒ Wumpus(x+1,y) ∨ Wumpus(x−1,y) ∨ Wumpus(x,y+1) ∨ Wumpus(x,y−1)</div>
+
+        <div class="callout callout-amber">
+          <b>Why the connective flips.</b> If a pit exists, breeze in all four neighbours is guaranteed — certain, so AND. But standing in a breezy cell, the pit could be in any one of up to four places — you don't know which, so it's OR. Confusing these two directions is the single easiest way to get a Wumpus World question wrong.
+        </div>
+      </section>
+
+      <section class="block" id="s-logic">
+        <div class="block-head">
+          <span class="block-num">05</span>
+          <h2>What is logic?</h2>
+          <span class="block-tag core">definitions</span>
+        </div>
+        <p class="block-sub">Combine the current percept with the existing KB, reason according to the syntax and semantics of a formal language — that's logic, formally stated.</p>
+
+        <table class="data">
+          <tr><th>Term</th><th>Meaning</th></tr>
+          <tr><td><b>Syntax</b></td><td>The grammar of well-formed sentences — like <code>x + 4 = 4</code> being valid arithmetic but <code>xy 4 = 2</code> not being</td></tr>
+          <tr><td><b>Semantics</b></td><td>The meaning — what makes a sentence true or false in a given world</td></tr>
+          <tr><td><b>Model</b></td><td>One possible assignment of truth values to every variable — not necessarily reality, just one consistent possibility</td></tr>
+          <tr><td><b>Entailment</b> (⊨)</td><td>KB ⊨ α means α is true in every model where KB is true</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          The one rule underneath all of it: <b>every sentence in propositional logic must be assessable as strictly true or false — never both, never neither.</b> A false statement is still perfectly valid logic; an unanswerable one is not logic at all.
+        </div>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">M(α) — the model-set notation from the slides</span>
+          With two sentences S1, S2 there are 2² = 4 models, m1…m4. <span class="mono">M(S1)</span> is the set of models that satisfy S1 — say <span class="mono">M(S1) = {m1, m3}</span>. Entailment restated in this notation: <span class="mono">KB ⊨ α</span> exactly when <span class="mono">M(KB) ⊆ M(α)</span> — every KB-satisfying model is also an α-satisfying model. The slides run a small version of this at (2,1) with breeze: three unknown neighbour cells → 2³ = 8 candidate models to reason over.
+        </div>
+
+        <table class="data">
+          <tr><th>Statement</th><th>A proposition?</th><th>Why</th></tr>
+          <tr><td class="mono">1 + 1 = 2</td><td class="yes">Yes</td><td>Assessable — and true</td></tr>
+          <tr><td class="mono">1 + 2 = 5</td><td class="yes">Yes</td><td>Assessable — and false. Falsity doesn't disqualify it.</td></tr>
+          <tr><td>"B is a vowel"</td><td class="yes">Yes</td><td>False, but still a clean true/false claim</td></tr>
+          <tr><td>"The sun rises in the east and sets in the west"</td><td class="yes">Yes</td><td>True, and assessable</td></tr>
+          <tr><td>"Will you go to office today?"</td><td class="no">No</td><td>A question has no truth value</td></tr>
+          <tr><td>"You are beautiful!"</td><td class="no">No</td><td>Exclamatory — not truth-evaluable</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Research notes — grounding: why does syntax in the head work in the world?</span>
+          The KB is "just syntax inside the agent's head" — so what connects it to reality? AIMA's answer, in two parts: percept sentences are grounded by the <b>sensors</b> themselves (the smell sensor is what makes the smell sentence mean something), and general rules like "wumpuses cause stench nearby" come from <b>learning</b> — which is fallible. AIMA's joke: maybe wumpuses don't smell on February 29 in leap years, "which is when they take their baths." If the KB is true in the real world and the inference is sound, every derived sentence is also true in the real world — that's the whole contract.
+        </div>
+      </section>
+
+      <section class="block" id="s-connectives">
+        <div class="block-head">
+          <span class="block-num">06</span>
+          <h2>Logical connectives &amp; truth tables</h2>
+          <span class="block-tag core">the operators</span>
+        </div>
+        <p class="block-sub">Five connectives build every propositional sentence in this course. All five have fixed, unchanging truth tables — the same ones from discrete mathematics.</p>
+
+        <table class="data">
+          <tr><th>Connective</th><th>Symbol</th><th>Name</th><th>True exactly when</th></tr>
+          <tr><td>Negation</td><td class="mono">¬P</td><td>Not</td><td>P is false</td></tr>
+          <tr><td>Conjunction</td><td class="mono">P ∧ Q</td><td>And</td><td>Both P and Q are true</td></tr>
+          <tr><td>Disjunction</td><td class="mono">P ∨ Q</td><td>Or</td><td>At least one of P, Q is true</td></tr>
+          <tr><td>Implication</td><td class="mono">P ⇒ Q</td><td>Conditional</td><td>Not (P true and Q false) — the only false case is T→F</td></tr>
+          <tr><td>Biconditional</td><td class="mono">P ⇔ Q</td><td>Double implication</td><td>P and Q have the same truth value</td></tr>
+        </table>
+
+        <table class="data">
+          <tr><th>P</th><th>Q</th><th class="mono">¬P</th><th class="mono">P∧Q</th><th class="mono">P∨Q</th><th class="mono">P⇒Q</th><th class="mono">P⇔Q</th></tr>
+          <tr><td class="mono">T</td><td class="mono">T</td><td class="mono no">F</td><td class="mono yes">T</td><td class="mono yes">T</td><td class="mono yes">T</td><td class="mono yes">T</td></tr>
+          <tr><td class="mono">T</td><td class="mono">F</td><td class="mono no">F</td><td class="mono no">F</td><td class="mono yes">T</td><td class="mono no">F</td><td class="mono no">F</td></tr>
+          <tr><td class="mono">F</td><td class="mono">T</td><td class="mono yes">T</td><td class="mono no">F</td><td class="mono yes">T</td><td class="mono yes">T</td><td class="mono no">F</td></tr>
+          <tr><td class="mono">F</td><td class="mono">F</td><td class="mono yes">T</td><td class="mono no">F</td><td class="mono no">F</td><td class="mono yes">T</td><td class="mono yes">T</td></tr>
+        </table>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Precedence, not ambiguity</span>
+          <span class="mono">¬A ∧ B</span> and <span class="mono">¬(A ∧ B)</span> are different statements — the first negates only A before ANDing with B, the second ANDs first and negates the whole result. A missing parenthesis is exactly what makes a line genuinely ambiguous.
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Why P ⇒ Q is true when P is false — the election example</span>
+          "If I am elected, I will lower taxes." If the politician does <i>not</i> get elected, voters have no expectation left to violate — the premise never fired, so the statement can't be judged false. That's the entire content of row 3 and row 4 above: whenever the premise is false, the implication is vacuously true, regardless of the consequent. (Recommended background reading: Rosen, <i>Discrete Mathematics and Its Applications</i>, Ch. 1.1–1.4 — propositional logic and equivalences.)
+        </div>
+
+        <table class="data">
+          <tr><th>English phrase</th><th class="mono">Translation</th><th>Why students get it wrong</th></tr>
+          <tr><td>"p <b>if</b> q"</td><td class="mono">q ⇒ p</td><td>whatever follows "if" is the <i>antecedent</i></td></tr>
+          <tr><td>"p <b>only if</b> q"</td><td class="mono">p ⇒ q</td><td>"only if" cues the <i>consequent</i> — the #1 translation mistake</td></tr>
+          <tr><td>"p is <b>sufficient</b> for q"</td><td class="mono">p ⇒ q</td><td>sufficient = enough to guarantee — it's the premise</td></tr>
+          <tr><td>"q is <b>necessary</b> for p"</td><td class="mono">p ⇒ q</td><td>necessary = required consequence — it's the conclusion</td></tr>
+          <tr><td>"p <b>unless</b> q"</td><td class="mono">¬q ⇒ p&nbsp; (≡ p ∨ q)</td><td>unless = "if not" — paraphrase the English before translating</td></tr>
+        </table>
+
+        <div class="callout callout-rose">
+          <span class="callout-kicker">Research notes — the two named fallacies of implication</span>
+          Given <span class="mono">p ⇒ q</span>: concluding p from q is <b>affirming the consequent</b> ("paintings are art; this is art; ∴ it's a painting" — sculptures exist). Concluding ¬q from ¬p is <b>denying the antecedent</b> ("humans have brains; she's a dog; ∴ no brain"). The only equivalent rewrite is the <b>contrapositive</b> ¬q ⇒ ¬p — the converse (q ⇒ p) and inverse (¬p ⇒ ¬q) are different statements. Valid moves: affirm the antecedent (Modus Ponens) or deny the consequent (Modus Tollens).
+        </div>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">Research notes — the five connectives sit among sixteen</span>
+          A 4-row truth table can be filled 2⁴ = <b>16</b> ways, so there are exactly 16 binary boolean functions — the course uses 5 of them. Any of them is buildable from tiny sets: {¬,∧}, {¬,∨}, {¬,⇒} are each functionally complete, and <b>NAND alone</b> (the Sheffer stroke, 1913 — Peirce knew it in 1880 and never published) or <b>NOR alone</b> suffice — the reason real chips can be fabricated entirely from NAND gates. XOR can never be complete: it's a linear function, and composing linear functions only ever yields linear functions — AND is out of reach. One parsing convention worth knowing: ⇒ is <b>right-associative</b>, so a⇒b⇒c reads a⇒(b⇒c) — and the grouping genuinely matters, unlike ∧ or ∨.
+        </div>
+      </section>
+
+      <section class="block" id="s-encode">
+        <div class="block-head">
+          <span class="block-num">07</span>
+          <h2>Encoding the Wumpus World as a knowledge base</h2>
+          <span class="block-tag core">worked example</span>
+        </div>
+        <p class="block-sub">A literal like P(1,2) means "there is a pit in (1,2)". The classic five-rule KB below is small enough to hand-trace, and entails more than it looks like it should.</p>
+
+        <pre class="code-block">R1:  ¬P(1,1)                                    <span class="cm"># given: agent's start cell is safe</span>
+R2:  B(1,1) ⇔ (P(1,2) ∨ P(2,1))                 <span class="cm"># breeze in 1,1 iff a neighbour has a pit</span>
+R3:  B(2,1) ⇔ (P(1,1) ∨ P(2,2) ∨ P(3,1))        <span class="cm"># same rule, centred on 2,1</span>
+R4:  ¬B(1,1)                                    <span class="cm"># perceived: no breeze at 1,1</span>
+R5:  B(2,1)                                     <span class="cm"># perceived: breeze at 2,1</span></pre>
+
+        <div class="callout callout-blue">
+          Seven literals appear across R1–R5: <span class="mono">P11, B11, P12, P21, B21, P22, P31</span>. (Negation is an operator, not a new literal — don't double-count it.) Seven boolean variables means <span class="mono">2⁷ = 128</span> possible models to check by brute force.
+        </div>
+
+        <p style="font-size:13.5px; color:var(--paper-dim)">The query on the table: does the KB entail <span class="mono">¬P(1,2)</span> — is there provably no pit at (1,2)? Toggle the switches below to explore the space yourself, or jump straight to one of the three assignments that actually satisfy R1–R5.</p>
+      </section>
+
+      <section class="block" id="s-entail">
+        <div class="block-head">
+          <span class="block-num">08</span>
+          <h2>Entailment &amp; the truth-table method</h2>
+          <span class="block-tag core">interactive</span>
+        </div>
+        <p class="block-sub">The method is five mechanical steps. Slow, but bulletproof — and, as the class found out, exactly the reason nobody does it by hand past seven variables.</p>
+
+        <table class="data">
+          <tr><th>Step</th><th>What you do</th><th>In this KB</th></tr>
+          <tr><td>1</td><td>List every literal in the KB</td><td>7 literals → 2⁷ = 128 rows</td></tr>
+          <tr><td>2</td><td>Enumerate every T/F combination as a row</td><td>128 rows, all-false to all-true</td></tr>
+          <tr><td>3</td><td>Compute each rule's (R1…R5) truth value per row</td><td>Five extra columns per row</td></tr>
+          <tr><td>4</td><td>AND all rules together — keep only rows where KB is true</td><td>Exactly 3 of 128 rows survive</td></tr>
+          <tr><td>5</td><td>In those surviving rows only, check whether the query holds everywhere</td><td>¬P(1,2) is true in all 3 → entailed</td></tr>
+        </table>
+
+        <div class="panel">
+          <div class="panel-label">Flip the 7 literals — does R1–R5 hold? Does the query follow? <span class="step-of">7 switches · 128 possible worlds, only 3 satisfy the KB</span></div>
+          <div class="tagrow" id="entail-switches"></div>
+          <div class="controls">
+            <button class="ctl-btn" onclick="entailLoadModel('A')">Load model A</button>
+            <button class="ctl-btn" onclick="entailLoadModel('B')">Load model B</button>
+            <button class="ctl-btn" onclick="entailLoadModel('C')">Load model C</button>
+            <div class="ctl-spacer"></div>
+            <span class="verdict" id="entail-kb-verdict">—</span>
+          </div>
+          <div class="controls" style="margin-top:6px">
+            <button class="ctl-btn primary" data-q="P12" onclick="entailSetQuery('P12')">Query ¬P(1,2)</button>
+            <button class="ctl-btn" data-q="P22" onclick="entailSetQuery('P22')">Query ¬P(2,2)</button>
+            <button class="ctl-btn" data-q="P21" onclick="entailSetQuery('P21')">Query ¬P(2,1)</button>
+            <div class="ctl-spacer"></div>
+            <span class="verdict" id="entail-query-verdict">—</span>
+          </div>
+        </div>
+
+        <table class="data">
+          <tr><th>Model</th><th class="mono">P11</th><th class="mono">B11</th><th class="mono">P12</th><th class="mono">P21</th><th class="mono">B21</th><th class="mono">P22</th><th class="mono">P31</th></tr>
+          <tr><td>A</td><td class="mono">F</td><td class="mono">F</td><td class="mono">F</td><td class="mono">F</td><td class="mono">T</td><td class="mono">T</td><td class="mono">F</td></tr>
+          <tr><td>B</td><td class="mono">F</td><td class="mono">F</td><td class="mono">F</td><td class="mono">F</td><td class="mono">T</td><td class="mono">F</td><td class="mono">T</td></tr>
+          <tr><td>C</td><td class="mono">F</td><td class="mono">F</td><td class="mono">F</td><td class="mono">F</td><td class="mono">T</td><td class="mono">T</td><td class="mono">T</td></tr>
+        </table>
+
+        <div class="callout callout-moss">
+          <b>¬P(1,2) and ¬P(2,1) entail — true in all 3 models.</b> <b>¬P(2,2) does not</b> — P22 is true in two of the three. This is exactly why the five-rule KB alone can't tell you whether the pit is at (2,2) or (3,1); resolving that needs one more percept, from actually standing in (1,2) and finding stench without breeze.
+        </div>
+
+        <div class="callout callout-rose">
+          <b>Is this scalable?</b> 128 rows is fine for a machine, brutal by hand, and this KB only had 7 variables. Formally: n symbols means <span class="mono">O(2ⁿ)</span> time, though only <span class="mono">O(n)</span> space if models are enumerated depth-first. That gap — correct but impractical — is exactly why the deck moves on to theorem proving.
+        </div>
+
+        <table class="data">
+          <tr><th>Property</th><th>Definition</th><th>Payoff</th></tr>
+          <tr><td><b>Sound</b></td><td>The procedure derives <i>only</i> entailed sentences — it never makes things up</td><td>AIMA: unsound procedures "announce the discovery of nonexistent needles"</td></tr>
+          <tr><td><b>Complete</b></td><td>The procedure can derive <i>every</i> entailed sentence</td><td>Truth-table enumeration is both — it implements the definition directly and always terminates</td></tr>
+          <tr><td><b>Valid</b> (tautology)</td><td>True in <i>all</i> models — e.g. <span class="mono">P ∨ ¬P</span></td><td>Deduction theorem: KB ⊨ α iff (KB ⇒ α) is valid</td></tr>
+          <tr><td><b>Satisfiable</b></td><td>True in <i>some</i> model — R1–R5 is satisfiable (3 models)</td><td>Refutation: KB ⊨ α iff KB ∧ ¬α is <i>un</i>satisfiable</td></tr>
+        </table>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Research notes — three symbols students merge into one</span>
+          <span class="mono">α ⇒ β</span> is a <i>sentence in the language</i> — just a connective, evaluated per row. <span class="mono">KB ⊨ α</span> is a statement <i>about all models</i> — semantic entailment. <span class="mono">KB ⊢ α</span> says a specific <i>procedure derived</i> α from KB — pure syntax, no models consulted. Soundness is "⊢ implies ⊨"; completeness is "⊨ implies ⊢". The deduction theorem is the bridge between the first two — and it "was known to the ancient Greeks."
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Research notes — monotonicity, and a famous complexity fact</span>
+          Propositional logic is <b>monotonic</b>: if KB ⊨ α, then KB ∧ β ⊨ α for any β — new facts add conclusions, never retract them. Learning "there are exactly eight pits" can't un-prove ¬P(1,2). Human reasoning isn't like this ("birds fly" dies when the bird is a penguin) — that's what non-monotonic logics model. And the reason no method fixes the exponential wall: checking satisfiability (SAT) was the <b>first problem ever proven NP-complete</b> (Cook 1971, independently Levin — the Cook–Levin theorem); propositional entailment is co-NP-complete, and every known inference algorithm is worst-case exponential. The wall is fundamental; the tricks that follow just move it.
+        </div>
+      </section>
+
+      <section class="block" id="s-proving">
+        <div class="block-head">
+          <span class="block-num">09</span>
+          <h2>Theorem proving — equivalence laws &amp; inference rules</h2>
+          <span class="block-tag core">the scalable alternative</span>
+        </div>
+        <p class="block-sub">The truth-table method is O(2ⁿ) — correct, but it doesn't scale. Theorem proving applies inference rules directly to the KB sentences, never consulting models at all. Two sentences are <b>logically equivalent</b> (α ≡ β) when they are true in exactly the same set of models — e.g. (P₁,₂ ∨ B₂,₁) ≡ (B₂,₁ ∨ P₁,₂).</p>
+
+        <table class="data">
+          <tr><th>#</th><th>Law</th><th class="mono">Equivalence</th></tr>
+          <tr><td>1–2</td><td>Commutativity (of ∧, of ∨)</td><td class="mono">α∧β ≡ β∧α &nbsp;·&nbsp; α∨β ≡ β∨α</td></tr>
+          <tr><td>3–4</td><td>Associativity (of ∧, of ∨)</td><td class="mono">(α∧β)∧γ ≡ α∧(β∧γ) &nbsp;·&nbsp; (α∨β)∨γ ≡ α∨(β∨γ)</td></tr>
+          <tr><td>5</td><td>Double-negation elimination</td><td class="mono">¬(¬α) ≡ α</td></tr>
+          <tr><td>6</td><td>Contraposition</td><td class="mono">(α ⇒ β) ≡ (¬β ⇒ ¬α)</td></tr>
+          <tr><td>7</td><td>Implication elimination</td><td class="mono">(α ⇒ β) ≡ (¬α ∨ β)</td></tr>
+          <tr><td>8</td><td>Biconditional elimination</td><td class="mono">(α ⇔ β) ≡ ((α ⇒ β) ∧ (β ⇒ α))</td></tr>
+          <tr><td>9–10</td><td>De Morgan's laws</td><td class="mono">¬(α∧β) ≡ (¬α∨¬β) &nbsp;·&nbsp; ¬(α∨β) ≡ (¬α∧¬β)</td></tr>
+          <tr><td>11</td><td>Distributivity of ∧ over ∨</td><td class="mono">α∧(β∨γ) ≡ (α∧β)∨(α∧γ)</td></tr>
+          <tr><td>12</td><td>Distributivity of ∨ over ∧</td><td class="mono">α∨(β∧γ) ≡ (α∨β)∧(α∨γ)</td></tr>
+        </table>
+
+        <div class="grid2">
+          <div class="formula">Modus Ponens:&nbsp;&nbsp;α ⇒ β,&nbsp; α&nbsp;&nbsp;⊢&nbsp;&nbsp;β
+<span class="ghost">"the mode that affirms" — "If I am tired, I need rest" + "I am tired" ∴ "I need rest"</span></div>
+          <div class="formula">And-Elimination:&nbsp;&nbsp;α ∧ β&nbsp;&nbsp;⊢&nbsp;&nbsp;α&nbsp;&nbsp;(or β)
+<span class="ghost">from "Tired ∧ Sleepy" infer "Tired" — either conjunct on its own</span></div>
+        </div>
+
+        <p class="block-sub" style="margin-top:14px">The slide deck's worked derivation — the same query the 128-row table answered, proven in six moves from R2 and R4:</p>
+
+        <table class="data">
+          <tr><th>Step</th><th class="mono">Sentence</th><th>Rule applied</th></tr>
+          <tr><td class="mono">R2</td><td class="mono">B(1,1) ⇔ (P(1,2) ∨ P(2,1))</td><td>given, from the KB</td></tr>
+          <tr><td class="mono">R6</td><td class="mono">(B(1,1) ⇒ (P(1,2)∨P(2,1))) ∧ ((P(1,2)∨P(2,1)) ⇒ B(1,1))</td><td>Biconditional elimination on R2</td></tr>
+          <tr><td class="mono">R7</td><td class="mono">(P(1,2) ∨ P(2,1)) ⇒ B(1,1)</td><td>And-elimination on R6</td></tr>
+          <tr><td class="mono">R8</td><td class="mono">¬B(1,1) ⇒ ¬(P(1,2) ∨ P(2,1))</td><td>Contraposition on R7</td></tr>
+          <tr><td class="mono">R9</td><td class="mono">¬(P(1,2) ∨ P(2,1))</td><td>Modus Ponens: R8 with R4 (¬B(1,1))</td></tr>
+          <tr><td class="mono">R10</td><td class="mono">¬P(1,2) ∧ ¬P(2,1)</td><td>De Morgan's law on R9</td></tr>
+          <tr><td class="mono">R11</td><td class="mono yes">¬P(1,2)</td><td>And-elimination on R10 — the query, proven ∎</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          Same conclusion the 128-row table reached, in six lines — and the order isn't sacred: a different valid sequence of laws still scores. It's a skill, sharpened with practice. But note the fragility: remove biconditional elimination from your rule set and this proof becomes unreachable — an ad-hoc collection of rules is only as complete as its weakest gap. That's AIMA's motivation for wanting <i>one</i> rule that is complete on its own: resolution, two sections down. (Recommended: Rosen, <i>Discrete Mathematics and Its Applications</i>, Ch. 1 through §1.4 — considered prerequisite knowledge for the program.)
+        </div>
+      </section>
+
+      <section class="block" id="s-cnf">
+        <div class="block-head">
+          <span class="block-num">10</span>
+          <h2>CNF — the normal form resolution needs</h2>
+          <span class="block-tag core">memorize the 4 steps</span>
+        </div>
+        <p class="block-sub"><b>Conjunctive Normal Form:</b> a conjunction of one or more <i>clauses</i>, where each clause is a disjunction of literals — a "product of sums", e.g. <span class="mono">(A ∨ B) ∧ (A ∨ B ∨ ¬C) ∧ ¬A</span>. Resolution only operates on CNF, so every KB sentence gets converted first.</p>
+
+        <table class="data">
+          <tr><th>Order</th><th>Eliminate</th><th>Step name</th><th class="mono">R2 becomes…</th></tr>
+          <tr><td>1</td><td class="mono">⇔</td><td>Biconditional elimination</td><td class="mono">(B11 ⇒ (P12∨P21)) ∧ ((P12∨P21) ⇒ B11)</td></tr>
+          <tr><td>2</td><td class="mono">⇒</td><td>Implication elimination</td><td class="mono">(¬B11 ∨ P12 ∨ P21) ∧ (¬(P12∨P21) ∨ B11)</td></tr>
+          <tr><td>3</td><td class="mono">¬</td><td>De Morgan (push ¬ inward)</td><td class="mono">(¬B11 ∨ P12 ∨ P21) ∧ ((¬P12 ∧ ¬P21) ∨ B11)</td></tr>
+          <tr><td>4</td><td class="mono">∨/∧</td><td>Distributivity of ∨ over ∧</td><td class="mono yes">(¬B11 ∨ P12 ∨ P21) ∧ (¬P12 ∨ B11) ∧ (¬P21 ∨ B11)</td></tr>
+        </table>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">The deck flags this order as a memorization target</span>
+          <b>Biconditional elimination → Implication elimination → De Morgan → Distributivity.</b> Always in that order — each step removes one kind of operator, and running them out of order re-introduces operators you already eliminated.
+        </div>
+
+        <p class="block-sub" style="margin-top:14px">Running R2 and R3 through the four steps turns the five-rule KB into seven clauses. The slides restart the numbering at R6 here — these are <i>CNF clauses</i>, not the derived sentences of the proof above:</p>
+
+        <pre class="code-block">R1:   ¬P11                          <span class="cm"># unchanged — already a clause</span>
+R6:   ¬B11 ∨ P12 ∨ P21              <span class="cm"># from R2</span>
+R7:   ¬P12 ∨ B11                    <span class="cm"># from R2</span>
+R8:   ¬P21 ∨ B11                    <span class="cm"># from R2</span>
+R9:   ¬B21 ∨ P11 ∨ P22 ∨ P31        <span class="cm"># from R3</span>
+R10:  ¬P11 ∨ B21                    <span class="cm"># from R3</span>
+R11:  ¬P22 ∨ B21                    <span class="cm"># from R3</span>
+R12:  ¬P31 ∨ B21                    <span class="cm"># from R3</span>
+R4:   ¬B11                          <span class="cm"># percept — already a clause</span>
+R5:   B21                           <span class="cm"># percept — already a clause</span></pre>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Research notes — step 4 can explode, and how the real world dodges it</span>
+          The distributivity step is the dangerous one: a formula like <span class="mono">(x₁∧y₁) ∨ (x₂∧y₂) ∨ … ∨ (xₙ∧yₙ)</span> distributes into <b>2ⁿ clauses</b>. Production SAT solvers never do this — they use the <b>Tseitin transformation</b> (1968): introduce one auxiliary variable per subformula, producing a CNF that is <i>linear</i> in size and <b>equisatisfiable</b> (satisfiable iff the original is) though not logically equivalent — exactly enough for refutation-style proving. For exam-sized formulas, distribute by hand; just know why nobody does at scale.
+        </div>
+      </section>
+
+      <section class="block" id="s-resolution">
+        <div class="block-head">
+          <span class="block-num">11</span>
+          <h2>Resolution lab — derive the empty clause</h2>
+          <span class="block-tag core">interactive</span>
+        </div>
+        <p class="block-sub"><b>Proof by contradiction:</b> to prove ¬P(1,2), assume the opposite — add <span class="mono">P12</span> to the clause pool — and resolve clauses until the <b>empty clause {}</b> appears. An empty clause is unsatisfiable, so the assumption was false, so the query is proven. Your turn: pick pairs of clauses that contain complementary literals (X in one, ¬X in the other) and resolve them.</p>
+
+        <div class="panel">
+          <div class="panel-label">Click any two clauses to resolve them <span class="step-of" id="reso-steplabel">0 resolutions</span></div>
+          <div class="frontier-lane" id="reso-pool" style="flex-wrap:wrap"></div>
+          <p class="narration" id="reso-msg"></p>
+          <div class="controls">
+            <button class="ctl-btn primary" onclick="resoHint()">Hint</button>
+            <button class="ctl-btn" onclick="resoReset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <span class="verdict" id="reso-verdict">—</span>
+          </div>
+        </div>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">The shortest path — two resolutions</span>
+          <span class="mono">R4 (¬B11)</span> + <span class="mono">R7 (¬P12 ∨ B11)</span> resolve on B11 → <span class="mono">¬P12</span>. That resolvent + the assumption <span class="mono">P12</span> resolve → <span class="mono">{}</span>. Contradiction reached, assumption destroyed, <b>¬P(1,2) entailed</b> — the third and fastest of the three methods the deck applies to the exact same query (truth table, equivalence-law proof, resolution).
+        </div>
+
+        <div class="callout callout-rose">
+          <b>Watch for tautologies.</b> Resolving R6 with R7 on P12 yields <span class="mono">¬B11 ∨ P21 ∨ B11</span> — always true, so it tells you nothing. A legal resolution isn't automatically a useful one; steering toward the empty clause is the skill.
+        </div>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Research notes — two rules beginners break</span>
+          <b>Resolve on exactly ONE complementary pair.</b> If two clauses share two pairs — <span class="mono">(P ∨ Q)</span> and <span class="mono">(¬P ∨ ¬Q)</span> — cancelling both at once gives {} and "proves" a satisfiable set contradictory: unsound. One pair at a time; the result there is a tautology, correctly useless. <b>Factor the resolvent.</b> Resolving <span class="mono">(A ∨ B)</span> with <span class="mono">(A ∨ ¬B)</span> gives <span class="mono">A ∨ A</span> → just <span class="mono">A</span>. Factoring isn't cosmetic — it's what keeps the set of derivable clauses finite, which is why PL-resolution always terminates (the <i>ground resolution theorem</i>: an unsatisfiable clause set always contains {} in its resolution closure).
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Research notes — history and fine print</span>
+          The rule comes from J. Alan Robinson's 1965 paper "A Machine-Oriented Logic Based on the Resolution Principle" — one machine-friendly inference rule replacing the whole zoo of equivalence laws; it founded automated theorem proving and is Prolog's direct ancestor. Fine print #1: resolution is <b>refutation-complete</b>, not generatively complete — from A it will never volunteer A ∨ B, but asked "does A ∨ B hold?" it always answers. Fine print #2 (Haken, 1985): complete ≠ fast — pigeonhole formulas ("n+1 pigeons, n holes") force resolution proofs of size 2^Ω(n). A proof always exists; a short one is not guaranteed.
+        </div>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">Research notes — Horn clauses, the bridge to the Prolog webinar</span>
+          A <b>Horn clause</b> has at most one positive literal — e.g. <span class="mono">¬P ∨ ¬Q ∨ R</span>, which is exactly <span class="mono">(P ∧ Q) ⇒ R</span>. Exactly one positive = <i>definite clause</i> (head + body); none = goal clause. Why they matter: entailment on a Horn-clause KB is decidable in time <b>linear</b> in KB size via forward or backward chaining — no exponential wall at all. That restriction is precisely what Prolog implements (backward chaining over definite clauses), and it's why next session's forward/backward chaining exists as a topic.
+        </div>
+      </section>
+
+      <section class="block" id="s-dpll">
+        <div class="block-head">
+          <span class="block-num">12</span>
+          <h2>DPLL — satisfiability with a brain</h2>
+          <span class="block-tag core">algorithm</span>
+        </div>
+        <p class="block-sub"><b>Davis–Putnam–Logemann–Loveland:</b> a complete, backtracking search over truth assignments that decides whether a CNF formula is satisfiable. Same worst case as the truth table — but three heuristics make it dramatically faster in practice.</p>
+
+        <table class="data">
+          <tr><th>Heuristic</th><th>What it does</th></tr>
+          <tr><td><b>Early termination</b></td><td>A clause is true as soon as any one literal is true; the sentence is false as soon as any clause is false. Decide without completing the assignment.</td></tr>
+          <tr><td><b>Pure symbol</b></td><td>A symbol appearing with the same sign in every clause can be assigned to make those clauses true immediately — no branching needed.</td></tr>
+          <tr><td><b>Unit clause</b></td><td>A clause with exactly one unassigned literal forces that literal's value. Each forced value can create new unit clauses — a cascade called <b>unit propagation</b>.</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Unit propagation on the Wumpus clauses</span>
+          R4 says <span class="mono">B11 = false</span>. That instantly turns <span class="mono">R7 (¬P12 ∨ B11)</span> and <span class="mono">R8 (¬P21 ∨ B11)</span> into unit clauses, forcing <span class="mono">P12 = false</span> and <span class="mono">P21 = false</span> — the same ¬P(1,2) conclusion, with zero search. This is exactly the slide-55 example.
+        </div>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Research notes — why it's called DPLL and not DP</span>
+          Davis–Putnam (1960) eliminated variables by generating all resolvents — and blew up 1960s memory exponentially. Davis, <b>Logemann and Loveland</b> (1962) — the two programmers who hit that wall — replaced elimination with a <b>splitting rule</b>: pick a variable, try true, backtrack and try false. Worst-case memory dropped to linear, and the backtracking-search skeleton every modern solver still uses was born. AIMA lists five more scaling tricks beyond the three heuristics: component analysis, variable/value ordering, intelligent backtracking (backjumping + clause learning), random restarts, and clever indexing.
+        </div>
+
+        <table class="data">
+          <tr><th>Where SAT solvers run today</th><th>Example</th></tr>
+          <tr><td>Hardware &amp; software verification</td><td>Bounded model checking of chip designs — the formal-verification wave that followed Intel's $475M Pentium FDIV recall (1994)</td></tr>
+          <tr><td>Planning</td><td>SATPlan (Kautz &amp; Selman, 1992): compile initial state + actions + goal into CNF, hand it to a solver — won planning-competition tracks</td></tr>
+          <tr><td>Package managers</td><td><span class="mono">dnf install</span>, zypper, and conda literally invoke a SAT solver (libsolv / SAT4J) to resolve dependency constraints</td></tr>
+          <tr><td>Cryptanalysis</td><td>Full MD4/MD5 collisions generated by a lightly modified off-the-shelf solver (2006); the 2017 SHA-1 collision was partially SAT-assisted</td></tr>
+        </table>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">Research notes — the SAT revolution, in three facts</span>
+          <b>1.</b> Modern descendants add <b>conflict-driven clause learning</b> (GRASP 1996 → Chaff 2001, which contributed the VSIDS heuristic and watched literals → MiniSat 2003), and routinely decide industrial formulas with <b>millions of variables</b> — NP-completeness notwithstanding; the annual SAT Competition has driven progress since 2002. <b>2.</b> The incomplete alternative, <b>WalkSAT</b> (stochastic local search: pick an unsatisfied clause, flip a variable), often finds models faster — but can never prove UNSAT; silence tells you nothing. <b>3.</b> Random 3-SAT has a <b>phase transition</b> at clause/variable ratio ≈ 4.27: below it almost everything is satisfiable (easy), above it almost nothing is (easy again), and hardness peaks exactly at the boundary — the famous easy-hard-easy pattern.
+        </div>
+      </section>
+
+      <section class="block" id="s-problem">
+        <div class="block-head">
+          <span class="block-num">13</span>
+          <h2>Sample exam problem — the online-shopping KB</h2>
+          <span class="block-tag core">exam pattern</span>
+        </div>
+        <p class="block-sub">Slide 56 gives this unsolved — it's the deck's template for how this module gets examined: natural language → propositional KB → CNF → DPLL → resolution proof.</p>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">The scenario, as given</span>
+          "If a customer frequently purchases electronics items, they are considered tech-savvy. Not all tech-savvy customers make expensive purchases, but all expensive purchases are made by tech-savvy customers. Tech-savvy customers always follow the latest trends. Customers who follow tech trends will receive recommendations for new electronic products."<br><br>
+          <b>(a)</b> Represent the KB in propositional logic (no quantifiers). &nbsp;<b>(b)</b> Convert to CNF and find one complete satisfying assignment (BSAT) via DPLL. &nbsp;<b>(c)</b> Given ¬T with 100% certainty — will the customer receive recommendations? Prove by contradiction using resolution.
+        </div>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">One valid solution path</span>
+          <b>(a)</b> Symbols: E = buys electronics frequently, T = tech-savvy, X = expensive purchase, F = follows trends, R = receives recommendations. KB: <span class="mono">E ⇒ T</span>, <span class="mono">X ⇒ T</span>, <span class="mono">T ⇒ F</span>, <span class="mono">F ⇒ R</span>. ("Not all tech-savvy make expensive purchases" blocks <span class="mono">T ⇒ X</span> — it adds no clause.)<br>
+          <b>(b)</b> CNF via implication elimination: <span class="mono">¬E∨T · ¬X∨T · ¬T∨F · ¬F∨R</span>. All-false — <span class="mono">E=X=T=F=R=false</span> — satisfies every clause (each has a true negative literal): one complete BSAT solution.<br>
+          <b>(c)</b> Add <span class="mono">¬T</span>, assume <span class="mono">¬R</span>, try to refute: <span class="mono">¬R</span> + <span class="mono">¬F∨R</span> → <span class="mono">¬F</span>; <span class="mono">¬F</span> + <span class="mono">¬T∨F</span> → <span class="mono">¬T</span> — which merely agrees with what's given. No empty clause exists: assignment all-false satisfies KB ∧ ¬T ∧ ¬R. So R is <b>not entailed</b> — a non-tech-savvy customer is <i>not</i> guaranteed recommendations. Note the trap: ¬T doesn't prove ¬R either; R is simply undetermined, exactly like P(2,2) in the truth-table section.
+        </div>
+      </section>
+
+      <section class="block" id="s-proscons">
+        <div class="block-head">
+          <span class="block-num">14</span>
+          <h2>Propositional logic — pros &amp; cons</h2>
+          <span class="block-tag core">the verdict</span>
+        </div>
+        <p class="block-sub">Why the deck ends here — and why the agenda's last two items (predicate logic, forward/backward chaining) spill into the next session.</p>
+
+        <div class="grid2">
+          <div class="callout callout-moss">
+            <span class="callout-kicker">Pros ☺</span>
+            <b>Declarative</b> — state what's true, not how to compute it. Handles <b>partial, disjunctive, and negated</b> information, which databases and plain data structures can't. <b>Compositional</b> — the meaning of B₁,₁ ∧ P₁,₂ derives from the meaning of its parts. Meaning is <b>context-independent</b>, unlike natural language.
+          </div>
+          <div class="callout callout-rose">
+            <span class="callout-kicker">Cons ☹</span>
+            <b>Very limited expressive power.</b> There is no way to say "pits cause breezes in adjacent squares" once — it takes one sentence per square. "Some students are brilliant" can't be said at all. That's the gap predicate logic (with quantifiers) exists to close — previewed on the agenda, covered next session along with forward &amp; backward chaining.
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="s-quiz">
+        <div class="block-head">
+          <span class="block-num">15</span>
+          <h2>Quiz bank</h2>
+          <span class="block-tag core">test yourself</span>
+        </div>
+
+        <div class="filterbar" id="quiz-filterbar"></div>
+        <div class="quiz-progress"><span id="quiz-count">0 / 0 answered</span><span id="quiz-score">Score: 0</span></div>
+        <div class="scorebar"><div id="quiz-bar"></div></div>
+        <div id="quiz-container"></div>
+      </section>
+
+      <section class="block" id="s-refs">
+        <div class="block-head">
+          <span class="block-num">16</span>
+          <h2>References from the lecture</h2>
+        </div>
+        <table class="data">
+          <tr><th>Resource</th><th>What it's for</th></tr>
+          <tr><td>AIMA (Russell &amp; Norvig), Ch. 7</td><td>Wumpus World, knowledge-based agents, propositional logic — the source of the R1–R5 example</td></tr>
+          <tr><td>Rosen, <i>Discrete Mathematics and Its Applications</i>, Ch. 1.1–1.4</td><td>Propositional logic, connectives, equivalence laws, worked exercises — recommended prerequisite refresher</td></tr>
+          <tr><td>Prolog webinar (this week)</td><td>Hands-on logic programming — facts, rules, and queries directly in a language built for this</td></tr>
+        </table>
+      </section>
+
+      <footer class="colophon">
+        Built from the Session 9 recording (2 Jul 2026) and the CS9 slide deck — knowledge-based agents through resolution and DPLL. Sources: ACI (AIMLCZG557) contact-session transcript + CS9.pdf (59 slides).
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   HUB THEME TOGGLE
+   ============================================================ */
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") {
+    root.setAttribute("data-theme", saved);
+  }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+
+/* ============================================================
+   RAIL NAVIGATION
+   ============================================================ */
+const SECTIONS = [
+  {id:'s-recap',     n:'00', label:'Where we stand'},
+  {id:'s-kb',        n:'01', label:'Knowledge-based agents'},
+  {id:'s-wumpus',    n:'02', label:'The Wumpus World'},
+  {id:'s-trace',     n:'03', label:'Reasoning by hand'},
+  {id:'s-formalize', n:'04', label:'Formalizing the rules'},
+  {id:'s-logic',     n:'05', label:'What is logic'},
+  {id:'s-connectives',n:'06', label:'Connectives &amp; truth tables'},
+  {id:'s-encode',    n:'07', label:'Encoding the KB'},
+  {id:'s-entail',    n:'08', label:'Entailment checker'},
+  {id:'s-proving',   n:'09', label:'Theorem proving'},
+  {id:'s-cnf',       n:'10', label:'CNF conversion'},
+  {id:'s-resolution',n:'11', label:'Resolution lab'},
+  {id:'s-dpll',      n:'12', label:'DPLL algorithm'},
+  {id:'s-problem',   n:'13', label:'Sample problem'},
+  {id:'s-proscons',  n:'14', label:'Pros &amp; cons'},
+  {id:'s-quiz',      n:'15', label:'Quiz bank'},
+  {id:'s-refs',      n:'16', label:'References'}
+];
+const railnav = document.getElementById('railnav');
+railnav.innerHTML = SECTIONS.map(s =>
+  `<button class="rail-item" data-target="${s.id}" onclick="jumpTo('${s.id}')">
+     <span class="node-id">${s.n}</span><span class="lbl">${s.label}</span>
+   </button>`
+).join('');
+function jumpTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+}
+const railItems = Array.from(document.querySelectorAll('.rail-item'));
+const sectionEls = SECTIONS.map(s => document.getElementById(s.id));
+function updateActiveRail(){
+  let activeIdx = 0;
+  const probe = window.scrollY + 140;
+  sectionEls.forEach((el, i) => { if(el.offsetTop <= probe) activeIdx = i; });
+  railItems.forEach((el,i) => el.classList.toggle('active', i===activeIdx));
+}
+window.addEventListener('scroll', updateActiveRail, {passive:true});
+updateActiveRail();
+
+/* ============================================================
+   STEPPER ENGINE (shared shape with other Study Hub pages)
+   ============================================================ */
+function makeStepper(steps, renderFn, pipsId){
+  let i = 0;
+  function render(){
+    renderFn(steps[i], i);
+    if(pipsId){
+      const pipsEl = document.getElementById(pipsId);
+      pipsEl.innerHTML = steps.map((_,k)=>
+        `<span class="pip ${k<i?'done':''} ${k===i?'current':''}"></span>`
+      ).join('');
+    }
+  }
+  return { next(){ if(i<steps.length-1){ i++; render(); } }, prev(){ if(i>0){ i--; render(); } }, reset(){ i=0; render(); }, render };
+}
+
+/* ============================================================
+   03 — Wumpus World reasoning stepper
+   ============================================================ */
+const WSTYLE = {
+  'unvisited':        {fill:'#1E2229', stroke:'#262a32', dash:'',    label:'',   tcol:'#4a4e57'},
+  'safe':             {fill:'#181b21', stroke:'#5FAD7A', dash:'4 3', label:'safe', tcol:'#5FAD7A'},
+  'visited-ok':       {fill:'#16291D', stroke:'#5FAD7A', dash:'',    label:'OK',  tcol:'#BCE3CA'},
+  'visited-breeze':   {fill:'#1A2740', stroke:'#5B8DEF', dash:'',    label:'B',   tcol:'#C2D3FB'},
+  'visited-stench':   {fill:'#3D2410', stroke:'#FF8A3D', dash:'',    label:'S',   tcol:'#FFD9B8'},
+  'pit-candidate':    {fill:'#181b21', stroke:'#E8607A', dash:'4 3', label:'P?',  tcol:'#E8607A'},
+  'pit-confirmed':    {fill:'#3A1620', stroke:'#E8607A', dash:'',    label:'P',   tcol:'#F8C3CE'},
+  'wumpus-confirmed': {fill:'#3A1620', stroke:'#E8607A', dash:'',    label:'W',   tcol:'#F8C3CE'}
+};
+const wumpusSteps = [
+  {
+    agent:[1,1],
+    cells:{ '1,1':{status:'visited-ok'}, '2,1':{status:'safe'}, '1,2':{status:'safe'} },
+    percept:{stench:false, breeze:false, glitter:false},
+    narration:`Standing in <span class="hl-blue">(1,1)</span>, the given percept is <span class="hl">OK</span> — no stench, no breeze, no glitter. That alone marks <span class="hl-moss">(2,1)</span> and <span class="hl-moss">(1,2)</span> safe: if either hid a pit or the wumpus, this cell would have felt it.`
+  },
+  {
+    agent:[2,1],
+    cells:{ '1,1':{status:'visited-ok'}, '2,1':{status:'visited-breeze'}, '1,2':{status:'safe'}, '2,2':{status:'pit-candidate'}, '3,1':{status:'pit-candidate'} },
+    percept:{stench:false, breeze:true, glitter:false},
+    narration:`Moved to <span class="hl-blue">(2,1)</span> — breeze, no stench. A pit sits in one of its unexplored neighbours: <span class="hl">(2,2)</span> or <span class="hl">(3,1)</span> (not (1,1) — that's where we came from). Too risky to guess further — back out and try the other safe cell.`
+  },
+  {
+    agent:[1,2],
+    cells:{ '1,1':{status:'visited-ok'}, '2,1':{status:'visited-breeze'}, '1,2':{status:'visited-stench'}, '2,2':{status:'safe'}, '3,1':{status:'pit-confirmed'}, '1,3':{status:'wumpus-confirmed'} },
+    percept:{stench:true, breeze:false, glitter:false},
+    narration:`Backtracked and moved to <span class="hl-blue">(1,2)</span> instead — stench, no breeze. The wumpus is in <span class="hl">(2,2)</span> or <span class="hl">(1,3)</span>. But (2,1) felt no stench earlier, so it can't be at (2,2) — the wumpus is at <span class="hl-moss">(1,3)</span>. And this cell feels no breeze, so no pit at (2,2) either — the pit from the last step must be at <span class="hl-moss">(3,1)</span>. Two mysteries solved without ever visiting either cell.`
+  },
+  {
+    agent:[2,2],
+    cells:{ '1,1':{status:'visited-ok'}, '2,1':{status:'visited-breeze'}, '1,2':{status:'visited-stench'}, '2,2':{status:'visited-ok'}, '3,1':{status:'pit-confirmed'}, '1,3':{status:'wumpus-confirmed'} },
+    percept:{stench:false, breeze:false, glitter:false},
+    narration:`<span class="hl-moss">(2,2)</span> was already proven safe — walk in. OK here too: no breeze, no stench, exactly as deduced. This is the whole of logic in this lecture: never guess where certainty was already derivable.`
+  }
+];
+function cellXY(col,row){ return { x: 20 + (col-1)*85, y: 20 + (4-row)*80 }; }
+function drawWumpus(svgEl, step){
+  let s = '';
+  for(let row=4; row>=1; row--){
+    for(let col=1; col<=4; col++){
+      const key = `${col},${row}`;
+      const state = step.cells[key] || {status:'unvisited'};
+      const st = WSTYLE[state.status];
+      const {x,y} = cellXY(col,row);
+      s += `<rect x="${x}" y="${y}" width="78" height="73" rx="9" fill="${st.fill}" stroke="${st.stroke}" stroke-width="1.6" ${st.dash?`stroke-dasharray="${st.dash}"`:''}/>`;
+      s += `<text x="${x+7}" y="${y+15}" fill="#4a4e57" font-size="8.5" font-family="IBM Plex Mono, monospace">${col},${row}</text>`;
+      if(st.label){
+        s += `<text x="${x+39}" y="${y+46}" fill="${st.tcol}" font-size="15" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="600">${st.label}</text>`;
+      }
+    }
+  }
+  const a = cellXY(step.agent[0], step.agent[1]);
+  s += `<circle cx="${a.x+39}" cy="${a.y+62}" r="11" fill="#FF8A3D" stroke="#0B0D10" stroke-width="1.5"/>`;
+  s += `<text x="${a.x+39}" y="${a.y+66}" fill="#0B0D10" font-size="10" font-family="IBM Plex Mono, monospace" text-anchor="middle" font-weight="700">A</text>`;
+  svgEl.innerHTML = s;
+}
+function renderPercepts(containerId, percept){
+  const el = document.getElementById(containerId);
+  const rows = [['stench','Stench'],['breeze','Breeze'],['glitter','Glitter']];
+  el.innerHTML = `<span class="lane-caption">Percept here</span>` + rows.map(([k,label])=>
+    `<span class="qtile ${percept[k]?'is-min':''}">${label}: ${percept[k]?'YES':'no'}</span>`
+  ).join('');
+}
+const wtrace = makeStepper(wumpusSteps, function(step, idx){
+  drawWumpus(document.getElementById('trace-svg'), step);
+  renderPercepts('trace-percepts', step.percept);
+  document.getElementById('trace-steplabel').textContent = `Step ${idx} of ${wumpusSteps.length-1}`;
+  document.getElementById('trace-prev').disabled = idx===0;
+  document.getElementById('trace-next').disabled = idx===wumpusSteps.length-1;
+  document.getElementById('trace-narr').innerHTML = step.narration;
+}, 'trace-pips');
+wtrace.render();
+
+/* ============================================================
+   08 — Entailment switch-board (R1–R5 evaluator)
+   ============================================================ */
+const entailLabels = {P11:'P(1,1)', B11:'B(1,1)', P12:'P(1,2)', P21:'P(2,1)', B21:'B(2,1)', P22:'P(2,2)', P31:'P(3,1)'};
+let entailState = {P11:false, B11:false, P12:false, P21:false, B21:true, P22:true, P31:false};
+let entailQuery = 'P12';
+function renderEntailSwitches(){
+  const el = document.getElementById('entail-switches');
+  el.innerHTML = Object.keys(entailState).map(k=>{
+    const on = entailState[k];
+    return `<button class="tg" style="cursor:pointer; ${on?'border-color:var(--amber); color:var(--amber-soft); background:var(--amber-dim);':''}" onclick="entailToggle('${k}')">${entailLabels[k]} = ${on?'T':'F'}</button>`;
+  }).join('');
+}
+function entailToggle(k){ entailState[k] = !entailState[k]; renderEntailSwitches(); entailEvaluate(); }
+function entailLoadModel(name){
+  const models = {
+    A:{P11:false,B11:false,P12:false,P21:false,B21:true,P22:true,P31:false},
+    B:{P11:false,B11:false,P12:false,P21:false,B21:true,P22:false,P31:true},
+    C:{P11:false,B11:false,P12:false,P21:false,B21:true,P22:true,P31:true}
+  };
+  entailState = Object.assign({}, models[name]);
+  renderEntailSwitches();
+  entailEvaluate();
+}
+function entailSetQuery(q){
+  entailQuery = q;
+  document.querySelectorAll('[data-q]').forEach(b => b.classList.toggle('primary', b.dataset.q === q));
+  entailEvaluate();
+}
+function entailEvaluate(){
+  const s = entailState;
+  const R1 = !s.P11;
+  const R2 = (s.B11 === (s.P12 || s.P21));
+  const R3 = (s.B21 === (s.P11 || s.P22 || s.P31));
+  const R4 = !s.B11;
+  const R5 = s.B21;
+  const kb = R1 && R2 && R3 && R4 && R5;
+  const kbEl = document.getElementById('entail-kb-verdict');
+  kbEl.textContent = kb ? 'KB satisfied — a valid model' : 'KB violated — not a model';
+  kbEl.className = 'verdict ' + (kb ? 'ok' : 'bad');
+  const queryVal = !s[entailQuery];
+  const qEl = document.getElementById('entail-query-verdict');
+  if(!kb){
+    qEl.textContent = 'n/a — KB false here';
+    qEl.className = 'verdict wait';
+  } else {
+    qEl.textContent = `¬${entailLabels[entailQuery]} = ${queryVal ? 'TRUE' : 'FALSE'}`;
+    qEl.className = 'verdict ' + (queryVal ? 'ok' : 'bad');
+  }
+}
+renderEntailSwitches();
+entailSetQuery('P12');
+
+/* ============================================================
+   11 — Resolution lab (derive the empty clause)
+   ============================================================ */
+const RESO_INIT = [
+  {id:'R4', lits:['¬B11']},
+  {id:'R6', lits:['¬B11','P12','P21']},
+  {id:'R7', lits:['¬P12','B11']},
+  {id:'R8', lits:['¬P21','B11']},
+  {id:'A',  lits:['P12']}
+];
+let resoPool = [], resoSel = [], resoCount = 0, resoDone = false, resoNext = 1;
+function resoNegate(l){ return l.startsWith('¬') ? l.slice(1) : '¬' + l; }
+function resoClauseText(c){ return c.lits.length ? c.lits.join(' ∨ ') : '{ } empty clause'; }
+function resoMsg(html){ document.getElementById('reso-msg').innerHTML = html; }
+function resoRender(){
+  const el = document.getElementById('reso-pool');
+  el.innerHTML = `<span class="lane-caption">Clause pool</span>` + resoPool.map((c,i)=>{
+    const sel = resoSel.includes(i);
+    const empty = c.lits.length === 0;
+    let style = 'cursor:pointer; font-size:12.5px;';
+    if(empty) style += 'border-color:var(--moss); color:var(--moss-soft); background:var(--moss-dim); font-weight:700;';
+    else if(sel) style += 'border-color:var(--amber); color:var(--amber-soft); background:var(--amber-dim);';
+    else if(c.derived) style += 'border-color:var(--blue); color:var(--blue-soft);';
+    return `<button class="qtile" style="${style}" onclick="resoClick(${i})"><b>${c.id}</b>&nbsp; ${resoClauseText(c)}${c.id==='A' ? ' ⟵ assumed' : ''}</button>`;
+  }).join('');
+  const v = document.getElementById('reso-verdict');
+  if(resoDone){ v.textContent = '{} derived — ¬P(1,2) PROVEN'; v.className = 'verdict ok'; }
+  else { v.textContent = 'empty clause not yet reached'; v.className = 'verdict wait'; }
+  document.getElementById('reso-steplabel').textContent = `${resoCount} resolution${resoCount===1?'':'s'}`;
+}
+function resoClick(i){
+  if(resoDone) return;
+  if(resoSel.includes(i)){ resoSel = resoSel.filter(k=>k!==i); resoRender(); return; }
+  resoSel.push(i);
+  if(resoSel.length < 2){ resoRender(); return; }
+  const [a, b] = [resoPool[resoSel[0]], resoPool[resoSel[1]]];
+  resoSel = [];
+  const pivot = a.lits.find(l => b.lits.includes(resoNegate(l)));
+  if(!pivot){
+    resoMsg(`<b>${a.id}</b> and <b>${b.id}</b> share no complementary pair — nothing to resolve on. Look for a literal X in one clause and ¬X in the other.`);
+    resoRender(); return;
+  }
+  const lits = [...new Set([...a.lits.filter(l=>l!==pivot), ...b.lits.filter(l=>l!==resoNegate(pivot))])];
+  resoCount++;
+  if(lits.length === 0){
+    resoDone = true;
+    resoPool.push({id:'⊥', lits:[], derived:true});
+    resoMsg(`<span class="hl-moss">${a.id} + ${b.id} resolve on ${pivot.replace('¬','')} → the empty clause.</span> The pool is unsatisfiable — the assumption P12 was false, so <span class="hl-moss">¬P(1,2) is entailed</span>. Same answer as 128 truth-table rows, in ${resoCount} resolution${resoCount===1?'':'s'}.`);
+  } else if(lits.some(l => lits.includes(resoNegate(l)))){
+    resoMsg(`${a.id} + ${b.id} resolve on ${pivot.replace('¬','')} → <span class="hl">${lits.join(' ∨ ')}</span> — a <b>tautology</b> (contains X and ¬X, always true). Legal but useless; it's discarded. Steer toward short clauses.`);
+  } else if(resoPool.some(c => c.lits.length===lits.length && c.lits.every(l=>lits.includes(l)))){
+    resoMsg(`${a.id} + ${b.id} resolve on ${pivot.replace('¬','')} → ${lits.join(' ∨ ')} — already in the pool. No new knowledge.`);
+  } else {
+    const id = 'C' + (resoNext++);
+    resoPool.push({id, lits, derived:true});
+    resoMsg(`<span class="hl-blue">${a.id} + ${b.id} resolve on ${pivot.replace('¬','')} → new clause ${id}: ${lits.join(' ∨ ')}.</span> ${lits.length===1 ? 'A unit clause — one step from a contradiction if its negation is around.' : 'Keep going — shorter is better.'}`);
+  }
+  resoRender();
+}
+function resoHint(){
+  if(resoDone) return;
+  const unit = resoPool.map((c,i)=>({c,i})).filter(x=>x.c.lits.length===1);
+  for(const u of unit){
+    const j = resoPool.findIndex(c => c.lits.includes(resoNegate(u.c.lits[0])));
+    if(j >= 0){
+      resoSel = [];
+      resoMsg(`Hint: <b>${u.c.id}</b> (${resoClauseText(u.c)}) and <b>${resoPool[j].id}</b> (${resoClauseText(resoPool[j])}) contain complementary literals — resolve them.`);
+      resoRender(); return;
+    }
+  }
+  resoMsg('Hint: start from a unit clause — R4 or the assumption A — and find a clause containing its opposite literal.');
+}
+function resoReset(){
+  resoPool = RESO_INIT.map(c => ({id:c.id, lits:[...c.lits], derived:false}));
+  resoSel = []; resoCount = 0; resoDone = false; resoNext = 1;
+  resoMsg(`The query is ¬P(1,2), so clause <b>A</b> assumes the opposite: <span class="hl">P12</span>. Click two clauses with complementary literals (X and ¬X). First useful move: a unit clause against anything containing its opposite.`);
+  resoRender();
+}
+resoReset();
+
+/* ============================================================
+   15 — QUIZ
+   ============================================================ */
+const QUIZ = [
+  {cat:'kb', q:'A knowledge-based agent\'s three core operations are:', opts:['Search, expand, backtrack','Tell, ask, update','Sense, plan, act','Push, pop, peek'], ans:1, exp:'TELL informs the KB of a percept, ASK queries it for an action or fact, UPDATE revises it with new inference — the CRUD of reasoning.'},
+  {cat:'kb', q:'A sentence in a knowledge base is:', opts:['An English sentence describing the world','An expression in a formal knowledge-representation language, assessable as true or false','Any string stored in memory','A percept received from a sensor'], ans:1, exp:"KB sentences are formal-language expressions, not natural language — and every one must resolve to true or false."},
+  {cat:'kb', q:'An axiom is:', opts:['A sentence derived from other sentences via inference','A sentence taken as given, not derived from anything else','A false sentence used for testing','Any percept the agent receives'], ans:1, exp:'Axioms are the starting facts — everything else in the KB is either given as an axiom or derived through inference.'},
+  {cat:'wumpus', q:'In the Wumpus World, breeze is perceived:', opts:['Only inside the cell containing the pit','In every cell adjacent to a pit (up/down/left/right)','Anywhere on the board once a pit exists','Only after the agent has visited the pit cell'], ans:1, exp:'Breeze radiates to the four adjacent cells of a pit — never inside it, never further than one step away.'},
+  {cat:'wumpus', q:'Why is the Wumpus World not fully observable?', opts:['The grid size is unknown','The agent only perceives its current cell, never the full board','The pits move between turns','The wumpus is invisible even up close'], ans:1, exp:'The agent senses only stench/breeze/glitter/bump/scream in its current cell — the rest of the board stays hidden.'},
+  {cat:'wumpus', q:'Why is the Wumpus World classified as single-agent, not multi-agent?', opts:['Because there is only one gold','Because the wumpus is treated as a static hazard of nature, not a competing decision-making agent','Because the grid is 4×4','Because the agent starts at (1,1)'], ans:1, exp:'The wumpus doesn\'t reason or act strategically — it\'s a fixed danger, like a pit. That\'s what keeps this single-agent.'},
+  {cat:'wumpus', q:'If there is a pit at (x,y), what is the correct connective linking it to breeze in all four neighbours?', opts:['OR — because it might not affect every neighbour','AND — a pit guarantees breeze in all four adjacent cells','XOR — exactly one neighbour feels it','Implication only in one direction, no connective needed'], ans:1, exp:'Forward direction is certain: a pit means breeze in every one of its four neighbours, so AND is correct.'},
+  {cat:'wumpus', q:'If breeze is felt at (x,y), what is the correct connective linking it to a pit in the four neighbours?', opts:['AND — all four neighbours must have pits','OR — at least one neighbour has a pit, but which one is unknown','NOT — there is definitely no pit nearby','It cannot be expressed in propositional logic'], ans:1, exp:'Backward direction is ambiguous: breeze only guarantees at least one neighbouring pit, not which one — hence OR.'},
+  {cat:'propositions', q:'Which of these is NOT a proposition?', opts:['"1 + 2 = 5"', '"B is a vowel"', '"Will you go to office today?"', '"The sun rises in the east"'], ans:2, exp:'A question has no truth value — it can\'t be assessed true or false, so it fails to qualify as a proposition. The others are all assessable, even the false ones.'},
+  {cat:'propositions', q:'Is a false statement still a valid proposition?', opts:['No, only true statements count', 'Yes — as long as it can be assessed as true or false', 'Only in predicate logic, not propositional logic', 'Only if it involves numbers'], ans:1, exp:'Validity as a proposition depends only on being truth-assessable, not on which truth value it happens to have.'},
+  {cat:'connectives', q:'P ⇒ Q is false in exactly which case?', opts:['P true, Q true', 'P true, Q false', 'P false, Q true', 'P false, Q false'], ans:1, exp:'Implication fails only when the premise is true but the conclusion is false — every other combination makes it true.'},
+  {cat:'connectives', q:'"If I am elected, I will lower taxes." If the politician is NOT elected, what is the truth value of the whole implication?', opts:['False, because the promise was never tested', 'True — the premise never fired, so the implication holds vacuously', 'Undefined — no truth value can be assigned', 'It depends on whether taxes changed anyway'], ans:1, exp:'With a false premise, the implication cannot be judged false — there is nothing to violate. It is vacuously true.'},
+  {cat:'connectives', q:'¬A ∧ B and ¬(A ∧ B) are:', opts:['Identical statements', 'Different — the first negates only A, the second negates the whole conjunction', 'Both always false', 'Both always true'], ans:1, exp:'Precedence changes the meaning entirely: ¬A∧B negates A alone before ANDing; ¬(A∧B) ANDs first, then negates everything.'},
+  {cat:'connectives', q:'P ⇔ Q is true when:', opts:['P and Q always have opposite values', 'P and Q have the same truth value', 'Only when both are true', 'Only when both are false'], ans:1, exp:'Biconditional (double implication) is true exactly when both sides agree — both true or both false.'},
+  {cat:'entailment', q:'KB ⊨ α (KB entails α) means:', opts:['α appears literally as a sentence in KB', 'α is true in every model in which KB is true', 'α is true in at least one model', 'KB and α are the same formula'], ans:1, exp:'Entailment requires truth in ALL KB-satisfying models, not just some — a single counterexample model breaks it.'},
+  {cat:'entailment', q:'With 7 literals in a KB, how many rows does the full truth table have?', opts:['14', '49', '128', '7'], ans:2, exp:'2^7 = 128. Each literal doubles the number of rows to enumerate.'},
+  {cat:'entailment', q:'In the classic 5-rule Wumpus KB (R1–R5), how many of the 128 possible models actually satisfy the KB?', opts:['1', '3', '7', '64'], ans:1, exp:'Only 3 rows survive step 4 of the truth-table method — the AND of all five rules is true in exactly 3 of the 128 combinations.'},
+  {cat:'entailment', q:'Why does ¬P(2,2) NOT follow from R1–R5, even though ¬P(1,2) does?', opts:['P22 never appears in the rules', 'P22 is true in some but not all of the 3 satisfying models', 'The rules contain a contradiction', 'P22 is a syntax error'], ans:1, exp:'P22 is true in 2 of the 3 satisfying models and false in 1 — since it isn\'t true in EVERY model, ¬P22 is not entailed.'},
+  {cat:'entailment', q:'What is the main drawback of the truth-table method for checking entailment?', opts:['It sometimes gives the wrong answer', 'Time complexity is O(2^n), impractical as the literal count grows', 'It only works for two variables', 'It cannot handle implication'], ans:1, exp:'The method is always correct, but exponential in the literal count — fine at 7 literals, unusable at real scale. That gap motivates theorem proving.'},
+  {cat:'entailment', q:'What replaces brute-force truth tables for larger knowledge bases?', opts:['Random sampling of models', 'Applying logical equivalence laws (De Morgan\'s, contraposition, etc.) directly to sentences', 'Ignoring literals that seem irrelevant', 'Reducing every sentence to a single variable'], ans:1, exp:'Theorem proving via equivalence laws reaches the same conclusion in a handful of steps instead of enumerating every model.'},
+  {cat:'proving', q:'Modus Ponens lets you infer:', opts:['β, from α ⇒ β together with α', 'α, from α ⇒ β together with β', '¬α, from α ⇒ β together with ¬β', 'α ∧ β, from α ∨ β'], ans:0, exp:'"The mode that affirms": if the implication holds and its premise fires, the conclusion follows. (Option 2 is the classic converse fallacy; option 3 is a different valid rule — modus tollens.)'},
+  {cat:'proving', q:'Contraposition states that α ⇒ β is logically equivalent to:', opts:['β ⇒ α', '¬α ⇒ ¬β', '¬β ⇒ ¬α', 'α ∨ ¬β'], ans:2, exp:'Flip AND negate both sides: ¬β ⇒ ¬α. Just flipping (converse) or just negating (inverse) both change the meaning.'},
+  {cat:'proving', q:'Implication elimination rewrites α ⇒ β as:', opts:['α ∧ β', '¬α ∨ β', '¬(α ∨ β)', 'β ⇒ α'], ans:1, exp:'An implication is false only at T→F, which is exactly the one row where ¬α ∨ β is false — they are the same function.'},
+  {cat:'proving', q:'A sentence is in Conjunctive Normal Form (CNF) when it is:', opts:['A disjunction of conjunctions of literals — a sum of products', 'A conjunction of clauses, each clause a disjunction of literals — a product of sums', 'Any sentence with no negations', 'A single implication chain'], ans:1, exp:'CNF = AND of ORs. Every propositional sentence can be converted into this form, and resolution requires it.'},
+  {cat:'proving', q:'The correct 4-step order for converting a biconditional into CNF is:', opts:['De Morgan → distributivity → biconditional elim → implication elim', 'Biconditional elimination → implication elimination → De Morgan → distributivity of ∨ over ∧', 'Distributivity → implication elim → biconditional elim → De Morgan', 'Implication elimination first, the rest in any order'], ans:1, exp:'Eliminate ⇔, then ⇒, then push ¬ inward with De Morgan, then distribute ∨ over ∧. The deck flags this order as a memorization target.'},
+  {cat:'proving', q:'A resolution refutation proof of query α works by:', opts:['Adding α to the KB and checking consistency', 'Adding ¬α to the KB and resolving until the empty clause {} appears', 'Enumerating all models of α', 'Converting α to a biconditional'], ans:1, exp:'Proof by contradiction: assume the opposite of what you want. If resolution then derives the unsatisfiable empty clause, the assumption was false — so α is entailed.'},
+  {cat:'proving', q:'Deriving the empty clause {} during resolution means:', opts:['The KB contains no information', 'The clause set is unsatisfiable — the assumed negation is contradicted, so the query is proven', 'The proof failed and must restart', 'Two clauses were identical'], ans:1, exp:'{} is a clause with no literals, which nothing can satisfy. Reaching it proves the pool (KB + assumption) is contradictory.'},
+  {cat:'proving', q:'DPLL improves on plain truth-table enumeration with which three heuristics?', opts:['Alpha-beta pruning, hashing, iterative deepening', 'Early termination, pure symbol, unit clause', 'Selection, crossover, mutation', 'Forward chaining, backward chaining, unification'], ans:1, exp:'Early termination decides clauses before assignments complete; pure symbols get assigned their uniform sign; unit clauses force values and cascade (unit propagation). Options 1 and 3 belong to earlier modules; option 4 is next session.'},
+  {cat:'proving', q:'With B11 = false, the clause ¬P12 ∨ B11 becomes:', opts:['A tautology', 'A unit clause forcing P12 = false', 'Immediately false', 'Unrelated to P12'], ans:1, exp:'B11 false leaves ¬P12 as the only way to satisfy the clause — a unit clause. Unit propagation then forces P12 = false with zero search.'},
+  {cat:'connectives', q:'"You pass the course only if you take the exam" translates to:', opts:['exam ⇒ pass', 'pass ⇒ exam', 'pass ⇔ exam', 'exam ∨ pass'], ans:1, exp:'"p only if q" makes q the consequent: pass ⇒ exam. Reading "only if" as plain "if" (giving exam ⇒ pass) is the single most common translation error.'},
+  {cat:'connectives', q:'From "if it rains, the ground is wet" and "the ground is wet", concluding "it rained" is:', opts:['Modus Ponens — valid', 'Affirming the consequent — invalid', 'Modus Tollens — valid', 'Contraposition — valid'], ans:1, exp:'Wet ground has other causes (sprinklers). Only affirming the antecedent (MP) or denying the consequent (MT) are valid; this is the converse error.'},
+  {cat:'connectives', q:'Which single connective is functionally complete by itself?', opts:['XOR', 'Implication ⇒', 'NAND (or NOR)', 'Conjunction ∧'], ans:2, exp:'NAND and NOR are the only two binary connectives complete alone — why chips can be built from NAND gates only. XOR is linear/affine and can never produce AND.'},
+  {cat:'entailment', q:'An inference procedure that derives ONLY entailed sentences, but might miss some, is:', opts:['Complete but not sound', 'Sound but not complete', 'Both sound and complete', 'Neither'], ans:1, exp:'Sound = never derives a non-entailed sentence. Complete = derives every entailed one. Truth-table enumeration is both; an ad-hoc rule set is typically sound but incomplete.'},
+  {cat:'proving', q:'A Horn clause is a disjunction of literals with:', opts:['No negative literals', 'At most one positive literal', 'Exactly two literals', 'Only positive literals'], ans:1, exp:'≤1 positive literal. Exactly one = definite clause (Prolog rule); entailment over Horn KBs runs in LINEAR time via forward/backward chaining — no exponential wall.'},
+  {cat:'proving', q:'Resolving (P ∨ Q) with (¬P ∨ ¬Q) by cancelling BOTH pairs at once to get {} is:', opts:['The correct shortcut', 'Unsound — resolve on exactly one complementary pair at a time', 'Required by factoring', 'Valid only for Horn clauses'], ans:1, exp:'Both clauses are jointly satisfiable (P=T, Q=F), so deriving {} would prove a falsehood. One pair per resolution; here the legal resolvent is a tautology like Q ∨ ¬Q.'}
+];
+const CATS = [{id:'all', label:'All'}, {id:'kb', label:'KB agents'}, {id:'wumpus', label:'Wumpus World'}, {id:'propositions', label:'Propositions'}, {id:'connectives', label:'Connectives'}, {id:'entailment', label:'Entailment'}, {id:'proving', label:'Theorem proving'}];
+document.getElementById('quiz-filterbar').innerHTML = CATS.map(c =>
+  `<button class="${c.id==='all'?'active':''}" data-f="${c.id}" onclick="setFilter('${c.id}')">${c.label}</button>`
+).join('');
+
+let quizFilter = 'all';
+let quizState = {};
+function setFilter(f){
+  quizFilter = f;
+  document.querySelectorAll('.filterbar button').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  renderQuiz();
+}
+function renderQuiz(){
+  const container = document.getElementById('quiz-container');
+  const items = QUIZ.map((q,i)=>({...q, idx:i})).filter(q => quizFilter==='all' || q.cat===quizFilter);
+  container.innerHTML = items.map(q=>{
+    const state = quizState[q.idx];
+    const optsHtml = q.opts.map((opt,oi)=>{
+      let cls = 'opt';
+      if(state!==undefined){
+        if(oi===q.ans) cls += ' correct';
+        else if(oi===state) cls += ' wrong';
+      }
+      return `<button class="${cls}" onclick="answerQuiz(${q.idx},${oi})" ${state!==undefined?'disabled':''}>${opt}</button>`;
+    }).join('');
+    return `<div class="quiz-card">
+      <span class="qtag">${q.cat}</span>
+      <div class="qtext">${q.q}</div>
+      ${optsHtml}
+      <div class="explain ${state!==undefined?'show':''}">${q.exp}</div>
+    </div>`;
+  }).join('');
+  updateQuizProgress();
+}
+function answerQuiz(idx, optIdx){ quizState[idx] = optIdx; renderQuiz(); }
+function updateQuizProgress(){
+  const answered = Object.keys(quizState).length;
+  const correct = Object.entries(quizState).filter(([i,v])=>QUIZ[i].ans===v).length;
+  document.getElementById('quiz-count').textContent = `${answered} / ${QUIZ.length} answered`;
+  document.getElementById('quiz-score').textContent = `Score ${correct} / ${answered||0}`;
+  document.getElementById('quiz-bar').style.width = (QUIZ.length ? (answered/QUIZ.length*100) : 0) + '%';
+}
+renderQuiz();
+</script>
+</body>
+</html>
