@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predicate Logic — FOL, Quantifiers &amp; Chaining, ACI Lecture 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:        #0B0D10;
+  --ink-soft:   #14171C;
+  --panel:      #181B21;
+  --panel-2:    #1E2229;
+  --hairline:   rgba(247,245,240,0.09);
+  --hairline-2: rgba(247,245,240,0.16);
+  --paper:      #F7F5F0;
+  --paper-dim:  #C9C6BD;
+  --paper-faint:#8A887F;
+
+  --amber:      #FF8A3D;
+  --amber-dim:  #3D2410;
+  --amber-soft: #FFD9B8;
+
+  --blue:       #5B8DEF;
+  --blue-dim:   #1A2740;
+  --blue-soft:  #C2D3FB;
+
+  --moss:       #5FAD7A;
+  --moss-dim:   #16291D;
+  --moss-soft:  #BCE3CA;
+
+  --rose:       #E8607A;
+  --rose-dim:   #3A1620;
+  --rose-soft:  #F8C3CE;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  color-scheme: dark;
+  --font-display: "Fraunces", serif;
+  --font-ui: "Space Grotesk", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+  --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+  --page-bg:
+    radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+    linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+  --surface: rgba(11, 20, 34, 0.78);
+  --surface-strong: rgba(15, 26, 43, 0.96);
+  --surface-soft: rgba(255, 255, 255, 0.05);
+  --surface-muted: rgba(151, 170, 199, 0.12);
+  --card-bg: rgba(13, 24, 40, 0.88);
+  --border: rgba(160, 184, 218, 0.16);
+  --border-strong: rgba(186, 205, 232, 0.28);
+  --text: #edf4ff;
+  --text-muted: #afbed4;
+  --text-faint: #7e90ab;
+  --accent: #ffb556;
+  --accent-2: #60c0ff;
+  --accent-3: #8ce7c2;
+  --accent-4: #cb9cff;
+  --success-bg: rgba(140, 231, 194, 0.14);
+  --success-text: #b9f6dd;
+  --tab-idle: rgba(255, 255, 255, 0.05);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --chip-bg: rgba(255, 255, 255, 0.07);
+  --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+  --grid-line: rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --page-bg:
+    radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+    linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-strong: rgba(255, 255, 255, 0.92);
+  --surface-soft: rgba(18, 42, 68, 0.05);
+  --surface-muted: rgba(38, 76, 124, 0.08);
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --border: rgba(48, 82, 130, 0.14);
+  --border-strong: rgba(45, 80, 128, 0.24);
+  --text: #10233e;
+  --text-muted: #4f6686;
+  --text-faint: #7185a3;
+  --accent: #de8d22;
+  --accent-2: #2483db;
+  --accent-3: #128868;
+  --accent-4: #8750df;
+  --success-bg: rgba(18, 136, 104, 0.1);
+  --success-text: #0c7258;
+  --tab-idle: rgba(19, 43, 73, 0.05);
+  --input-bg: rgba(19, 43, 73, 0.05);
+  --chip-bg: rgba(19, 43, 73, 0.07);
+  --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+  --grid-line: rgba(27, 48, 79, 0.06);
+  --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+  --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+}
+
+.hub-topbar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:10px 20px; background:var(--surface-strong); border-bottom:1px solid var(--border);
+  backdrop-filter:blur(10px); box-shadow:var(--shadow-soft);
+  font-family:var(--font-ui);
+}
+.hub-brand{display:flex; align-items:center; gap:10px; color:var(--text); font-size:13.5px; font-weight:500;}
+.hub-brand-badge{
+  width:24px; height:24px; border-radius:8px; background:var(--accent-4); color:#0B0D10;
+  display:flex; align-items:center; justify-content:center; font-family:var(--font-ui);
+  font-size:11px; font-weight:700; flex-shrink:0;
+}
+.hub-theme-toggle{
+  display:inline-flex; align-items:center; gap:7px; background:var(--surface-soft);
+  border:1px solid var(--border-strong); color:var(--text); font-family:var(--font-ui);
+  font-size:12.5px; font-weight:500; padding:7px 14px; border-radius:999px; cursor:pointer;
+  transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.hub-theme-toggle:hover{border-color:var(--accent-4); color:var(--accent-4);}
+.hub-theme-toggle svg{flex-shrink:0;}
+
+*{box-sizing:border-box;}
+html{-webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+body{
+  margin:0; background:var(--ink); color:var(--paper);
+  font-family:var(--sans); line-height:1.6; font-size:15px;
+  -webkit-tap-highlight-color:transparent;
+}
+::selection{background:var(--amber); color:var(--ink);}
+
+a{color:var(--blue); text-decoration:none;}
+a:hover{text-decoration:underline;}
+button{font-family:inherit;}
+button:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--amber); outline-offset:2px; border-radius:4px;
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+}
+
+.shell{
+  display:grid;
+  grid-template-columns: 248px minmax(0,1fr);
+  min-height:100vh;
+}
+@media (max-width: 880px){
+  .shell{grid-template-columns: 1fr;}
+}
+
+.rail{
+  position:sticky; top:0; align-self:start; height:100vh;
+  border-right:1px solid var(--hairline);
+  padding:28px 18px 28px 24px;
+  display:flex; flex-direction:column; gap:22px;
+  overflow-y:auto;
+}
+@media (max-width: 880px){
+  .rail{
+    position:relative; height:auto; border-right:none;
+    border-bottom:1px solid var(--hairline);
+    padding:18px 16px;
+  }
+}
+.rail::-webkit-scrollbar{width:6px;}
+.rail::-webkit-scrollbar-thumb{background:var(--hairline-2); border-radius:3px;}
+
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-mark{
+  width:30px; height:30px; border-radius:7px; background:var(--amber);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  font-family:var(--mono); font-size:15px; font-weight:600; color:var(--ink);
+}
+.brand-text{display:flex; flex-direction:column; gap:1px; min-width:0;}
+.brand-text .kicker{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; color:var(--paper-faint); text-transform:uppercase;}
+.brand-text .name{font-size:14px; font-weight:600; color:var(--paper); letter-spacing:-0.01em;}
+
+.exam-strip{
+  display:flex; flex-direction:column; gap:7px;
+  padding:12px 13px; border-radius:var(--r-md);
+  background:var(--panel); border:1px solid var(--hairline);
+}
+.exam-row{display:flex; align-items:baseline; justify-content:space-between; gap:8px;}
+.exam-row .label{font-size:12px; color:var(--paper-dim);}
+.exam-row .date{font-family:var(--mono); font-size:12px; color:var(--amber); font-weight:500;}
+.exam-row.today .date{color:var(--paper-faint);}
+
+nav.railnav{display:flex; flex-direction:column; gap:1px; flex:1; min-height:0; overflow-y:auto;}
+.railnav::-webkit-scrollbar{width:0;}
+.rail-item{
+  display:flex; align-items:center; gap:10px;
+  padding:9px 10px; border-radius:var(--r-sm);
+  background:transparent; border:none; color:var(--paper-dim);
+  font-size:13px; text-align:left; cursor:pointer;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.rail-item:hover{background:var(--panel); color:var(--paper);}
+.rail-item.active{background:var(--panel-2); color:var(--paper);}
+.rail-item .node-id{
+  font-family:var(--mono); font-size:10.5px; color:var(--paper-faint);
+  width:20px; flex-shrink:0; text-align:right;
+}
+.rail-item.active .node-id{color:var(--amber);}
+.rail-item .lbl{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.rail-foot{
+  font-size:11px; color:var(--paper-faint); padding-top:14px;
+  border-top:1px solid var(--hairline); line-height:1.55;
+}
+
+.content{padding:0; min-width:0;}
+.hero{
+  padding:64px 56px 48px;
+  border-bottom:1px solid var(--hairline);
+  position:relative; overflow:hidden;
+}
+@media (max-width:680px){ .hero{padding:40px 22px 32px;} }
+.hero-eyebrow{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--amber); margin:0 0 14px; display:flex; align-items:center; gap:8px;
+}
+.hero-eyebrow::before{content:''; width:6px; height:6px; border-radius:50%; background:var(--amber); display:inline-block;}
+.hero h1{
+  font-size:clamp(28px, 4vw, 42px); line-height:1.08; font-weight:700;
+  letter-spacing:-0.02em; margin:0 0 16px; max-width:18ch;
+}
+.hero p.sub{
+  font-size:16px; color:var(--paper-dim); max-width:56ch; margin:0; line-height:1.65;
+}
+.hero-frontier{
+  margin-top:32px; display:flex; gap:6px; flex-wrap:wrap;
+}
+.hero-frontier .ftile{
+  font-family:var(--mono); font-size:11.5px; padding:5px 11px;
+  border-radius:20px; border:1px solid var(--hairline-2); color:var(--paper-dim);
+  background:var(--panel);
+}
+
+main.col{max-width:760px; padding:0 56px 120px;}
+@media (max-width:680px){ main.col{padding:0 22px 90px;} }
+
+section.block{
+  padding:56px 0; border-bottom:1px solid var(--hairline); scroll-margin-top:32px;
+}
+section.block:last-of-type{border-bottom:none;}
+
+.block-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:8px;}
+.block-num{
+  font-family:var(--mono); font-size:13px; color:var(--paper-faint);
+  padding-top:3px; flex-shrink:0; width:24px;
+}
+.block-head h2{
+  font-size:22px; font-weight:600; letter-spacing:-0.01em; margin:0; line-height:1.3;
+}
+.block-tag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  padding:3px 8px; border-radius:5px; flex-shrink:0; margin-top:5px; white-space:nowrap;
+}
+.block-tag.blind{background:var(--blue-dim); color:var(--blue-soft);}
+.block-tag.smart{background:var(--amber-dim); color:var(--amber-soft);}
+.block-tag.core{background:var(--moss-dim); color:var(--moss-soft);}
+.block-sub{
+  color:var(--paper-dim); font-size:14.5px; margin:0 0 28px; padding-left:38px; max-width:58ch; line-height:1.65;
+}
+
+.callout{
+  border-radius:var(--r-md); padding:14px 18px; font-size:13.5px;
+  margin:18px 0; line-height:1.65; border:1px solid transparent;
+}
+.callout-amber{background:var(--amber-dim); color:var(--amber-soft); border-color:rgba(255,138,61,0.25);}
+.callout-moss{background:var(--moss-dim); color:var(--moss-soft); border-color:rgba(95,173,122,0.25);}
+.callout-rose{background:var(--rose-dim); color:var(--rose-soft); border-color:rgba(232,96,122,0.25);}
+.callout-blue{background:var(--blue-dim); color:var(--blue-soft); border-color:rgba(91,141,239,0.25);}
+.callout b{font-weight:600;}
+.callout .callout-kicker{
+  font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  opacity:.75; display:block; margin-bottom:5px;
+}
+
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+table.data{
+  width:100%; border-collapse:collapse; font-size:13px; margin:18px 0;
+}
+table.data th, table.data td{
+  border-bottom:1px solid var(--hairline); padding:9px 12px; text-align:left;
+  font-family:var(--sans);
+}
+table.data th{
+  color:var(--paper-faint); font-weight:500; font-size:11px; letter-spacing:.04em; text-transform:uppercase;
+  background:var(--panel);
+}
+table.data td.mono, table.data td code{font-family:var(--mono); font-size:12.5px;}
+table.data td.yes{color:var(--moss-soft);}
+table.data td.no{color:var(--rose-soft);}
+table.data tr:hover td{background:rgba(255,255,255,0.02);}
+
+code{
+  background:var(--panel-2); padding:2px 6px; border-radius:4px; font-size:12.5px;
+  color:var(--blue-soft); font-family:var(--mono); border:1px solid var(--hairline);
+}
+
+.formula{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-md);
+  padding:20px 24px; font-family:var(--mono); font-size:16px; color:var(--paper);
+  margin:20px 0; text-align:center; letter-spacing:.01em;
+}
+.formula .ghost{
+  display:block; margin-top:8px; font-size:11px; color:var(--paper-faint); letter-spacing:0;
+}
+
+.tagrow{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0;}
+.tagrow .tg{
+  font-family:var(--mono); font-size:11px; padding:5px 11px; border-radius:14px;
+  background:var(--panel); border:1px solid var(--hairline-2); color:var(--paper-dim);
+}
+
+.panel{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-lg);
+  padding:22px 22px 20px; margin:22px 0;
+}
+.panel-label{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--paper-faint); margin:0 0 14px; display:flex; align-items:center; justify-content:space-between;
+}
+.panel-label .step-of{color:var(--paper-dim); letter-spacing:.02em; text-transform:none;}
+
+.stage{
+  position:relative; min-height:180px; border-radius:var(--r-md);
+  background:var(--ink-soft); border:1px solid var(--hairline);
+  overflow:hidden; margin-bottom:16px; padding:16px;
+}
+.stage svg{display:block; width:100%; height:auto;}
+
+.frontier-lane{
+  display:flex; gap:6px; padding:14px; border-radius:var(--r-md);
+  background:var(--ink-soft); border:1px solid var(--hairline);
+  margin-bottom:16px; min-height:56px; align-items:center;
+  overflow-x:auto; flex-wrap:nowrap;
+}
+.frontier-lane::-webkit-scrollbar{height:4px;}
+.frontier-lane .lane-caption{
+  font-family:var(--mono); font-size:10px; color:var(--paper-faint); text-transform:uppercase;
+  letter-spacing:.06em; flex-shrink:0; padding-right:6px; border-right:1px solid var(--hairline-2); margin-right:6px;
+}
+.qtile{
+  font-family:var(--mono); font-size:12px; padding:7px 12px; border-radius:7px;
+  background:var(--panel-2); border:1px solid var(--hairline-2); color:var(--paper-dim);
+  flex-shrink:0; white-space:nowrap;
+  transition:transform .32s var(--ease), background .25s var(--ease), border-color .25s var(--ease), color .25s var(--ease), opacity .25s var(--ease);
+}
+.qtile.is-min{
+  background:var(--amber-dim); border-color:var(--amber); color:var(--amber-soft); font-weight:500;
+  box-shadow:0 0 0 1px rgba(255,138,61,0.15);
+}
+.qtile.is-new{
+  background:var(--moss-dim); border-color:var(--moss); color:var(--moss-soft); font-weight:500;
+}
+.qtile.is-goal{
+  background:var(--blue-dim); border-color:var(--blue); color:var(--blue-soft); font-weight:600;
+}
+.lane-empty{font-family:var(--mono); font-size:12px; color:var(--paper-faint);}
+
+.narration{
+  font-size:13.5px; color:var(--paper-dim); line-height:1.6; min-height:42px;
+  padding-top:2px;
+}
+.narration .hl{color:var(--amber-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--amber-dim); padding:1px 6px; border-radius:4px;}
+.narration .hl-blue{color:var(--blue-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--blue-dim); padding:1px 6px; border-radius:4px;}
+.narration .hl-moss{color:var(--moss-soft); font-weight:500; font-family:var(--mono); font-size:12.5px;
+  background:var(--moss-dim); padding:1px 6px; border-radius:4px;}
+
+.controls{
+  display:flex; align-items:center; gap:8px; margin-top:16px; flex-wrap:wrap;
+}
+.ctl-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--panel-2); border:1px solid var(--hairline-2); color:var(--paper);
+  padding:8px 16px; border-radius:var(--r-sm); font-size:13px; font-weight:500; cursor:pointer;
+  transition:background .15s var(--ease), border-color .15s var(--ease), transform .1s var(--ease);
+}
+.ctl-btn:hover{border-color:var(--paper-faint);}
+.ctl-btn:active{transform:scale(0.97);}
+.ctl-btn:disabled{opacity:.32; cursor:default; pointer-events:none;}
+.ctl-btn.primary{background:var(--amber); color:var(--ink); border-color:var(--amber);}
+.ctl-btn.primary:hover{background:#ff9952;}
+.ctl-btn svg{width:14px; height:14px;}
+.ctl-spacer{flex:1;}
+.step-pips{display:flex; gap:4px; align-items:center;}
+.step-pips .pip{width:5px; height:5px; border-radius:50%; background:var(--hairline-2); transition:background .2s, transform .2s;}
+.step-pips .pip.done{background:var(--paper-faint);}
+.step-pips .pip.current{background:var(--amber); transform:scale(1.5);}
+
+.verdict{font-family:var(--mono); font-size:12px; font-weight:500; padding:4px 10px; border-radius:6px; text-align:center;}
+.verdict.ok{background:var(--moss-dim); color:var(--moss-soft);}
+.verdict.bad{background:var(--rose-dim); color:var(--rose-soft);}
+.verdict.wait{color:var(--paper-faint); background:transparent;}
+
+.filterbar{display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap;}
+.filterbar button{
+  background:var(--panel); border:1px solid var(--hairline-2); color:var(--paper-dim);
+  padding:6px 14px; border-radius:16px; font-size:12px; cursor:pointer;
+  transition:all .15s var(--ease);
+}
+.filterbar button.active{background:var(--amber-dim); color:var(--amber-soft); border-color:var(--amber);}
+.filterbar button:hover:not(.active){border-color:var(--paper-faint); color:var(--paper);}
+
+.quiz-progress{
+  font-family:var(--mono); font-size:11.5px; color:var(--paper-faint); margin-bottom:8px;
+  display:flex; justify-content:space-between;
+}
+.scorebar{height:3px; background:var(--panel-2); border-radius:2px; overflow:hidden; margin-bottom:24px;}
+.scorebar > div{height:100%; background:var(--amber); width:0%; transition:width .3s var(--ease);}
+
+.quiz-card{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-lg);
+  padding:20px 22px; margin-bottom:14px;
+}
+.quiz-card .qtag{
+  font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--paper-faint); margin-bottom:8px; display:block;
+}
+.quiz-card .qtext{font-size:14.5px; margin-bottom:14px; font-weight:500; line-height:1.5;}
+.opt{
+  display:block; width:100%; text-align:left; background:var(--ink-soft); border:1px solid var(--hairline-2);
+  color:var(--paper); padding:10px 14px; border-radius:var(--r-sm); margin-bottom:7px; font-size:13px;
+  cursor:pointer; transition:border-color .15s var(--ease), background .15s var(--ease);
+}
+.opt:hover:not(:disabled){border-color:var(--paper-faint);}
+.opt.correct{background:var(--moss-dim); border-color:var(--moss); color:var(--moss-soft);}
+.opt.wrong{background:var(--rose-dim); border-color:var(--rose); color:var(--rose-soft);}
+.explain{
+  font-size:13px; color:var(--paper-dim); margin-top:10px; padding-top:10px;
+  border-top:1px dashed var(--hairline-2); display:none; line-height:1.6;
+}
+.explain.show{display:block; animation:fade-in .25s var(--ease);}
+@keyframes fade-in{from{opacity:0; transform:translateY(-2px);} to{opacity:1; transform:translateY(0);}}
+
+.code-block{
+  font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--paper-dim);
+  background:var(--ink-soft); border:1px solid var(--hairline); border-radius:var(--r-sm);
+  padding:16px 18px; margin:0; overflow-x:auto; white-space:pre;
+}
+.code-block .cm{color:var(--paper-faint); font-style:italic;}
+
+.xlate-card{
+  background:var(--panel); border:1px solid var(--hairline-2); border-radius:var(--r-lg);
+  padding:18px 20px; margin-bottom:12px;
+}
+.xlate-card .xnum{font-family:var(--mono); font-size:10.5px; color:var(--paper-faint); letter-spacing:.06em; text-transform:uppercase;}
+.xlate-card .xeng{font-size:14.5px; font-weight:500; margin:6px 0 12px;}
+.xlate-opts{display:flex; flex-direction:column; gap:7px;}
+.xlate-reveal{
+  margin-top:12px; padding-top:12px; border-top:1px dashed var(--hairline-2);
+  font-family:var(--mono); font-size:13px; color:var(--moss-soft); display:none;
+}
+.xlate-reveal.show{display:block;}
+
+.tree-box{
+  font-family:var(--mono); font-size:12px; line-height:1.55;
+  color:var(--paper-dim); white-space:pre; overflow-x:auto;
+  background:var(--ink-soft); border:1px solid var(--hairline); border-radius:var(--r-sm);
+  padding:16px 18px; min-height:140px;
+}
+.tree-box .new{color:var(--moss-soft); font-weight:600;}
+.tree-box .goal{color:var(--amber-soft); font-weight:600;}
+.tree-box .fact{color:var(--blue-soft);}
+
+footer.colophon{
+  font-size:12px; color:var(--paper-faint); padding:40px 0 0; text-align:left; line-height:1.7;
+}
+footer.colophon a{color:var(--paper-dim);}
+</style>
+</head>
+<body>
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark">∀</div>
+      <div class="brand-text">
+        <span class="kicker">ACI · ZG557</span>
+        <span class="name">Predicate Logic</span>
+      </div>
+    </div>
+
+    <div class="exam-strip">
+      <div class="exam-row today"><span class="label">Session</span><span class="date">10 of 16</span></div>
+      <div class="exam-row"><span class="label">Module</span><span class="date">M4 · KR</span></div>
+      <div class="exam-row"><span class="label">Sessions left</span><span class="date">6</span></div>
+    </div>
+
+    <nav class="railnav" id="railnav" aria-label="Lecture sections"></nav>
+
+    <div class="rail-foot">Session 10 · First-order logic, quantifiers, instantiation, forward &amp; backward chaining, unification.</div>
+  </aside>
+
+  <div class="content">
+    <header class="hero">
+      <p class="hero-eyebrow">Session 10 revision instrument · 12 Jul 2026 recording</p>
+      <h1>Objects,<br>not just facts.</h1>
+      <p class="sub">Contact session 10 finished the leftover propositional toolkit (theorem proving, CNF resolution, DPLL), then asked why that still isn't enough. Predicate logic answers with objects, relations, quantifiers — and only two inference engines: forward and backward chaining.</p>
+      <div class="hero-frontier">
+        <span class="ftile">First-order logic</span><span class="ftile">Quantifiers ∀ ∃</span><span class="ftile">UI · EI · Skolem</span>
+        <span class="ftile">Definite clauses</span><span class="ftile">Forward chaining</span><span class="ftile">Backward chaining</span>
+        <span class="ftile">Unification</span><span class="ftile">Resolution</span>
+      </div>
+    </header>
+
+    <main class="col">
+
+      <!-- 00 -->
+      <section class="block" id="s-recap">
+        <div class="block-head">
+          <span class="block-num">00</span>
+          <h2>Where session 10 actually started</h2>
+          <span class="block-tag core">context</span>
+        </div>
+        <p class="block-sub">From the 12 Jul recording: "Welcome to the 10th contact session, but we are again using the 9th contact session slide because we have not completed it." The live class finished propositional techniques first, then opened the door to predicates.</p>
+
+        <table class="data">
+          <tr><th>Module</th><th>Topic</th></tr>
+          <tr><td>M1</td><td>Introduction to AI</td></tr>
+          <tr><td>M2</td><td>Problem Solving Agent using Search</td></tr>
+          <tr><td>M3</td><td>Game Playing</td></tr>
+          <tr><td class="yes"><b>M4</b></td><td class="yes"><b>Knowledge Representation using Logics</b> ← current</td></tr>
+          <tr><td>M5</td><td>Probabilistic Representation and Reasoning</td></tr>
+          <tr><td>M6</td><td>Reasoning over time</td></tr>
+          <tr><td>M7</td><td>Ethics in AI</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Instructor framing — how a KB grows</span>
+          An agent starts with a knowledge base. You ASK a query (e.g. ¬P(1,2)). Whatever technique answers true/false becomes a new <b>insight</b> — and that insight is TELLed back into the KB. "That is how our agents incrementally build knowledge." Search and games assumed the state space was given; this module asks where knowledge comes from and how it updates.
+        </div>
+
+        <table class="data">
+          <tr><th>Propositional toolkit (CS#09, finished in this session)</th><th>Predicate toolkit (CS#10 deck)</th></tr>
+          <tr><td>Truth tables</td><td rowspan="4" style="vertical-align:middle"><b>Forward chaining</b><br><b>Backward chaining</b><br><span style="color:var(--paper-faint); font-size:12px">"In predicate, we learn only two — that's it."</span></td></tr>
+          <tr><td>Theorem proving (equivalence laws · MP · ∧-elim)</td></tr>
+          <tr><td>Proof by contradiction</td></tr>
+          <tr><td>PL resolution (CNF + unit resolution) · DPLL</td></tr>
+        </table>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Why propositional logic is not good enough</span>
+          From the close of the recording: <i>"Some students are brilliant"</i> — you cannot say <b>some</b> in PL. <i>"All women are beautiful"</i> — you cannot say <b>all</b>. Predicate logic adds ∀ and ∃ for exactly those words. "Everything else remains the same" — entailment, queries, adding answers back to the KB — but the sentences can now talk about objects and quantities.
+        </div>
+
+        <table class="data">
+          <tr><th>#</th><th>CS#10 slide agenda (this page)</th></tr>
+          <tr><td class="mono">1</td><td>Recap of CS#09 — propositional limits</td></tr>
+          <tr><td class="mono">2</td><td>Introduction to Predicate / First-Order Logic</td></tr>
+          <tr><td class="mono">3</td><td>Resolution via Forward &amp; Backward chaining</td></tr>
+          <tr><td class="mono">4</td><td>Exercises — translation + Curiosity puzzle</td></tr>
+        </table>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">Course logistics from the recording</span>
+          Session <b>10 of 16</b> — six classes left. Prolog webinar is for <b>assignment 2</b>, not the final exam. Groups stay the same for A2. Quiz 2 / Assignment 2 / EC3 still ahead (EC3 = 40 marks). Final covers chapters 1–16; 9–16 are "more closely knit." Open-book for the logic rules. Full PL walkthroughs (CNF conversion order, empty-clause meaning, DPLL pure symbols) live in <a href="lecture_9.html">lecture_9.html</a>.
+        </div>
+      </section>
+
+      <!-- 01 -->
+      <section class="block" id="s-fol">
+        <div class="block-head">
+          <span class="block-num">01</span>
+          <h2>First-order logic — the worldview</h2>
+          <span class="block-tag core">foundation</span>
+        </div>
+        <p class="block-sub">Propositional logic assumes the world contains facts. First-order logic (predicate logic) assumes the world contains objects, relations among them, and functions that map objects to objects — the same ontology natural language uses.</p>
+
+        <table class="data">
+          <tr><th>Building block</th><th>Examples</th></tr>
+          <tr><td><b>Objects</b></td><td>people, houses, numbers, colors, baseball games, wars…</td></tr>
+          <tr><td><b>Relations</b></td><td>red, round, prime, brother of, bigger than, part of, comes between…</td></tr>
+          <tr><td><b>Functions</b></td><td>father of, best friend, one more than, plus…</td></tr>
+        </table>
+
+        <div class="formula">∀x Student(x) ⇒ Likes(x, Mathematics)
+<span class="ghost">one sentence covers the whole class — propositional logic would need one symbol per student</span></div>
+
+        <div class="grid2">
+          <div class="callout callout-rose" style="margin:0">
+            <span class="callout-kicker">Cannot say in PL</span>
+            "Some students are brilliant"<br>
+            "All women are beautiful"<br>
+            <span style="opacity:.8">— instructor's own examples for why ∀/∃ exist</span>
+          </div>
+          <div class="callout callout-moss" style="margin:0">
+            <span class="callout-kicker">Can say in FOL</span>
+            <code>∃x Student(x) ∧ Brilliant(x)</code><br>
+            <code>∀x Woman(x) ⇒ Beautiful(x)</code><br>
+            <span style="opacity:.8">same ∀+⇒ / ∃+∧ pairing as the rest of this lecture</span>
+          </div>
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Research notes + recording</span>
+          FOL sits between propositional logic (least expressive, fully decidable) and higher-order / description logics (more expressive, often undecidable). Modern AI "does it in different ways, but it all boils down to these inferencing techniques" — given rules, deduce new insights. Any FOL expression loosely has a <b>subject</b> (the term) and a <b>predicate</b> (the property asserted).
+        </div>
+      </section>
+
+      <!-- 02 -->
+      <section class="block" id="s-syntax">
+        <div class="block-head">
+          <span class="block-num">02</span>
+          <h2>Syntax — basic elements</h2>
+          <span class="block-tag core">vocabulary</span>
+        </div>
+        <p class="block-sub">The vocabulary splits into syntax (legal writing) and semantics (truth evaluation). Symbol names are arbitrary — choose whatever is unambiguous for the domain.</p>
+
+        <table class="data">
+          <tr><th>Element</th><th>Examples</th></tr>
+          <tr><td>Constants</td><td class="mono">KingJohn, 2, NUS, …</td></tr>
+          <tr><td>Predicates</td><td class="mono">Brother, &gt;, …</td></tr>
+          <tr><td>Functions</td><td class="mono">Sqrt, LeftLegOf, …</td></tr>
+          <tr><td>Variables</td><td class="mono">x, y, a, b, …</td></tr>
+          <tr><td>Connectives</td><td class="mono">¬, ∧, ∨, ⇒, ⇔</td></tr>
+          <tr><td>Equality</td><td class="mono">=</td></tr>
+          <tr><td>Quantifiers</td><td class="mono">∀, ∃</td></tr>
+        </table>
+
+        <div class="grid2">
+          <div class="callout callout-moss" style="margin:0">
+            <span class="callout-kicker">Atomic sentence</span>
+            <code>predicate(term₁,…,termₙ)</code> or <code>term₁ = term₂</code><br><br>
+            Term = function(…) / constant / variable
+          </div>
+          <div class="callout callout-blue" style="margin:0">
+            <span class="callout-kicker">Complex sentence</span>
+            Built from atomic sentences with connectives:<br>
+            <code>¬S · S₁∧S₂ · S₁∨S₂ · S₁⇒S₂ · S₁⇔S₂</code>
+          </div>
+        </div>
+
+        <pre class="code-block" style="margin-top:18px">Brother(KingJohn, RichardTheLionheart)
+&gt;(Length(LeftLegOf(Richard)), Length(LeftLegOf(KingJohn)))
+
+Sibling(KingJohn, Richard) ⇒ Sibling(Richard, KingJohn)
+&gt;(1,2) ∨ ≤(1,2)          <span class="cm"># tautology</span>
+&gt;(1,2) ∧ ¬&gt;(1,2)         <span class="cm"># contradiction</span></pre>
+
+        <div class="callout callout-rose">
+          <span class="callout-kicker">Beginner trap</span>
+          Predicates return a <b>truth value</b> (<code>Brother(x,y)</code>) and can stand alone as sentences. Functions return an <b>object</b> (<code>Father(x)</code>) and can only appear as terms/arguments — never alone as a sentence. In kinship domains, <code>Mother(x)</code> is a function because every person has exactly one biological mother; a predicate could allow zero or many.
+        </div>
+      </section>
+
+      <!-- 03 -->
+      <section class="block" id="s-models">
+        <div class="block-head">
+          <span class="block-num">03</span>
+          <h2>Truth in FOL — models &amp; interpretation</h2>
+          <span class="block-tag core">semantics</span>
+        </div>
+        <p class="block-sub">A propositional model is just T/F assignments. A first-order model is richer: a domain of objects plus an interpretation that anchors every symbol.</p>
+
+        <table class="data">
+          <tr><th>Piece</th><th>What it maps</th></tr>
+          <tr><td>Constant symbols</td><td>→ objects in the domain</td></tr>
+          <tr><td>Predicate symbols</td><td>→ relations (sets of tuples)</td></tr>
+          <tr><td>Function symbols</td><td>→ functional mappings on the domain</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          An atomic sentence <code>predicate(term₁,…,termₙ)</code> is true iff the objects referred to by the terms are in the relation referred to by the predicate. Equality is special: <code>term1 = term2</code> is true iff both terms denote the <i>same</i> object.
+        </div>
+
+        <div class="panel">
+          <div class="panel-label">AIMA's running model — Richard &amp; King John</div>
+          <div class="stage" style="min-height:auto; padding:20px">
+            <svg viewBox="0 0 420 200" style="max-height:200px">
+              <defs>
+                <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5B8DEF"/></marker>
+              </defs>
+              <!-- R -->
+              <circle cx="100" cy="90" r="36" fill="#1A2740" stroke="#5B8DEF" stroke-width="1.5"/>
+              <text x="100" y="86" text-anchor="middle" fill="#C2D3FB" font-family="IBM Plex Mono" font-size="14" font-weight="600">R</text>
+              <text x="100" y="104" text-anchor="middle" fill="#8A887F" font-family="IBM Plex Mono" font-size="9">person</text>
+              <rect x="82" y="132" width="36" height="14" rx="3" fill="#16291D" stroke="#5FAD7A" stroke-width="1"/>
+              <text x="100" y="142" text-anchor="middle" fill="#BCE3CA" font-family="IBM Plex Mono" font-size="8">left leg</text>
+              <!-- J -->
+              <circle cx="300" cy="90" r="36" fill="#3D2410" stroke="#FF8A3D" stroke-width="1.5"/>
+              <text x="300" y="86" text-anchor="middle" fill="#FFD9B8" font-family="IBM Plex Mono" font-size="14" font-weight="600">J</text>
+              <text x="300" y="104" text-anchor="middle" fill="#8A887F" font-family="IBM Plex Mono" font-size="9">person · king</text>
+              <rect x="282" y="132" width="36" height="14" rx="3" fill="#16291D" stroke="#5FAD7A" stroke-width="1"/>
+              <text x="300" y="142" text-anchor="middle" fill="#BCE3CA" font-family="IBM Plex Mono" font-size="8">left leg</text>
+              <!-- crown -->
+              <rect x="278" y="28" width="44" height="18" rx="4" fill="#3A1620" stroke="#E8607A" stroke-width="1"/>
+              <text x="300" y="41" text-anchor="middle" fill="#F8C3CE" font-family="IBM Plex Mono" font-size="9">crown</text>
+              <line x1="300" y1="46" x2="300" y2="54" stroke="#E8607A" stroke-width="1.2" stroke-dasharray="3 2"/>
+              <text x="322" y="58" fill="#E8607A" font-family="IBM Plex Mono" font-size="8">on head</text>
+              <!-- brother arrows -->
+              <path d="M136,78 Q200,40 264,78" fill="none" stroke="#5B8DEF" stroke-width="1.4" marker-end="url(#arr)"/>
+              <path d="M264,102 Q200,140 136,102" fill="none" stroke="#5B8DEF" stroke-width="1.4" marker-end="url(#arr)"/>
+              <text x="200" y="38" text-anchor="middle" fill="#5B8DEF" font-family="IBM Plex Mono" font-size="9">brother</text>
+              <!-- money -->
+              <circle cx="340" cy="110" r="10" fill="#16291D" stroke="#5FAD7A" stroke-width="1"/>
+              <text x="340" y="114" text-anchor="middle" fill="#BCE3CA" font-family="IBM Plex Mono" font-size="9">$</text>
+            </svg>
+          </div>
+          <p class="narration">Domain ≈ 5 objects (R, J, two left legs, crown). Unary: <span class="hl-blue">Person, King, Crown</span>. Binary: <span class="hl">Brother, OnHead</span>. Function: <span class="hl-moss">LeftLeg</span>. Same model reused for UI/EI examples later.</p>
+        </div>
+      </section>
+
+      <!-- 04 -->
+      <section class="block" id="s-quant">
+        <div class="block-head">
+          <span class="block-num">04</span>
+          <h2>Quantifiers — ∀ and ∃</h2>
+          <span class="block-tag core">the key upgrade</span>
+        </div>
+        <p class="block-sub">Universal claims everything; existential claims at least one. The connective pairing is the single most-tested trap in FOL translation.</p>
+
+        <div class="grid2">
+          <div>
+            <div class="formula">∀x Man(x) ⇒ Drink(x, Coffee)
+<span class="ghost">∀ + ⇒ — "all men drink coffee"</span></div>
+            <div class="callout callout-amber" style="margin-top:0">
+              Semantically ≈ conjunction over the domain:<br>
+              <code>P(o₁) ∧ P(o₂) ∧ … ∧ P(oₙ)</code>
+            </div>
+          </div>
+          <div>
+            <div class="formula">∃x Boy(x) ∧ Intelligent(x)
+<span class="ghost">∃ + ∧ — "some boys are intelligent"</span></div>
+            <div class="callout callout-blue" style="margin-top:0">
+              Semantically ≈ disjunction over the domain:<br>
+              <code>P(o₁) ∨ P(o₂) ∨ … ∨ P(oₙ)</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-rose">
+          <span class="callout-kicker">The connective traps</span>
+          Writing <code>∀x Man(x) ∧ Drink(x,Coffee)</code> asserts <i>everything</i> is both a man and a coffee drinker. Writing <code>∃x Boy(x) ⇒ Intelligent(x)</code> is true whenever any non-boy exists — trivially true, useless. Memorize: <b>∀ pairs with ⇒ · ∃ pairs with ∧</b>.
+        </div>
+
+        <div class="formula">∀x At(x,BITS) ⇒ Smart(x)
+<span class="ghost">Everyone at BITS is smart — expands to At(KingJohn,BITS)⇒Smart(KingJohn) ∧ At(Richard,BITS)⇒Smart(Richard) ∧ At(BITS,BITS)⇒Smart(BITS) ∧ …</span></div>
+
+        <div class="formula">∃x At(x,NUS) ∧ Smart(x)
+<span class="ghost">Someone at NUS is smart — expands to a disjunction of ground conjunctions</span></div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Domain reminder</span>
+          ∀ ranges over the <i>entire</i> domain — including the institution BITS itself as an object. Careful type design (e.g. restricting to <code>Person(x)</code>) avoids unintended conjuncts like <code>At(BITS,BITS) ⇒ Smart(BITS)</code>.
+        </div>
+
+        <h3 style="font-size:15px; font-weight:600; margin:28px 0 8px; padding-left:0;">Slide examples — informal → stricter FOL</h3>
+        <p class="block-sub" style="padding-left:0; margin-bottom:14px;">Page 15 of the deck shows two classroom translations. The slide forms are shorthand; the right column is the stricter reading you should write in an exam.</p>
+        <table class="data">
+          <tr><th>English</th><th>Slide shorthand</th><th>Stricter FOL</th></tr>
+          <tr>
+            <td>Prof John is teaching ML for WILP Students</td>
+            <td class="mono">∃x,c,s Teaching(X,C,S)</td>
+            <td class="mono">Teaching(ProfJohn, ML, WILPStudents)</td>
+          </tr>
+          <tr>
+            <td>Seller sells all products to customers</td>
+            <td class="mono">∀p Sells(S,P,C)</td>
+            <td class="mono">∀p Product(p) ⇒ Sells(Seller, p, Customer)</td>
+          </tr>
+        </table>
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Constants vs variables</span>
+          Prof John, ML, and WILP Students are <b>specific named individuals</b> — a ground atomic sentence, no quantifier needed. "All products" needs a variable + ∀ + ⇒. Deciding constant vs variable is half the translation battle.
+        </div>
+      </section>
+
+      <!-- 05 -->
+      <section class="block" id="s-duality">
+        <div class="block-head">
+          <span class="block-num">05</span>
+          <h2>Properties of quantifiers</h2>
+          <span class="block-tag core">exam favourite</span>
+        </div>
+        <p class="block-sub">Same-quantifier pairs commute. Mixed-quantifier pairs do not. Duality is De Morgan's laws lifted to (possibly infinite) domains.</p>
+
+        <table class="data">
+          <tr><th>Claim</th><th>Status</th></tr>
+          <tr><td class="mono">∀x ∀y ≡ ∀y ∀x</td><td class="yes">Same</td></tr>
+          <tr><td class="mono">∃x ∃y ≡ ∃y ∃x</td><td class="yes">Same</td></tr>
+          <tr><td class="mono">∃x ∀y ≢ ∀y ∃x</td><td class="no">Different meanings</td></tr>
+        </table>
+
+        <div class="panel">
+          <div class="panel-label">Flip the order — does the meaning change? <span class="step-of">classic exam trap</span></div>
+          <div class="tagrow" id="order-btns">
+            <button class="tg" style="cursor:pointer; border-color:var(--amber); color:var(--amber-soft); background:var(--amber-dim);" onclick="showOrder('ea')">∃x ∀y Loves(x,y)</button>
+            <button class="tg" style="cursor:pointer" onclick="showOrder('ae')">∀y ∃x Loves(x,y)</button>
+          </div>
+          <p class="narration" id="order-narr"></p>
+        </div>
+
+        <div class="formula">∀x Likes(x,IceCream) ≡ ¬∃x ¬Likes(x,IceCream)
+∃x Likes(x,Broccoli) ≡ ¬∀x ¬Likes(x,Broccoli)
+<span class="ghost">quantifier duality — push ¬ inward past ∀/∃ by flipping the quantifier</span></div>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Why duality matters later</span>
+          Resolution-based provers require CNF. Converting FOL to CNF repeatedly pushes negations inward past quantifiers using exactly these identities — the same De Morgan step from last session, now with ∀/∃.
+        </div>
+      </section>
+
+      <!-- 06 -->
+      <section class="block" id="s-inst">
+        <div class="block-head">
+          <span class="block-num">06</span>
+          <h2>Instantiation — UI, EI &amp; Skolem</h2>
+          <span class="block-tag core">inference rules</span>
+        </div>
+        <p class="block-sub">Universal Instantiation substitutes any ground term. Existential Instantiation invents a brand-new Skolem constant — once only.</p>
+
+        <div class="formula">∀v α &nbsp;&nbsp;⊢&nbsp;&nbsp; Subst({v/g}, α)
+<span class="ghost">Universal Instantiation — for any ground term g (constant or nested function)</span></div>
+
+        <pre class="code-block">∀x King(x) ∧ Greedy(x) ⇒ Evil(x)   yields:
+  King(John) ∧ Greedy(John) ⇒ Evil(John)
+  King(Richard) ∧ Greedy(Richard) ⇒ Evil(Richard)
+  King(Father(John)) ∧ Greedy(Father(John)) ⇒ Evil(Father(John))</pre>
+
+        <div class="formula">∃v α &nbsp;&nbsp;⊢&nbsp;&nbsp; Subst({v/k}, α)
+<span class="ghost">Existential Instantiation — k must be a fresh constant never used in the KB</span></div>
+
+        <pre class="code-block">∃x Crown(x) ∧ OnHead(x, John)   yields:
+  Crown(C1) ∧ OnHead(C1, John)     <span class="cm"># C1 = Skolem constant</span></pre>
+
+        <div class="callout callout-rose">
+          <span class="callout-kicker">Critical differences</span>
+          UI can be applied repeatedly and never loses information. EI can be applied <b>once</b> per existential, only with a new symbol — reusing an existing constant could assert a false identity. Nested under ∀ (<code>∀x ∃y P(x,y)</code>), Skolemization needs a <b>Skolem function</b> <code>f(x)</code>, not a plain constant — the witness for y may differ for each x.
+        </div>
+
+      </section>
+
+      <!-- 06b -->
+      <section class="block" id="s-prop">
+        <div class="block-head">
+          <span class="block-num">07</span>
+          <h2>Reduction to propositional inference</h2>
+          <span class="block-tag core">propositionalization</span>
+        </div>
+        <p class="block-sub">Instantiate every universally quantified sentence with every ground term from the KB. The result is a propositional KB — then any propositional method applies. This is the bridge from UI to why chaining is needed.</p>
+
+        <pre class="code-block"><span class="cm"># Original FOL KB</span>
+∀x King(x) ∧ Greedy(x) ⇒ Evil(x)
+King(John)
+Greedy(John)
+Brother(Richard, John)
+
+<span class="cm"># After instantiating ∀ in all possible ways (constants John, Richard)</span>
+King(John) ∧ Greedy(John) ⇒ Evil(John)
+King(Richard) ∧ Greedy(Richard) ⇒ Evil(Richard)
+King(John)
+Greedy(John)
+Brother(Richard, John)
+
+<span class="cm"># Proposition symbols: King(John), Greedy(John), Evil(John), King(Richard), …</span></pre>
+
+        <div class="callout callout-moss">
+          From this propositionalized KB you can already conclude <code>Evil(John)</code> by Modus Ponens — same answer FOL forward chaining would give, without ever leaving propositional inference.
+        </div>
+
+        <div class="callout callout-rose">
+          <span class="callout-kicker">Why this does not scale</span>
+          Add even one function symbol (<code>Father</code>) and the Herbrand universe becomes <b>infinite</b>: <code>John, Father(John), Father(Father(John)), …</code>. Full propositionalization may never terminate. Herbrand's theorem: if α <i>is</i> entailed, some finite subset proves it — but there is no bound in advance (semi-decidability). Forward/backward chaining fix this by instantiating <i>only as needed</i> via unification.
+        </div>
+      </section>
+
+      <!-- 08 -->
+      <section class="block" id="s-xlate">
+        <div class="block-head">
+          <span class="block-num">08</span>
+          <h2>Translation practice</h2>
+          <span class="block-tag core">interactive</span>
+        </div>
+        <p class="block-sub">Convert English to FOL. Pick the best option — then reveal the worked answer. Pattern: ∀+⇒ for universals, ∃+∧ for existentials, and "exactly one" uses equality.</p>
+
+        <div id="xlate-container"></div>
+      </section>
+
+      <!-- 09 -->
+      <section class="block" id="s-west">
+        <div class="block-head">
+          <span class="block-num">09</span>
+          <h2>Colonel West — the knowledge base</h2>
+          <span class="block-tag core">worked example</span>
+        </div>
+        <p class="block-sub">The law says it is a crime for an American to sell weapons to hostile nations. Nono, an enemy of America, has some missiles, all sold to it by Colonel West, who is American. Prove West is a criminal.</p>
+
+        <table class="data">
+          <tr><th>English (from the problem)</th><th class="mono">FOL definite clause</th></tr>
+          <tr><td>Crime for an American to sell weapons to hostile nations</td><td class="mono">American(x) ∧ Weapon(y) ∧ Sells(x,y,z) ∧ Hostile(z) ⇒ Criminal(x)</td></tr>
+          <tr><td>All of Nono's missiles were sold to it by West</td><td class="mono">Missile(x) ∧ Owns(Nono,x) ⇒ Sells(West,x,Nono)</td></tr>
+          <tr><td>Missiles are weapons</td><td class="mono">Missile(x) ⇒ Weapon(x)</td></tr>
+          <tr><td>Hostile means enemy (of America)</td><td class="mono">Enemy(x,America) ⇒ Hostile(x)</td></tr>
+          <tr><td>West, who is American</td><td class="mono">American(West)</td></tr>
+          <tr><td>Nono, an enemy of America</td><td class="mono">Enemy(Nono,America)</td></tr>
+          <tr><td>Nono has some missiles → EI / Skolem</td><td class="mono">Owns(Nono,M1) · Missile(M1)</td></tr>
+        </table>
+
+        <pre class="code-block"><span class="cm"># Assembled rule base</span>
+1. American(x) ∧ Weapon(y) ∧ Sells(x,y,z) ∧ Hostile(z) ⇒ Criminal(x)
+2. Missile(x) ∧ Owns(Nono,x) ⇒ Sells(West,x,Nono)
+3. Missile(x) ⇒ Weapon(x)
+4. Enemy(x,America) ⇒ Hostile(x)
+
+<span class="cm"># Known facts</span>
+Missile(M1)          Owns(Nono, M1)
+American(West)       Enemy(Nono, America)</pre>
+
+        <div class="callout callout-moss">
+          <span class="callout-kicker">Definite clauses &amp; GMP</span>
+          Each rule is a definite clause: exactly one positive literal, written as <code>(p₁∧…∧pₙ) ⇒ q</code>. <b>Generalized Modus Ponens</b>: if the premises unify with known facts under θ, conclude <code>qθ</code>. Facts like <code>American(West)</code> are definite clauses with an empty premise. Clause C in the Curiosity puzzle (negated conclusion) is <i>not</i> definite — chaining alone cannot handle it; resolution can.
+        </div>
+      </section>
+
+      <!-- 10 -->
+      <section class="block" id="s-fc">
+        <div class="block-head">
+          <span class="block-num">10</span>
+          <h2>Forward chaining — step through it</h2>
+          <span class="block-tag core">interactive</span>
+        </div>
+        <p class="block-sub">Data-driven: start from facts, fire every rule whose premises match, add conclusions, repeat until the query appears or nothing new fires. AIMA's FOL-FC-ASK.</p>
+
+        <table class="data">
+          <tr><th>Step</th><th>Algorithm (slide)</th><th>Efficiency concern (annotated)</th></tr>
+          <tr><td class="mono">1</td><td>Start from the facts</td><td>Conjunct ordering</td></tr>
+          <tr><td class="mono">2</td><td>Trigger all rules whose premises are satisfied</td><td>Pattern matching (→ Rete)</td></tr>
+          <tr><td class="mono">3</td><td>Add the conclusion to known facts</td><td>Irrelevant facts</td></tr>
+          <tr><td class="mono">4</td><td>Repeat till no new facts or query answered</td><td>Redundant rule matching</td></tr>
+        </table>
+
+        <div class="panel">
+          <div class="panel-label">Colonel West · forward chaining <span class="step-of" id="fc-steplabel">Iteration 0</span></div>
+          <div class="frontier-lane" id="fc-facts"></div>
+          <div class="tree-box" id="fc-tree"></div>
+          <p class="narration" id="fc-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="fc-prev" onclick="fc.prev()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              Back
+            </button>
+            <button class="ctl-btn primary" id="fc-next" onclick="fc.next()">
+              Step
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+            <button class="ctl-btn" onclick="fc.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="fc-pips"></div>
+          </div>
+        </div>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Efficiency bottlenecks (AIMA §9.3)</span>
+          <b>Conjunct ordering</b> — match most-constrained premise first. <b>Pattern matching</b> — Rete algorithm rematches only changed facts (~90% of naïve rule-engine time is matching). <b>Irrelevant facts</b> — FC derives everything; hybrid with a backward relevance pass helps. <b>Redundant matching</b> — incremental FC only checks newly added facts.
+        </div>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">From the recording — PL vs FOL technique count</span>
+          Propositional logic needed four engines (truth table, theorem proving, PL resolution, DPLL) because sentences stay flat. Once you have definite clauses over predicates, <b>forward chaining alone</b> is enough for data-driven growth of the KB — fire rules, add conclusions, ask again. Backward chaining is the query-shaped twin of the same idea.
+        </div>
+      </section>
+
+      <!-- 11 -->
+      <section class="block" id="s-bc">
+        <div class="block-head">
+          <span class="block-num">11</span>
+          <h2>Backward chaining — step through it</h2>
+          <span class="block-tag core">interactive</span>
+        </div>
+        <p class="block-sub">Goal-driven: start from the query, decompose into subgoals via rules, unify against facts until every leaf succeeds. Depth-first AND-OR search — the engine behind Prolog.</p>
+
+        <table class="data">
+          <tr><th>Step</th><th>Algorithm (slide)</th></tr>
+          <tr><td class="mono">1</td><td>Form definite clauses</td></tr>
+          <tr><td class="mono">2</td><td>Start from the goals</td></tr>
+          <tr><td class="mono">3</td><td>Search through rules to find the fact that supports the proof</td></tr>
+          <tr><td class="mono">4</td><td>If it stops at a fact already known → empty set on the LHS (subgoal discharged)</td></tr>
+        </table>
+        <div class="tagrow">
+          <span class="tg">Divide &amp; conquer strategy</span>
+          <span class="tg">Substitution by unification</span>
+        </div>
+
+        <div class="panel">
+          <div class="panel-label">Colonel West · backward chaining <span class="step-of" id="bc-steplabel">Step 0</span></div>
+          <div class="tree-box" id="bc-tree"></div>
+          <div class="frontier-lane" id="bc-subs"></div>
+          <p class="narration" id="bc-narr"></p>
+          <div class="controls">
+            <button class="ctl-btn" id="bc-prev" onclick="bc.prev()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              Back
+            </button>
+            <button class="ctl-btn primary" id="bc-next" onclick="bc.next()">
+              Step
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+            <button class="ctl-btn" onclick="bc.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <div class="step-pips" id="bc-pips"></div>
+          </div>
+        </div>
+
+        <table class="data">
+          <tr><th>Aspect</th><th>Forward chaining</th><th>Backward chaining</th></tr>
+          <tr><td>Direction</td><td>Data-driven (facts → goal)</td><td>Goal-driven (goal → facts)</td></tr>
+          <tr><td>Search</td><td>Breadth-like fixed-point iteration</td><td>Depth-first AND-OR</td></tr>
+          <tr><td>Memory</td><td>Can accumulate all derivable facts</td><td>Linear in proof size</td></tr>
+          <tr><td>Best for</td><td>Continuous data / monitoring</td><td>Specific queries · Prolog</td></tr>
+          <tr><td>Weakness</td><td>Irrelevant facts · rematching</td><td>Repeated subgoals · loops on recursion</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Unification &amp; MGU</span>
+          Matching <code>Weapon(y)</code> against rule head <code>Weapon(x)</code> yields substitution <code>{x/y}</code>; later <code>Missile(y)</code> meets fact <code>Missile(M1)</code> → <code>{y/M1}</code>. The composed substitution is the <b>Most General Unifier (MGU)</b>. The <b>occurs check</b> rejects bindings like <code>x ↦ f(x)</code> that would create infinite terms — some Prolog implementations skip it for speed (rarely unsound).
+        </div>
+      </section>
+
+      <!-- 12 -->
+      <section class="block" id="s-curiosity">
+        <div class="block-head">
+          <span class="block-num">12</span>
+          <h2>Curiosity killed the cat?</h2>
+          <span class="block-tag core">exercise</span>
+        </div>
+        <p class="block-sub">Jack owns a dog. Every dog owner is an animal lover. No animal lover kills an animal. Either Jack or Curiosity killed the cat Tuna. Did Curiosity kill the cat?</p>
+
+        <pre class="code-block">A. (∃x) Dog(x) ∧ Owns(Jack,x)
+B. (∀x) ((∃y) Dog(y) ∧ Owns(x,y)) ⇒ AnimalLover(x)
+C. (∀x) AnimalLover(x) ∧ (∀y) Animal(y) ⇒ ¬Kills(x,y)
+D. Kills(Jack,Tuna) ∨ Kills(Curiosity,Tuna)
+E. Cat(Tuna)
+F. (∀x) Cat(x) ⇒ Animal(x)
+Q. Kills(Curiosity, Tuna)   <span class="cm"># the query</span></pre>
+
+        <div class="panel">
+          <div class="panel-label">Proof walkthrough <span class="step-of" id="cur-steplabel">Step 0 of 5</span></div>
+          <p class="narration" id="cur-narr"></p>
+          <div class="frontier-lane" id="cur-derived"></div>
+          <div class="controls">
+            <button class="ctl-btn" id="cur-prev" onclick="cur.prev()">Back</button>
+            <button class="ctl-btn primary" id="cur-next" onclick="cur.next()">Step</button>
+            <button class="ctl-btn" onclick="cur.reset()">Reset</button>
+            <div class="ctl-spacer"></div>
+            <span class="verdict" id="cur-verdict">—</span>
+            <div class="step-pips" id="cur-pips"></div>
+          </div>
+        </div>
+
+        <div class="callout callout-rose">
+          <span class="callout-kicker">Why chaining alone is not enough</span>
+          Clause C has a <b>negated</b> conclusion (<code>¬Kills</code>) — not a definite clause. Forward/backward chaining (GMP) need a single positive conclusion. Full resolution after CNF conversion (Skolemize, De Morgan, resolve until empty clause) is the general tool — the same contradiction + empty-set idea from PL resolution in session 9/10. The walkthrough above reaches the same answer informally via GMP + disjunctive syllogism.
+        </div>
+
+        <div class="callout callout-amber">
+          <span class="callout-kicker">Exam shape from the recording</span>
+          Expect a <b>worded English</b> problem: translate → (if propositional) CNF → resolution or DPLL; or (if first-order) definite clauses → FC/BC. Instructor: "These type of problems you can expect in the exam." Practice on the slide exercises first; solutions get posted after discussion, not immediately.
+        </div>
+      </section>
+
+      <!-- 13 -->
+      <section class="block" id="s-quiz">
+        <div class="block-head">
+          <span class="block-num">13</span>
+          <h2>Quiz bank</h2>
+          <span class="block-tag core">test yourself</span>
+        </div>
+
+        <div class="filterbar" id="quiz-filterbar"></div>
+        <div class="quiz-progress"><span id="quiz-count">0 / 0 answered</span><span id="quiz-score">Score: 0</span></div>
+        <div class="scorebar"><div id="quiz-bar"></div></div>
+        <div id="quiz-container"></div>
+      </section>
+
+      <!-- 14 -->
+      <section class="block" id="s-refs">
+        <div class="block-head">
+          <span class="block-num">14</span>
+          <h2>References</h2>
+        </div>
+        <table class="data">
+          <tr><th>Resource</th><th>What it's for</th></tr>
+          <tr><td>AIMA Ch. 8</td><td>First-Order Logic — syntax, semantics, quantifiers, Richard/John model</td></tr>
+          <tr><td>AIMA Ch. 9</td><td>Inference in FOL — UI/EI, propositionalization, FC/BC, unification, resolution</td></tr>
+          <tr><td>UC Berkeley CS188 / MIT 6.825</td><td>FOL lecture notes — models, quantifier duality</td></tr>
+          <tr><td>CS#10 slide deck (BITS WILP)</td><td>Source agenda, Colonel West steps, translation exercises</td></tr>
+          <tr><td>Contact session recording · 12 Jul 2026</td><td>Finished CS#09 PL toolkit live, then motivated predicates ("some" / "all"); exam problem shape; Prolog = assignment only</td></tr>
+          <tr><td><a href="lecture_9.html">lecture_9.html</a></td><td>Full interactive PL path — truth tables, theorem proving, CNF, resolution lab, DPLL</td></tr>
+        </table>
+
+        <div class="callout callout-blue">
+          <span class="callout-kicker">Slide credits</span>
+          BITS Pilani WILP: Prof. Raja Vadhana, Prof. Indumathi, Prof. Sangeetha · Oncampus &amp; External: Mr. Santosh GSK · Contact: parthasarathypd@wilp.bits-pilani.ac.in · CC BY-NC-SA 4.0
+        </div>
+      </section>
+
+      <footer class="colophon">
+        Built from CS#10 slides + researched notes + contact-session transcript (12 Jul 2026, Prof. Parthasarathy P D). Same Study Hub shell as Session 9. Sources: AIMA Ch. 8–9 · AIMLCZG557 · cs10sd.txt.
+      </footer>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   HUB THEME TOGGLE
+   ============================================================ */
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") {
+    root.setAttribute("data-theme", saved);
+  }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+
+/* ============================================================
+   RAIL NAVIGATION
+   ============================================================ */
+const SECTIONS = [
+  {id:'s-recap',     n:'00', label:'Session 10 context'},
+  {id:'s-fol',       n:'01', label:'FOL worldview'},
+  {id:'s-syntax',    n:'02', label:'Syntax elements'},
+  {id:'s-models',    n:'03', label:'Models & truth'},
+  {id:'s-quant',     n:'04', label:'Quantifiers ∀ ∃'},
+  {id:'s-duality',   n:'05', label:'Quantifier properties'},
+  {id:'s-inst',      n:'06', label:'UI · EI · Skolem'},
+  {id:'s-prop',      n:'07', label:'Propositionalization'},
+  {id:'s-xlate',     n:'08', label:'Translation practice'},
+  {id:'s-west',      n:'09', label:'Colonel West KB'},
+  {id:'s-fc',        n:'10', label:'Forward chaining'},
+  {id:'s-bc',        n:'11', label:'Backward chaining'},
+  {id:'s-curiosity', n:'12', label:'Curiosity puzzle'},
+  {id:'s-quiz',      n:'13', label:'Quiz bank'},
+  {id:'s-refs',      n:'14', label:'References'}
+];
+const railnav = document.getElementById('railnav');
+railnav.innerHTML = SECTIONS.map(s =>
+  `<button class="rail-item" data-target="${s.id}" onclick="jumpTo('${s.id}')">
+     <span class="node-id">${s.n}</span><span class="lbl">${s.label}</span>
+   </button>`
+).join('');
+function jumpTo(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth', block:'start'});
+}
+const railItems = Array.from(document.querySelectorAll('.rail-item'));
+const sectionEls = SECTIONS.map(s => document.getElementById(s.id));
+function updateActiveRail(){
+  let activeIdx = 0;
+  const probe = window.scrollY + 140;
+  sectionEls.forEach((el, i) => { if(el && el.offsetTop <= probe) activeIdx = i; });
+  railItems.forEach((el,i) => el.classList.toggle('active', i===activeIdx));
+}
+window.addEventListener('scroll', updateActiveRail, {passive:true});
+updateActiveRail();
+
+/* ============================================================
+   STEPPER ENGINE
+   ============================================================ */
+function makeStepper(steps, renderFn, pipsId){
+  let i = 0;
+  function render(){
+    renderFn(steps[i], i);
+    if(pipsId){
+      const pipsEl = document.getElementById(pipsId);
+      pipsEl.innerHTML = steps.map((_,k)=>
+        `<span class="pip ${k<i?'done':''} ${k===i?'current':''}"></span>`
+      ).join('');
+    }
+  }
+  return { next(){ if(i<steps.length-1){ i++; render(); } }, prev(){ if(i>0){ i--; render(); } }, reset(){ i=0; render(); }, render };
+}
+
+/* ============================================================
+   05 — Quantifier order flipper
+   ============================================================ */
+function showOrder(which){
+  const narr = document.getElementById('order-narr');
+  const btns = document.querySelectorAll('#order-btns .tg');
+  btns.forEach((b,i) => {
+    const on = (which==='ea' && i===0) || (which==='ae' && i===1);
+    b.style.borderColor = on ? 'var(--amber)' : '';
+    b.style.color = on ? 'var(--amber-soft)' : '';
+    b.style.background = on ? 'var(--amber-dim)' : '';
+  });
+  if(which==='ea'){
+    narr.innerHTML = `<span class="hl">∃x ∀y Loves(x,y)</span> — "There is a person who loves everyone in the world." One fixed lover; the loved parties vary. A single celebrity adored by all is <i>not</i> this — this is one person who loves all others.`;
+  } else {
+    narr.innerHTML = `<span class="hl-blue">∀y ∃x Loves(x,y)</span> — "Everyone in the world is loved by at least one person." The lover can differ per beloved. Weaker claim: no lonely person, but no universal lover either.`;
+  }
+}
+showOrder('ea');
+
+/* ============================================================
+   07 — Translation practice
+   ============================================================ */
+const XLATE = [
+  {
+    eng: 'All birds fly.',
+    opts: [
+      '∀x Bird(x) ⇒ Flies(x)',
+      '∀x Bird(x) ∧ Flies(x)',
+      '∃x Bird(x) ⇒ Flies(x)',
+      '∃x Bird(x) ∧ Flies(x)'
+    ],
+    ans: 0,
+    why: 'Universal → ∀ + ⇒. The ∧ form wrongly asserts everything is a bird that flies.'
+  },
+  {
+    eng: 'Every man respects his parent.',
+    opts: [
+      '∀x Man(x) ⇒ Respects(x, Parent(x))',
+      '∀x ∀y (Man(x) ∧ Parent(y,x)) ⇒ Respects(x,y)',
+      '∃x Man(x) ∧ Respects(x, Parent)',
+      '∀x Man(x) ∧ Parent(x) ⇒ Respects(x)'
+    ],
+    ans: 1,
+    why: 'Need two variables: x is the man, y is a parent of x. Function Parent(x) also works if every man has exactly one parent — the binary form is safer.'
+  },
+  {
+    eng: 'Some boys play cricket.',
+    opts: [
+      '∀x Boy(x) ⇒ Plays(x, Cricket)',
+      '∃x Boy(x) ⇒ Plays(x, Cricket)',
+      '∃x Boy(x) ∧ Plays(x, Cricket)',
+      '∃x Boy(x) ∨ Plays(x, Cricket)'
+    ],
+    ans: 2,
+    why: 'Existential → ∃ + ∧. The ⇒ form is vacuously true for any non-boy.'
+  },
+  {
+    eng: 'Not all students like both Mathematics and Science.',
+    opts: [
+      '¬∀x (Student(x) ⇒ (Likes(x,Math) ∧ Likes(x,Science)))',
+      '∀x Student(x) ⇒ ¬(Likes(x,Math) ∧ Likes(x,Science))',
+      '∃x Student(x) ⇒ ¬Likes(x,Math)',
+      '¬∃x Student(x) ∧ Likes(x,Math) ∧ Likes(x,Science)'
+    ],
+    ans: 0,
+    why: 'Negate the universal. By duality ≡ ∃x Student(x) ∧ ¬(Likes Math ∧ Likes Science). Option 1 wrongly says NO student likes both.'
+  },
+  {
+    eng: 'Only one student failed in Mathematics.',
+    opts: [
+      '∃x Student(x) ∧ Failed(x,Math)',
+      '∀x Student(x) ⇒ Failed(x,Math)',
+      '∃x (Student(x) ∧ Failed(x,Math) ∧ ∀y ((Student(y) ∧ Failed(y,Math)) ⇒ y=x))',
+      '∃x ∃y Student(x) ∧ Student(y) ∧ Failed(x,Math) ∧ ¬Failed(y,Math)'
+    ],
+    ans: 2,
+    why: '"Exactly one" = existence of a witness + uniqueness via equality: any other y with the property must equal x.'
+  }
+];
+let xlateState = {};
+function renderXlate(){
+  const el = document.getElementById('xlate-container');
+  el.innerHTML = XLATE.map((q,i) => {
+    const st = xlateState[i];
+    const opts = q.opts.map((o,oi) => {
+      let cls = 'opt';
+      if(st !== undefined){
+        if(oi === q.ans) cls += ' correct';
+        else if(oi === st) cls += ' wrong';
+      }
+      return `<button class="${cls}" onclick="answerXlate(${i},${oi})" ${st!==undefined?'disabled':''}>${o}</button>`;
+    }).join('');
+    return `<div class="xlate-card">
+      <div class="xnum">Exercise ${i+1} of ${XLATE.length}</div>
+      <div class="xeng">${q.eng}</div>
+      <div class="xlate-opts">${opts}</div>
+      <div class="xlate-reveal ${st!==undefined?'show':''}"><b>Answer:</b> ${q.opts[q.ans]}<br><span style="color:var(--paper-dim); font-family:var(--sans); font-size:13px">${q.why}</span></div>
+    </div>`;
+  }).join('');
+}
+function answerXlate(i, oi){ xlateState[i] = oi; renderXlate(); }
+renderXlate();
+
+/* ============================================================
+   09 — Forward chaining stepper
+   ============================================================ */
+const fcSteps = [
+  {
+    label: 'Iteration 0 — base facts',
+    facts: ['American(West)', 'Missile(M1)', 'Owns(Nono,M1)', 'Enemy(Nono,America)'],
+    news: [],
+    tree: `<span class="fact">American(West)</span>    <span class="fact">Missile(M1)</span>
+<span class="fact">Owns(Nono,M1)</span>   <span class="fact">Enemy(Nono,America)</span>
+
+(no rules fire yet — premises incomplete)`,
+    narr: `Four ground facts after Skolemizing "Nono has some missiles" into <span class="hl">M1</span>. Rule premises aren't fully satisfied yet.`
+  },
+  {
+    label: 'Iteration 1 — three rules fire',
+    facts: ['American(West)', 'Missile(M1)', 'Owns(Nono,M1)', 'Enemy(Nono,America)', 'Weapon(M1)', 'Sells(West,M1,Nono)', 'Hostile(Nono)'],
+    news: ['Weapon(M1)', 'Sells(West,M1,Nono)', 'Hostile(Nono)'],
+    tree: `<span class="fact">American(West)</span>    <span class="fact">Missile(M1)</span>
+<span class="fact">Owns(Nono,M1)</span>   <span class="fact">Enemy(Nono,America)</span>
+         │                    │
+         │  Rule 3            │  Rule 4
+         ▼                    ▼
+    <span class="new">Weapon(M1)</span>          <span class="new">Hostile(Nono)</span>
+         │
+         │  Rule 2 (Missile ∧ Owns)
+         ▼
+    <span class="new">Sells(West,M1,Nono)</span>`,
+    narr: `Same pass: Rule 3 → <span class="hl-moss">Weapon(M1)</span>, Rule 2 → <span class="hl-moss">Sells(West,M1,Nono)</span>, Rule 4 → <span class="hl-moss">Hostile(Nono)</span>. FC checks every rule each iteration.`
+  },
+  {
+    label: 'Iteration 2 — Criminal(West)',
+    facts: ['American(West)', 'Missile(M1)', 'Owns(Nono,M1)', 'Enemy(Nono,America)', 'Weapon(M1)', 'Sells(West,M1,Nono)', 'Hostile(Nono)', 'Criminal(West)'],
+    news: ['Criminal(West)'],
+    tree: `<span class="fact">American(West)</span> ─╗
+<span class="new">Weapon(M1)</span> ──────╣
+<span class="new">Sells(West,M1,Nono)</span> ╣── Rule 1 ──▶ <span class="goal">Criminal(West)</span>
+<span class="new">Hostile(Nono)</span> ─────╝
+
+Query answered. Fixed point on next empty pass.`,
+    narr: `Rule 1 fires with <span class="hl">{x↦West, y↦M1, z↦Nono}</span>. <span class="hl-moss">Criminal(West)</span> is derived — proof complete. A further iteration adds nothing.`
+  }
+];
+const fc = makeStepper(fcSteps, function(step, idx){
+  document.getElementById('fc-steplabel').textContent = step.label;
+  document.getElementById('fc-tree').innerHTML = step.tree;
+  document.getElementById('fc-narr').innerHTML = step.narr;
+  document.getElementById('fc-prev').disabled = idx===0;
+  document.getElementById('fc-next').disabled = idx===fcSteps.length-1;
+  const lane = document.getElementById('fc-facts');
+  lane.innerHTML = `<span class="lane-caption">KB facts</span>` + step.facts.map(f => {
+    const isNew = step.news.includes(f);
+    const isGoal = f === 'Criminal(West)';
+    return `<span class="qtile ${isGoal?'is-goal':isNew?'is-new':''}">${f}</span>`;
+  }).join('');
+}, 'fc-pips');
+fc.render();
+
+/* ============================================================
+   10 — Backward chaining stepper
+   ============================================================ */
+const bcSteps = [
+  {
+    label: 'Step 1 — decompose goal',
+    subs: [],
+    tree: `<span class="goal">Criminal(West)</span>   [GOAL]
+    │  Rule 1
+    ├─ American(West)
+    ├─ Weapon(y)
+    ├─ Sells(West, y, z)
+    └─ Hostile(z)`,
+    narr: `AND-node: all four subgoals must succeed. Variables <span class="hl">y, z</span> still unbound — unification will pin them later.`
+  },
+  {
+    label: 'Step 2 — Weapon(y) via Rule 3',
+    subs: ['{x/y} from Rule 3'],
+    tree: `<span class="goal">Criminal(West)</span>
+    ├─ American(West)     ✓ fact
+    ├─ Weapon(y)
+    │      │  Rule 3
+    │      └─ Missile(y)
+    ├─ Sells(West, y, z)
+    └─ Hostile(z)`,
+    narr: `<span class="hl-blue">Weapon(y)</span> matches Rule 3 head <code>Weapon(x)</code> → new subgoal <span class="hl">Missile(y)</span>. Variable carried forward.`
+  },
+  {
+    label: 'Step 3 — leaves unify with facts',
+    subs: ['{y/M1}', '{z/Nono}'],
+    tree: `<span class="goal">Criminal(West)</span>
+    ├─ American(West)     ✓ {}
+    ├─ Weapon(y)
+    │      └─ Missile(y)  ✓ {y/M1} ← Missile(M1)
+    ├─ Sells(West,M1,z)
+    │      ├─ Missile(M1) ✓ {}
+    │      └─ Owns(Nono,M1) ✓ {}   → Rule 2, {z/Nono}
+    └─ Hostile(Nono)
+           └─ Enemy(Nono,America) ✓ {}   → Rule 4`,
+    narr: `Every leaf hits a known fact. MGU composed: <span class="hl-moss">{y/M1, z/Nono}</span>. Same conclusion as forward chaining — opposite search direction.`
+  }
+];
+const bc = makeStepper(bcSteps, function(step, idx){
+  document.getElementById('bc-steplabel').textContent = step.label;
+  document.getElementById('bc-tree').innerHTML = step.tree;
+  document.getElementById('bc-narr').innerHTML = step.narr;
+  document.getElementById('bc-prev').disabled = idx===0;
+  document.getElementById('bc-next').disabled = idx===bcSteps.length-1;
+  const lane = document.getElementById('bc-subs');
+  if(!step.subs.length){
+    lane.innerHTML = `<span class="lane-caption">Substitutions</span><span class="lane-empty">none yet</span>`;
+  } else {
+    lane.innerHTML = `<span class="lane-caption">Substitutions</span>` + step.subs.map(s =>
+      `<span class="qtile is-min">${s}</span>`
+    ).join('');
+  }
+}, 'bc-pips');
+bc.render();
+
+/* ============================================================
+   11 — Curiosity proof stepper
+   ============================================================ */
+const curSteps = [
+  {
+    derived: [],
+    narr: `Start from clauses A–F. Query: does the KB entail <span class="hl">Kills(Curiosity, Tuna)</span>?`,
+    verdict: 'proof not started', vcls: 'wait'
+  },
+  {
+    derived: ['Dog(D1)', 'Owns(Jack, D1)'],
+    narr: `<b>Skolemize A.</b> Jack owns <i>some</i> dog → introduce fresh constant <span class="hl">D1</span>: <span class="hl-moss">Dog(D1)</span>, <span class="hl-moss">Owns(Jack, D1)</span>.`,
+    verdict: 'EI applied', vcls: 'wait'
+  },
+  {
+    derived: ['Dog(D1)', 'Owns(Jack, D1)', 'AnimalLover(Jack)'],
+    narr: `<b>Apply B</b> with x=Jack, y=D1. Dog ∧ Owns holds → conclude <span class="hl-moss">AnimalLover(Jack)</span>.`,
+    verdict: 'Jack is an animal lover', vcls: 'wait'
+  },
+  {
+    derived: ['Dog(D1)', 'Owns(Jack, D1)', 'AnimalLover(Jack)', 'Animal(Tuna)'],
+    narr: `<b>Apply F</b> with x=Tuna. From <code>Cat(Tuna)</code> (E) conclude <span class="hl-moss">Animal(Tuna)</span>.`,
+    verdict: 'Tuna is an animal', vcls: 'wait'
+  },
+  {
+    derived: ['Dog(D1)', 'Owns(Jack, D1)', 'AnimalLover(Jack)', 'Animal(Tuna)', '¬Kills(Jack, Tuna)'],
+    narr: `<b>Apply C</b> with x=Jack, y=Tuna. AnimalLover ∧ Animal → <span class="hl-moss">¬Kills(Jack, Tuna)</span>.`,
+    verdict: 'Jack did not kill Tuna', vcls: 'wait'
+  },
+  {
+    derived: ['Dog(D1)', 'Owns(Jack, D1)', 'AnimalLover(Jack)', 'Animal(Tuna)', '¬Kills(Jack, Tuna)', 'Kills(Curiosity, Tuna)'],
+    narr: `<b>Disjunctive syllogism on D.</b> <code>Kills(Jack,Tuna) ∨ Kills(Curiosity,Tuna)</code> plus ¬Kills(Jack,Tuna) → <span class="hl-moss">Kills(Curiosity, Tuna)</span>. <b>Yes — Curiosity killed the cat.</b>`,
+    verdict: 'Curiosity killed Tuna ✓', vcls: 'ok'
+  }
+];
+const cur = makeStepper(curSteps, function(step, idx){
+  document.getElementById('cur-steplabel').textContent = `Step ${idx} of ${curSteps.length-1}`;
+  document.getElementById('cur-narr').innerHTML = step.narr;
+  document.getElementById('cur-prev').disabled = idx===0;
+  document.getElementById('cur-next').disabled = idx===curSteps.length-1;
+  const v = document.getElementById('cur-verdict');
+  v.textContent = step.verdict;
+  v.className = 'verdict ' + step.vcls;
+  const lane = document.getElementById('cur-derived');
+  if(!step.derived.length){
+    lane.innerHTML = `<span class="lane-caption">Derived</span><span class="lane-empty">nothing yet</span>`;
+  } else {
+    lane.innerHTML = `<span class="lane-caption">Derived</span>` + step.derived.map((d,i) => {
+      const last = i === step.derived.length-1 && idx > 0;
+      return `<span class="qtile ${last?'is-new':''}">${d}</span>`;
+    }).join('');
+  }
+}, 'cur-pips');
+cur.render();
+
+/* ============================================================
+   12 — QUIZ
+   ============================================================ */
+const QUIZ = [
+  {cat:'fol', q:'First-order logic assumes the world contains:', opts:['Only true/false facts','Objects, relations, and functions','Only numbers and equations','Only percepts from sensors'], ans:1, exp:'FOL\'s ontology is objects + relations + functions — the same building blocks natural language uses. Propositional logic only has facts.'},
+  {cat:'fol', q:'Which of these can stand alone as an atomic sentence?', opts:['Father(John)','Brother(John, Richard)','LeftLegOf(Richard)','Sqrt(4)'], ans:1, exp:'Predicates return truth values and form atomic sentences. Functions return objects and can only appear as terms/arguments.'},
+  {cat:'fol', q:'A first-order model consists of:', opts:['A T/F assignment to every proposition','A domain of objects plus an interpretation of symbols','Only the Herbrand universe','A single intended reading of English'], ans:1, exp:'Unlike propositional models, FOL models need a universe of discourse and a mapping from constants/predicates/functions into that universe.'},
+  {cat:'fol', q:'According to the contact session, how many inference techniques does predicate logic introduce (vs propositional)?', opts:['The same four: truth table, theorem proving, resolution, DPLL','Only forward and backward chaining','Only resolution','Only DPLL'], ans:1, exp:'Instructor: "In predicate, we learn only two: forward chaining and backward chaining — that\'s it." The four PL techniques were finished earlier in the same live session using CS#09 slides.'},
+  {cat:'fol', q:'Why did the instructor say "Some students are brilliant" cannot be said in propositional logic?', opts:['Because brilliant is not a boolean','Because PL has no way to express "some" / existential quantity','Because students are not propositions','Because the sentence is false'], ans:1, exp:'PL has no quantifiers. "Some" needs ∃; "all" needs ∀. That is the whole motivation for moving to predicate logic.'},
+  {cat:'quant', q:'The correct connective pairing for "All men drink coffee" is:', opts:['∀x Man(x) ∧ Drink(x,Coffee)','∀x Man(x) ⇒ Drink(x,Coffee)','∃x Man(x) ⇒ Drink(x,Coffee)','∃x Man(x) ∧ Drink(x,Coffee)'], ans:1, exp:'Universals use ∀ + ⇒. The ∧ form asserts everything in the universe is a man who drinks coffee.'},
+  {cat:'quant', q:'The correct connective pairing for "Some boys are intelligent" is:', opts:['∃x Boy(x) ⇒ Intelligent(x)','∀x Boy(x) ∧ Intelligent(x)','∃x Boy(x) ∧ Intelligent(x)','∀x Boy(x) ⇒ Intelligent(x)'], ans:2, exp:'Existentials use ∃ + ∧. The ⇒ form is vacuously true whenever any non-boy exists.'},
+  {cat:'quant', q:'∃x ∀y Loves(x,y) means:', opts:['Everyone loves someone','Someone loves everyone','Everyone is loved by someone','Love is symmetric'], ans:1, exp:'There exists one person x who loves every y. Swapping to ∀y ∃x changes the meaning — different lovers allowed per beloved.'},
+  {cat:'quant', q:'∀x Likes(x,IceCream) is equivalent to:', opts:['∃x Likes(x,IceCream)','¬∃x ¬Likes(x,IceCream)','¬∀x Likes(x,IceCream)','∃x ¬Likes(x,IceCream)'], ans:1, exp:'Quantifier duality / De Morgan: "everything likes ice cream" ≡ "there is no counter-example that doesn\'t."'},
+  {cat:'inst', q:'Universal Instantiation lets you:', opts:['Replace ∃v with a fresh Skolem constant once','Substitute any ground term for a universally quantified variable, repeatedly','Only substitute named constants, never functions','Delete the universal quantifier without substituting'], ans:1, exp:'UI: from ∀v α infer Subst({v/g}, α) for any ground term g — including nested functions like Father(John). Sound and repeatable.'},
+  {cat:'inst', q:'Existential Instantiation requires a Skolem constant that:', opts:['Already appears in the KB','Is brand-new and never used elsewhere in the KB','Equals the most popular constant in the domain','Can be reused for every existential'], ans:1, exp:'EI invents a fresh name because the existential only guarantees some object exists — not a specific already-named one.'},
+  {cat:'inst', q:'For ∀x ∃y P(x,y), Skolemization replaces y with:', opts:['A Skolem constant c','A Skolem function f(x)','The variable x itself','Nothing — leave ∃ in place'], ans:1, exp:'Nested under ∀, the witness for y may depend on x — so y becomes a Skolem function of x, not a plain constant.'},
+  {cat:'inst', q:'Propositionalization can fail to terminate when:', opts:['The KB has no constants','The KB contains function symbols (infinite Herbrand universe)','All sentences are definite clauses','The query is a ground atom'], ans:1, exp:'One function yields John, Father(John), Father(Father(John)), … forever. Chaining with unification instantiates only as needed.'},
+  {cat:'fc', q:'Forward chaining is best described as:', opts:['Goal-driven depth-first search','Data-driven: fire rules from known facts until fixed point or query answered','Random sampling of models','Converting everything to CNF first'], ans:1, exp:'FC starts from facts and derives consequences (FOL-FC-ASK). BC starts from the goal and works backward.'},
+  {cat:'fc', q:'In the Colonel West example, which fact is introduced by Existential Instantiation?', opts:['American(West)','Missile(M1)','Enemy(Nono,America)','Hostile(Nono)'], ans:1, exp:'"Nono has some missiles" → Owns(Nono,M1) ∧ Missile(M1) after Skolemization. Hostile(Nono) is derived later by FC.'},
+  {cat:'fc', q:'On iteration 1 of West FC, which three facts are derived in the same pass?', opts:['Criminal(West) only','Weapon(M1), Sells(West,M1,Nono), Hostile(Nono)','Only Hostile(Nono)','Dog(D1), Owns(Jack,D1)'], ans:1, exp:'Rules 2, 3, and 4 all have satisfied premises against the base facts, so all three conclusions appear in one iteration.'},
+  {cat:'bc', q:'Backward chaining search strategy is typically:', opts:['Breadth-first over all facts','Depth-first AND-OR decomposition of the goal','Hill climbing on a heuristic','Truth-table enumeration'], ans:1, exp:'BC is depth-first: decompose the goal into conjunctive subgoals (AND), try alternative rules (OR). Memory linear in proof size.'},
+  {cat:'bc', q:'The operational principle behind Prolog is:', opts:['Forward chaining only','Backward chaining on definite clauses ("Algorithm = Logic + Control")','Resolution with no occurs check required','Genetic algorithms over Horn clauses'], ans:1, exp:'A Prolog program is a set of definite clauses; the built-in engine supplies depth-first backward-chaining control. (Recording: Prolog webinar is for the assignment, not the final exam.)'},
+  {cat:'bc', q:'Unification\'s occurs check rejects:', opts:['Any substitution with more than one variable','Bindings like x ↦ f(x) that create infinite terms','Ground substitutions','The most general unifier'], ans:1, exp:'Occurs check prevents unsound infinite terms. Some Prolog systems skip it for speed — rarely causing incorrect answers.'},
+  {cat:'xlate', q:'"Only one student failed Mathematics" needs which FOL pattern?', opts:['A bare existential','∀x Student(x) ⇒ Failed(x,Math)','∃x (P(x) ∧ ∀y (P(y) ⇒ y=x)) with P = Student∧Failed','∃x ∃y x≠y ∧ Failed(x) ∧ Failed(y)'], ans:2, exp:'Exactly-one = existence + uniqueness via equality. Any other object with the property must equal the witness.'},
+  {cat:'xlate', q:'"Not all students like both Math and Science" is equivalent (by duality) to:', opts:['No student likes Math or Science','∃x Student(x) ∧ ¬(Likes(x,Math) ∧ Likes(x,Science))','∀x Student(x) ⇒ Likes(x,Math)','∃x ¬Student(x)'], ans:1, exp:'¬∀x φ ≡ ∃x ¬φ. There exists at least one student who fails to like both subjects.'},
+  {cat:'resolve', q:'Why can\'t plain forward/backward chaining alone solve the Curiosity puzzle?', opts:['Too many variables','Clause C has a negated conclusion — not a definite clause','The KB has no facts','Unification is undefined for animals'], ans:1, exp:'GMP / chaining need definite clauses (one positive conclusion). ¬Kills requires full resolution after CNF conversion.'},
+  {cat:'resolve', q:'In the Curiosity proof, ¬Kills(Jack,Tuna) plus Kills(Jack,Tuna)∨Kills(Curiosity,Tuna) yields Kills(Curiosity,Tuna) by:', opts:['Modus Ponens','Universal Instantiation','Disjunctive syllogism','And-elimination'], ans:2, exp:'From A∨B and ¬A infer B. Same conclusion a resolution refutation would reach after assuming ¬Kills(Curiosity,Tuna).'},
+  {cat:'fc', q:'Which efficiency technique avoids rematching the entire fact base on every FC iteration?', opts:['Alpha-beta pruning','The Rete algorithm','Iterative deepening','Minimax'], ans:1, exp:'Rete builds an incremental matching network so only changed facts re-trigger rules — critical because naïve matching can consume ~90% of rule-engine time.'},
+  {cat:'fol', q:'∀x P is roughly equivalent to:', opts:['A disjunction of instantiations of P','A conjunction of instantiations of P','A single ground atom','The negation of P'], ans:1, exp:'Universal ≈ AND over the domain. Existential ≈ OR over the domain. This view underlies UI and propositionalization.'},
+  {cat:'bc', q:'Forward and backward chaining on Horn/definite-clause KBs are:', opts:['Incomparable in power','Equivalent in what they can prove, different in search direction and cost','Only FC is complete','Only BC is sound'], ans:1, exp:'Both are sound (and complete for function-free definite clauses). They explore the same entailments from opposite ends of the proof tree.'},
+  {cat:'fol', q:'When a FOL (or PL) query is answered, what should the agent do with the result, per the recording?', opts:['Discard it — queries are temporary','Add the answered insight back into the knowledge base','Reset the KB to axioms only','Convert it to CNF and stop'], ans:1, exp:'"Once I know the validity of that query… that also becomes an insight… and we can put that into the knowledge base." That is how the agent grows knowledge incrementally.'}
+];
+const CATS = [
+  {id:'all', label:'All'},
+  {id:'fol', label:'FOL basics'},
+  {id:'quant', label:'Quantifiers'},
+  {id:'inst', label:'Instantiation'},
+  {id:'fc', label:'Forward chaining'},
+  {id:'bc', label:'Backward chaining'},
+  {id:'xlate', label:'Translation'},
+  {id:'resolve', label:'Resolution'}
+];
+document.getElementById('quiz-filterbar').innerHTML = CATS.map(c =>
+  `<button class="${c.id==='all'?'active':''}" data-f="${c.id}" onclick="setFilter('${c.id}')">${c.label}</button>`
+).join('');
+
+let quizFilter = 'all';
+let quizState = {};
+function setFilter(f){
+  quizFilter = f;
+  document.querySelectorAll('.filterbar button').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  renderQuiz();
+}
+function renderQuiz(){
+  const container = document.getElementById('quiz-container');
+  const items = QUIZ.map((q,i)=>({...q, idx:i})).filter(q => quizFilter==='all' || q.cat===quizFilter);
+  container.innerHTML = items.map(q=>{
+    const state = quizState[q.idx];
+    const optsHtml = q.opts.map((opt,oi)=>{
+      let cls = 'opt';
+      if(state!==undefined){
+        if(oi===q.ans) cls += ' correct';
+        else if(oi===state) cls += ' wrong';
+      }
+      return `<button class="${cls}" onclick="answerQuiz(${q.idx},${oi})" ${state!==undefined?'disabled':''}>${opt}</button>`;
+    }).join('');
+    return `<div class="quiz-card">
+      <span class="qtag">${q.cat}</span>
+      <div class="qtext">${q.q}</div>
+      ${optsHtml}
+      <div class="explain ${state!==undefined?'show':''}">${q.exp}</div>
+    </div>`;
+  }).join('');
+  updateQuizProgress();
+}
+function answerQuiz(idx, optIdx){ quizState[idx] = optIdx; renderQuiz(); }
+function updateQuizProgress(){
+  const answered = Object.keys(quizState).length;
+  const correct = Object.entries(quizState).filter(([i,v])=>QUIZ[i].ans===v).length;
+  document.getElementById('quiz-count').textContent = `${answered} / ${QUIZ.length} answered`;
+  document.getElementById('quiz-score').textContent = `Score ${correct} / ${answered||0}`;
+  document.getElementById('quiz-bar').style.width = (QUIZ.length ? (answered/QUIZ.length*100) : 0) + '%';
+}
+renderQuiz();
+</script>
+</body>
+</html>
