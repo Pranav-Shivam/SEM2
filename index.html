@@ -925,6 +925,7 @@
         </div>
       </div>
       <div class="utility-actions">
+        <a class="quick-link" href="study_plan.html">Exam prep plan</a>
         <a class="quick-link" href="#subjects">Jump to subjects</a>
         <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -945,11 +946,25 @@
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#subjects">Explore subjects</a>
+            <a class="btn btn-secondary" href="study_plan.html">Open exam prep plan</a>
             <button class="btn btn-secondary" id="jumpFeatured" type="button">Open DRL simulators</button>
           </div>
         </div>
 
         <aside class="hero-side">
+          <div class="summary-card">
+            <div class="summary-title">
+              <strong>Next exam</strong>
+              <span id="countdownTag">Countdown</span>
+            </div>
+            <div class="metrics" style="grid-template-columns: 1fr;">
+              <div class="metric">
+                <strong id="countdownDays">--</strong>
+                <span id="countdownLabel">Loading exam schedule…</span>
+              </div>
+            </div>
+          </div>
+
           <div class="summary-card">
             <div class="summary-title">
               <strong>Hub snapshot</strong>
@@ -1709,6 +1724,26 @@
         setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
       }
     });
+
+    // Exam countdown (mirrors study_plan.html)
+    const exams = [
+      { date: "2026-09-05T13:00:00", label: "Computer Vision — 1:00 PM" },
+      { date: "2026-09-06T13:00:00", label: "AI & CI — 1:00 PM" },
+      { date: "2026-09-12T16:30:00", label: "Data Management (makeup) — 4:30 PM" },
+      { date: "2026-09-13T09:00:00", label: "Deep RL (makeup) — 9:00 AM" }
+    ];
+    const countdownDays = document.getElementById("countdownDays");
+    const countdownLabel = document.getElementById("countdownLabel");
+    const now = new Date();
+    const nextExam = exams.find(e => new Date(e.date) > now);
+    if (nextExam) {
+      const days = Math.ceil((new Date(nextExam.date) - now) / (1000 * 60 * 60 * 24));
+      countdownDays.textContent = days;
+      countdownLabel.textContent = nextExam.label;
+    } else {
+      countdownDays.textContent = "✓";
+      countdownLabel.textContent = "All exams complete";
+    }
 
     // Update metrics
     const updateMetrics = () => {
