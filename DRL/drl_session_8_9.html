@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRL Session 8–9 — Temporal Difference Learning · Study Guide</title>
+<style>
+:root{
+  --bg:#0b0d10;
+  --bg2:#12151b;
+  --card:#161a21;
+  --card2:#1b202a;
+  --border:#262c37;
+  --text:#e7e5dd;
+  --text-dim:#9aa2ad;
+  --text-faint:#68707c;
+  --gold:#d4af37;
+  --gold-dim:#8f7a2e;
+  --teal:#4fb8a8;
+  --rose:#c9707a;
+  --blue:#6f9ceb;
+  --code-bg:#0e1116;
+  --shadow: 0 8px 30px rgba(0,0,0,.35);
+  --radius:10px;
+  --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+html.day{
+  --bg:#f6f3ea;
+  --bg2:#efeadd;
+  --card:#fffdf8;
+  --card2:#f3efe3;
+  --border:#ddd4bd;
+  --text:#211f1a;
+  --text-dim:#5c574c;
+  --text-faint:#8b8474;
+  --gold:#96741a;
+  --gold-dim:#b08a2c;
+  --teal:#2c8577;
+  --rose:#a2454f;
+  --blue:#3660b0;
+  --code-bg:#efe9d8;
+  --shadow: 0 8px 24px rgba(80,70,40,.10);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  line-height:1.6;
+  font-size:16px;
+  transition:background .25s ease,color .25s ease;
+}
+::selection{background:var(--gold);color:#100c02;}
+a:focus-visible, button:focus-visible, .navlink:focus-visible{
+  outline:2px solid var(--gold); outline-offset:2px; border-radius:4px;
+}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  .sidebar{transition:none;}
+}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:60;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:10px 18px;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.topbar .brand{
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--serif); font-weight:700; letter-spacing:.2px;
+  color:var(--text); text-decoration:none; font-size:15px;
+}
+.brand .mark{
+  width:26px;height:26px;border-radius:6px;
+  background:linear-gradient(135deg,var(--gold),var(--teal));
+  display:flex;align-items:center;justify-content:center;
+  color:#100c02;font-family:var(--mono);font-weight:800;font-size:12px;
+}
+.topbar .actions{display:flex;align-items:center;gap:8px;}
+.iconbtn{
+  border:1px solid var(--border); background:var(--card);
+  color:var(--text); border-radius:8px; padding:7px 12px;
+  font-family:var(--sans); font-size:13px; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+}
+.iconbtn:hover{border-color:var(--gold);}
+.hamburger{display:none;}
+#nightToggle .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;}
+
+/* ---------- Layout shell ---------- */
+.shell{
+  display:grid;
+  grid-template-columns: 268px minmax(0,1fr);
+  max-width:1360px;
+  margin:0 auto;
+}
+.sidebar{
+  position:sticky; top:53px;
+  align-self:start;
+  height:calc(100vh - 53px);
+  overflow-y:auto;
+  border-right:1px solid var(--border);
+  padding:22px 14px 40px;
+  scrollbar-width:thin;
+}
+.sidebar::-webkit-scrollbar{width:6px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+.navgroup{margin-bottom:20px;}
+.navgroup h4{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--text-faint); margin:0 0 8px 10px; font-weight:600;
+}
+.navgroup a{
+  display:flex; align-items:baseline; gap:8px;
+  padding:6px 10px; border-radius:7px;
+  color:var(--text-dim); text-decoration:none; font-size:13.5px;
+  border-left:2px solid transparent;
+}
+.navgroup a .n{font-family:var(--mono);color:var(--text-faint);font-size:11px;min-width:16px;}
+.navgroup a:hover{background:var(--card2); color:var(--text);}
+.navgroup a.active{color:var(--gold); border-left-color:var(--gold); background:var(--card2);}
+.navgroup a.active .n{color:var(--gold);}
+
+main{padding:0 0 80px;}
+.container{max-width:900px; margin:0 auto; padding:0 28px;}
+
+/* ---------- Hero ---------- */
+.hero{padding:56px 28px 40px; border-bottom:1px solid var(--border);}
+.hero .kicker{
+  font-family:var(--mono); font-size:12px; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--teal); margin-bottom:14px;
+}
+.hero h1{
+  font-family:var(--serif); font-size:2.5rem; line-height:1.15; margin:0 0 14px;
+  max-width:820px;
+}
+.hero h1 em{font-style:italic; color:var(--gold);}
+.hero p.lede{color:var(--text-dim); max-width:700px; font-size:1.02rem; margin:0 0 22px;}
+.metarow{display:flex; flex-wrap:wrap; gap:10px 22px; font-size:13px; color:var(--text-faint); margin-bottom:8px;}
+.metarow b{color:var(--text-dim); font-weight:600;}
+.pillrow{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;}
+.pill{
+  border:1px solid var(--border); background:var(--card);
+  padding:5px 12px; border-radius:999px; font-size:12.5px; color:var(--text-dim);
+  font-family:var(--mono);
+}
+.pill.gold{border-color:var(--gold-dim); color:var(--gold);}
+
+/* ---------- Section chrome ---------- */
+section.topic{padding:56px 28px; border-bottom:1px solid var(--border);}
+section.topic:target{scroll-margin-top:70px;}
+.eyebrow{
+  font-family:var(--mono); font-size:12.5px; letter-spacing:.1em; color:var(--gold);
+  display:flex; align-items:center; gap:10px; margin-bottom:10px;
+}
+.eyebrow .num{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:26px;height:26px;border-radius:6px; border:1px solid var(--gold-dim);
+  color:var(--gold); font-weight:700;
+}
+h2.title{font-family:var(--serif); font-size:1.9rem; margin:0 0 6px; line-height:1.2;}
+h3.sub{font-family:var(--serif); font-size:1.3rem; margin:34px 0 10px;}
+p{color:var(--text); max-width:760px;}
+.container p, .container li{color:var(--text);}
+.dim{color:var(--text-dim);}
+
+/* chain divider (signature motif) */
+.chain{display:flex;align-items:center;gap:8px;margin:34px 0;opacity:.7;max-width:760px;}
+.chain .seg{flex:1;height:1px;background:var(--border);}
+.chain .node{width:6px;height:6px;border-radius:50%;background:var(--gold);}
+.chain .node.hollow{background:transparent;border:1.5px solid var(--gold);}
+
+/* ---------- Cards / boxes ---------- */
+.card{
+  background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px 22px; margin:18px 0; max-width:760px;
+}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:760px;}
+@media (max-width:720px){.grid2{grid-template-columns:1fr;}}
+.compare{
+  background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 18px;
+}
+.compare h4{margin:0 0 10px; font-family:var(--mono); font-size:13px; letter-spacing:.03em;}
+.compare ul{margin:0; padding-left:18px; font-size:14px; color:var(--text-dim);}
+.compare li{margin-bottom:6px;}
+.tag-yes{color:var(--teal);} .tag-no{color:var(--rose);}
+
+.deepdive{
+  background:linear-gradient(180deg, color-mix(in srgb, var(--teal) 8%, var(--card)), var(--card));
+  border:1px solid var(--border); border-left:3px solid var(--teal);
+  border-radius:var(--radius); padding:18px 20px; margin:22px 0; max-width:760px;
+}
+.deepdive .label{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--teal); margin-bottom:8px; display:block;
+}
+.deepdive p{font-size:14.5px; color:var(--text-dim); margin:0 0 10px;}
+.deepdive p:last-child{margin-bottom:0;}
+.deepdive .src{font-size:12px; color:var(--text-faint); font-family:var(--mono);}
+
+.examalert{
+  background:linear-gradient(180deg, color-mix(in srgb, var(--rose) 8%, var(--card)), var(--card));
+  border:1px solid var(--border); border-left:3px solid var(--rose);
+  border-radius:var(--radius); padding:16px 20px; margin:22px 0; max-width:760px;
+}
+.examalert .label{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--rose); margin-bottom:8px; display:block;
+}
+.examalert p{font-size:14px; color:var(--text-dim); margin:0 0 8px;}
+.examalert p:last-child{margin-bottom:0;}
+.examalert b{color:var(--text);}
+
+/* pseudocode / algorithm box */
+.algo{
+  background:var(--code-bg); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px 18px; margin:16px 0; max-width:760px; overflow-x:auto;
+}
+.algo .algotitle{font-family:var(--mono); font-size:12px; color:var(--gold); margin-bottom:10px; letter-spacing:.03em;}
+.algo pre{margin:0; font-family:var(--mono); font-size:12.6px; color:var(--text-dim); white-space:pre; line-height:1.65;}
+.algo pre .hl{color:var(--gold); background:color-mix(in srgb, var(--gold) 14%, transparent); padding:0 2px; border-radius:3px;}
+
+/* formula block */
+.formula{
+  background:var(--card2); border:1px solid var(--border); border-radius:8px;
+  padding:14px 18px; margin:14px 0; max-width:760px; overflow-x:auto;
+  font-family:var(--serif); font-size:1.05rem; color:var(--text);
+}
+.formula .fname{display:block; font-family:var(--mono); font-size:11px; color:var(--text-faint); margin-bottom:6px; letter-spacing:.04em;}
+.formula sub{font-size:.68em;} .formula sup{font-size:.68em;}
+code.inline{font-family:var(--mono); background:var(--code-bg); padding:1px 6px; border-radius:5px; font-size:.88em; color:var(--gold);}
+
+/* tables */
+table.data{border-collapse:collapse; width:100%; max-width:760px; margin:16px 0; font-size:13.6px;}
+table.data th, table.data td{border:1px solid var(--border); padding:8px 12px; text-align:left;}
+table.data th{background:var(--card2); color:var(--text-dim); font-weight:600; font-family:var(--mono); font-size:12px; letter-spacing:.02em;}
+table.data td{color:var(--text-dim);}
+table.data tr:hover td{color:var(--text);}
+.scrollwrap{overflow-x:auto; max-width:760px;}
+
+/* step trace */
+.steps{margin:16px 0; max-width:760px;}
+.step{
+  display:grid; grid-template-columns:64px 1fr; gap:14px;
+  padding:12px 0; border-top:1px dashed var(--border);
+}
+.step:first-child{border-top:none;}
+.step .stepnum{font-family:var(--mono); color:var(--gold); font-size:12px; padding-top:2px;}
+.step .stepbody{font-size:14.3px; color:var(--text-dim);}
+.step .stepbody b{color:var(--text);}
+.step .qrow{font-family:var(--mono); font-size:13px; color:var(--teal); display:block; margin-top:4px;}
+
+/* Q-table strip */
+.qtable{display:flex; gap:10px; flex-wrap:wrap; margin:12px 0;}
+.qcell{
+  border:1px solid var(--border); border-radius:8px; padding:8px 12px; min-width:64px; text-align:center;
+  background:var(--card2);
+}
+.qcell .k{font-family:var(--mono); font-size:11px; color:var(--text-faint); display:block;}
+.qcell .v{font-family:var(--mono); font-size:14px; color:var(--text); font-weight:600;}
+.qcell.changed{border-color:var(--gold); }
+.qcell.changed .v{color:var(--gold);}
+.qcell.bad .v{color:var(--rose);}
+.qcell.good .v{color:var(--teal);}
+
+/* diagrams */
+.diagramwrap{max-width:760px; margin:18px 0;}
+.diagramwrap svg{width:100%; height:auto; display:block;}
+.figcap{font-size:12.5px; color:var(--text-faint); margin-top:8px; font-style:italic;}
+
+/* checklist */
+ul.checklist{list-style:none; padding:0; max-width:760px;}
+ul.checklist li{
+  display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-top:1px solid var(--border); font-size:14.5px; color:var(--text-dim);
+}
+ul.checklist li:first-child{border-top:none;}
+ul.checklist li .box{
+  flex:0 0 16px; height:16px; margin-top:3px; border:1.5px solid var(--gold-dim); border-radius:4px;
+}
+
+/* sources list */
+.sourcelist{max-width:760px; font-size:13.6px; color:var(--text-dim);}
+.sourcelist li{margin-bottom:8px;}
+.sourcelist a{color:var(--blue); word-break:break-all;}
+
+/* footer */
+footer{padding:40px 28px 60px; text-align:center;}
+footer p{color:var(--text-faint); font-size:12.5px; max-width:none;}
+
+/* nav toggle for mobile */
+.navdrawerbg{display:none;}
+
+@media (max-width: 960px){
+  .shell{grid-template-columns:1fr;}
+  .sidebar{
+    position:fixed; top:0; left:0; height:100vh; width:280px; z-index:100;
+    background:var(--bg); transform:translateX(-100%); transition:transform .28s ease;
+    box-shadow:var(--shadow); padding-top:70px;
+  }
+  .sidebar.open{transform:translateX(0);}
+  .hamburger{display:flex;}
+  .navdrawerbg{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:90;
+  }
+  .navdrawerbg.show{display:block;}
+  .hero h1{font-size:1.9rem;}
+  section.topic{padding:40px 18px;}
+  .hero{padding:40px 18px 30px;}
+  .container{padding:0 18px;}
+  .grid2{grid-template-columns:1fr;}
+}
+@media (max-width:500px){
+  .algo pre{font-size:11px;}
+  .qcell{min-width:52px; padding:6px 8px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="iconbtn hamburger" id="hamburgerBtn" aria-label="Open navigation">☰ Menu</button>
+  <a class="brand" href="#hero">
+    <span class="mark">TD</span>
+    DRL Study Hub · Session 8–9
+  </a>
+  <div class="actions">
+    <button class="iconbtn" id="nightToggle"><span class="dot"></span> <span id="nightLabel">Night mode</span></button>
+  </div>
+</div>
+
+<div class="navdrawerbg" id="navBg"></div>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="navgroup">
+      <h4>Overview</h4>
+      <a href="#hero" class="navlink"><span class="n">·</span>Session Overview</a>
+    </div>
+    <div class="navgroup">
+      <h4>Core Lecture — Session 9</h4>
+      <a href="#s1" class="navlink"><span class="n">01</span>DP vs MC → TD Fusion</a>
+      <a href="#s2" class="navlink"><span class="n">02</span>TD(0) Prediction</a>
+      <a href="#s3" class="navlink"><span class="n">03</span>SARSA (On-Policy)</a>
+      <a href="#s4" class="navlink"><span class="n">04</span>Q-Learning (Off-Policy)</a>
+      <a href="#s5" class="navlink"><span class="n">05</span>Expected SARSA</a>
+      <a href="#s6" class="navlink"><span class="n">06</span>Max Bias &amp; Double Learning</a>
+      <a href="#s7" class="navlink"><span class="n">07</span>n-step TD Prediction</a>
+    </div>
+    <div class="navgroup">
+      <h4>Race Car — Worked Example</h4>
+      <a href="#rc1" class="navlink"><span class="n">·</span>Problem &amp; MDP Setup</a>
+      <a href="#rc2" class="navlink"><span class="n">·</span>Dynamic Programming</a>
+      <a href="#rc3" class="navlink"><span class="n">·</span>Monte Carlo</a>
+      <a href="#rc4" class="navlink"><span class="n">·</span>TD(0) by Hand</a>
+      <a href="#rc5" class="navlink"><span class="n">·</span>SARSA by Hand</a>
+      <a href="#rc6" class="navlink"><span class="n">·</span>Expected SARSA by Hand</a>
+      <a href="#rc7" class="navlink"><span class="n">·</span>Q-Learning by Hand</a>
+      <a href="#rc8" class="navlink"><span class="n">·</span>Double Q-Learning</a>
+      <a href="#rc9" class="navlink"><span class="n">·</span>Backup Diagrams</a>
+    </div>
+    <div class="navgroup">
+      <h4>Wrap-Up</h4>
+      <a href="#deep" class="navlink"><span class="n">·</span>Conceptual Deep Dives</a>
+      <a href="#checklist" class="navlink"><span class="n">·</span>Revision Checklist</a>
+      <a href="#sources" class="navlink"><span class="n">·</span>Sources</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero" id="hero">
+      <div class="kicker">Deep Reinforcement Learning · BITS Pilani WILP · M.Tech (AIML), 2024–25 Sem 2</div>
+      <h1>Temporal Difference Learning: the idea that lets an agent learn <em>while it's still driving</em>.</h1>
+      <p class="lede">Session 9 fuses the two ideas from earlier in the course — Dynamic Programming's bootstrapping and Monte Carlo's model-free sampling — into TD(0), then builds SARSA and Q-Learning on top of it. This guide walks the lecture slide-by-slide, then re-derives every algorithm on a single running example: a race car managing its engine temperature, worked by hand from MDP through Double Q-Learning.</p>
+      <div class="metarow"><b>Course:</b> AIML DRL, 2024–25 Sem 2 · <b>Sessions covered:</b> #9 (TD Learning) + Race Car incremental worked deck</div>
+      <div class="metarow"><b>Acknowledgement:</b> slide material adapted with permission from CSCE-689 (Texas A&amp;M University), Prof. Guni Sharon; race-car deck by the BITS WILP DRL faculty team.</div>
+      <div class="pillrow">
+        <span class="pill gold">TD(0)</span>
+        <span class="pill gold">SARSA</span>
+        <span class="pill gold">Q-Learning</span>
+        <span class="pill">Expected SARSA</span>
+        <span class="pill">Double Q-Learning</span>
+        <span class="pill">n-step TD</span>
+        <span class="pill">Required reading: Sutton &amp; Barto Ch. 6–7</span>
+      </div>
+    </section>
+
+    <div class="container">
+
+    <!-- ================= 01 ================= -->
+    <section class="topic" id="s1">
+      <div class="eyebrow"><span class="num">01</span>DP vs MC → TD Fusion</div>
+      <h2 class="title">Solving MDPs so far — and why TD had to exist</h2>
+      <p>Before TD, the course covered two families of solution methods, and each had a fatal flaw the other one happened to fix.</p>
+
+      <div class="grid2">
+        <div class="compare">
+          <h4>Dynamic Programming</h4>
+          <ul>
+            <li><span class="tag-yes">✓</span> Off-policy</li>
+            <li><span class="tag-yes">✓</span> Local learning — bootstraps from neighbouring estimates</li>
+            <li><span class="tag-no">✗</span> Model-based — needs full transition probabilities</li>
+          </ul>
+        </div>
+        <div class="compare">
+          <h4>Monte Carlo</h4>
+          <ul>
+            <li><span class="tag-no">✗</span> On-policy (importance sampling can relax this)</li>
+            <li><span class="tag-no">✗</span> Requires a full episode before it can update anything</li>
+            <li><span class="tag-yes">✓</span> Model-free, learns online from raw experience</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>The pirate-and-robot grid recap: four states <code class="inline">w, x, y, z</code>, with <code class="inline">w</code> paying −100 and <code class="inline">z</code> paying +10, γ = 0.9. Once a full episode <code class="inline">{x, y, z, exit}</code> is observed, Bellman optimality lets you discount the return backward from the goal:</p>
+      <div class="formula">Q(z, exit) = 10 &nbsp;→&nbsp; Q(y, →) = 9 &nbsp;→&nbsp; Q(x, →) = 8.1</div>
+      <p class="dim" style="font-size:13.6px; max-width:760px;">General form — Bellman optimality: q*(s,a) = Σ<sub>s′</sub> p(s′|s,a)[ r(s,a,s′) + γ·max<sub>a′</sub> q*(s′,a′) ]</p>
+
+      <h3 class="sub">Fusing DP and MC</h3>
+      <p>The "aha" moment of the lecture: what if you kept DP's trick of updating an estimate from a <em>neighbouring estimate</em> (bootstrapping), but dropped the requirement of knowing the environment's model — learning instead from raw, sampled experience the way MC does? That fusion is TD Learning.</p>
+
+      <div class="diagramwrap">
+        <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="20" width="220" height="130" rx="10" fill="none" stroke="var(--border)"/>
+          <text x="120" y="45" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="14" font-weight="600">Dynamic Programming</text>
+          <text x="120" y="70" text-anchor="middle" fill="var(--teal)" font-size="12">✓ Off policy</text>
+          <text x="120" y="90" text-anchor="middle" fill="var(--teal)" font-size="12">✓ Bootstrapping</text>
+          <text x="120" y="110" text-anchor="middle" fill="var(--rose)" font-size="12">✗ Model based</text>
+
+          <rect x="250" y="20" width="220" height="130" rx="10" fill="none" stroke="var(--border)"/>
+          <text x="360" y="45" text-anchor="middle" fill="var(--text)" font-family="var(--sans)" font-size="14" font-weight="600">Monte Carlo</text>
+          <text x="360" y="70" text-anchor="middle" fill="var(--rose)" font-size="12">✗ On policy</text>
+          <text x="360" y="90" text-anchor="middle" fill="var(--rose)" font-size="12">✗ Needs full episode</text>
+          <text x="360" y="110" text-anchor="middle" fill="var(--teal)" font-size="12">✓ Model free, online</text>
+
+          <line x1="120" y1="150" x2="120" y2="170" stroke="var(--gold)" stroke-width="1.5"/>
+          <line x1="360" y1="150" x2="360" y2="170" stroke="var(--gold)" stroke-width="1.5"/>
+          <line x1="120" y1="170" x2="490" y2="170" stroke="var(--gold)" stroke-width="1.5"/>
+          <line x1="360" y1="170" x2="360" y2="170" stroke="var(--gold)" stroke-width="1.5"/>
+          <path d="M 480 170 L 490 170 L 483 165 M 490 170 L 483 175" fill="none" stroke="var(--gold)" stroke-width="1.5"/>
+
+          <rect x="500" y="35" width="210" height="100" rx="10" fill="none" stroke="var(--gold)" stroke-width="1.5"/>
+          <text x="605" y="60" text-anchor="middle" fill="var(--gold)" font-family="var(--sans)" font-size="14" font-weight="700">TD Learning</text>
+          <text x="605" y="82" text-anchor="middle" fill="var(--teal)" font-size="12">✓ Off policy · ✓ Bootstraps</text>
+          <text x="605" y="102" text-anchor="middle" fill="var(--teal)" font-size="12">✓ Model free · ✓ Online</text>
+        </svg>
+        <div class="figcap">TD Learning keeps DP's bootstrapping and MC's model-free, online learning — while dropping both of their weaknesses.</div>
+      </div>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — why this matters historically</span>
+        <p>TD learning is considered one of the most original ideas in reinforcement learning, and it shows up in neuroscience too: dopamine neurons in the brain's ventral tegmental area and substantia nigra fire in a pattern that closely resembles the TD error signal — more when an outcome is better than expected, less when it's worse.</p>
+        <p><b>TD-Gammon:</b> Gerald Tesauro's backgammon program trained with TD(λ) reached a level competitive with human grandmasters purely by playing itself and updating value estimates — no game-tree search, no hand-coded strategy. It was the first landmark proof that bootstrapped, model-free, online learning actually works in practice.</p>
+        <span class="src">Source: bartleby.com — Temporal Difference Learning</span>
+      </div>
+    </section>
+
+    <!-- ================= 02 ================= -->
+    <section class="topic" id="s2">
+      <div class="eyebrow"><span class="num">02</span>TD(0) Prediction</div>
+      <h2 class="title">Learning from a guess about a guess</h2>
+      <p>In Monte Carlo, the return G<sub>t</sub> is the <em>actual</em> discounted reward collected over a whole episode. TD(0)'s shortcut: replace G<sub>t</sub> with an <em>estimated</em> return, R<sub>t+1</sub> + γV(S<sub>t+1</sub>), and update toward that instead.</p>
+
+      <div class="formula">
+        <span class="fname">TD(0) update rule</span>
+        V(S<sub>t</sub>) ← V(S<sub>t</sub>) + α [ R<sub>t+1</sub> + γV(S<sub>t+1</sub>) − V(S<sub>t</sub>) ]
+      </div>
+      <ul style="max-width:760px; color:var(--text-dim); font-size:14.5px;">
+        <li><code class="inline">R<sub>t+1</sub> + γV(S<sub>t+1</sub>)</code> is the <b style="color:var(--text)">TD target</b> — the "estimated return".</li>
+        <li><code class="inline">R<sub>t+1</sub> + γV(S<sub>t+1</sub>) − V(S<sub>t</sub>)</code> is the <b style="color:var(--text)">TD error</b> — how wrong the old estimate was.</li>
+        <li>MC updates toward the true return G<sub>t</sub>; TD updates toward a bootstrapped estimate derived from the Bellman equation.</li>
+      </ul>
+
+      <div class="algo">
+        <div class="algotitle">Tabular TD(0) for estimating v<sub>π</sub></div>
+        <pre>Input: the policy π to be evaluated
+Algorithm parameter: step size α ∈ (0, 1]
+Initialize V(s), for all s ∈ S+, arbitrarily except V(terminal) = 0
+
+Loop for each episode:
+    Initialize S
+    Loop for each step of episode:
+        A ← action given by π for S
+        Take action A, observe R, S'
+        <span class="hl">V(S) ← V(S) + α[R + γV(S') − V(S)]</span>
+        S ← S'
+    until S is terminal</pre>
+      </div>
+      <p style="font-size:14.5px; color:var(--text-dim);">Every single step — not just at episode's end — you act, observe the reward and next state, and immediately nudge V(S) using the reward plus your current guess about the next state. Repeat until terminal.</p>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — a relatable analogy</span>
+        <p>Driving to a new city with GPS: Monte Carlo refuses to update its mental time-estimate for any leg of the trip until you actually arrive — only then does it say "okay, that first highway stretch took 40 minutes." TD updates its estimate for each stretch <em>as you drive</em>, using the current best guess of what's still ahead. Hit unexpected traffic? You don't wait until the destination to react — you update immediately, combining the new information with your existing guess about what's left.</p>
+        <p>This immediacy is why TD tends to learn faster than MC in practice, especially on long or continuing tasks — and why it can be used on tasks that never formally end, where MC simply doesn't apply.</p>
+      </div>
+    </section>
+
+    <!-- ================= 03 SARSA ================= -->
+    <section class="topic" id="s3">
+      <div class="eyebrow"><span class="num">03</span>On-Policy TD Control</div>
+      <h2 class="title">SARSA — learning Q(s,a) from the action you actually took next</h2>
+      <p>SARSA moves from state-values to <b>action-values</b>, so the agent can learn which action is best in a state, not just how good the state is. Its name is its five ingredients: <b>S</b>tate, <b>A</b>ction, <b>R</b>eward, next <b>S</b>tate, next <b>A</b>ction.</p>
+
+      <div class="formula">
+        <span class="fname">SARSA update rule</span>
+        Q(S<sub>t</sub>,A<sub>t</sub>) ← Q(S<sub>t</sub>,A<sub>t</sub>) + α [ R<sub>t+1</sub> + γQ(S<sub>t+1</sub>,A<sub>t+1</sub>) − Q(S<sub>t</sub>,A<sub>t</sub>) ]
+      </div>
+      <p style="font-size:14.5px; color:var(--text-dim); max-width:760px;">Applied after every transition from a nonterminal state. If S<sub>t+1</sub> is terminal, Q(S<sub>t+1</sub>,A<sub>t+1</sub>) is defined as zero. It's called <b style="color:var(--text)">on-policy</b> because A′ is chosen by the same ε-greedy policy the agent is actually following — SARSA learns the value of the policy it uses, warts and all.</p>
+
+      <div class="algo">
+        <div class="algotitle">SARSA (on-policy TD control) for estimating Q ≈ q*</div>
+        <pre>Initialize Q(s,a) arbitrarily, Q(terminal-state, ·) = 0
+Repeat (for each episode):
+    Initialize S
+    Choose A from S using policy derived from Q (e.g., ε-greedy)
+    Repeat (for each step of episode):
+        Take action A, observe R, S'
+        <span class="hl">Choose A' from S' using policy derived from Q (e.g., ε-greedy)</span>
+        Q(S,A) ← Q(S,A) + α[R + γQ(S',A') − Q(S,A)]
+        S ← S'; A ← A'
+    until S is terminal</pre>
+      </div>
+
+      <h3 class="sub">Worked walkthrough — the pirate/robot grid</h3>
+      <p>Grid: <code class="inline">w</code> (start, pirate) → <code class="inline">x</code> (robot) → <code class="inline">y</code> → <code class="inline">z</code>. Landing on <code class="inline">w</code> pays −100; reaching <code class="inline">z</code> pays +10. Q-table starts at all zeros; the deck animates this build one line of pseudocode at a time — condensed here to the moments where numbers actually change:</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="stepnum">Step 1</div>
+          <div class="stepbody">Robot moves into <b>w</b> (the pirate's cell), receiving −100. Q(w) updates immediately to −100 — SARSA reacting to a bad outcome the instant it happens.
+          <span class="qrow">Q-table: w = −100, x=(0,0), y=(0,0), z=0</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Step 2</div>
+          <div class="stepbody">Bootstrapping shows up: because moving from <b>x</b> toward <b>w</b> leads to −100, the Q-value for that action from x drops to −90 (discounted by γ, blended by α). The penalty at w starts propagating backward into neighbour x — the core TD idea.
+          <span class="qrow">Q-table: w = −100, x = (−90, 0), y=(0,0), z=0</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">"And so on…"</div>
+          <div class="stepbody">The deck signals this repeats across many steps/episodes: the −100 keeps propagating one state further back per episode, until every Q-value along w-x-y-z converges to an accurate estimate — with no environment model required.</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — the classic "Cliff Walking" example (Sutton &amp; Barto, Ex. 6.6)</span>
+        <p>A bigger, more dramatic version of the same grid: a 4×12 world where the agent starts bottom-left and must reach a goal bottom-right, with the entire bottom row between them being a cliff (huge penalty + reset).</p>
+        <p><b>SARSA</b> learns a path that hugs the <em>top</em> of the grid, safely away from the cliff — because its update accounts for the actual next action it will take, including occasional random ε-greedy missteps. <b>Q-learning</b> (next section) learns the shortest path, walking right along the cliff's edge, assuming it will always act optimally going forward — faster/shorter, but riskier during training, since it occasionally still falls off due to its own exploration.</p>
+        <p>Real-world takeaway: for a physical robot where mistakes are costly (an arm near fragile equipment, a self-driving car in traffic), SARSA's cautious on-policy learning is usually preferred. In pure simulation, where "falling off a cliff" just means restarting an episode, Q-learning's more aggressive off-policy learning toward the true optimum is usually preferred.</p>
+        <span class="src">Sources: incompleteideas.net/book/first/ebook/node65.html · core-robotics.gatech.edu</span>
+      </div>
+    </section>
+
+    <!-- ================= 04 Q-LEARNING ================= -->
+    <section class="topic" id="s4">
+      <div class="eyebrow"><span class="num">04</span>Off-Policy TD Control</div>
+      <h2 class="title">Q-Learning — bootstrapping off the best possible next action</h2>
+      <p>Q-learning looks almost identical to SARSA, with one crucial change: instead of using the Q-value of the actual next action chosen, it uses the <b>max</b> over all next actions — <code class="inline">max<sub>a</sub> Q(S′,a)</code>. It always assumes it will act greedily in the future, even if it's currently exploring ε-greedily. That's why it's <b>off-policy</b>: it learns the optimal policy's values while following a different, exploratory one.</p>
+
+      <div class="formula">
+        <span class="fname">Q-Learning update rule</span>
+        Q(S,A) ← Q(S,A) + α [ R + γ·max<sub>a</sub> Q(S′,a) − Q(S,A) ]
+      </div>
+      <p style="font-size:14.5px; color:var(--text-dim); max-width:760px;">Note the tuple only needs 4 items — (S, A, R, S′) — no next action required, since Q-learning uses "max" instead of "whatever we happened to pick".</p>
+
+      <div class="algo">
+        <div class="algotitle">Q-Learning (off-policy TD control) for estimating π ≈ π*</div>
+        <pre>Initialize Q(s,a) arbitrarily, Q(terminal-state, ·) = 0
+Repeat (for each episode):
+    Initialize S
+    Repeat (for each step of episode):
+        Choose A from S using policy derived from Q (e.g., ε-greedy)
+        Take action A, observe R, S'
+        <span class="hl">Q(S,A) ← Q(S,A) + α[R + γ·max_a Q(S',a) − Q(S,A)]</span>
+        S ← S'
+    until S is terminal</pre>
+      </div>
+
+      <h3 class="sub">Worked walkthrough — the treasure/pirate grid</h3>
+      <p>New grid, same shape: <code class="inline">w</code> = treasure chest (+10), <code class="inline">z</code> = pirate (−100). Robot starts at <code class="inline">x</code>. Tracking tuple is now (S, A, R, S′) — no A′.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="stepnum">Step 1</div>
+          <div class="stepbody">Robot reaches <b>z</b> (the pirate), receiving −100. Q(z) updates to −100 — the bad terminal outcome in this grid.
+          <span class="qrow">Q-table: w=0, x=(0,0), y=(0,0), z = −100</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Step 2 (next episode)</div>
+          <div class="stepbody">Because taking a certain action from <b>y</b> eventually leads toward −100 at z, Q(y) for that action drops to −90 — the same discounted-bootstrapping propagation seen with SARSA, now for Q-learning.
+          <span class="qrow">Q-table: w=0, x=(0,0), y = (0, −90), z = −100</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">"And so on…"</div>
+          <div class="stepbody">Over many episodes the −100 penalty keeps propagating backward through y, then x, then w — Q-learning building an accurate map of danger without ever needing a model of the environment.</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — why Q-learning was such a big deal</span>
+        <p>Q-learning (Watkins, 1989) directly approximates the optimal action-value function q*, independent of the policy being followed. Decoupling "learning about the optimal policy" from "behaving exploratorily" dramatically simplified theoretical analysis and made early convergence proofs possible.</p>
+        <p><b>Modern relevance:</b> Q-learning is the conceptual ancestor of Deep Q-Networks (DQN) — the algorithm DeepMind used in 2015 to reach human-level performance on dozens of Atari 2600 games directly from pixels. DQN is essentially tabular Q-learning's <code class="inline">max<sub>a</sub> Q(S′,a)</code> update, with a neural network replacing the table so it generalises across huge numbers of possible screens.</p>
+      </div>
+    </section>
+
+    <!-- ================= 05 EXPECTED SARSA ================= -->
+    <section class="topic" id="s5">
+      <div class="eyebrow"><span class="num">05</span>A Middle Ground</div>
+      <h2 class="title">Expected SARSA</h2>
+      <p>Instead of the value of "the action I actually took next" (SARSA) or "the single best next action" (Q-learning's max), Expected SARSA takes a probability-weighted average over <em>all</em> next actions — reducing the variance that comes from randomly sampling just one.</p>
+
+      <div class="formula">
+        <span class="fname">Expected SARSA update rule</span>
+        Q(S<sub>t</sub>,A<sub>t</sub>) ← Q(S<sub>t</sub>,A<sub>t</sub>) + α [ R<sub>t+1</sub> + γ 𝔼<sub>π</sub>[Q(S<sub>t+1</sub>,A<sub>t+1</sub>) | S<sub>t+1</sub>] − Q(S<sub>t</sub>,A<sub>t</sub>) ]<br>
+        &nbsp;&nbsp;= Q(S<sub>t</sub>,A<sub>t</sub>) + α [ R<sub>t+1</sub> + γ Σ<sub>a</sub> π(a|S<sub>t+1</sub>) Q(S<sub>t+1</sub>,a) − Q(S<sub>t</sub>,A<sub>t</sub>) ]
+      </div>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — when does Expected SARSA shine?</span>
+        <p>Averaging over all next actions eliminates the variance from randomly sampling one — in practice this often permits a larger step size α and smoother learning for the same experience, at the cost of looping over all actions per step instead of one lookup.</p>
+        <p>A neat theoretical fact: set the target policy inside the expectation to be <b>greedy</b> instead of ε-greedy, and Expected SARSA's formula becomes mathematically identical to Q-learning's update — Q-learning is really a special case of Expected SARSA, where the expectation collapses onto a single best action.</p>
+      </div>
+    </section>
+
+    <!-- ================= 06 MAX BIAS ================= -->
+    <section class="topic" id="s6">
+      <div class="eyebrow"><span class="num">06</span>A Subtle Failure Mode</div>
+      <h2 class="title">Maximization Bias &amp; Double Learning</h2>
+      <p>Methods like Q-learning that use <b>max</b> over noisy estimates have a problem: taking the maximum of several noisy values tends to be <em>systematically too optimistic</em> — this is <b>maximization bias</b>. The fix is <b>Double Learning</b>: keep two Q-tables, use one to pick the best action and the other to evaluate how good it actually is. This cancels the bias, doubling memory but not per-step computation.</p>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — the classic Sutton &amp; Barto maximization-bias example</span>
+        <p>A tiny MDP: from state A, go Left or Right. Right ends the episode immediately with reward 0. Left goes to state B, from which many actions all end the episode with reward drawn from a distribution averaging −0.1. The true expected value of Left is −0.1 (worse than Right's guaranteed 0), so the optimal choice is always Right.</p>
+        <p>But early in learning, with only a few samples, some of B's random rewards happen to come out positive by chance. Plain Q-learning takes the max over B's noisy estimates — very likely one of the lucky positive-looking ones — so it wrongly thinks Left looks great, taking many extra episodes to unlearn the mistake.</p>
+        <p><b>Double Q-learning</b> (Hasselt, 2010) fixes this with two independent tables Q<sub>a</sub> and Q<sub>b</sub>: one table <em>selects</em> the best action (argmax), the other <em>evaluates</em> it. Since the two tables have independent noise, a "lucky" overestimation in one is unlikely to also be selected by the other — the bias mostly cancels, and research shows Double Q-learning can even slightly underestimate, a far safer failure mode.</p>
+        <p><b>Modern relevance:</b> this scaled up became Double DQN (van Hasselt, Guez &amp; Silver, 2016), fixing a well-documented overestimation problem in DeepMind's original DQN on Atari, leading to more stable training and better final scores — same fix, with neural networks instead of tables.</p>
+        <span class="src">Sources: papers.nips.cc — Double Q-learning · medium.com/@ameetsd97 — Deep Double Q-Learning</span>
+      </div>
+    </section>
+
+    <!-- ================= 07 N-STEP ================= -->
+    <section class="topic" id="s7">
+      <div class="eyebrow"><span class="num">07</span>A Tunable Dial</div>
+      <h2 class="title">n-step TD Prediction</h2>
+      <p>TD(0) only looks one step ahead before bootstrapping; Monte Carlo waits for the entire episode. <b>n-step TD</b> generalises the pattern in between — look ahead 1, 2, 3, … or n steps of real reward before bootstrapping off your value estimate.</p>
+
+      <div class="formula">
+        <span class="fname">One and two-step returns</span>
+        G<sub>t:t+1</sub> = R<sub>t+1</sub> + γV<sub>t</sub>(S<sub>t+1</sub>)  &nbsp;&nbsp;(this is TD(0))<br>
+        G<sub>t:t+2</sub> = R<sub>t+1</sub> + γR<sub>t+2</sub> + γ<sup>2</sup>V<sub>t+1</sub>(S<sub>t+2</sub>)
+      </div>
+
+      <div class="diagramwrap">
+        <svg viewBox="0 0 720 150" xmlns="http://www.w3.org/2000/svg">
+          <!-- 1-step -->
+          <text x="20" y="20" fill="var(--text-dim)" font-size="11" font-family="var(--mono)">1-step / TD(0)</text>
+          <circle cx="30" cy="45" r="4" fill="var(--gold)"/><line x1="34" y1="45" x2="66" y2="45" stroke="var(--border)"/><circle cx="70" cy="45" r="4" fill="none" stroke="var(--gold)"/>
+          <!-- 2-step -->
+          <text x="150" y="20" fill="var(--text-dim)" font-size="11" font-family="var(--mono)">2-step</text>
+          <circle cx="160" cy="45" r="4" fill="var(--gold)"/><line x1="164" y1="45" x2="196" y2="45" stroke="var(--border)"/><circle cx="200" cy="45" r="4" fill="var(--gold)"/><line x1="204" y1="45" x2="236" y2="45" stroke="var(--border)"/><circle cx="240" cy="45" r="4" fill="none" stroke="var(--gold)"/>
+          <!-- 3-step -->
+          <text x="290" y="20" fill="var(--text-dim)" font-size="11" font-family="var(--mono)">3-step</text>
+          <circle cx="300" cy="45" r="4" fill="var(--gold)"/><line x1="304" y1="45" x2="326" y2="45" stroke="var(--border)"/><circle cx="330" cy="45" r="4" fill="var(--gold)"/><line x1="334" y1="45" x2="356" y2="45" stroke="var(--border)"/><circle cx="360" cy="45" r="4" fill="var(--gold)"/><line x1="364" y1="45" x2="386" y2="45" stroke="var(--border)"/><circle cx="390" cy="45" r="4" fill="none" stroke="var(--gold)"/>
+          <!-- n-step -->
+          <text x="440" y="20" fill="var(--text-dim)" font-size="11" font-family="var(--mono)">n-step</text>
+          <circle cx="450" cy="45" r="4" fill="var(--gold)"/><line x1="454" y1="45" x2="470" y2="45" stroke="var(--border)"/><text x="478" y="49" fill="var(--text-faint)" font-size="12">…</text><line x1="488" y1="45" x2="504" y2="45" stroke="var(--border)"/><circle cx="508" cy="45" r="4" fill="var(--gold)"/><line x1="512" y1="45" x2="534" y2="45" stroke="var(--border)"/><circle cx="538" cy="45" r="4" fill="none" stroke="var(--gold)"/>
+          <!-- inf-step -->
+          <text x="590" y="20" fill="var(--text-dim)" font-size="11" font-family="var(--mono)">∞-step / Monte Carlo</text>
+          <circle cx="600" cy="45" r="4" fill="var(--gold)"/><line x1="604" y1="45" x2="620" y2="45" stroke="var(--border)"/><text x="628" y="49" fill="var(--text-faint)" font-size="12">…</text><line x1="638" y1="45" x2="654" y2="45" stroke="var(--border)"/><rect x="656" y="41" width="8" height="8" fill="var(--gold)"/>
+          <text x="20" y="90" fill="var(--text-faint)" font-size="12">Fewer real steps before bootstrapping → more bias, less variance (TD(0))</text>
+          <text x="20" y="112" fill="var(--text-faint)" font-size="12">More real steps before bootstrapping → less bias, more variance (Monte Carlo)</text>
+        </svg>
+        <div class="figcap">Spectrum of TD methods: 1-step bootstraps immediately; ∞-step / Monte Carlo uses the full episode return. (Ref: Sutton &amp; Barto, §7.1)</div>
+      </div>
+
+      <div class="formula">
+        <span class="fname">General n-step return &amp; update</span>
+        G<sub>t:t+n</sub> = R<sub>t+1</sub> + γR<sub>t+2</sub> + ⋯ + γ<sup>n−1</sup>R<sub>t+n</sub> + γ<sup>n</sup>V<sub>t+n−1</sub>(S<sub>t+n</sub>)<br>
+        V<sub>t+n</sub>(S<sub>t</sub>) ← V<sub>t+n−1</sub>(S<sub>t</sub>) + α [ G<sub>t:t+n</sub> − V<sub>t+n−1</sub>(S<sub>t</sub>) ]
+      </div>
+      <p style="font-size:14.5px; color:var(--text-dim); max-width:760px;">Set n=1 and you get TD(0); let n→∞ and you get Monte Carlo.</p>
+
+      <div class="algo">
+        <div class="algotitle">n-step TD for estimating V ≈ v<sub>π</sub></div>
+        <pre>Input: a policy π
+Algorithm parameters: step size α ∈ (0,1], positive integer n
+Initialize V(s) arbitrarily, for all s ∈ S
+(store/access ops for S_t, R_t can take index mod n+1)
+
+Loop for each episode:
+    Initialize and store S_0 ≠ terminal
+    T ← ∞
+    Loop for t = 0, 1, 2, ...:
+        If t < T:
+            Take action per π(·|S_t); observe/store R_{t+1}, S_{t+1}
+            If S_{t+1} is terminal, T ← t+1
+        τ ← t − n + 1   (state whose estimate is being updated)
+        If τ ≥ 0:
+            G ← Σ_{i=τ+1}^{min(τ+n,T)} γ^{i-τ-1} R_i
+            If τ+n < T: G ← G + γ^n V(S_{τ+n})
+            <span class="hl">V(S_τ) ← V(S_τ) + α[G − V(S_τ)]</span>
+    Until τ = T − 1</pre>
+      </div>
+      <p style="font-size:14.5px; color:var(--text-dim); max-width:760px;">The tricky part: you always update a state from n steps <em>in the past</em> (τ = t − n + 1), because you need n future rewards before computing its n-step return. A rolling buffer of the last n+1 rewards/states makes this tractable.</p>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — why TD(0) alone can be slow</span>
+        <p>Sutton &amp; Barto call plain TD(0)'s limitation "the tyranny of the single timestep" — because it only bootstraps one step ahead, a reward far in the future has to propagate backward one state at a time, needing many passes before distant states "feel" its effect. The grid examples above show exactly this: the −100/+10 rewards only reached one neighbouring state per episode.</p>
+        <p>The classic illustration is the 19-state random walk: a chain of 19 states with reward only at the ends. Empirically, <b>intermediate values of n usually perform best</b> — not n=1 (too biased/slow to propagate distant rewards) and not large n approaching Monte Carlo (too high variance). This is a direct demonstration of the bias-variance tradeoff.</p>
+        <p><b>Practical takeaway:</b> modern deep RL reuses this as "n-step returns" in Rainbow DQN and A3C/A2C, where a moderate n (commonly 3–5) instead of pure 1-step TD or full MC returns is a standard, well-tested speed-up.</p>
+        <span class="src">Sources: medium.com/@physynapse — Tyranny of the Timestep · arxiv.org/pdf/2402.03903</span>
+      </div>
+
+      <div class="examalert">
+        <span class="label">Required reading</span>
+        <p>Chapter 6 of <b>Reinforcement Learning: An Introduction</b>, 2nd Ed., Sutton &amp; Barto — covers TD(0), SARSA, Q-learning, and related topics in full rigour. Chapter 7 covers n-step methods.</p>
+      </div>
+    </section>
+
+    <div class="chain"><div class="seg"></div><div class="node hollow"></div><div class="seg"></div><div class="node"></div><div class="seg"></div><div class="node hollow"></div><div class="seg"></div></div>
+
+    <!-- ================= RACE CAR INTRO ================= -->
+    <section class="topic" id="rc1">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>Race Car — A Worked Incremental Example</div>
+      <h2 class="title">One scenario, every method: MDP → DP → MC → TD → SARSA → Expected SARSA → Q-Learning → Double Q-Learning</h2>
+      <p>A second deck (BITS Pilani WILP DRL team) walks a <em>single</em> running scenario through every method taught in the course, with real hand-computed numeric updates at each step. The story: a race car completing laps while managing engine temperature and speed decisions.</p>
+
+      <h3 class="sub">Problem definition — Race Car Laps</h3>
+      <p>A race car trades lap time against overheating risk each segment. More laps completed is better; the car shuts down only if the engine overheats (an optional terminal state). The agent acts under uncertainty with only local percepts, and next engine temperature depends only on the <em>current</em> state — the Markov property holds in this framing.</p>
+
+      <h3 class="sub">MDP formalisation (simplified — used for DP)</h3>
+      <table class="data">
+        <tr><th>Component</th><th>Definition</th></tr>
+        <tr><td>States S</td><td>{Cool (C), Warm (W), Overheated (O)} — engine temperature, finite state MDP</td></tr>
+        <tr><td>Actions A</td><td>{Go Slow (S), Go Fast (F)}</td></tr>
+        <tr><td>Rewards R</td><td>R(s,a,s′) = +1 if reached by Slow; +2 if reached by Fast; −10 if s′ is terminal (Overheated)</td></tr>
+        <tr><td>Transitions P</td><td>P(s′|s,a) = 0.5 if the action leads to a different non-terminal state; 1 otherwise</td></tr>
+      </table>
+      <p style="font-size:14.5px;color:var(--text-dim);">Example: Fast from Warm always (P=1.0) sends the car to Overheated with reward −10 — a guaranteed-crash scenario built in for teaching. Since P and R are fully known here, this version is the ideal setup for <b style="color:var(--text)">Dynamic Programming</b>.</p>
+    </section>
+
+    <!-- ================= RC2 DP ================= -->
+    <section class="topic" id="rc2">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>Dynamic Programming</div>
+      <h2 class="title">A known model — plan without ever driving</h2>
+      <p>In this version, the agent is given a known map and risk factors in advance (a <b>known model</b>). With full knowledge, the optimal policy can be computed by planning across all states — never needing to actually drive.</p>
+      <div class="grid2">
+        <div class="compare">
+          <h4>Policy Iteration (PI)</h4>
+          <ul>
+            <li>Prefer for smaller state spaces</li>
+            <li>Intermediate termination gives an explicit, interpretable policy</li>
+            <li>Idea: one-step lookahead → Evaluate → Improve</li>
+          </ul>
+        </div>
+        <div class="compare">
+          <h4>Value Iteration (VI)</h4>
+          <ul>
+            <li>Prefer for larger state spaces</li>
+            <li>Fast convergence to the optimal policy at the end</li>
+            <li>Idea: one-step lookahead → Control (evaluation + improvement combined)</li>
+          </ul>
+        </div>
+      </div>
+      <p style="font-size:14.5px;color:var(--text-dim); max-width:760px;">VI can be thought of as truncated PI — evaluation is done only partially (one sweep) before improving, rather than fully.</p>
+    </section>
+
+    <!-- ================= RC3 MC ================= -->
+    <section class="topic" id="rc3">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>Monte Carlo</div>
+      <h2 class="title">An unknown model — learn by driving full laps</h2>
+      <p>Now the map may be known but the risk factors are not (an <b>unknown model</b>) — the impact of actions on engine state is hard to predict. With only partial knowledge, the agent computes a policy by running random experiments (sampling). Notably, this version explicitly relaxes the Markov assumption and adds a stopping condition (a lap limit), since MC needs episodes that terminate to compute a return.</p>
+      <div class="card">
+        <b>Given:</b> S, A, optionally R(s,a,s′) &nbsp;·&nbsp; <b>To find:</b> policy π<br>
+        <b>Solution:</b> sample full episodes; estimate values from discounted returns (simple / weighted / normalized weighted average)<br>
+        <b>On-policy:</b> generate experience → evaluate using return → improve<br>
+        <b>Off-policy:</b> use experience from a different behaviour policy → evaluate using return → improve
+      </div>
+      <p style="font-size:14.5px;color:var(--text-dim); max-width:760px;">MC doesn't need the environment's rules — it runs full episodes and averages the actual rewards received to estimate how good each state or action was.</p>
+      <div class="card" style="font-size:13.6px;">
+        <b>MDP formalisation (reduced), used from here on:</b> states and actions stay the same, but rewards R and/or transition probabilities P <b style="color:var(--text)">may be non-stationary</b> — no longer fixed or known in advance. A policy still needs V(S) and Q(S,A) estimated, but the process is <b style="color:var(--text)">not required</b> to strictly follow the Markov property anymore. All that's ultimately needed is estimating value functions from experience.
+      </div>
+    </section>
+
+    <!-- ================= RC4 TD0 WORKED ================= -->
+    <section class="topic" id="rc4">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>TD(0) — Policy Evaluation, By Hand</div>
+      <h2 class="title">TD(0) worked numerically on the race car</h2>
+      <p>This version's model is unknown, like MC, but there's no lap limit — the race can continue indefinitely, and an immediate reward is available at every step, which is exactly what lets TD bootstrap step by step instead of waiting for termination.</p>
+
+      <div class="card" style="font-size:13.6px;">
+        <b>Given:</b> S, A, R(s,a,s′), optionally P(a|s) &nbsp;·&nbsp; <b>To find:</b> policy π<br>
+        <b>Solution:</b> sample episodes; compute value estimates using discounted <b style="color:var(--text)">next-state estimates (bootstrapping)</b> — simple / weighted / normalized weighted average<br>
+        <b>On-policy:</b> generate experience → evaluate using bootstrapping → improve &nbsp;·&nbsp; <b>Off-policy:</b> use experience from another behaviour policy → evaluate using bootstrapping → improve
+        <p style="margin:8px 0 0; font-size:12.8px; color:var(--text-faint);">This slide is near-identical in structure to Monte Carlo's template two slides back — the one substitution is "Evaluate using <b>Return</b>" (MC) → "Evaluate using <b>bootstrapping</b>" (TD). That single swap is the entire conceptual difference between the two families.</p>
+      </div>
+
+      <div class="examalert">
+        <span class="label">Important note from the slide</span>
+        <p>Even though this deck <em>shows</em> the transition dynamics (e.g. a 0.5 chance of a different state), TD(0) itself never actually uses those probabilities — it only ever sees one sampled outcome per step, exactly like Monte Carlo. The dynamics are shown purely for the reader to follow along and check the numbers. <b>In practice, TD works model-free, just like Monte Carlo.</b></p>
+        <p><b>Use case:</b> a driving policy is already learnt and needs to be evaluated — for monitoring, or certification/approval by safety engineers.</p>
+      </div>
+
+      <p><b>Setup:</b> V<sub>0</sub> = [0, 0, 0] for [C, W, O]. Hyperparameters: ε = 0.1, γ = 0.9, α = 0.5.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="stepnum">Ep.1 · t0</div>
+          <div class="stepbody">Trajectory so far: <b>C, Fast, +2, W</b>. Target = R + γV(W) = 2 + 0.9×0 = 2. TD error = 2 − V(C) = 2 − 0 = 2.
+          <span class="qrow">V(C) = 0 + 0.5(2) = 1 &nbsp;→&nbsp; V₀ row: [1, 0, 0]</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.1 · t1</div>
+          <div class="stepbody">Continuing: <b>…W, Slow, +1, C</b>. V(W) = 0 + 0.5[1 + (0.9×1) − 0] = 0.95. Both the reward <em>and</em> Cool's freshly-updated value feed into Warm's update — bootstrapping in action.
+          <span class="qrow">V₀ row: [1, 0.95, 0]</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.2</div>
+          <div class="stepbody">Trajectory: <b>C,F,2,C,F,2,W,S,1,W</b>.<br>
+          V(C) = 1 + 0.5[2 + 0.9(1) − 1] = 1.95<br>
+          V(C) = 1.95 + 0.5[2 + 0.9(0.95) − 1.95] ≈ 2.40<br>
+          V(W) = 0.95 + 0.5[1 + 0.9(0.95) − 0.95] ≈ 1.40
+          <span class="qrow">V₁ row: [1.95, 2.40, 1.40]</span></div>
+        </div>
+      </div>
+      <p style="font-size:14.5px;color:var(--text-dim); max-width:760px;">Values climb episode over episode as the agent keeps experiencing the +2 reward for Fast-from-Cool — continuous small corrections, no waiting for a "final score". With more episodes these settle toward their true values under the policy being evaluated.</p>
+      <div class="card" style="font-size:13.6px;">
+        <b>Practical note on ending episodes:</b> since this version has no natural lap limit, an artificial cutoff (e.g. after 2 or 10 steps, or when Overheated occurs) is used so training can proceed in a structured way.
+      </div>
+    </section>
+
+    <!-- ================= RC5 SARSA WORKED ================= -->
+    <section class="topic" id="rc5">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>SARSA — On-Policy Control, By Hand</div>
+      <h2 class="title">Watching variance build up, episode by episode</h2>
+      <p>Q-table initialised to zero for all 6 (state, action) pairs. Hyperparameters: ε = 0.1, γ = 0.9, α = 0.8 (bigger than TD(0)'s 0.5).</p>
+      <div class="examalert">
+        <span class="label">Use case called out on the slide</span>
+        <p>A driving policy is already learnt, but conditions have drifted — the policy needs <b>retraining</b> to reflect the actual risk observed via exploration. SARSA (on-policy) suits this well, since it directly incorporates the risk of its own imperfect ε-greedy exploration.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="stepnum">Ep.1</div>
+          <div class="stepbody">(S,A,R,S′,A′) = (C, F, 2, W, S). Q(C,F) = 0 + 0.8[2 + 0.9×0 − 0] = <b>1.6</b>. Next: Q(W,S) = 0 + 0.8[1 + 0.9×1.6 − 0] ≈ <b>1.95</b>.
+          <span class="qrow">Q row [C-F, C-S, W-F, W-S, O-F, O-S] = [1.6, 0, 0, 1.95, 0, 0]</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.2</div>
+          <div class="stepbody">Longer episode ending with Fast-from-Warm → Overheated (−10). t0: Q(C,F)=1.6+0.8[2+0.9(1)−1.6]≈3.07 · t1: Q(C,F)≈3.62 · t2: Q(W,S)=1.95+0.8[1+0.9(1.95)−1.95]≈2.59 · t3: Q(W,S) <em>drops</em> to ≈1.32 (stale Q(W,F)=0 mixed with a smaller reward) · t4: Q(W,F)=0+0.8[−10+0]=−8.
+          <span class="qrow">Q row: [3.62, 0, −8, 1.32, 0, 0]</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.3–4 · Variance callout</div>
+          <div class="stepbody">Q(W,S): 1.32 → <b style="color:var(--rose)">−4.69</b> → <b style="color:var(--teal)">+4.47</b>. Because a large learning rate (0.8) amplifies each surprise, and the <em>randomly sampled</em> next action from Warm sometimes leads to +10 and sometimes to −10 (via Overheated), Q(W,Slow) swings wildly.</div>
+        </div>
+      </div>
+
+      <div class="examalert">
+        <span class="label">Callout box (verbatim intent)</span>
+        <p>"Observe the difference in value updates w.r.t. Q(W,S) between successive time steps in episodes 3 &amp; 4. At the worst case, on a larger learning rate (0.8), the pull is even larger. This large pull is an effect of <b>variance</b>. Solution to tackle: <b>Expected SARSA</b>."</p>
+      </div>
+
+      <div class="diagramwrap">
+        <svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50" y1="30" x2="50" y2="220" stroke="var(--border)"/>
+          <line x1="50" y1="220" x2="520" y2="220" stroke="var(--border)"/>
+          <text x="10" y="34" font-size="10" fill="var(--text-faint)">+6</text>
+          <text x="10" y="128" font-size="10" fill="var(--text-faint)">0</text>
+          <text x="10" y="196" font-size="10" fill="var(--text-faint)">−4</text>
+          <line x1="50" y1="126" x2="520" y2="126" stroke="var(--border)" stroke-dasharray="3,3"/>
+          <polyline points="60,84.0 190,92.4 320,172.5 450,50.4" fill="none" stroke="var(--rose)" stroke-width="2"/>
+          <circle cx="60" cy="84.0" r="3.5" fill="var(--rose)"/><circle cx="190" cy="92.4" r="3.5" fill="var(--rose)"/><circle cx="320" cy="172.5" r="3.5" fill="var(--rose)"/><circle cx="450" cy="50.4" r="3.5" fill="var(--rose)"/>
+          <polyline points="60,91.8 190,87.6 320,125.2 450,77.2" fill="none" stroke="var(--teal)" stroke-width="2"/>
+          <circle cx="60" cy="91.8" r="3.5" fill="var(--teal)"/><circle cx="190" cy="87.6" r="3.5" fill="var(--teal)"/><circle cx="320" cy="125.2" r="3.5" fill="var(--teal)"/><circle cx="450" cy="77.2" r="3.5" fill="var(--teal)"/>
+          <text x="60" y="238" font-size="11" fill="var(--text-faint)" text-anchor="middle">Ep.1</text>
+          <text x="190" y="238" font-size="11" fill="var(--text-faint)" text-anchor="middle">Ep.2</text>
+          <text x="320" y="238" font-size="11" fill="var(--text-faint)" text-anchor="middle">Ep.3</text>
+          <text x="450" y="238" font-size="11" fill="var(--text-faint)" text-anchor="middle">Ep.4</text>
+          <rect x="360" y="10" width="10" height="10" fill="var(--rose)"/><text x="376" y="19" font-size="12" fill="var(--text-dim)">SARSA</text>
+          <rect x="440" y="10" width="10" height="10" fill="var(--teal)"/><text x="456" y="19" font-size="12" fill="var(--text-dim)">Expected SARSA</text>
+        </svg>
+        <div class="figcap">Variance comparison — Q(Warm,Slow) across episodes 1–4. SARSA swings from about −4.7 up past +4.5; Expected SARSA (next section) stays in a much tighter band.</div>
+      </div>
+    </section>
+
+    <!-- ================= RC6 EXPECTED SARSA WORKED ================= -->
+    <section class="topic" id="rc6">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>Expected SARSA, By Hand</div>
+      <h2 class="title">Same story, steadier numbers</h2>
+      <p>Same starting Q-table and hyperparameters as SARSA (ε=0.1, γ=0.9, α=0.8), same trajectories — but every update averages over next actions instead of sampling one. For simplicity, all actions from Warm are assumed equiprobable in this episode.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="stepnum">Ep.1</div>
+          <div class="stepbody">Q(C,F) = 0+0.8[2+0.9(0.5×Q(W,S)+0.5×Q(W,F))−0] = <b>1.6</b> (identical to SARSA's first step, since both next-state values are still 0). Q(W,S) = 0+0.8[1+0.9(0.5×Q(C,S)+0.5×Q(C,F))−0] ≈ <b>1.37</b> — already more conservative than SARSA's 1.95.
+          <span class="qrow">Q row: [1.6, 0, 0, 1.37, 0, 0]</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.2</div>
+          <div class="stepbody">Q(W,S) moves smoothly: 1.37 → 1.57 → <b>1.68</b>. Even after Q(W,F) crashes to −8 (the Overheated outcome), Q(W,S) barely reacts — Expected SARSA averages Fast's badness in with a fixed weight rather than being fully at the mercy of whichever action got sampled.
+          <span class="qrow">Q row: [2.59, 0, −8, 1.57, 0]</span>
+          <span style="display:block; font-size:12.6px; color:var(--text-faint); margin-top:4px;">Note on the slide: continuing for one more episode, likelihood is simplified as P(Slow|·)=0.05, P(Fast|·)=0.5 for the expectation calc (illustrative, not necessarily normalised).</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.3–4</div>
+          <div class="stepbody">Q(W,S): −1.14 → <b>+2.46</b>. Compare directly to SARSA's −4.69 → +4.47 over the same episodes — noticeably calmer.</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — Sutton &amp; Barto, quoted on the slide</span>
+        <p>"In these results Expected Sarsa was used on-policy, but in general it might use a policy different from the target policy to generate behavior, in which case it becomes an off-policy algorithm. For example, suppose the target is the greedy policy while behavior is more exploratory; then Expected Sarsa is exactly Q-learning."</p>
+      </div>
+      <p style="font-size:13.6px;color:var(--text-faint); max-width:760px;">The chart in the previous section already shows the payoff: same underlying experience, meaningfully calmer learning curve for Expected SARSA vs. plain SARSA.</p>
+    </section>
+
+    <!-- ================= RC7 Q-LEARNING WORKED ================= -->
+    <section class="topic" id="rc7">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>Q-Learning, By Hand</div>
+      <h2 class="title">Watching maximization bias appear in real numbers</h2>
+      <p>Same starting Q-table and hyperparameters (ε=0.1, γ=0.9, α=0.8). Callout: <b>Target policy</b> = Greedy (MAX), used to evaluate/update Q-values; <b>Behavior policy</b> = ε-greedy, used to actually select actions.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="stepnum">Ep.1</div>
+          <div class="stepbody">Q(C,F) = 1.6 (identical to SARSA's first step — both next-state values still 0). Then, using an unusually large illustration reward of +20: Q(W,S) = 0+0.8[20+0.9×MAX{Q(C,S),Q(C,F)}−0] ≈ <b>17.15</b> — the max operator immediately reaping the benefit of the outsized reward.
+          <span class="qrow">Q row: [1.6, 0, 0, 17.15, 0, 0]</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.2</div>
+          <div class="stepbody">Trajectory: <b>C,F,2,C,F,4,W,S,−5,W,S,1,W,F,−10,O</b>.<br>
+          t0: Q(C,F) = 1.6+0.8(2+0.9×MAX{1.6,0}−1.6) ≈ 3.07<br>
+          t1: Q(C,F) = 3.07+0.8(4+0.9×MAX{0,17.15}−3.07) ≈ <b>16.16</b> — watch this jump: because Q(W,S) was inflated to 17.15 last episode, and Q-learning always bootstraps off the <em>max</em> next value, that inflated number gets pulled forward into Q(C,F) too, even though the actual reward this step was a modest +4.<br>
+          t2: Q(W,S) = 17.15+0.8(−5+0.9×MAX{0,17.15}−17.15) ≈ 11.78<br>
+          t3: Q(W,S) = 11.78+0.8(1+0.9×MAX{0,11.78}−11.78) ≈ 11.64<br>
+          t4: Q(W,F) = 0+0.8(−10+0.9×0−0) ≈ −8
+          <span class="qrow">Updated Q row: [16.16, 0, −8, 11.64, 0, 0]</span></div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.3–6 · Maximization bias</div>
+          <div class="stepbody">Q(W,S) across these episodes: 14.71 → <b style="color:var(--rose)">22.50</b> → 16.70 → 19.37 — bouncing around, never quite settling.</div>
+        </div>
+      </div>
+
+      <div class="examalert">
+        <span class="label">Callout box (verbatim intent)</span>
+        <p>"Observe the difference in value updates w.r.t. Q(W,S) between successive time steps in episodes 3 to 6. The <b>true value is approx. Q(W,S) = 15</b>. Due to <b>MAX bias</b> the values are overestimated, and this is more pronounced in the presence of <b>noise</b>. Sometimes this diverges from the true value. Solution to tackle: <b>Double Q-Learning</b>. But in a near-deterministic, less noisy environment, Q-learning helps in faster convergence!"</p>
+      </div>
+      <p style="font-size:13.6px;color:var(--text-faint); max-width:760px;">This is a real, honest tradeoff — not a flaw to always avoid. In cleaner, near-deterministic environments, Q-learning's aggressive max-based updates actually converge faster; the bias problem specifically bites hardest when rewards or transitions carry meaningful noise.</p>
+    </section>
+
+    <!-- ================= RC8 DOUBLE Q ================= -->
+    <section class="topic" id="rc8">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>Double Q-Learning, By Hand</div>
+      <h2 class="title">Two tables, cancelling each other's optimism</h2>
+      <p>Two Q-tables side by side: <b>Q2</b> ("Target"), initialised to all zeros, and <b>Q1</b> ("Behavior"), pre-populated with <code class="inline">[5, 1, 5, 15]</code> — representing prior/logged experience. Hyperparameters: ε=0.1, γ=0.9, α=0.8.</p>
+
+      <div class="algo">
+        <div class="algotitle">Double Q-Learning</div>
+        <pre>Initialize Q1(s,a) and Q2(s,a), such that Q(terminal,·) = 0
+Loop for each episode:
+    Initialize S
+    Loop for each step:
+        Choose A from S using policy ε-greedy in Q1 + Q2
+        Take action A, observe R, S'
+        With 0.5 probability:
+            <span class="hl">Q1(S,A) ← Q1(S,A) + α(R + γQ2(S', argmax_a Q1(S',a)) − Q1(S,A))</span>
+        else:
+            <span class="hl">Q2(S,A) ← Q2(S,A) + α(R + γQ1(S', argmax_a Q2(S',a)) − Q2(S,A))</span>
+        S ← S'
+    until S is terminal</pre>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="stepnum">Ep.1 · Update 1</div>
+          <div class="stepbody">Q2(C,F) = 0.8[2 + 0.9×Q1(W, argmax<sub>a</sub>Q2(W,a))] = 0.8[2 + 0.9×Q1(W,F)] (Q2's values at W are tied at 0, so F is picked arbitrarily) = 0.8[2 + 0.9×5] = <b>5.2</b>. Note the "pick with one table, evaluate with the other" mechanic: Q2 <em>picks</em> the action (via its own argmax), but Q1's value is what's actually used to compute the target.</div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.1 · Update 2</div>
+          <div class="stepbody">Q2(W,S) = 0.8[20 + 0.9×Q1(C, argmax<sub>a</sub>Q2(C,a))] = 0.8[20 + 0.9×Q1(C,F)] = 0.8[20+0.9×5] ≈ <b>19.6</b>. The episode terminates after 2 steps.</div>
+        </div>
+        <div class="step">
+          <div class="stepnum">Ep.2 · Coin-flip alternates</div>
+          <div class="stepbody">t0: Q2(C,F) ≈ 6.24. t1: the coin-flip this time lands on <b>Q1</b> instead — Q1(C,F) = 5+0.8(4+0.9×Q2(W, argmax{Q1(W,S),Q1(W,F)})−5) = 5+0.8(4+0.9×Q2(W,S)−5) = 5+0.8(4+0.9×19.6−5) ≈ <b>18.3</b>. The two tables are already shaping each other's learning.</div>
+        </div>
+      </div>
+
+      <div class="deepdive">
+        <span class="label">🔎 Deep Dive — the payoff, in one chart</span>
+        <p>Across episodes 3–6, plain Q-learning's Q(W,S) swings between ≈14.7 and ≈22.5 against a true value of ≈15. Double Q-learning's Q2 (target) table across the same episodes: 19.6 → 13.74 → 13.74 → 15.71 → 10.57 → 13.7 — hugging the true value far more closely, with none of the wild spikes.</p>
+      </div>
+
+      <div class="diagramwrap">
+        <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50" y1="30" x2="50" y2="210" stroke="var(--border)"/>
+          <line x1="50" y1="210" x2="600" y2="210" stroke="var(--border)"/>
+          <text x="8" y="34" font-size="10" fill="var(--text-faint)">25</text>
+          <text x="8" y="112" font-size="10" fill="var(--text-faint)">15</text>
+          <text x="8" y="194" font-size="10" fill="var(--text-faint)">5</text>
+          <line x1="50" y1="110" x2="600" y2="110" stroke="var(--gold)" stroke-dasharray="3,3"/>
+          <text x="555" y="104" font-size="10" fill="var(--gold)">true ≈15</text>
+          <polyline points="60,92.8 150,136.9 240,112.3 330,50 420,96.4 510,75.0" fill="none" stroke="var(--rose)" stroke-width="2"/>
+          <circle cx="60" cy="92.8" r="3.5" fill="var(--rose)"/><circle cx="150" cy="136.9" r="3.5" fill="var(--rose)"/><circle cx="240" cy="112.3" r="3.5" fill="var(--rose)"/><circle cx="330" cy="50" r="3.5" fill="var(--rose)"/><circle cx="420" cy="96.4" r="3.5" fill="var(--rose)"/><circle cx="510" cy="75.0" r="3.5" fill="var(--rose)"/>
+          <polyline points="60,73.2 150,120.1 240,120.1 330,104.3 420,145.4 510,120.4" fill="none" stroke="var(--teal)" stroke-width="2"/>
+          <circle cx="60" cy="73.2" r="3.5" fill="var(--teal)"/><circle cx="150" cy="120.1" r="3.5" fill="var(--teal)"/><circle cx="240" cy="120.1" r="3.5" fill="var(--teal)"/><circle cx="330" cy="104.3" r="3.5" fill="var(--teal)"/><circle cx="420" cy="145.4" r="3.5" fill="var(--teal)"/><circle cx="510" cy="120.4" r="3.5" fill="var(--teal)"/>
+          <text x="60" y="226" font-size="10" fill="var(--text-faint)" text-anchor="middle">Ep.1</text>
+          <text x="150" y="226" font-size="10" fill="var(--text-faint)" text-anchor="middle">Ep.2</text>
+          <text x="240" y="226" font-size="10" fill="var(--text-faint)" text-anchor="middle">Ep.3</text>
+          <text x="330" y="226" font-size="10" fill="var(--text-faint)" text-anchor="middle">Ep.4</text>
+          <text x="420" y="226" font-size="10" fill="var(--text-faint)" text-anchor="middle">Ep.5</text>
+          <text x="510" y="226" font-size="10" fill="var(--text-faint)" text-anchor="middle">Ep.6</text>
+          <rect x="480" y="10" width="10" height="10" fill="var(--rose)"/><text x="496" y="19" font-size="12" fill="var(--text-dim)">Q-Learning</text>
+          <rect x="10" y="10" width="10" height="10" fill="var(--teal)"/><text x="26" y="19" font-size="12" fill="var(--text-dim)">Double Q-Learning</text>
+        </svg>
+        <div class="figcap">Maximization bias comparison — Q(Warm,Slow) vs. the ≈15 true baseline. Q-learning overshoots and swings; Double Q-learning tracks the baseline much more tightly.</div>
+      </div>
+    </section>
+
+    <!-- ================= RC9 BACKUP DIAGRAMS ================= -->
+    <section class="topic" id="rc9">
+      <div class="eyebrow" style="color:var(--teal);"><span class="num" style="border-color:var(--teal); color:var(--teal);">RC</span>Backup Diagrams</div>
+      <h2 class="title">The whole deck, in two pictures</h2>
+      <p>Backup diagrams visually summarise every method's tradeoff: how far it looks, and how much it branches.</p>
+
+      <h3 class="sub">For V(s)</h3>
+      <div class="diagramwrap">
+        <svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg">
+          <text x="70" y="18" text-anchor="middle" font-size="12" fill="var(--text-dim)" font-family="var(--mono)">DP — full branch</text>
+          <circle cx="70" cy="35" r="4" fill="var(--gold)"/>
+          <line x1="70" y1="39" x2="30" y2="80" stroke="var(--border)"/><line x1="70" y1="39" x2="70" y2="80" stroke="var(--border)"/><line x1="70" y1="39" x2="110" y2="80" stroke="var(--border)"/>
+          <circle cx="30" cy="84" r="3" fill="none" stroke="var(--text-faint)"/><circle cx="70" cy="84" r="3" fill="none" stroke="var(--text-faint)"/><circle cx="110" cy="84" r="3" fill="none" stroke="var(--text-faint)"/>
+          <line x1="30" y1="87" x2="15" y2="110" stroke="var(--border)"/><line x1="30" y1="87" x2="45" y2="110" stroke="var(--border)"/>
+          <line x1="110" y1="87" x2="95" y2="110" stroke="var(--border)"/><line x1="110" y1="87" x2="125" y2="110" stroke="var(--border)"/>
+
+          <text x="330" y="18" text-anchor="middle" font-size="12" fill="var(--text-dim)" font-family="var(--mono)">TD(0) — one line</text>
+          <circle cx="330" cy="35" r="4" fill="var(--gold)"/><line x1="330" y1="39" x2="330" y2="90" stroke="var(--border)"/><circle cx="330" cy="94" r="4" fill="none" stroke="var(--gold)"/>
+
+          <text x="580" y="18" text-anchor="middle" font-size="12" fill="var(--text-dim)" font-family="var(--mono)">MC — long single path</text>
+          <circle cx="580" cy="35" r="4" fill="var(--gold)"/><line x1="580" y1="39" x2="580" y2="62" stroke="var(--border)"/>
+          <circle cx="580" cy="66" r="4" fill="var(--gold)"/><line x1="580" y1="70" x2="580" y2="93" stroke="var(--border)"/>
+          <circle cx="580" cy="97" r="4" fill="var(--gold)"/><line x1="580" y1="101" x2="580" y2="124" stroke="var(--border)"/>
+          <rect x="576" y="128" width="8" height="8" fill="var(--gold)"/>
+
+          <text x="70" y="150" font-size="11" fill="var(--text-faint)" text-anchor="middle">Bellman expectation:</text>
+          <text x="70" y="166" font-size="10" fill="var(--text-faint)" text-anchor="middle">Σₐπ(a|s)Σ p(s′,r|s,a)[r+γV(s′)]</text>
+          <text x="330" y="150" font-size="11" fill="var(--text-faint)" text-anchor="middle">one sampled transition</text>
+          <text x="580" y="150" font-size="11" fill="var(--text-faint)" text-anchor="middle">to terminal state Sᴛ</text>
+        </svg>
+        <div class="figcap">DP's diagram fans out into every action and next state, because it needs the full model to average over them. TD's diagram is one short real transition. MC's diagram runs all the way to episode end.</div>
+      </div>
+
+      <h3 class="sub">For Q(s,a)</h3>
+      <div class="grid2">
+        <div class="compare"><h4>SARSA</h4><p style="font-size:13.6px; color:var(--text-dim); margin:0;">One sampled line down to one sampled next action. Thinnest diagram — matching its highest variance.</p></div>
+        <div class="compare"><h4>Q-learning</h4><p style="font-size:13.6px; color:var(--text-dim); margin:0;">One sampled next state, then branches to <em>all</em> next actions to take the max — optimistic, bias-prone.</p></div>
+        <div class="compare"><h4>Expected SARSA</h4><p style="font-size:13.6px; color:var(--text-dim); margin:0;">Same branching as Q-learning, but takes a probability-weighted average instead of the max — steadier, lower variance.</p></div>
+        <div class="compare"><h4>DP &amp; MC</h4><p style="font-size:13.6px; color:var(--text-dim); margin:0;">DP branches over next states <em>and</em> next policy actions. MC runs one long sampled path to termination.</p></div>
+      </div>
+      <p style="font-size:13.6px;color:var(--text-faint); max-width:760px;">Placed side by side, this is a compact cheat-sheet for the entire deck's worked examples: SARSA's thin single-line diagram (higher variance) vs. Q-learning/Expected SARSA's next-state branching (max vs. weighted average) vs. DP's full model-based fan-out vs. MC's long single path to the end.</p>
+    </section>
+
+    <div class="chain"><div class="seg"></div><div class="node hollow"></div><div class="seg"></div><div class="node"></div><div class="seg"></div><div class="node hollow"></div><div class="seg"></div></div>
+
+    <!-- ================= DEEP DIVES SYNTHESIS ================= -->
+    <section class="topic" id="deep">
+      <div class="eyebrow"><span class="num">×</span>Cross-Cutting</div>
+      <h2 class="title">Conceptual Deep Dives</h2>
+
+      <h3 class="sub">A · On-policy vs. off-policy, made concrete</h3>
+      <p style="font-size:14.5px; color:var(--text-dim);">SARSA and Expected SARSA use the same policy for behaviour and evaluation. Q-learning and Double Q-learning explicitly separate a behaviour policy (ε-greedy, for acting) from a target policy (greedy/max, or split across two tables, for updating). The race car's SARSA-vs-Q-learning worked examples (both starting identically at Q=1.6 for the first update) only diverge once next-state Q-values become unequal — that's the moment on-policy and off-policy start telling different stories.</p>
+
+      <h3 class="sub">B · Variance (SARSA) vs. Maximization Bias (Q-learning) — the deck's two signature demonstrations</h3>
+      <p style="font-size:14.5px; color:var(--text-dim);">SARSA's Q-values swing wildly because they depend on whichever next action was randomly sampled. Q-learning's Q-values systematically overshoot because taking a max over noisy estimates is optimistically biased. Two different failure modes, two different fixes: Expected SARSA (averages away variance) and Double Learning (separates selection from evaluation to cancel bias).</p>
+
+      <h3 class="sub">C · Bootstrapping, everywhere</h3>
+      <p style="font-size:14.5px; color:var(--text-dim);">Every update in this session — TD(0), SARSA, Expected SARSA, Q-learning, Double Q-learning, n-step TD — shares one structure: <code class="inline">estimate ← estimate + α[target − estimate]</code>, where the target itself leans on another (possibly still-imperfect) estimate. This is bootstrapping, and it's the single idea that makes step-by-step, model-free, online learning possible.</p>
+
+      <h3 class="sub">D · From TD(0) to Monte Carlo — a spectrum, not a binary choice</h3>
+      <p style="font-size:14.5px; color:var(--text-dim);">n-step TD reframes "TD vs. MC" as two ends of a dial rather than a hard choice: n=1 gives TD(0) (biased but low-variance), n→∞ gives Monte Carlo (unbiased but high-variance), and intermediate n — as the 19-state random walk demonstrates — is usually the sweet spot. This is the same lever Rainbow DQN and A3C/A2C reach for today.</p>
+    </section>
+
+    <!-- ================= CHECKLIST ================= -->
+    <section class="topic" id="checklist">
+      <div class="eyebrow"><span class="num">✓</span>Before The Exam</div>
+      <h2 class="title">Revision Checklist</h2>
+      <ul class="checklist">
+        <li><span class="box"></span>Explain why TD Learning fuses ideas from Dynamic Programming and Monte Carlo.</li>
+        <li><span class="box"></span>Write and explain the TD(0) update rule, the TD target, and the TD error.</li>
+        <li><span class="box"></span>Trace through the tabular TD(0) algorithm for a simple episode.</li>
+        <li><span class="box"></span>Write the SARSA update equation and describe the 5-tuple (S,A,R,S′,A′).</li>
+        <li><span class="box"></span>Trace a SARSA update through the pirate/robot grid example.</li>
+        <li><span class="box"></span>Write the Q-learning update equation and explain the role of max<sub>a</sub>Q(S′,a).</li>
+        <li><span class="box"></span>Explain why Q-learning is off-policy while SARSA is on-policy.</li>
+        <li><span class="box"></span>Trace a Q-learning update through the treasure/pirate grid example.</li>
+        <li><span class="box"></span>Write the Expected SARSA update and describe how it differs from SARSA and Q-learning.</li>
+        <li><span class="box"></span>Explain maximization bias and describe how Double Learning mitigates it.</li>
+        <li><span class="box"></span>Write the n-step return formula for general n and identify special cases (n=1 → TD(0), n=∞ → Monte Carlo).</li>
+        <li><span class="box"></span>Trace through the n-step TD algorithm's rolling buffer (τ, t, T).</li>
+        <li><span class="box"></span>State the three versions of the Race Car problem (DP: known model/Markov; MC: unknown model, episodic; TD: unknown model, non-episodic, immediate rewards available).</li>
+        <li><span class="box"></span>Walk through the TD(0), SARSA, Expected SARSA, Q-learning, and Double Q-learning worked examples and reproduce each update by hand.</li>
+        <li><span class="box"></span>Explain why Q(Warm,Slow) swung so much under SARSA and why Expected SARSA was steadier.</li>
+        <li><span class="box"></span>Explain the source of maximization bias using the Q(Warm,Slow) example (true value ≈15, observed overshoot to ≈22.5).</li>
+        <li><span class="box"></span>Explain the Double Q-learning coin-flip mechanic and the argmax/evaluate split between Q1 and Q2.</li>
+        <li><span class="box"></span>Read and interpret the backup-diagram comparisons for V(s) and Q(s,a) and map each branch shape to a bias/variance/computational-cost tradeoff.</li>
+        <li><span class="box"></span>Practice computing a few additional episodes' worth of updates by hand for at least one of SARSA, Q-learning, or Double Q-learning — explicitly suggested in the race-car deck.</li>
+        <li><span class="box"></span>Have reviewed Chapter 6 (and Chapter 7 for n-step) of Sutton &amp; Barto.</li>
+      </ul>
+    </section>
+
+    <!-- ================= SOURCES ================= -->
+    <section class="topic" id="sources" style="border-bottom:none;">
+      <div class="eyebrow"><span class="num">📚</span>Further Reading</div>
+      <h2 class="title">Sources &amp; Additional Research</h2>
+      <ul class="sourcelist">
+        <li>Sutton &amp; Barto, <i>Reinforcement Learning: An Introduction</i>, 2nd Ed. — Ch. 6 (TD Learning, SARSA, Q-learning, Cliff Walking Example 6.6) and Ch. 7 (n-step methods). Free online: <a href="http://incompleteideas.net/book/first/ebook/node65.html" target="_blank" rel="noopener">incompleteideas.net/book/first/ebook/node65.html</a></li>
+        <li>TD error and dopamine neuron connection: <a href="https://www.bartleby.com/subject/engineering/computer-science/concepts/temporal-difference-learning" target="_blank" rel="noopener">bartleby.com — Temporal Difference Learning</a></li>
+        <li>Cliff Walking, SARSA vs. Q-learning behaviour: <a href="https://core-robotics.gatech.edu/2022/02/28/bootcamp-summer-2020-week-4-on-policy-vs-off-policy-reinforcement-learning/" target="_blank" rel="noopener">core-robotics.gatech.edu — On-Policy vs. Off-Policy RL</a></li>
+        <li>Double Q-learning (original paper): <a href="https://papers.nips.cc/paper/3964-double-q-learning" target="_blank" rel="noopener">papers.nips.cc — Double Q-learning</a></li>
+        <li>Double DQN / maximization bias in deep RL: <a href="https://medium.com/@ameetsd97/deep-double-q-learning-why-you-should-use-it-bedf660d5295" target="_blank" rel="noopener">medium.com/@ameetsd97 — Deep Double Q-Learning</a></li>
+        <li>n-step TD, "tyranny of the timestep", 19-state random walk: <a href="https://medium.com/@physynapse/breaking-the-tyranny-of-the-timestep-how-n-step-td-transforms-rl-prediction-and-control-5466f51f8825" target="_blank" rel="noopener">medium.com/@physynapse — Breaking the Tyranny of the Timestep</a></li>
+        <li>Averaging n-step returns / bias-variance tradeoff: <a href="https://arxiv.org/pdf/2402.03903" target="_blank" rel="noopener">arxiv.org/pdf/2402.03903</a></li>
+      </ul>
+      <p style="font-size:12.5px; color:var(--text-faint); max-width:760px; font-style:italic;">These are supplementary research links added for deeper context beyond the slide deck — verify against the official Sutton &amp; Barto textbook (Ch. 6, required reading) for exam/assignment purposes.</p>
+    </section>
+
+    </div>
+  </main>
+</div>
+
+<footer>
+  <p>DRL Session 8–9 · Temporal Difference Learning — study guide built from lecture slides (CSCE-689 material, adapted with permission) and the BITS Pilani WILP Race Car worked-example deck. Standalone HTML — no external dependencies.</p>
+</footer>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var toggle = document.getElementById('nightToggle');
+  var label = document.getElementById('nightLabel');
+  function applyMode(day){
+    if(day){ root.classList.add('day'); label.textContent='Day mode'; }
+    else { root.classList.remove('day'); label.textContent='Night mode'; }
+  }
+  var saved = null;
+  try{ saved = localStorage.getItem('drl_theme'); }catch(e){}
+  applyMode(saved === 'day');
+  toggle.addEventListener('click', function(){
+    var isDay = root.classList.contains('day');
+    applyMode(!isDay);
+    try{ localStorage.setItem('drl_theme', !isDay ? 'day':'night'); }catch(e){}
+  });
+
+  // Mobile nav drawer
+  var sidebar = document.getElementById('sidebar');
+  var hamburger = document.getElementById('hamburgerBtn');
+  var navBg = document.getElementById('navBg');
+  function openNav(){ sidebar.classList.add('open'); navBg.classList.add('show'); }
+  function closeNav(){ sidebar.classList.remove('open'); navBg.classList.remove('show'); }
+  hamburger.addEventListener('click', openNav);
+  navBg.addEventListener('click', closeNav);
+  document.querySelectorAll('.navlink').forEach(function(a){
+    a.addEventListener('click', closeNav);
+  });
+
+  // Scrollspy for active nav link
+  var links = Array.prototype.slice.call(document.querySelectorAll('.navlink'));
+  var sections = links.map(function(a){
+    var id = a.getAttribute('href').slice(1);
+    return document.getElementById(id);
+  }).filter(Boolean);
+
+  function onScroll(){
+    var pos = window.scrollY + 120;
+    var activeIdx = 0;
+    for(var i=0;i<sections.length;i++){
+      if(sections[i].offsetTop <= pos) activeIdx = i;
+    }
+    links.forEach(function(a){ a.classList.remove('active'); });
+    if(links[activeIdx]) links[activeIdx].classList.add('active');
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+
+</body>
+</html>

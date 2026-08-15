@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRL Session 10–11 — Value Function Approximation · Study Guide</title>
+<meta name="description" content="Standalone study guide: On-Policy Prediction with Approximation, feature construction, SARSA vs Q-learning, maximization bias, Double Q-learning, and Deep Q-Networks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+    --bg: #eef2f6;
+    --bg-panel: #ffffff;
+    --bg-elevated: #e2e9f1;
+    --text: #16222f;
+    --text-dim: #526274;
+    --border: #ccd6e0;
+    --accent-gold: #9a6b12;
+    --accent-teal: #0d7a70;
+    --accent-rose: #a92c47;
+    --accent-blue: #2955a3;
+    --code-bg: #0f1b2d;
+    --code-text: #d7e2ee;
+    --code-border: #223349;
+    --shadow: 0 1px 3px rgba(20,30,45,0.08), 0 8px 24px rgba(20,30,45,0.06);
+    --radius: 10px;
+  }
+  html[data-theme="night"]{
+    --bg: #0a111d;
+    --bg-panel: #111b2b;
+    --bg-elevated: #16223590;
+    --bg-elevated: #16223a;
+    --text: #e6edf6;
+    --text-dim: #97a7bb;
+    --border: #263449;
+    --accent-gold: #dcae4e;
+    --accent-teal: #4fc8bb;
+    --accent-rose: #e5768a;
+    --accent-blue: #7ba3e6;
+    --code-bg: #060b13;
+    --code-text: #c9d8e8;
+    --code-border: #1c2b40;
+    --shadow: 0 1px 3px rgba(0,0,0,0.35), 0 12px 28px rgba(0,0,0,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.62;
+    transition:background .25s ease, color .25s ease;
+  }
+  ::selection{ background:var(--accent-gold); color:#1a1200; }
+
+  h1,h2,h3,h4{
+    font-family:var(--serif);
+    font-weight:600;
+    line-height:1.15;
+    letter-spacing:-0.01em;
+    color:var(--text);
+  }
+  a{ color:var(--accent-blue); }
+  .container{ max-width:840px; margin:0; padding:0 24px 0 40px; min-width:0; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:60;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px;
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-left{ display:flex; align-items:center; gap:14px; }
+  .brand{
+    font-family:var(--serif); font-weight:600; font-size:1rem;
+    color:var(--text); text-decoration:none; letter-spacing:-0.01em;
+  }
+  .brand:hover{ color:var(--accent-teal); }
+  .theme-toggle{
+    font-family:var(--sans); font-size:0.82rem; font-weight:600;
+    background:var(--bg-elevated); color:var(--text);
+    border:1px solid var(--border); border-radius:999px;
+    padding:7px 16px; cursor:pointer;
+    transition:all .15s ease;
+  }
+  .theme-toggle:hover{ border-color:var(--accent-teal); color:var(--accent-teal); }
+  .menu-toggle{
+    display:none; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:8px;
+    background:var(--bg-elevated); border:1px solid var(--border); color:var(--text);
+    cursor:pointer; font-size:1rem;
+  }
+
+  /* ---------- Layout: vertical sidenav + content ---------- */
+  .layout{
+    display:flex; align-items:flex-start;
+    max-width:1240px; margin:0 auto;
+  }
+
+  /* ---------- Vertical side navigation ---------- */
+  .sidenav{
+    flex:0 0 250px;
+    position:sticky; top:53px;
+    align-self:flex-start;
+    max-height:calc(100vh - 53px);
+    overflow-y:auto;
+    padding:26px 18px 40px 24px;
+    border-right:1px solid var(--border);
+    scrollbar-width:thin;
+  }
+  .sidenav-title{
+    font-family:var(--mono); font-size:0.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--text-dim); margin-bottom:14px;
+  }
+  .sidenav-group{
+    font-family:var(--mono); font-size:0.68rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--accent-gold);
+    margin:18px 0 8px; padding-top:14px; border-top:1px solid var(--border);
+  }
+  .sidenav-group:first-of-type{ border-top:none; padding-top:0; }
+  .sidenav-link{
+    display:block; font-size:0.86rem; font-weight:600; text-decoration:none;
+    color:var(--text-dim); padding:7px 10px; border-radius:7px;
+    border-left:2px solid transparent; margin-bottom:2px;
+    transition:all .15s ease;
+  }
+  .sidenav-link:hover{ background:var(--bg-elevated); color:var(--text); }
+  .sidenav-link.active{
+    background:var(--bg-elevated); color:var(--accent-teal); border-left-color:var(--accent-teal);
+  }
+
+  /* Mobile drawer behavior */
+  .sidenav-backdrop{
+    display:none; position:fixed; inset:0; z-index:55;
+    background:rgba(10,17,29,0.5);
+  }
+
+  @media (max-width: 900px){
+    .menu-toggle{ display:flex; }
+    .layout{ display:block; }
+    .sidenav{
+      position:fixed; top:0; left:0; bottom:0; z-index:56;
+      width:260px; max-height:none;
+      background:var(--bg-panel); border-right:1px solid var(--border);
+      padding:20px 18px 30px 20px;
+      transform:translateX(-100%);
+      transition:transform .22s ease;
+      box-shadow:var(--shadow);
+    }
+    .sidenav.open{ transform:translateX(0); }
+    .sidenav-backdrop.open{ display:block; }
+    .container{ max-width:100%; padding:0 24px; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{ padding:64px 0 40px; }
+  .hero-eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:0.78rem; font-weight:600;
+    letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--accent-teal); margin-bottom:18px;
+  }
+  .hero-eyebrow::before{
+    content:""; width:22px; height:2px; background:var(--accent-teal); display:inline-block;
+  }
+  .hero h1{
+    font-size:clamp(2.1rem, 4.6vw, 3.4rem);
+    margin:0 0 18px;
+    max-width:15ch;
+  }
+  .hero h1 em{ font-style:italic; color:var(--accent-gold); }
+  .hero p.lede{
+    font-size:1.14rem; color:var(--text-dim); max-width:62ch; margin:0 0 28px;
+  }
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px; margin-bottom:30px;
+  }
+  .meta-chip{
+    display:flex; flex-direction:column; gap:2px;
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:10px 16px; box-shadow:var(--shadow);
+    min-width:150px;
+  }
+  .meta-chip .k{ font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-dim); }
+  .meta-chip .v{ font-family:var(--sans); font-weight:600; font-size:0.9rem; }
+
+  .examfit{
+    background:var(--bg-panel); border:1px solid var(--border); border-left:4px solid var(--accent-gold);
+    border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow);
+  }
+  .examfit .title{ font-family:var(--mono); font-weight:600; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--accent-gold); margin-bottom:8px;}
+  .examfit p{ margin:0; color:var(--text-dim); }
+  .examfit strong{ color:var(--text); }
+
+  /* ---------- Sections ---------- */
+  section.topic{ padding:56px 0; border-top:1px solid var(--border); }
+  .topic-tag{
+    font-family:var(--mono); font-size:0.78rem; font-weight:600; color:var(--accent-teal);
+    letter-spacing:0.04em; margin-bottom:6px;
+  }
+  section.topic h2{ font-size:clamp(1.5rem, 3vw, 2.05rem); margin:0 0 22px; }
+  section.topic h3{ font-size:1.18rem; margin:30px 0 10px; color:var(--accent-teal); }
+  section.topic h4{ font-size:1rem; margin:20px 0 8px; }
+  section.topic p{ margin:0 0 14px; }
+  section.topic ul, section.topic ol{ margin:0 0 14px; padding-left:22px; }
+  section.topic li{ margin-bottom:6px; }
+  .subtle{ color:var(--text-dim); }
+
+  /* ---------- Equation / formula boxes ---------- */
+  .eqn{
+    font-family:var(--mono);
+    background:var(--bg-elevated);
+    border:1px solid var(--border);
+    border-left:3px solid var(--accent-teal);
+    border-radius:8px;
+    padding:16px 20px;
+    margin:14px 0 18px;
+    overflow-x:auto;
+    font-size:0.95rem;
+    line-height:1.8;
+  }
+  .eqn .label{
+    display:block; font-family:var(--sans); font-weight:600; font-size:0.72rem;
+    text-transform:uppercase; letter-spacing:0.06em; color:var(--accent-teal); margin-bottom:6px;
+  }
+  .eqn.gold{ border-left-color:var(--accent-gold); }
+  .eqn.gold .label{ color:var(--accent-gold); }
+  .eqn.rose{ border-left-color:var(--accent-rose); }
+  .eqn.rose .label{ color:var(--accent-rose); }
+
+  /* ---------- Pseudocode blocks ---------- */
+  pre.pseudo{
+    background:var(--code-bg); color:var(--code-text);
+    border:1px solid var(--code-border); border-radius:10px;
+    padding:18px 20px; overflow-x:auto; margin:14px 0 18px;
+    font-family:var(--mono); font-size:0.85rem; line-height:1.65;
+  }
+  pre.pseudo .cmt{ color:#7fa6c9; }
+  code.inline{
+    font-family:var(--mono); background:var(--bg-elevated); border:1px solid var(--border);
+    padding:1px 6px; border-radius:5px; font-size:0.88em;
+  }
+
+  /* ---------- Tables ---------- */
+  table.data{
+    width:100%; border-collapse:collapse; margin:14px 0 20px;
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:8px; overflow:hidden;
+    font-size:0.9rem;
+  }
+  table.data th, table.data td{ padding:10px 14px; border-bottom:1px solid var(--border); text-align:left; }
+  table.data th{ background:var(--bg-elevated); font-family:var(--sans); font-weight:600; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-dim); }
+  table.data tr:last-child td{ border-bottom:none; }
+  table.data td.num{ font-family:var(--mono); }
+
+  /* ---------- Callouts ---------- */
+  .callout{
+    border-radius:var(--radius); padding:18px 22px; margin:18px 0;
+    border:1px solid var(--border); background:var(--bg-panel); box-shadow:var(--shadow);
+  }
+  .callout .tag{
+    font-family:var(--mono); font-weight:700; font-size:0.72rem; text-transform:uppercase;
+    letter-spacing:0.07em; margin-bottom:8px; display:inline-block;
+  }
+  .callout.research{ border-left:4px solid var(--accent-blue); }
+  .callout.research .tag{ color:var(--accent-blue); }
+  .callout.exam{ border-left:4px solid var(--accent-rose); }
+  .callout.exam .tag{ color:var(--accent-rose); }
+  .callout.key{ border-left:4px solid var(--accent-gold); }
+  .callout.key .tag{ color:var(--accent-gold); }
+  .callout p{ margin:0 0 8px; }
+  .callout p:last-child{ margin-bottom:0; }
+  .callout .src{ font-size:0.78rem; color:var(--text-dim); margin-top:10px; }
+  .callout .src a{ color:var(--text-dim); text-decoration:underline; }
+
+  /* ---------- Diagram (CSS flow) ---------- */
+  .flow{
+    display:flex; flex-wrap:wrap; align-items:stretch; gap:0; margin:18px 0;
+    font-family:var(--sans);
+  }
+  .flow .node{
+    background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px;
+    padding:12px 16px; font-size:0.85rem; text-align:center; flex:1 1 140px;
+    display:flex; align-items:center; justify-content:center; min-height:56px;
+  }
+  .flow .arrow{
+    display:flex; align-items:center; justify-content:center; flex:0 0 40px;
+    color:var(--accent-teal); font-size:1.3rem;
+  }
+  .flow.vertical{ flex-direction:column; }
+  .flow.vertical .arrow{ flex:0 0 30px; transform:none; }
+
+  /* ---------- Tabs (worked examples) ---------- */
+  .tabs{ margin:18px 0; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--bg-panel); box-shadow:var(--shadow); }
+  .tab-btns{ display:flex; border-bottom:1px solid var(--border); background:var(--bg-elevated); }
+  .tab-btn{
+    flex:1; padding:11px 14px; text-align:center; font-family:var(--sans); font-weight:600;
+    font-size:0.85rem; cursor:pointer; background:transparent; border:none; color:var(--text-dim);
+    border-right:1px solid var(--border);
+  }
+  .tab-btn:last-child{ border-right:none; }
+  .tab-btn.active{ background:var(--bg-panel); color:var(--accent-teal); }
+  .tab-panel{ display:none; padding:20px 22px; }
+  .tab-panel.active{ display:block; }
+  .tab-panel .q{ font-weight:600; margin-bottom:10px; }
+  .tab-panel ol{ padding-left:20px; margin-bottom:10px; }
+  .tab-panel .ans{
+    background:var(--bg-elevated); border-radius:8px; padding:12px 16px; margin:10px 0;
+    font-weight:600; border-left:3px solid var(--accent-teal);
+  }
+  .tab-panel .insight{ font-size:0.9rem; color:var(--text-dim); margin-top:8px; }
+  .tab-panel .insight strong{ color:var(--text); }
+
+  /* ---------- Live demo / calculators ---------- */
+  .demo-card{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:12px;
+    padding:24px 26px; margin:24px 0; box-shadow:var(--shadow);
+  }
+  .demo-card h4{ margin-top:0; font-size:1.05rem; }
+  .demo-card .desc{ color:var(--text-dim); font-size:0.9rem; margin-bottom:16px; }
+  .demo-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:16px; }
+  .field label{ display:block; font-family:var(--mono); font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim); margin-bottom:5px; }
+  .field input, .field select{
+    width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:7px;
+    background:var(--bg); color:var(--text); font-family:var(--mono); font-size:0.9rem;
+  }
+  .demo-btn{
+    background:var(--accent-teal); color:#06231f; font-weight:700; border:none; border-radius:8px;
+    padding:10px 20px; cursor:pointer; font-family:var(--sans); font-size:0.88rem;
+  }
+  .demo-btn:hover{ opacity:0.88; }
+  .demo-output{
+    margin-top:16px; background:var(--code-bg); color:var(--code-text); border-radius:8px;
+    padding:14px 18px; font-family:var(--mono); font-size:0.88rem; line-height:1.7; min-height:26px;
+    white-space:pre-wrap;
+  }
+  .demo-output .hl{ color:var(--accent-gold); font-weight:600; }
+  .demo-output .hl2{ color:#7fd8cd; font-weight:600; }
+
+  /* ---------- Quiz ---------- */
+  .quiz-item{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:20px 22px; margin-bottom:16px; box-shadow:var(--shadow);
+  }
+  .quiz-item .qn{ font-weight:600; margin-bottom:12px; }
+  .quiz-opts{ display:flex; flex-direction:column; gap:8px; }
+  .quiz-opt{
+    text-align:left; padding:10px 14px; border:1px solid var(--border); border-radius:7px;
+    background:var(--bg); cursor:pointer; font-family:var(--sans); font-size:0.92rem; color:var(--text);
+  }
+  .quiz-opt:hover{ border-color:var(--accent-teal); }
+  .quiz-opt.correct{ background:#123d2a; border-color:var(--accent-teal); color:#bdf5e0; }
+  .quiz-opt.incorrect{ background:#3d1620; border-color:var(--accent-rose); color:#ffc9d3; }
+  html[data-theme="day"] .quiz-opt.correct{ background:#e2f5ec; color:#0d4a34; }
+  html[data-theme="day"] .quiz-opt.incorrect{ background:#fbe4e8; color:#7a1930; }
+  .quiz-explain{ margin-top:12px; padding:12px 14px; border-radius:8px; background:var(--bg-elevated); font-size:0.88rem; display:none; }
+  .quiz-explain.show{ display:block; }
+
+  /* ---------- Footer ---------- */
+  footer{ padding:40px 0 60px; border-top:1px solid var(--border); margin-top:20px; }
+  footer p{ color:var(--text-dim); font-size:0.85rem; }
+  .backtotop{ font-size:0.85rem; text-decoration:none; color:var(--accent-teal); font-weight:600; }
+
+  .badge{
+    display:inline-block; font-family:var(--mono); font-size:0.68rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.05em; padding:3px 9px; border-radius:999px;
+    background:var(--accent-teal); color:#06231f; margin-left:8px; vertical-align:middle;
+  }
+
+  @media (max-width: 640px){
+    .hero{ padding:44px 0 28px; }
+    section.topic{ padding:40px 0; }
+    .demo-grid{ grid-template-columns:1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">☰</button>
+    <a class="brand" href="../index.html">AI M.Tech AIML Study Hub</a>
+  </div>
+  <button class="theme-toggle" id="themeToggle">Night mode</button>
+</header>
+
+<div class="sidenav-backdrop" id="sidenavBackdrop"></div>
+
+<div class="layout">
+  <nav class="sidenav" id="sidenav">
+    <div class="sidenav-title">DRL · Session 10–11</div>
+    <a href="#hero" class="sidenav-link">Overview</a>
+
+    <div class="sidenav-group">Core Topics</div>
+    <a href="#s1" class="sidenav-link">01 · Generalization</a>
+    <a href="#s2" class="sidenav-link">02 · Gradient Descent</a>
+    <a href="#s3" class="sidenav-link">03 · Gradient Monte Carlo</a>
+    <a href="#s4" class="sidenav-link">04 · Semi-Gradient TD &amp; n-step</a>
+    <a href="#s5" class="sidenav-link">05 · Feature Construction</a>
+    <a href="#s6" class="sidenav-link">06 · SARSA vs Q-Learning</a>
+    <a href="#s7" class="sidenav-link">07 · Maximization Bias &amp; Double Q</a>
+    <a href="#s8" class="sidenav-link">08 · Deep Q-Networks</a>
+
+    <div class="sidenav-group">Interactive</div>
+    <a href="#lab" class="sidenav-link">Live Calculators</a>
+
+    <div class="sidenav-group">Deep Dives</div>
+    <a href="#deep" class="sidenav-link">Conceptual Deep Dives</a>
+
+    <div class="sidenav-group">Assessment</div>
+    <a href="#quiz" class="sidenav-link">Exam Quiz</a>
+    <a href="#practice" class="sidenav-link">Practice Questions</a>
+  </nav>
+
+  <main class="container">
+
+  <section id="hero" class="hero">
+    <div class="hero-eyebrow">DRL · Session 10 (11)</div>
+    <h1>From Lookup Tables to <em>Learned Weights</em></h1>
+    <p class="lede">A first-principles study guide built from two paired lecture decks — <strong>On-Policy Prediction with Approximation</strong> and <strong>Value-Based DRL: On/Off-Policy Prediction with Approximation</strong> — covering gradient descent on value functions, feature construction, SARSA vs Q-learning, the maximization-bias problem, Double Q-learning, and Deep Q-Networks.</p>
+
+    <div class="meta-row">
+      <div class="meta-chip"><span class="k">Source decks</span><span class="v">2 slide decks, 67 slides</span></div>
+      <div class="meta-chip"><span class="k">Course</span><span class="v">BITS Pilani WILP · M.Tech AIML</span></div>
+      <div class="meta-chip"><span class="k">Running example</span><span class="v">Pacman &amp; Chrome T-Rex Dino</span></div>
+      <div class="meta-chip"><span class="k">Core topics</span><span class="v">8 sections + 4 calculators</span></div>
+    </div>
+
+    <div class="examfit">
+      <div class="title">How this maps to your exam</div>
+      <p>These two sessions are the <strong>bridge from tabular RL to Deep RL</strong> — everything from Chapter 9–10 of Sutton &amp; Barto shows up here in worked form. The numeric SARSA-vs-Q-learning walkthrough (the T-Rex Dino game) and the maximization-bias / Double Q-learning derivation are the two most exam-dense blocks: expect a <strong>worked weight-update</strong> question and a <strong>conceptual on-policy vs off-policy</strong> question. Each core section below ends with an <strong>Exam Alert</strong> box and an Easy / Medium / Complex worked-example set. Look for the <span class="badge">LAB</span> badge — those topics have a matching live calculator in the Interactive section.</p>
+    </div>
+  </section>
+
+
+  <section id="s1" class="topic">
+    <div class="topic-tag">// 01</div>
+    <h2>Why Tables Fail: Generalization &amp; Function Approximation</h2>
+
+    <h3>Intuition first</h3>
+    <p><strong>Tabular learning</strong> keeps one row per state in a giant lookup table — fine for tic-tac-toe, hopeless for anything real. Pacman alone has more board configurations than you could ever visit during training, let alone store in memory. The fix RL borrows straight from supervised learning: <strong>generalize</strong> — learn from a small number of experienced states, and let that experience transfer to states you've never seen, because they share structure with what you've already learned.</p>
+    <p>The deck's own before/after demo makes this concrete. Run <strong>naïve tabular Q-learning</strong> on Pacman for 50 episodes and the agent still scores <strong>&minus;14</strong> — it keeps wandering into danger because a ghost one square to the left counts as a "brand new, unknown state" to a table. Swap in a <strong>parameterized function approximator</strong> and, after the same 50 episodes, the score flips to <strong>+19</strong>. Nothing about the environment changed — only the ability to generalize what "danger near a ghost" means across many pixel-different but conceptually-identical states.</p>
+
+    <div class="flow">
+      <div class="node">Learn from state <em>S</em><br>v̂(s;θ) → ℝ</div>
+      <div class="arrow">→</div>
+      <div class="node">Generalize<br>(tune θ)</div>
+      <div class="arrow">→</div>
+      <div class="node">Predict v̂(s′;θ) for a<br><em>never-seen</em> state S′</div>
+    </div>
+
+    <h3>The parameterized value approximator</h3>
+    <p>Represent each state as a vector of <strong>features</strong> (f<sub>1</sub>, f<sub>2</sub>, …, f<sub>n</sub>) — e.g. Pacman location, ghost distances, food distance, or even raw screen pixels. A parameterized approximator <code class="inline">v̂(s;θ)</code> combines these features using tunable weights θ:</p>
+
+    <div class="eqn gold">
+      <span class="label">Linear approximator</span>
+      v̂(s;θ) = Σ<sub>i</sub> θ<sub>i</sub> f<sub>i</sub>(s) &nbsp;&nbsp;<span class="subtle">— simplest case; more expressive forms (products, deep nets) also possible</span>
+    </div>
+
+    <p>A small neural network is the same idea stacked in layers: input features → hidden layer 1 (weights θ<sub>1–12</sub>) → hidden layer 2 (weights θ<sub>13–28</sub>) → output v̂ (weights θ<sub>29–32</sub>). Either way, the question that drives the rest of this session is: <em>given we know the true value of a handful of states, how do we adjust θ to match them — and have that generalize?</em></p>
+
+    <div class="callout research">
+      <span class="tag">Research Enhanced</span>
+      <p>The "curse of dimensionality" is the formal name for why tabular RL can't scale — the number of possible states grows exponentially with the number of state variables. The classic large-scale demonstration is Gerald Tesauro's <strong>TD-Gammon</strong> (1992), which used a small neural net to approximate backgammon state values instead of a table (backgammon has roughly 10<sup>20</sup> states) and reached human-expert-level play. DeepMind's 2015 Atari DQN made the same bet at a much larger scale, using CNNs directly on raw pixels because there is no feasible tabular representation of "all possible pixel screens."</p>
+      <div class="src">Sources: <a href="https://en.wikipedia.org/wiki/TD-Gammon" target="_blank">en.wikipedia.org/wiki/TD-Gammon</a> · <a href="https://www.nature.com/articles/nature14236" target="_blank">nature.com/articles/nature14236</a></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="s1-easy">Easy</button>
+        <button class="tab-btn" data-target="s1-medium">Medium</button>
+        <button class="tab-btn" data-target="s1-complex">Complex</button>
+      </div>
+      <div class="tab-panel active" id="s1-easy">
+        <p class="q">Q. Why can't a Pacman agent just use a lookup table of state values?</p>
+        <p>Because the number of distinct Pacman board configurations (ghost positions × Pacman position × remaining food layout) is astronomically large — the agent could never visit, let alone store, a row for every one.</p>
+        <div class="ans">A table needs one entry per state; Pacman has far too many states to enumerate or store.</div>
+        <p class="insight"><strong>Key insight:</strong> generalization exists precisely because enumeration is infeasible.</p>
+      </div>
+      <div class="tab-panel" id="s1-medium">
+        <p class="q">Q. In the linear approximator v̂(s;θ)=Σθ<sub>i</sub>f<sub>i</sub>(s), what does "generalization" concretely mean once θ is tuned on one state?</p>
+        <ol>
+          <li>θ is a shared set of weights, not tied to any one state.</li>
+          <li>Any new state S′ — seen or unseen — is evaluated by the exact same formula, using its own feature vector f(S′).</li>
+        </ol>
+        <div class="ans">Tuning θ on state S automatically changes the predicted value for every other state that shares similar feature values with S — that sharing is generalization.</div>
+        <p class="insight"><strong>Key insight:</strong> features, not raw state identity, are what generalization is computed over.</p>
+      </div>
+      <div class="tab-panel" id="s1-complex">
+        <p class="q">Q. The deck reports naïve tabular Q-learning scoring &minus;14 after 50 episodes vs. +19 with function approximation after the same 50 episodes. Explain the mechanism behind this gap.</p>
+        <ol>
+          <li>Tabular Q-learning treats any pixel-different configuration as an unrelated state with its own (initially zero) value.</li>
+          <li>50 episodes visit only a tiny fraction of all possible configurations, so most states the agent encounters late in an episode are still "unlearned," even if very similar dangerous states were visited earlier.</li>
+          <li>A function approximator maps every state through shared features (e.g. "distance to nearest ghost"), so one dangerous encounter updates the value estimate for <em>every</em> state with a similar ghost-distance feature — including states never directly visited.</li>
+        </ol>
+        <div class="ans">The identical training budget (50 episodes) yields wildly different performance because function approximation converts each single experience into knowledge about a whole neighborhood of states, while the table converts it into knowledge about exactly one state.</div>
+        <p class="insight"><strong>Key insight:</strong> sample efficiency, not just raw training volume, is the real payoff of generalization.</p>
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="tag">Exam Alert</span>
+      <p><strong>Likely question:</strong> "Why does reinforcement learning need function approximation for real-world problems?" — cite the state-space explosion argument and the Pacman before/after scores as evidence.</p>
+      <p><strong>Common mistake:</strong> saying tabular methods are "wrong" — they're correct but computationally infeasible at scale, which is a different claim.</p>
+    </div>
+  </section>
+
+  <section id="s2" class="topic">
+    <div class="topic-tag">// 02</div>
+    <h2>Loss, Gradient Descent &amp; the Learning Rate <span class="badge">LAB</span></h2>
+
+    <h3>Intuition first</h3>
+    <p>The deck poses the motivating problem concretely: suppose we already know the true value of a handful of states — say v(S<sub>1</sub>)=5, v(S<sub>2</sub>)=8, v(S<sub>3</sub>)=2 — and we want to set θ so that v̂(s;θ) matches these as closely as possible. We can't usually make θ fit <em>every</em> true value exactly — there are typically far more states than parameters, so a perfect fit is impossible (like trying to draw one straight line through ten randomly scattered points). Instead we minimize <strong>total error</strong> across the states we know about.</p>
+    <p>The first instinct — use absolute error — turns out to be a dead end: <code class="inline">|v(s) − v̂(s;θ)|</code> has a sharp kink at zero, so it isn't differentiable there, and gradient descent needs a smooth slope to follow. The deck's own phrasing: <em>"Ooops! Absolute value is not differentiable → can't compute gradients."</em> The fix is the classic one — square the error instead.</p>
+
+    <div class="eqn">
+      <span class="label">Squared value error (loss)</span>
+      loss = ½ Σ<sub>s</sub> [ v(s) &minus; v̂(s;θ) ]²
+    </div>
+
+    <h3>Gradient descent</h3>
+    <p>For every parameter θ<sub>i</sub>, the partial derivative ∂loss/∂θ<sub>i</sub> tells you the direction that <em>increases</em> loss the most — so you step the opposite way:</p>
+
+    <div class="eqn gold">
+      <span class="label">Update rule</span>
+      θ ← θ &minus; α ∇loss &nbsp;&nbsp;where&nbsp;&nbsp; ∇loss = ( ∂loss/∂θ<sub>1</sub>, ∂loss/∂θ<sub>2</sub>, …, ∂loss/∂θ<sub>n</sub> )
+    </div>
+
+    <p>Think of it as being blindfolded on a hilly landscape, feeling which way is downhill, and taking a step in that direction. The <strong>learning rate α</strong> controls step size: too large and you overshoot the valley, bouncing between hillsides forever (divergence); too small and you crawl toward the minimum, or get stuck prematurely in a shallow dip.</p>
+
+    <table class="data">
+      <tr><th>α setting</th><th>Effect</th></tr>
+      <tr><td>Too large</td><td class="num">Overshoots the minimum → oscillates or diverges entirely</td></tr>
+      <tr><td>Too small</td><td class="num">Converges, but painfully slowly; may look "stuck" prematurely</td></tr>
+      <tr><td>Well-tuned</td><td class="num">Steady descent into the loss valley within a reasonable number of steps</td></tr>
+    </table>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="s2-easy">Easy</button>
+        <button class="tab-btn" data-target="s2-medium">Medium</button>
+        <button class="tab-btn" data-target="s2-complex">Complex</button>
+      </div>
+      <div class="tab-panel active" id="s2-easy">
+        <p class="q">Q. Why is squared error preferred over absolute error as a loss function here?</p>
+        <p>Absolute value has a non-differentiable kink at zero; squared error is smooth everywhere, so its gradient can always be computed.</p>
+        <div class="ans">Squared error is differentiable everywhere; absolute error is not differentiable at zero.</div>
+        <p class="insight"><strong>Key insight:</strong> squaring also penalizes large errors more heavily than small ones — a useful side-effect, not just a differentiability fix.</p>
+      </div>
+      <div class="tab-panel" id="s2-medium">
+        <p class="q">Q. What happens during gradient descent if the learning rate α is set far too large for the loss landscape?</p>
+        <ol>
+          <li>Each step moves further than the local slope actually justifies.</li>
+          <li>The parameter overshoots the minimum and lands on the opposite side of the valley, often at a higher loss than before.</li>
+          <li>Repeating this bounces the parameter back and forth with growing amplitude.</li>
+        </ol>
+        <div class="ans">The updates diverge instead of converging — loss can grow without bound rather than shrink.</div>
+        <p class="insight"><strong>Key insight:</strong> "too large α" is a real failure mode, not just "slower convergence" — it can actively destroy training.</p>
+      </div>
+      <div class="tab-panel" id="s2-complex">
+        <p class="q">Q. Derive why the gradient of a linear approximator v̂(s;θ)=Σθ<sub>i</sub>f<sub>i</sub>(s) with respect to θ is simply the feature vector f(s) itself.</p>
+        <ol>
+          <li>v̂(s;θ) = θ<sub>1</sub>f<sub>1</sub>(s) + θ<sub>2</sub>f<sub>2</sub>(s) + … + θ<sub>n</sub>f<sub>n</sub>(s).</li>
+          <li>∂v̂/∂θ<sub>i</sub> = f<sub>i</sub>(s), since every other term in the sum doesn't involve θ<sub>i</sub> and differentiates to 0.</li>
+          <li>Stacking all partials gives ∇<sub>θ</sub>v̂(s;θ) = ( f<sub>1</sub>(s), f<sub>2</sub>(s), …, f<sub>n</sub>(s) ) = f(s).</li>
+        </ol>
+        <div class="ans">∇v̂(s;θ) = f(s) for a linear approximator — this is exactly why every worked weight-update example in this guide multiplies the TD/MC error by the feature vector.</div>
+        <p class="insight"><strong>Key insight:</strong> this shortcut only holds because the approximator is linear in θ; for a neural network the gradient must be computed via backpropagation instead.</p>
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="tag">Exam Alert</span>
+      <p><strong>Likely question:</strong> derive or state the squared-error loss and the gradient-descent update rule; explain the consequence of a badly chosen learning rate.</p>
+      <p><strong>Exam-critical:</strong> ∇v̂(s;θ) = f(s) for linear approximators — nearly every subsequent worked example in this course relies on this being second nature.</p>
+    </div>
+  </section>
+
+  <section id="s3" class="topic">
+    <div class="topic-tag">// 03</div>
+    <h2>Gradient Monte Carlo Estimation <span class="badge">LAB</span></h2>
+
+    <h3>Intuition first</h3>
+    <p><strong>Gradient Monte Carlo</strong> plays a full episode start-to-finish, then updates θ toward the <em>actual observed return</em> G<sub>t</sub> — a real, honest measurement of "how good was this state, in hindsight." Because G<sub>t</sub> is unbiased (correct on average), this method is guaranteed to converge to a local optimum. The catch: you must wait until the whole episode ends before you can compute G<sub>t</sub>, so it can't learn "on the fly" during long or never-ending tasks.</p>
+
+    <pre class="pseudo"><span class="cmt">Gradient Monte Carlo Algorithm for Estimating v̂ ≈ v_π</span>
+
+Input: the policy π to be evaluated
+Input: a differentiable function v̂ : S × ℝ^d → ℝ
+
+Initialize value-function weights w arbitrarily (e.g., w = 0)
+Repeat forever:
+    Generate an episode S0, A0, R1, S1, A1, …, RT, ST using π
+    For t = 0, 1, …, T − 1:
+        w ← w + α[Gt − v̂(St, w)] ∇v̂(St, w)</pre>
+
+    <h3>Worked example — Pacman feature vector</h3>
+    <p>State S has features [2,2,1] (f<sub>1,2</sub> = distance to ghost 1,2; f<sub>3</sub> = distance to food). Weights start at θ = [0,0,0], and a full episode gives an observed return G<sub>t</sub> = 10.</p>
+    <div class="eqn gold">
+      <span class="label">Update</span>
+      θ = [0,0,0] + 0.1 · (10 &minus; [0,0,0]·[2,2,1]) · [2,2,1] = [0,0,0] + 0.1·10·[2,2,1] = <strong>[2,2,1]</strong>
+    </div>
+    <p>Now predict a brand-new state S′ with features [2,4,1] — never directly visited — just by plugging into the same formula:</p>
+    <div class="eqn">
+      <span class="label">Prediction on an unseen state</span>
+      v̂(S′) = f(S′)·θ = [2,4,1]·[2,2,1] = (2×2)+(4×2)+(1×1) = 4+8+1 = <strong>13</strong>
+    </div>
+    <p>No table lookup needed for S′ — the linear formula instantly gives a sensible estimate purely because S′ shares similar features with the state we trained on.</p>
+
+    <div class="callout key">
+      <span class="tag">Key Insight</span>
+      <p>The gradient of a linear v̂ with respect to θ is just the feature vector itself — that's why every update multiplies (error) × (features) directly, with no extra derivative machinery needed.</p>
+    </div>
+  </section>
+
+  <section id="s4" class="topic">
+    <div class="topic-tag">// 04</div>
+    <h2>Semi-Gradient TD(0) &amp; n-Step Returns <span class="badge">LAB</span></h2>
+
+    <h3>Intuition first — bootstrapping without waiting for the episode to end</h3>
+    <p>Monte Carlo needs a full episode before it can learn. <strong>Bootstrapping</strong> fixes this by updating using a <em>guess of a guess</em>: instead of the true final return G<sub>t</sub>, use "immediate reward + our own current estimate of the next state's value." This lets the agent learn after every single step — much faster, and usable on tasks that never terminate.</p>
+
+    <div class="eqn">
+      <span class="label">Tabular TD(0)</span>
+      v̂(s<sub>t</sub>) ← v̂(s<sub>t</sub>) + α( r<sub>t</sub> + γ v̂(s<sub>t+1</sub>) &minus; v̂(s<sub>t</sub>) )
+    </div>
+    <div class="eqn gold">
+      <span class="label">Approximation TD(0) — "semi-gradient"</span>
+      θ ← θ + α( r<sub>t</sub> + γ v̂(s<sub>t+1</sub>;θ) &minus; v̂(s<sub>t</sub>;θ) ) ∇v̂(s<sub>t</sub>;θ)
+    </div>
+
+    <p>Because we're using our <em>own imperfect estimate</em> as part of the target — bootstrapping ourselves up by our own bootstraps — the math isn't perfectly "clean": we only differentiate through the current prediction, not through the bootstrapped target itself. That's why it's called <strong>semi</strong>-gradient. This means it loses the formal convergence guarantee Monte Carlo has — but in practice it's usually faster and more broadly useful, especially with linear approximators.</p>
+
+    <p>Despite giving up the clean convergence guarantee, the deck is explicit that semi-gradient methods are <strong>often clearly preferred</strong>, for four reasons:</p>
+    <ul>
+      <li>They converge reliably in important cases — notably the <strong>linear approximation</strong> case used throughout this course.</li>
+      <li>They typically enable <strong>significantly faster learning</strong> than full-gradient Monte Carlo methods.</li>
+      <li>They enable learning to be <strong>continual and online</strong>, without waiting for the end of an episode.</li>
+      <li>This makes them usable on <strong>continuing (non-episodic) problems</strong> and gives real computational advantages over storing a full episode before learning.</li>
+    </ul>
+
+    <table class="data">
+      <tr><th>Property</th><th>Monte Carlo</th><th>Semi-gradient TD</th></tr>
+      <tr><td>Needs full episode?</td><td class="num">Yes</td><td class="num">No — updates every step</td></tr>
+      <tr><td>Target is unbiased?</td><td class="num">Yes (G<sub>t</sub> is real)</td><td class="num">No — bootstrapped, biased</td></tr>
+      <tr><td>Convergence guarantee</td><td class="num">To a local optimum</td><td class="num">Reliable for linear case; not guaranteed in general</td></tr>
+      <tr><td>Works on continuing tasks?</td><td class="num">No</td><td class="num">Yes</td></tr>
+    </table>
+
+    <h3>Worked example</h3>
+    <p>State S has features [2,3,1]; taking an action gives reward R=+10 and lands in S′ with features [1,2,1]. θ starts at [0,0,0].</p>
+    <div class="eqn gold">
+      <span class="label">Update</span>
+      θ = [0,0,0] + 0.1·(10 + [1,2,1]·[0,0,0] &minus; [2,3,1]·[0,0,0])·[2,3,1] = <strong>[2,3,1]</strong>
+    </div>
+    <p>Predicting a brand-new state U with features [2,4,1]:</p>
+    <div class="eqn">
+      <span class="label">Prediction</span>
+      v̂(U) = [2,4,1]·[2,3,1] = (2×2)+(4×3)+(1×1) = 4+12+1 = <strong>17</strong>
+    </div>
+
+    <h3>n-step returns — the middle ground</h3>
+    <p>n-step TD sits between one-step TD (bootstrap almost immediately) and Monte Carlo (bootstrap never). Bigger n means more real observed reward (less bias) but more randomness in the trajectory (more variance) — the classic bias–variance tradeoff.</p>
+
+    <div class="eqn">
+      <span class="label">n-step return</span>
+      G<sub>t:t+n</sub> = R<sub>t+1</sub> + γR<sub>t+2</sub> + ⋯ + γ<sup>n&minus;1</sup>R<sub>t+n</sub> + γ<sup>n</sup>V<sub>t+n&minus;1</sub>(S<sub>t+n</sub>)
+    </div>
+
+    <div class="flow">
+      <div class="node">1-step TD<br><span class="subtle">most bootstrapped</span></div>
+      <div class="arrow">→</div>
+      <div class="node">2-step TD</div>
+      <div class="arrow">→</div>
+      <div class="node">n-step TD</div>
+      <div class="arrow">→</div>
+      <div class="node">∞-step / Monte Carlo<br><span class="subtle">zero bootstrapping</span></div>
+    </div>
+    <p class="subtle">This spectrum is the classic "backup diagram" from Sutton &amp; Barto Ch.7: each rung is a chain of real-experience steps (drawn as filled dots) terminating in a bootstrapped estimate (an open circle) — 1-step TD bottoms out after one real reward, Monte Carlo never bottoms out until the actual terminal state. The <em>tabular</em> version of this algorithm updates a table entry V(S<sub>τ</sub>) directly; the n-step <em>semi-gradient</em> version below is the one-line generalization to weight updates.</p>
+
+    <pre class="pseudo"><span class="cmt">n-step semi-gradient TD for estimating v̂ ≈ v_π</span>
+
+Initialize value-function weights w arbitrarily (e.g., w = 0)
+Repeat (for each episode):
+    Initialize and store S0 ≠ terminal
+    T ← ∞
+    For t = 0, 1, 2, …:
+        If t < T, then:
+            Take an action according to π(·|St)
+            Observe/store next reward Rt+1 and next state St+1
+            If St+1 is terminal, then T ← t+1
+        τ ← t − n + 1     <span class="cmt">(τ is the time whose estimate is updated)</span>
+        If τ ≥ 0:
+            G ← Σ γ^(i−τ−1) Ri  for i = τ+1 … min(τ+n, T)
+            If τ+n < T: G ← G + γ^n v̂(S_(τ+n), w)
+            w ← w + α[G − v̂(Sτ,w)] ∇v̂(Sτ,w)
+    Until τ = T − 1</pre>
+
+    <p class="subtle">Notice the only real change from the tabular n-step algorithm: a weight update (<code class="inline">w ← w + α[G − v̂(Sτ,w)]∇v̂(Sτ,w)</code>) instead of a tabular entry update — the n-step bookkeeping logic is otherwise identical.</p>
+
+    <div class="callout research">
+      <span class="tag">Research Enhanced</span>
+      <p>The instability of bootstrapped methods combined with function approximation and off-policy training is formalized as <strong>"the deadly triad"</strong> in Sutton &amp; Barto's textbook. A famous illustration is <strong>Baird's counterexample</strong> (1995) — a simple 7-state MDP where semi-gradient TD with linear function approximation provably diverges, even though the tabular version converges fine. This is one reason DQN needed extra stabilizers (target networks, experience replay) — see Section 08.</p>
+      <div class="src">Sources: <a href="http://incompleteideas.net/book/RLbook2020.pdf" target="_blank">incompleteideas.net/book/RLbook2020.pdf</a> (§11.3, "Deadly Triad")</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="s4-easy">Easy</button>
+        <button class="tab-btn" data-target="s4-medium">Medium</button>
+        <button class="tab-btn" data-target="s4-complex">Complex</button>
+      </div>
+      <div class="tab-panel active" id="s4-easy">
+        <p class="q">Q. What is the main practical advantage of semi-gradient TD(0) over Gradient Monte Carlo?</p>
+        <p>It updates after every single step rather than waiting for an episode to finish, so it works on long or never-ending tasks and typically learns faster.</p>
+        <div class="ans">Online, step-by-step learning — no need to wait for episode termination.</div>
+        <p class="insight"><strong>Key insight:</strong> the tradeoff is losing the formal convergence guarantee that Monte Carlo methods have.</p>
+      </div>
+      <div class="tab-panel" id="s4-medium">
+        <p class="q">Q. θ=[1,1,1], features f(S)=[1,0,1], reward R=4, γ=0.5, α=0.2, and v̂(S′;θ)=3. Compute the new θ using semi-gradient TD(0).</p>
+        <ol>
+          <li>v̂(S;θ) = [1,0,1]·[1,1,1] = 1+0+1 = 2.</li>
+          <li>TD error = R + γv̂(S′;θ) − v̂(S;θ) = 4 + 0.5(3) − 2 = 4+1.5−2 = 3.5.</li>
+          <li>θ ← θ + α·error·f(S) = [1,1,1] + 0.2×3.5×[1,0,1] = [1,1,1] + [0.7,0,0.7].</li>
+        </ol>
+        <div class="ans">New θ = [1.7, 1, 1.7].</div>
+        <p class="insight"><strong>Key insight:</strong> only the weights tied to non-zero features actually change on this update — the middle weight (tied to a zero feature) stays untouched.</p>
+      </div>
+      <div class="tab-panel" id="s4-complex">
+        <p class="q">Q. Explain, in terms of bias and variance, why n-step returns with a moderate n often outperform both 1-step TD and full Monte Carlo in practice.</p>
+        <ol>
+          <li>1-step TD bootstraps almost immediately — low variance (only one random reward involved) but high bias, since it leans heavily on a possibly-inaccurate current value estimate.</li>
+          <li>Monte Carlo uses zero bootstrapping — unbiased target, but high variance, since the full trajectory of rewards is random and can swing widely between episodes.</li>
+          <li>An intermediate n uses n real rewards (reducing reliance on the current, possibly-wrong estimate — lower bias than 1-step) while still bootstrapping the tail (capping variance growth compared to full Monte Carlo).</li>
+        </ol>
+        <div class="ans">n-step returns occupy a tunable "sweet spot" on the bias–variance curve; this is exactly why multi-step returns are one of the independently-verified performance boosts in DeepMind's Rainbow DQN paper.</div>
+        <p class="insight"><strong>Key insight:</strong> there's no free lunch — you're choosing where on the bias–variance spectrum to sit, not eliminating the tradeoff.</p>
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="tag">Exam Alert</span>
+      <p><strong>Likely question:</strong> compute a semi-gradient TD(0) weight update given θ, features, reward, and next-state features; explain why semi-gradient methods aren't guaranteed to converge in general.</p>
+      <p><strong>Common mistake:</strong> forgetting to bootstrap through the <em>next</em> state's value with the <em>current</em> θ — students sometimes compute the TD error as if this were Monte Carlo (using an actual return G<sub>t</sub> instead of r + γv̂(s′)).</p>
+    </div>
+  </section>
+
+  <section id="s5" class="topic">
+    <div class="topic-tag">// 05</div>
+    <h2>Feature Construction: Polynomial, Fourier, Coarse &amp; Tile Coding</h2>
+
+    <h3>Intuition first — the hardest remaining question</h3>
+    <p>Once you've decided to use a linear approximator v̂(f(s);θ) = f(s)·θ, the hardest remaining question is: <em>what numbers should represent the state?</em> For Pacman, maybe "distance to nearest ghost." For a racing game, maybe "speed." For Breakout, maybe "ball position and velocity." The problem: hand-designing features for every new domain requires a domain expert — it doesn't scale to a general-purpose agent that should play <em>any</em> game without human help.</p>
+    <p>Raw pixel data doesn't hand you these concepts directly — a pixel is just <code class="inline">pixel(7,3) = [0,0,0]</code> (black); you want "where's the ball," "how fast is it moving," which must be <em>inferred</em>, not read off. The rest of this section is a tour of ways to automatically construct features — polynomial and Fourier bases (global, mathematically-defined), coarse and tile coding (local, region-based) — ending with the observation that all of them are still, ultimately, a "needle in a combinatorial haystack" compared to what a deep neural network can learn automatically.</p>
+
+    <h3>Polynomial and Fourier bases</h3>
+    <div class="eqn">
+      <span class="label">Polynomial basis</span>
+      f<sub>i</sub>(s) = Π<sub>j=1..k</sub> x<sub>j</sub><sup>c<sub>i,j</sub></sup> &nbsp;&nbsp;where each c<sub>i,j</sub> ∈ {0,1,…,n} → (n+1)<sup>k</sup> total features
+    </div>
+    <div class="eqn">
+      <span class="label">Fourier basis</span>
+      f<sub>i</sub>(s) = cos( π X<sup>⊤</sup> c<sup>i</sup> ) &nbsp;&nbsp;— cosine waves of different frequencies over the state dimensions
+    </div>
+    <p>Polynomials generate combinations like x<sub>1</sub>, x<sub>2</sub>, x<sub>1</sub>², x<sub>1</sub>x<sub>2</sub>, etc. — this lets a "linear" approximator fit curved relationships, since even though the <em>weights</em> combine linearly, the <em>inputs</em> are nonlinear transforms. The Fourier basis instead decomposes the value function into cosine components, just like decomposing a sound wave into pure tones — higher-frequency terms capture fine "wiggly" detail; lower-frequency terms capture broad trends. Both suffer the same curse of dimensionality: (n+1)<sup>k</sup> features explodes exponentially as state dimensions grow.</p>
+
+    <h3>Coarse coding</h3>
+    <p>Represent a continuous state as being "inside" or "outside" many overlapping regions (e.g. circles). If a state falls inside a circle, that feature turns on (1); otherwise it's off (0). Overlapping circles mean nearby states share many active features — updating one circle's weight automatically shifts the value estimate for every other state that also falls in that circle.</p>
+
+    <div class="flow">
+      <div class="node">State s inside circles A, B, C<br><span class="subtle">features: 1,1,1,0,0…</span></div>
+      <div class="arrow">↔</div>
+      <div class="node">Nearby state s′ inside B, C, D<br><span class="subtle">features: 0,1,1,1,0…</span></div>
+    </div>
+
+    <table class="data">
+      <tr><th>Circle size</th><th>Effect</th></tr>
+      <tr><td>Narrow generalization</td><td class="num">Precise but slow to spread useful info; sharp final detail</td></tr>
+      <tr><td>Broad generalization</td><td class="num">Fast to spread info; blurrier/less-precise final detail</td></tr>
+      <tr><td>Asymmetric</td><td class="num">Stretched circles bias generalization more strongly along one state dimension</td></tr>
+    </table>
+
+    <p>The deck's own training-curve chart makes this concrete: approximating a "box" target function (flat, with a raised rectangular bump), tracked at 10, 40, 160, 640, 2560, and 10,240 training examples. With <strong>narrow features</strong>, early estimates (10 examples) look jagged and slow to generalize, but eventually trace the box's sharp edges accurately. With <strong>broad features</strong>, early estimates already look like a smooth wide bump (fast generalization), but the final approximation stays rounded/blurred at the edges rather than sharp. Medium-width features sit in between. This is the same bias–variance-style tradeoff from Section 04, now expressed as a resolution-vs-generalization-speed tradeoff.</p>
+
+    <h3>Tile coding</h3>
+    <p>A computationally efficient special case of coarse coding: lay multiple grids ("tilings") over the state space, each offset slightly from the others. Any point activates <strong>exactly one tile per tiling</strong> — so with 4 tilings, exactly 4 out of thousands of possible tile-features turn on. This sparsity makes updates fast, while offset overlap still gives smooth generalization.</p>
+
+    <div class="callout key">
+      <span class="tag">Key Insight</span>
+      <p>Empirically, more overlapping tilings converge faster: on the deck's own chart, "50 tilings" reaches lower root-value-error much faster than "state aggregation (one tiling)" over 5,000 episodes. Tile shapes needn't be plain squares either — irregular, log-spaced, or diagonal tilings all make sense depending on which combinations of state variables matter most.</p>
+    </div>
+
+    <div class="callout research">
+      <span class="tag">Research Enhanced</span>
+      <p>Tile coding traces back to Albus's <strong>CMAC (Cerebellar Model Arithmetic Computer, 1975)</strong>, a biologically-inspired cerebellar learning model, later refined for RL by Rich Sutton. It has been used extensively in robotics (Tham 1994, Q-learning/Sarsa(λ) for robot control) and classic RL benchmarks like Mountain Car and RoboCup soccer (Stone &amp; Sutton, 2001), precisely because it handles continuous, multi-dimensional state spaces without the exponential blow-up of a naïve polynomial basis. The Fourier basis for RL was separately formalized by Konidaris, Osentoski &amp; Thomas (2011), who showed it often outperforms both polynomial and radial basis functions on classic control tasks while needing fewer free parameters.</p>
+      <div class="src">Sources: <a href="https://medium.com/criteo-engineering/tile-coding-an-efficient-sparse-coding-method-for-real-valued-data-e787eddf630a" target="_blank">medium.com/criteo-engineering — tile coding</a> · <a href="http://incompleteideas.net/tiles/tiles3.html" target="_blank">incompleteideas.net/tiles</a> · <a href="https://arxiv.org/abs/1109.4991" target="_blank">arxiv.org/abs/1109.4991</a> (Fourier basis)</div>
+    </div>
+
+    <h3>The pivot: why deep learning takes over from here</h3>
+    <p>All the hand-designed feature methods above share a weakness: they require guessing a reasonable structure in advance, and for high-dimensional raw inputs like pixels, the "right" features might technically exist mathematically but are effectively impossible to find by hand — a needle in a combinatorially huge haystack. The proposed fix, which the rest of this course (Sections 06–08) builds toward: let a <strong>deep neural network learn the features automatically</strong> through training. This is exactly what CNNs do for pixel-based Atari games in Deep Q-Networks.</p>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="s5-easy">Easy</button>
+        <button class="tab-btn" data-target="s5-medium">Medium</button>
+        <button class="tab-btn" data-target="s5-complex">Complex</button>
+      </div>
+      <div class="tab-panel active" id="s5-easy">
+        <p class="q">Q. In tile coding with 5 offset tilings, how many tile-features are active for any given state?</p>
+        <p>Exactly 5 — one active tile per tiling, regardless of how many total tiles exist across all tilings.</p>
+        <div class="ans">Exactly one active tile per tiling → 5 active features total.</div>
+        <p class="insight"><strong>Key insight:</strong> this "one-hot per tiling" structure is what keeps tile coding sparse and cheap to update.</p>
+      </div>
+      <div class="tab-panel" id="s5-medium">
+        <p class="q">Q. Why does both the polynomial basis and the Fourier basis suffer from the curse of dimensionality?</p>
+        <ol>
+          <li>Both generate one feature for every combination of per-dimension "degrees" or "frequencies" up to order n.</li>
+          <li>With k state dimensions, the number of such combinations is (n+1)<sup>k</sup>.</li>
+        </ol>
+        <div class="ans">The feature count grows exponentially in k (the number of state dimensions), so both bases become impractical once the state has more than a handful of dimensions.</div>
+        <p class="insight"><strong>Key insight:</strong> this is exactly why coarse/tile coding (local, sparse) or deep learning (learned, not enumerated) are preferred for high-dimensional states.</p>
+      </div>
+      <div class="tab-panel" id="s5-complex">
+        <p class="q">Q. Contrast coarse coding's "narrow vs. broad" circle-size tradeoff with tile coding's "number of tilings" tradeoff — are they the same knob?</p>
+        <ol>
+          <li>In coarse coding, circle <em>size</em> controls generalization width per feature: bigger circles → faster spread of learning but blurrier final resolution.</li>
+          <li>In tile coding, the analogous "size" knob is the tile width within a single tiling — larger tiles behave like larger coarse-coding circles.</li>
+          <li>But tile coding adds an independent second knob: <em>number of tilings</em>. More tilings (each offset slightly) increases resolution and smoothness <em>without</em> shrinking any individual tile — this is not available in single-layer coarse coding.</li>
+        </ol>
+        <div class="ans">Tile width is analogous to coarse-coding circle size, but the number of overlapping tilings is a genuinely separate axis that lets tile coding get both broad reach and fine resolution simultaneously — which is why 50 tilings clearly outperforms one tiling ("state aggregation") on the deck's own convergence chart.</div>
+        <p class="insight"><strong>Key insight:</strong> tile coding is coarse coding plus a structured, computationally cheap way to add many overlapping "layers" of resolution.</p>
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="tag">Exam Alert</span>
+      <p><strong>Likely question:</strong> compare/contrast polynomial basis, Fourier basis, coarse coding, and tile coding — feature representation, dimensionality scaling, and generalization behavior.</p>
+      <p><strong>Exam-critical:</strong> know that tile coding activates exactly one tile per tiling, and that coarse-coding circle size trades off generalization speed against final precision.</p>
+    </div>
+  </section>
+
+  <section id="s6" class="topic">
+    <div class="topic-tag">// 06</div>
+    <h2>On-Policy vs Off-Policy: SARSA vs Q-Learning <span class="badge">LAB</span></h2>
+
+    <h3>Intuition first — the Chrome T-Rex Dino game</h3>
+    <p>The second deck runs this entire comparison through the offline Chrome "No Internet" T-Rex game: state space larger in dimension (obstacle distance, height, speed), action space {0 – No-Op, 1 – Jump, 2 – Duck}. The deck poses a direct tradeoff:</p>
+    <table class="data">
+      <tr><th>Requirement</th><th>Choice</th></tr>
+      <tr><td>Sample-efficient learning with fast convergence</td><td class="num">Off-policy — <strong>Q-learning</strong></td></tr>
+      <tr><td>Online, stable learning</td><td class="num">On-policy — <strong>SARSA</strong></td></tr>
+    </table>
+
+    <h3>Feature construction for the Dino game (coarse coding, applied)</h3>
+    <p>Before values can be approximated, the continuous Dino state needs features — the deck applies coarse coding from Section 05 directly: two overlapping circular feature detectors, F1 and F2, laid over a 2D space of <strong>distance to the first obstacle</strong> (x-axis) and <strong>height of the first obstacle</strong> (y-axis).</p>
+    <div class="flow">
+      <div class="node">State S1<br><span class="subtle">inside circle F1 only</span><br>φ(1,0)</div>
+      <div class="arrow">↔</div>
+      <div class="node">State S2<br><span class="subtle">inside F1 <em>and</em> F2 overlap</span><br>φ(1,1)</div>
+    </div>
+    <p class="subtle">S1 falls only inside F1, giving encoding φ(1,0). S2 falls inside both circles' overlap region, giving φ(1,1). This is exactly coarse coding from Section 05, now applied concretely to a game state.</p>
+
+    <h3>Encoding the action into the feature vector</h3>
+    <p>Since we're now estimating <strong>action</strong> values Q(s,a) instead of state values V(s), the action must be part of the feature vector, or the same features would give the same value regardless of which action is being considered. The deck's trick: append the action as an extra number onto the state's feature vector.</p>
+    <div class="eqn">
+      <span class="label">Feature encoding</span>
+      S1: φ(1,0,0) if no action performed &nbsp;&middot;&nbsp; S2: φ(1,1,0) if no action performed &nbsp;&middot;&nbsp; S3: φ(1,1,1) if "jump" action performed
+    </div>
+
+    <h3>Semi-gradient SARSA (on-policy)</h3>
+    <pre class="pseudo"><span class="cmt">Episodic Semi-gradient Sarsa for Estimating q̂ ≈ q*</span>
+
+Initialize value-function weights w arbitrarily (e.g., w = 0)
+Loop for each episode:
+    S, A ← initial state and action (e.g., ε-greedy)
+    Loop for each step of episode:
+        Take action A, observe R, S′
+        If S′ is terminal:
+            w ← w + α[R − q̂(S,A,w)] ∇q̂(S,A,w)
+            Go to next episode
+        Choose A′ as a function of q̂(S′,·,w) (e.g., ε-greedy)
+        w ← w + α[R + γ q̂(S′,A′,w) − q̂(S,A,w)] ∇q̂(S,A,w)
+        S ← S′;  A ← A′</pre>
+
+    <p>SARSA's target uses <code class="inline">q̂(S′,A′,w)</code> — the value of the <strong>actual next action A′ that will really be taken</strong>, chosen the same (e.g. ε-greedy) way every action is chosen. That's what makes it <strong>on-policy</strong>: it evaluates the same policy it's actually following, exploration and all.</p>
+
+    <h3>Semi-gradient Q-learning (off-policy)</h3>
+    <pre class="pseudo"><span class="cmt">Q-learning (off-policy TD control) for estimating π ≈ π*</span>
+
+Repeat (for each episode):
+    Initialize S
+    Repeat (for each step of episode):
+        Choose A from S using policy derived from Q (e.g., ε-greedy)
+        Take action A, observe R, S′
+        θ = θ + α( R + γ max_a Q̂(S′,a;θ) − Q̂(S,A;θ) ) ∇θ Q̂(S,A;θ)
+        S ← S′
+    until S is terminal</pre>
+
+    <p>Q-learning's target uses <code class="inline">max<sub>a</sub> Q̂(S′,a;θ)</code> — the value of the <strong>best possible</strong> next action, regardless of what the agent will actually do. That's what makes it <strong>off-policy</strong>: it learns about the greedy/optimal policy's values even while the agent may be behaving more randomly (exploring) during training.</p>
+
+    <h3>Worked numeric comparison — T-Rex Dino transition</h3>
+    <p>Setup: θ=[1.0,0.5,1.0], γ=0.2, α=0.9. Transition: (S1, action:0, reward:2, S2, next action:0). S1: φ(1,0,0), S2: φ(1,1,0). Current estimate Q(S1,a=0,θ) = [1,0,0]·[1.0,0.5,1.0] = <strong>1.0</strong>.</p>
+
+    <div class="eqn gold">
+      <span class="label">SARSA target (uses actual next action = 0)</span>
+      error = r + γQ(s2′,a′=0,θ) − Q(s1,a=0,θ) = 2 + 0.2([1,1,0]·[1.0,0.5,1.0]) − 1.0 = 2 + 0.2(1.5) − 1.0 = 2.3 − 1.0 = <strong>1.3</strong>
+    </div>
+    <div class="eqn rose">
+      <span class="label">Q-learning target (uses MAX over both next actions)</span>
+      error = r + γ·MAX{ Q(s2′,0,θ), Q(s2′,1,θ) } − Q(s1,a=0,θ) = 2 + 0.2·MAX{1.5, 2.5} − 1.0 = 2 + 0.2(2.5) − 1.0 = 2.5 − 1.0 = <strong>1.5</strong>
+    </div>
+
+    <p>Applying the SGD update (θ ← θ + α·error·[1,0,0], since only the first feature is active):</p>
+    <table class="data">
+      <tr><th>Method</th><th>Error</th><th>Updated θ<sub>1</sub></th></tr>
+      <tr><td>SARSA (on-policy)</td><td class="num">1.3</td><td class="num">1.0 + 0.9×1.3 = <strong>2.17</strong></td></tr>
+      <tr><td>Q-learning (off-policy)</td><td class="num">1.5</td><td class="num">1.0 + 0.9×1.5 = <strong>2.35</strong></td></tr>
+    </table>
+    <p>Because Q-learning's error (1.5) is larger than SARSA's (1.3), its weight update is also larger — it pushes its estimate up further, purely by <em>assuming</em> the best-case next action will be taken. This "optimism" is exactly what causes the maximization bias covered in Section 07.</p>
+
+    <div class="callout research">
+      <span class="tag">Research Enhanced</span>
+      <p>The Chrome Dino game is a well-known toy RL benchmark (accessed via <code class="inline">chrome://dino</code>), used in many educational RL projects precisely because it's simple enough to reason through by hand yet has enough continuous-state complexity to meaningfully illustrate function approximation. The same on-policy/off-policy tradeoff this section demonstrates is the one made famous by Sutton &amp; Barto's <strong>Cliff Walking</strong> example, where Q-learning learns the objectively optimal (risky, cliff-hugging) path faster while SARSA learns a safer path that accounts for its own exploration risk.</p>
+      <div class="src">Sources: <a href="http://incompleteideas.net/book/RLbook2020.pdf" target="_blank">incompleteideas.net/book/RLbook2020.pdf</a> (Example 6.6, Cliff Walking) · <a href="https://en.wikipedia.org/wiki/Q-learning" target="_blank">en.wikipedia.org/wiki/Q-learning</a></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="s6-easy">Easy</button>
+        <button class="tab-btn" data-target="s6-medium">Medium</button>
+        <button class="tab-btn" data-target="s6-complex">Complex</button>
+      </div>
+      <div class="tab-panel active" id="s6-easy">
+        <p class="q">Q. Which method — SARSA or Q-learning — is on-policy, and what's the one-line reason?</p>
+        <p>SARSA is on-policy because its target uses the value of the action the policy will actually take next (A′), including exploration.</p>
+        <div class="ans">SARSA is on-policy; Q-learning is off-policy because it always targets the max over next actions, regardless of what will actually be done.</div>
+        <p class="insight"><strong>Key insight:</strong> "on-policy" means evaluating the policy you're actually following; "off-policy" means evaluating a different (typically greedy) policy.</p>
+      </div>
+      <div class="tab-panel" id="s6-medium">
+        <p class="q">Q. In the T-Rex worked example, why is the Q-learning error (1.5) larger than the SARSA error (1.3) for the identical transition?</p>
+        <ol>
+          <li>Both start from the same current estimate Q(S1,a=0,θ)=1.0 and the same reward, γ, and S2.</li>
+          <li>SARSA's target uses Q(S2, a′=0) = 1.5 (the actual next action taken).</li>
+          <li>Q-learning's target uses MAX{Q(S2,0), Q(S2,1)} = MAX{1.5, 2.5} = 2.5 — the best possible action, not the one actually taken.</li>
+        </ol>
+        <div class="ans">Q-learning substitutes the higher-valued hypothetical action (2.5) for the actually-taken action's value (1.5), producing a bigger target and hence a bigger TD error.</div>
+        <p class="insight"><strong>Key insight:</strong> Q-learning is intrinsically "optimistic" about what happens next — useful for fast convergence, risky for bias (see Section 07).</p>
+      </div>
+      <div class="tab-panel" id="s6-complex">
+        <p class="q">Q. Suppose the actual next action taken in the SARSA experience tuple had instead been action 1 (not action 0). Would SARSA's target now equal Q-learning's target? Explain.</p>
+        <ol>
+          <li>SARSA's target would become r + γQ(S2,a′=1,θ) = 2 + 0.2(2.5) = 2.5.</li>
+          <li>Q-learning's target is always r + γ·MAX{Q(S2,0),Q(S2,1)} = 2 + 0.2(2.5) = 2.5, regardless of which action SARSA's tuple recorded.</li>
+          <li>So yes — in this specific case the two coincide, <em>because</em> the actually-taken action A′=1 happens to be the same one that maximizes Q(S2,·).</li>
+        </ol>
+        <div class="ans">SARSA and Q-learning only diverge when the actually-taken next action is <em>not</em> the greedy/maximizing one — e.g. under ε-greedy exploration, when a random (non-greedy) action gets taken. When the policy behaves greedily, the two targets coincide exactly.</div>
+        <p class="insight"><strong>Key insight:</strong> the on-policy/off-policy distinction only matters in the presence of exploration — a purely greedy policy makes SARSA and Q-learning identical.</p>
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="tag">Exam Alert</span>
+      <p><strong>Likely question:</strong> given a transition (S, a, r, S′, a′), compute both the SARSA target and the Q-learning target, and the resulting weight update for each.</p>
+      <p><strong>Common mistake:</strong> using the max over next actions for SARSA (that's Q-learning), or using the specific next action taken for Q-learning (that's SARSA) — the whole point of this section is that they use <em>different</em> next-state action selections.</p>
+    </div>
+  </section>
+
+  <section id="s7" class="topic">
+    <div class="topic-tag">// 07</div>
+    <h2>Maximization Bias &amp; Double Q-Learning <span class="badge">LAB</span></h2>
+
+    <h3>Intuition first — why MAX is dangerous</h3>
+    <p>Suppose the <em>true</em> value of both actions at state S2 is actually equal — say 2.0 each. But our function approximator, still training, gives <em>noisy</em> estimates: action 0 comes out as 1.5 (underestimate), action 1 comes out as 2.5 (overestimate) — purely due to noise, not because action 1 is genuinely better.</p>
+    <p>Q-learning's MAX operator will always pick whichever estimate happens to be highest — here, 2.5 — even though that's an artifact of noise. Statistically, taking the maximum over several noisy estimates of similar true values systematically <strong>overestimates</strong> the true maximum, on average. This is called <strong>maximization bias</strong>.</p>
+
+    <div class="callout key">
+      <span class="tag">Key Insight</span>
+      <p>Given true values Q(S2,0)=Q(S2,1)=2.0, and noisy estimates Q(S2,0)=1.5, Q(S2,1)=2.5: the correct expected target should be around 2 + 0.2×2.0 = 2.4. But vanilla Q-learning's target is 2 + 0.2×2.5 = 2.5 — inflated purely by picking whichever noisy estimate happened to be lucky.</p>
+    </div>
+
+    <h3>The fix: decouple selection from evaluation</h3>
+    <p>Use <strong>two independent</strong> value estimates — one (θ) to decide which action looks best, and a separate, independently-trained one (θ′) to evaluate how good that chosen action actually is. Since θ′ wasn't involved in "cherry-picking" the best-looking action, it's much less likely to share the same lucky noise.</p>
+
+    <pre class="pseudo"><span class="cmt">(Tabular) Double Q-learning, for estimating Q1 ≈ Q2 ≈ q*</span>
+
+Initialize Q1(s,a) and Q2(s,a) for all s,a, such that Q(terminal,·) = 0
+Loop for each episode:
+    Initialize S
+    Loop for each step of episode:
+        Choose A from S using ε-greedy in Q1 + Q2
+        Take action A, observe R, S′
+        With 0.5 probability:
+            Q1(S,A) ← Q1(S,A) + α( R + γQ2(S′, argmax_a Q1(S′,a)) − Q1(S,A) )
+        else:
+            Q2(S,A) ← Q2(S,A) + α( R + γQ1(S′, argmax_a Q2(S′,a)) − Q2(S,A) )
+        S ← S′
+    until S is terminal</pre>
+
+    <h3>Worked example — Double Q-learning on the T-Rex transition</h3>
+    <p>Same setup as Section 06: θ=[1.0,0.5,1.0], θ′=[0.1,0.3,1.0]. True value Q(S2,0)=Q(S2,1)=2.0.</p>
+
+    <div class="eqn gold">
+      <span class="label">Step 1 — select the action using θ</span>
+      ARGMAX{ Q(s2′,0,θ), Q(s2′,1,θ) } = ARGMAX{1.5, 2.5} → <strong>action a<sub>1</sub></strong>
+    </div>
+    <div class="eqn gold">
+      <span class="label">Step 2 — evaluate that selected action using the SEPARATE θ′</span>
+      Q(s2′, a<sub>1</sub>, θ′) = [1,1,1]·[0.1,0.3,1.0] = 0.1+0.3+1.0 = <strong>1.4</strong>
+    </div>
+    <p>Notice: 1.4 is much lower than what θ alone said for action 1 (2.5) — because θ′ wasn't involved in cherry-picking which action looked best.</p>
+    <div class="eqn rose">
+      <span class="label">Double-Q target and error</span>
+      target = 2 + 0.2(1.4) = 2.28  →  error = 2.28 − 1.0 = <strong>1.28</strong>
+    </div>
+
+    <table class="data">
+      <tr><th>Method</th><th>Target</th><th>Error</th><th>Updated θ<sub>1</sub></th></tr>
+      <tr><td>SARSA (on-policy)</td><td class="num">2.3</td><td class="num">1.3</td><td class="num"><strong>2.17</strong></td></tr>
+      <tr><td>Q-learning (off-policy, biased)</td><td class="num">2.5</td><td class="num">1.5</td><td class="num"><strong>2.35</strong></td></tr>
+      <tr><td>Double Q-learning (off-policy, corrected)</td><td class="num">2.28</td><td class="num">1.28</td><td class="num"><strong>2.152</strong></td></tr>
+    </table>
+    <p>Double Q-learning's update (2.152) lands much closer to the true-value-consistent, more conservative SARSA estimate (2.17) than plain Q-learning's inflated estimate (2.35) — directly demonstrating the bias correction in action.</p>
+
+    <div class="callout research">
+      <span class="tag">Research Enhanced</span>
+      <p>Maximization bias was first formally identified by Thrun &amp; Schwartz (1993) and rigorously analyzed and solved by <strong>Hado van Hasselt</strong> in his 2010 NeurIPS paper, "Double Q-learning." Van Hasselt later extended the fix to deep learning with <strong>Double DQN</strong> (2016, AAAI), shown to substantially improve performance across many Atari games — because Atari environments and neural-network function approximation are especially prone to producing noisy Q-value estimates that trigger this exact bias.</p>
+      <div class="src">Sources: <a href="https://proceedings.neurips.cc/paper/3964-double-q-learning.pdf" target="_blank">proceedings.neurips.cc — Double Q-learning</a> · <a href="https://arxiv.org/abs/2210.05262" target="_blank">arxiv.org/abs/2210.05262</a></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="s7-easy">Easy</button>
+        <button class="tab-btn" data-target="s7-medium">Medium</button>
+        <button class="tab-btn" data-target="s7-complex">Complex</button>
+      </div>
+      <div class="tab-panel active" id="s7-easy">
+        <p class="q">Q. In one sentence, what causes maximization bias?</p>
+        <p>Taking the MAX over several noisy estimates of similar (or equal) true values systematically overestimates the true maximum.</p>
+        <div class="ans">The MAX operator preferentially selects whichever estimate got lucky noise, not necessarily the genuinely best action.</div>
+        <p class="insight"><strong>Key insight:</strong> more noise in your value estimates → worse overestimation, since MAX has more "lucky outliers" to choose from.</p>
+      </div>
+      <div class="tab-panel" id="s7-medium">
+        <p class="q">Q. Why does Double Q-learning use a <em>different</em> weight vector to evaluate the chosen action than the one used to select it?</p>
+        <ol>
+          <li>If the same weights (θ) were used for both selection and evaluation, whatever noise inflated an action's estimate enough to be selected would also inflate the number used to evaluate it.</li>
+          <li>Using an independent θ′ (trained on different data/noise) for evaluation means that inflated noise is unlikely to also appear in θ′'s estimate of that same action.</li>
+        </ol>
+        <div class="ans">Decoupling selection (θ) from evaluation (θ′) breaks the correlation between "why an action was picked" and "how good it's judged to be" — removing the systematic upward bias.</div>
+        <p class="insight"><strong>Key insight:</strong> this is why the T-Rex Double-Q evaluation (1.4) is much lower than the same action's value under θ alone (2.5).</p>
+      </div>
+      <div class="tab-panel" id="s7-complex">
+        <p class="q">Q. Double Q-learning is known to sometimes <em>underestimate</em> true values rather than overestimate them. Explain why this happens, and why it's considered a less damaging failure mode.</p>
+        <ol>
+          <li>Because θ and θ′ are each trained on only a portion of experience (or independently), each individually still carries its own estimation noise.</li>
+          <li>Using θ to select the action and θ′ (a differently-noised estimator) to evaluate it means the evaluation is no longer selectively picking out inflated values — but it can occasionally pick out a deflated one instead, since θ′'s noise for the selected action is essentially independent of whether that action looked good under θ.</li>
+          <li>On average, this process removes the systematic <em>upward</em> pull of the MAX operator, but doesn't introduce a new systematic pull in either direction — so any resulting bias tends to be smaller and less consistent than the guaranteed overestimation of vanilla Q-learning.</li>
+        </ol>
+        <div class="ans">A mild, inconsistent underestimation is far less damaging than plain Q-learning's guaranteed, exploitable overestimation — because overestimated actions get "over-trusted" and repeatedly chosen (compounding the error), whereas underestimated actions are merely under-explored, a milder and self-correcting failure mode.</div>
+        <p class="insight"><strong>Key insight:</strong> van Hasselt's own analysis shows Double Q-learning trades guaranteed overestimation for occasional, smaller underestimation — a favorable trade in practice.</p>
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="tag">Exam Alert</span>
+      <p><strong>Likely question:</strong> given noisy Q-estimates under θ and a separate θ′, work through the full Double Q-learning target/error/update, and compare it to the plain Q-learning result on the same numbers.</p>
+      <p><strong>Exam-critical:</strong> know the two-step mechanic by heart — <em>select</em> the action via ARGMAX under one estimator, <em>evaluate</em> it using the other.</p>
+    </div>
+  </section>
+
+  <section id="s8" class="topic">
+    <div class="topic-tag">// 08</div>
+    <h2>Deep Q-Networks: Experience Replay &amp; Target Networks</h2>
+
+    <h3>Intuition first — why the T-Rex approach breaks down at scale</h3>
+    <p>Every consecutive sequence of states in a real video game is highly correlated — frame t looks almost identical to frame t+1. Training a neural network on these highly correlated, sequential samples (especially combined with off-policy bootstrapping — recall the "deadly triad" from Section 04) can make training unstable and cause divergence. Deep Q-Networks (DQN) solve this with two signature tricks: <strong>experience replay</strong> and a <strong>target network</strong>.</p>
+
+    <h3>The DQN loss</h3>
+    <div class="eqn gold">
+      <span class="label">Loss function (Mnih et al., 2015)</span>
+      L<sub>i</sub>(θ<sub>i</sub>) = 𝔼<sub>s,a</sub>[ (y<sub>i</sub> − Q̂(s,a;θ<sub>i</sub>))² ] &nbsp;&nbsp; where &nbsp; y<sub>i</sub> = r + γ max<sub>a′</sub> Q̂(s′,a′;θ<sub>i&minus;1</sub>)
+    </div>
+    <p>Crucially, y<sub>i</sub> is treated as a constant during this gradient computation — we only differentiate through the current prediction Q̂(s,a;θ<sub>i</sub>), never through the bootstrapped target itself. This is the same "semi-gradient" trick from Section 04, now applied inside a neural network.</p>
+
+    <div class="flow">
+      <div class="node">Raw pixel frame(s)</div>
+      <div class="arrow">→</div>
+      <div class="node">Convolution × 2</div>
+      <div class="arrow">→</div>
+      <div class="node">Fully connected × 2</div>
+      <div class="arrow">→</div>
+      <div class="node">Q(s,a) per action</div>
+    </div>
+
+    <h3>Full algorithm — Q-learning with experience replay</h3>
+    <pre class="pseudo"><span class="cmt">Q-learning with experience replay (Mnih et al., 2015)</span>
+
+Initialize replay memory D to capacity N
+Initialize action-value function Q with random weights θ
+Initialize target action-value function Q̂ with weights θ⁻ = θ
+For episode = 1, M do                                <span class="cmt">// play M full games</span>
+    Initialize s1 = {x1}, preprocess φ1 = φ(s1)       <span class="cmt">// 4-frame stack, grayscale, downsample, crop</span>
+    For t = 1, T do
+        With prob ε select a random action at          <span class="cmt">// explore</span>
+        otherwise select at = argmax_a Q(φ(st),a;θ)     <span class="cmt">// exploit</span>
+        Execute at, observe reward rt and image x_(t+1)
+        Set s_(t+1) = st,at,x_(t+1); preprocess φ_(t+1)
+        Store transition (φt,at,rt,φ_(t+1)) in D
+        Sample random minibatch (φj,aj,rj,φ_(j+1)) from D
+        Set yj = rj                                          if episode terminates at j+1
+              yj = rj + γ max_a′ Q̂(φ_(j+1),a′;θ⁻)              otherwise
+        Gradient descent step on (yj − Q(φj,aj;θ))² w.r.t. θ  <span class="cmt">// online net ONLY, never θ⁻</span>
+        Every C steps: reset θ⁻ = θ                    <span class="cmt">// refresh target network</span>
+    End For
+End For</pre>
+
+    <h3>Why the target network is essential</h3>
+    <p>If you used the <em>same</em>, constantly-changing network to both predict and set its own target, improving the prediction for one state-action pair would immediately shift the target for many other states too — like chasing a moving target that runs away every time you get closer. The original Nature paper states this precisely:</p>
+
+    <div class="callout key">
+      <span class="tag">From the Nature paper</span>
+      <p>"This modification makes the algorithm more stable compared to standard online Q-learning, where an update that increases Q(s<sub>t</sub>,a<sub>t</sub>) often also increases Q(s<sub>t+1</sub>,a) for all a and hence also increases the target y<sub>j</sub>, possibly leading to oscillations or divergence of the policy." — Mnih et al., <em>Human-level control through deep reinforcement learning</em>, Nature 518.7540 (2015): 529.</p>
+    </div>
+
+    <h3>Preprocessing pipeline</h3>
+    <div class="flow">
+      <div class="node">210×160×3<br>raw color frame</div>
+      <div class="arrow">→</div>
+      <div class="node">210×160×4<br>(4 stacked frames)</div>
+      <div class="arrow">→</div>
+      <div class="node">110×84×4<br>grayscale + downsample</div>
+      <div class="arrow">→</div>
+      <div class="node">84×84×4<br>final cropped input</div>
+    </div>
+    <p>Four consecutive frames are stacked so the network can perceive motion/velocity (essential for games like Pong or Breakout, where knowing which way the ball is moving matters), not just a static image.</p>
+
+    <h3>Experience replay</h3>
+    <p>DQN stores the last N experience tuples in a memory buffer (old transitions get overwritten, like a circular queue) and samples <strong>random, uniform</strong> mini-batches for training — breaking the harmful correlation between consecutive, near-identical game frames. The deck poses a natural improvement question: shouldn't more "important" or "surprising" transitions be replayed more often than routine ones? That leads directly to <strong>Prioritized Experience Replay</strong>.</p>
+
+    <h3>Empirical DQN results</h3>
+    <p>The deck reports the original paper's own evaluation protocol: each plotted point is the <strong>average score per episode</strong> after running the trained agent with an ε-greedy policy (ε = 0.05) for <strong>520,000 frames</strong>, on SpaceInvaders and Seaquest. Over roughly 200 training epochs, both the average score-per-episode and the network's own average predicted Q-value (measured on a fixed held-out set of states) rise steadily, though noisily — direct evidence the network is learning useful policies and that its internal value estimates are behaving in a stable, non-divergent way, rather than the oscillation the target network is designed to prevent.</p>
+
+    <div class="callout research">
+      <span class="tag">Research Enhanced</span>
+      <p>The original DQN paper, <strong>"Human-level control through deep reinforcement learning"</strong> (Mnih et al., <em>Nature</em>, 2015), was a landmark result: a single architecture and hyperparameter set (with per-game training) achieved human-level or superhuman performance on the majority of 49 different Atari 2600 games — learning directly from raw pixels and score, with <strong>no game-specific feature engineering</strong> at all. <strong>Prioritized Experience Replay</strong> (Schaul, Quan, Antonoglou &amp; Silver, 2015) replaces uniform sampling with probability proportional to TD-error magnitude, and was one of six components combined in DeepMind's <strong>Rainbow DQN</strong> (2017) to substantially outperform vanilla DQN across the full Atari benchmark suite.</p>
+      <div class="src">Sources: <a href="https://www.nature.com/articles/nature14236" target="_blank">nature.com/articles/nature14236</a> · <a href="https://arxiv.org/abs/1511.05952" target="_blank">arxiv.org/abs/1511.05952</a> (Prioritized Experience Replay) · <a href="https://arxiv.org/abs/1710.02298" target="_blank">arxiv.org/abs/1710.02298</a> (Rainbow)</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="s8-easy">Easy</button>
+        <button class="tab-btn" data-target="s8-medium">Medium</button>
+        <button class="tab-btn" data-target="s8-complex">Complex</button>
+      </div>
+      <div class="tab-panel active" id="s8-easy">
+        <p class="q">Q. What are the two signature stabilizing tricks introduced by DQN?</p>
+        <p>Experience replay (random mini-batches from a stored buffer) and a target network (a periodically-frozen copy of the network used to compute targets).</p>
+        <div class="ans">Experience replay + target network.</div>
+        <p class="insight"><strong>Key insight:</strong> both tricks exist to fix a different instability — replay fixes correlated samples, the target network fixes the "moving target" problem.</p>
+      </div>
+      <div class="tab-panel" id="s8-medium">
+        <p class="q">Q. Why does the gradient descent step in DQN's algorithm only update θ (the online network) and never θ⁻ (the target network)?</p>
+        <ol>
+          <li>θ⁻ is meant to stay fixed for many steps, so that the target y<sub>j</sub> it produces is stable while θ is trained toward it.</li>
+          <li>If θ⁻ were updated by gradient descent too, it would chase its own output — reintroducing the moving-target instability the trick exists to prevent.</li>
+        </ol>
+        <div class="ans">θ⁻ is only ever updated by direct copying (θ⁻ ← θ) every C steps — never by gradient descent — precisely to keep the target stable during those C steps.</div>
+        <p class="insight"><strong>Key insight:</strong> "target network" = frozen-by-design, refreshed only periodically and only by copying.</p>
+      </div>
+      <div class="tab-panel" id="s8-complex">
+        <p class="q">Q. Explain how experience replay and the "deadly triad" (Section 04) are connected — why does DQN specifically need replay, when tabular Q-learning didn't?</p>
+        <ol>
+          <li>The deadly triad names three ingredients that combine to threaten convergence: function approximation, bootstrapping, and off-policy learning.</li>
+          <li>DQN has all three: a CNN (function approximation), a bootstrapped TD target (max<sub>a′</sub>Q̂), and off-policy Q-learning updates.</li>
+          <li>Feeding the network highly correlated, sequential frames (the raw order of gameplay) on top of this triad tends to make the moving, correlated updates compound and destabilize training even faster.</li>
+          <li>Experience replay de-correlates the training stream by sampling randomly from a large buffer of past transitions — directly attacking the correlation problem, one of the compounding factors, even though it doesn't remove the underlying deadly-triad risk entirely (the target network handles a different part of that risk).</li>
+        </ol>
+        <div class="ans">Tabular Q-learning has no function approximation at all (no shared parameters across states), so there's no "moving target" or generalization-driven instability to worry about — the deadly triad literally can't apply. DQN's use of a CNN makes all three legs of the triad present simultaneously, which is exactly why it needs both experience replay and a target network to remain stable in practice.</div>
+        <p class="insight"><strong>Key insight:</strong> experience replay and target networks are targeted fixes for specific instability mechanisms, not generic "best practices" — understanding <em>which</em> problem each solves is what the exam is really testing.</p>
+      </div>
+    </div>
+
+    <div class="callout exam">
+      <span class="tag">Exam Alert</span>
+      <p><strong>Likely question:</strong> state the DQN loss function, explain the role of the target network parameter θ⁻, and describe the preprocessing pipeline (frame stacking, grayscale, downsampling).</p>
+      <p><strong>Common mistake:</strong> saying the target network is trained via gradient descent — it is only ever updated by periodic copying, never by its own loss.</p>
+    </div>
+
+    <div class="callout key">
+      <span class="tag">What did we learn — Session synthesis</span>
+      <p>The first deck closes with exactly this four-point summary, and it's worth holding onto as the throughline of both sessions:</p>
+      <ul>
+        <li>Reinforcement learning must <strong>generalize</strong> from observed experience if it is to be applicable to real-world domains (Section 01).</li>
+        <li>We use <strong>parameterized function approximation</strong> to represent knowledge about state/action values instead of a table (Sections 01–02, 05).</li>
+        <li>We use <strong>stochastic gradient descent</strong> to update the tunable parameters so that the observed (Monte Carlo or TD) error is reduced (Sections 02–04).</li>
+        <li>When using a <strong>linear</strong> approximator specifically, <strong>Least-Squares TD</strong> provides the most sample-efficient approximation (Deep Dive C).</li>
+      </ul>
+      <p>Sections 06–08 then show this machinery applied concretely: SARSA/Q-learning as two ways to bootstrap action values, Double Q-learning as a bias fix, and DQN as the point where hand-designed features (Section 05) are finally replaced by features the network learns for itself.</p>
+    </div>
+  </section>
+
+  <section id="lab" class="topic">
+    <div class="topic-tag">// interactive</div>
+    <h2>Live Calculators</h2>
+    <p class="subtle">Four no-library widgets built directly on the formulas above. Change the numbers and recompute — they implement the exact update rules from Sections 02–07.</p>
+
+    <div class="demo-card">
+      <h4>① Linear Value/Action Approximator — v̂(s;θ) = f(s)·θ</h4>
+      <div class="desc">Enter a feature vector and a weight vector (comma-separated, same length) to compute the approximated value.</div>
+      <div class="demo-grid">
+        <div class="field"><label>Feature vector f(s)</label><input id="d1-f" value="2,4,1"></div>
+        <div class="field"><label>Weight vector θ</label><input id="d1-t" value="2,2,1"></div>
+      </div>
+      <button class="demo-btn" onclick="calcD1()">Compute v̂(s)</button>
+      <div class="demo-output" id="d1-out">Enter values and click Compute.</div>
+    </div>
+
+    <div class="demo-card">
+      <h4>② Gradient Update Calculator — Monte Carlo or Semi-Gradient TD(0)</h4>
+      <div class="desc">Compute one weight update step. Choose Monte Carlo (uses a full return G<sub>t</sub>) or TD(0) (bootstraps via the next state's features).</div>
+      <div class="demo-grid">
+        <div class="field"><label>Mode</label>
+          <select id="d2-mode" onchange="toggleD2()">
+            <option value="mc">Monte Carlo</option>
+            <option value="td">Semi-Gradient TD(0)</option>
+          </select>
+        </div>
+        <div class="field"><label>θ (weights)</label><input id="d2-theta" value="0,0,0"></div>
+        <div class="field"><label>f(s) — current features</label><input id="d2-fs" value="2,3,1"></div>
+        <div class="field" id="d2-fsp-wrap" style="display:none;"><label>f(s′) — next-state features</label><input id="d2-fsp" value="1,2,1"></div>
+        <div class="field" id="d2-g-wrap"><label>G<sub>t</sub> (return, MC only)</label><input id="d2-g" value="10"></div>
+        <div class="field"><label>Reward R (TD only)</label><input id="d2-r" value="10"></div>
+        <div class="field"><label>γ (discount)</label><input id="d2-gamma" value="1"></div>
+        <div class="field"><label>α (learning rate)</label><input id="d2-alpha" value="0.1"></div>
+      </div>
+      <button class="demo-btn" onclick="calcD2()">Compute update</button>
+      <div class="demo-output" id="d2-out">Enter values and click Compute.</div>
+    </div>
+
+    <div class="demo-card">
+      <h4>③ SARSA vs Q-Learning Target Comparator</h4>
+      <div class="desc">Mirrors the T-Rex Dino worked example — see how SARSA's actual-next-action target compares to Q-learning's max-over-actions target.</div>
+      <div class="demo-grid">
+        <div class="field"><label>Current estimate Q(s,a)</label><input id="d3-qsa" value="1.0"></div>
+        <div class="field"><label>Reward r</label><input id="d3-r" value="2"></div>
+        <div class="field"><label>γ (discount)</label><input id="d3-gamma" value="0.2"></div>
+        <div class="field"><label>Q(s′, action 0)</label><input id="d3-q0" value="1.5"></div>
+        <div class="field"><label>Q(s′, action 1)</label><input id="d3-q1" value="2.5"></div>
+        <div class="field"><label>Actual next action (SARSA)</label>
+          <select id="d3-actual"><option value="0">Action 0</option><option value="1">Action 1</option></select>
+        </div>
+      </div>
+      <button class="demo-btn" onclick="calcD3()">Compare targets</button>
+      <div class="demo-output" id="d3-out">Enter values and click Compare.</div>
+    </div>
+
+    <div class="demo-card">
+      <h4>④ Maximization Bias / Double Q-Learning Demonstrator</h4>
+      <div class="desc">Give both actions' noisy θ-estimates and their independent θ′-estimates, plus the (assumed) true value. See vanilla Q-learning's bias vs. Double Q-learning's correction.</div>
+      <div class="demo-grid">
+        <div class="field"><label>True value (both actions)</label><input id="d4-true" value="2.0"></div>
+        <div class="field"><label>θ estimate — action 0</label><input id="d4-q0" value="1.5"></div>
+        <div class="field"><label>θ estimate — action 1</label><input id="d4-q1" value="2.5"></div>
+        <div class="field"><label>θ′ estimate — action 0</label><input id="d4-qp0" value="0.1"></div>
+        <div class="field"><label>θ′ estimate — action 1</label><input id="d4-qp1" value="1.4"></div>
+      </div>
+      <button class="demo-btn" onclick="calcD4()">Compare bias</button>
+      <div class="demo-output" id="d4-out">Enter values and click Compare.</div>
+    </div>
+  </section>
+
+  <section id="deep" class="topic">
+    <div class="topic-tag">// deep dives</div>
+    <h2>Conceptual Deep Dives</h2>
+
+    <h3>A · Bias–Variance and the n-step spectrum</h3>
+    <p>Every method in Sections 03–04 sits somewhere on a spectrum from "trust the current estimate" (1-step TD: low variance, high bias) to "trust only what actually happened" (Monte Carlo: high variance, zero bias). n-step returns and eligibility traces (TD(λ), which blends all n-step returns with exponentially decaying weights) let you dial along this spectrum. Empirically, an intermediate n is often a genuine sweet spot — DeepMind's Rainbow DQN paper independently verified multi-step returns as one of several components that measurably improve performance over vanilla 1-step DQN.</p>
+
+    <h3>B · The Deadly Triad</h3>
+    <p>Function approximation + bootstrapping + off-policy learning, combined, can cause value estimates to diverge — this is Sutton &amp; Barto's "deadly triad." Baird's counterexample (1995) is the classic proof-by-construction: a 7-state MDP where semi-gradient TD with linear approximation provably diverges. DQN contains all three legs of the triad (CNN function approximation, bootstrapped TD target, off-policy Q-learning) — which is exactly why it needed both a target network and experience replay to remain practically stable, even without a formal convergence guarantee.</p>
+
+    <h3>C · Least-Squares TD (LSTD) vs. iterative SGD</h3>
+    <p>For linear approximators specifically, Least-Squares TD (Bradtke &amp; Barto, 1996; extended to LSTD(λ) by Boyan, 1999) solves directly for the fixed point of the linear TD update — rather than incrementally nudging weights with a learning rate. This is far more sample-efficient (uses every data point "fully") at the cost of higher per-step computational complexity (roughly O(d²)–O(d³) for d features, vs O(d) for SGD-based TD) — favored when real-world data is scarce or expensive (e.g. some robotics/healthcare RL), avoided in huge-feature deep RL settings where SGD dominates.</p>
+
+    <h3>D · From hand-crafted features to learned features</h3>
+    <p>Section 05's entire arc — polynomial basis → Fourier basis → coarse coding → tile coding — is a search for reasonable, human-designable feature structure. Deep Q-Networks sidestep the search entirely: the two convolutional layers in the DQN architecture <em>learn</em> feature detectors (edges, shapes, positions) directly from raw pixels via backpropagation, solving the "needle in a combinatorial haystack" problem raised at the end of Section 05 without any domain expertise at all.</p>
+
+    <h3>E · Prioritized Experience Replay &amp; Rainbow DQN</h3>
+    <p>Vanilla experience replay (Section 08) samples uniformly at random. Prioritized Experience Replay (Schaul et al., 2015) instead samples proportional to TD-error magnitude — transitions the network is currently "most wrong" about get replayed more often — with importance-sampling weights added to correct the resulting gradient bias. This, combined with Double DQN and other tricks, is part of DeepMind's Rainbow DQN (2017), which combined 6 independent improvements to substantially outperform vanilla DQN across the Atari benchmark suite.</p>
+
+    <h3>F · DQN preprocessing &amp; target-network math, restated</h3>
+    <div class="eqn">
+      <span class="label">Target computation using the FROZEN target network</span>
+      y<sub>j</sub> = r<sub>j</sub> + γ max<sub>a′</sub> Q̂(φ<sub>j+1</sub>, a′; θ⁻) &nbsp;&nbsp;<span class="subtle">— θ⁻ only changes by copying, every C steps</span>
+    </div>
+    <p>The preprocessing pipeline (raw 210×160×3 color → 4-frame grayscale stack → downsampled/cropped 84×84×4) became a near-universal standard adopted by essentially all subsequent Atari-playing RL research and is baked into modern RL libraries' "Atari wrapper" utilities.</p>
+
+    <table class="data">
+      <tr><th></th><th>K-armed bandit-style bias</th><th>Full function-approximation RL</th></tr>
+      <tr><td>Estimation noise source</td><td class="num">Sampling variance of rewards</td><td class="num">Function approximator training noise</td></tr>
+      <tr><td>MAX operator effect</td><td class="num">Overestimates the best arm's true value</td><td class="num">Overestimates Q(s,a) for the "looks-best" action</td></tr>
+      <tr><td>Standard fix</td><td class="num">Double estimators / UCB-style caution</td><td class="num">Double Q-learning / Double DQN</td></tr>
+    </table>
+  </section>
+
+  <section id="quiz" class="topic">
+    <div class="topic-tag">// assessment</div>
+    <h2>Exam Quiz · 10 Questions</h2>
+    <p class="subtle">Click an option to check it — green if correct, red if not — then read the explanation. Mixes recall, calculation, and reasoning.</p>
+
+    <div class="quiz-item">
+      <p class="qn">1. Why is squared error used instead of absolute error as the loss function for value approximation?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Squared error just looks nicer mathematically, with no functional benefit.')">Squared error just looks nicer mathematically, with no functional benefit</button>
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Absolute error has a non-differentiable kink at zero; squared error is smooth everywhere so gradients can always be computed.')">Absolute error isn't differentiable at zero; squared error is smooth everywhere</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Squared error is not actually related to differentiability — that is the key reason it was chosen.')">Squared error converges faster regardless of differentiability concerns</button>
+      </div>
+      <div class="quiz-explain" id="exp-q1"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">2. For a linear approximator v̂(s;θ) = f(s)·θ, what is ∇<sub>θ</sub>v̂(s;θ)?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'The gradient is f(s), not θ itself.')">θ itself</button>
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — every term in the linear sum differentiates to its own feature value, so the gradient is exactly f(s).')">f(s) — the feature vector</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'That would only be true for a quadratic approximator, not a linear one.')">2θ·f(s)</button>
+      </div>
+      <div class="quiz-explain" id="exp-q2"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">3. What must you wait for before you can perform a Gradient Monte Carlo update?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Monte Carlo needs the return, which requires the full episode.')">Just the next single reward</button>
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — Gt is the true observed return, only known once the episode terminates.')">The entire episode to terminate, to compute the true return Gt</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'That describes semi-gradient TD(0), not Monte Carlo.')">Nothing — it updates every step like TD</button>
+      </div>
+      <div class="quiz-explain" id="exp-q3"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">4. Why is semi-gradient TD(0) called "semi"-gradient rather than full gradient?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — the bootstrapped target itself depends on θ too, but we deliberately ignore that dependency and only differentiate the prediction term.')">It only differentiates through the current prediction, ignoring that the bootstrapped target also depends on θ</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'It uses the full gradient — that would make it a full-gradient method, not semi-gradient.')">It uses half the learning rate of full gradient methods</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'This is unrelated to the reason it is called semi-gradient.')">It only updates half the weight vector each step</button>
+      </div>
+      <div class="quiz-explain" id="exp-q4"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">5. In tile coding with 6 offset tilings, how many tile-features are active for any single state?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'It is not a full sweep of all tiles across all tilings — only one per tiling.')">All tiles across all 6 tilings</button>
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — exactly one tile per tiling is active, so 6 tilings means exactly 6 active features.')">Exactly 6 — one active tile per tiling</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'This confuses tile coding with a different, non-sparse representation.')">Only 1, since tiles overlap</button>
+      </div>
+      <div class="quiz-explain" id="exp-q5"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">6. What makes SARSA an on-policy method, in contrast to Q-learning?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — SARSA targets the value of the actual next action taken by the (possibly exploring) policy, not the theoretical best action.')">Its target uses the value of the actual next action the policy will take, including exploration</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'SARSA does not use a max over next actions — that is Q-learning.')">Its target always uses the max over next actions</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Both methods can use function approximation; that is not the distinguishing factor.')">It never uses function approximation</button>
+      </div>
+      <div class="quiz-explain" id="exp-q6"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">7. In the T-Rex worked example, why was Q-learning's TD error (1.5) larger than SARSA's (1.3) for the identical transition?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Both use the exact same current estimate; the learning rate is applied afterward, not inside the error itself.')">Q-learning used a larger learning rate for that step</button>
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — Q-learning substitutes the higher hypothetical action value (2.5) for the actually-taken action value (1.5) that SARSA used.')">Q-learning's target used the max over next actions (2.5) instead of the actually-taken action's value (1.5)</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Both use the same reward and discount in this example.')">Q-learning used a different discount factor</button>
+      </div>
+      <div class="quiz-explain" id="exp-q7"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">8. What is the core mechanism Double Q-learning uses to reduce maximization bias?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'It does not use a smaller learning rate — that would not address the bias mechanism at all.')">It uses a smaller learning rate to slow down inflated updates</button>
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — selecting with one estimator and evaluating with a separate, independent one breaks the correlation that causes systematic overestimation.')">It decouples action selection (one estimator) from action evaluation (a separate, independent estimator)</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Averaging both estimators together would not remove the selection-evaluation correlation that causes the bias.')">It averages the Q-values of all possible actions together</button>
+      </div>
+      <div class="quiz-explain" id="exp-q8"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">9. Why does DQN's target network only get updated by periodic copying, never by gradient descent?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — keeping the target frozen for C steps prevents the moving-target instability that plagues naive online Q-learning with function approximation.')">To keep the bootstrapped target stable while the online network trains toward it, preventing oscillation/divergence</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'This would defeat the entire purpose of having a separate target network.')">Because gradient descent cannot be computed on a copy of a network</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'The target network specifically must never be trained by gradient descent, by design.')">It actually is updated by gradient descent, just at a slower rate</button>
+      </div>
+      <div class="quiz-explain" id="exp-q9"></div>
+    </div>
+
+    <div class="quiz-item">
+      <p class="qn">10. Why does DQN stack 4 consecutive frames as input instead of a single frame?</p>
+      <div class="quiz-opts">
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Frame stacking is not primarily about noise reduction — a single frame is not noisy, it is simply missing motion information.')">To reduce pixel noise in a single frame</button>
+        <button class="quiz-opt" data-correct="true" onclick="answerQuiz(this,'Correct — a single static frame cannot reveal direction or speed of movement, which many games (e.g. Pong, Breakout) require to play well.')">To let the network perceive motion/velocity, which a single static frame cannot show</button>
+        <button class="quiz-opt" data-correct="false" onclick="answerQuiz(this,'Frame stacking has nothing to do with the replay buffer's storage capacity.')">To increase the size of the replay buffer</button>
+      </div>
+      <div class="quiz-explain" id="exp-q10"></div>
+    </div>
+  </section>
+
+  <section id="practice" class="topic">
+    <div class="topic-tag">// exam prep · fresh set</div>
+    <h2>Practice Questions — Exam-Style</h2>
+    <p class="subtle">Six worked problems written to mirror typical exam weighting and phrasing for this chapter (value function approximation, SARSA vs Q-learning, maximization bias, DQN). These are original practice questions modeled on the material above, not reproductions of any specific past paper — use them as a closed-book mock.</p>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="p1">Q1 · Linear approx</button>
+        <button class="tab-btn" data-target="p2">Q2 · Gradient MC</button>
+        <button class="tab-btn" data-target="p3">Q3 · Semi-grad TD</button>
+      </div>
+      <div class="tab-panel active" id="p1">
+        <p class="q">Q1 [3M]. A linear approximator uses features f<sub>1</sub>=distance-to-ghost, f<sub>2</sub>=distance-to-food, f<sub>3</sub>=bias term (always 1). Weights are θ=[0.5, 1.5, &minus;1]. For a state with f(s)=[3,2,1], compute v̂(s;θ). Then, for a new unseen state f(s′)=[1,4,1], compute v̂(s′;θ) and explain why no retraining was needed to evaluate s′.</p>
+        <ol>
+          <li>v̂(s;θ) = [3,2,1]·[0.5,1.5,&minus;1] = 1.5+3&minus;1 = 3.5.</li>
+          <li>v̂(s′;θ) = [1,4,1]·[0.5,1.5,&minus;1] = 0.5+6&minus;1 = 5.5.</li>
+        </ol>
+        <div class="ans">v̂(s)=3.5, v̂(s′)=5.5. No retraining was needed because the linear formula applies to any feature vector — generalization is "free" once θ is learned; it's a function evaluation, not a lookup.</div>
+        <p class="insight"><strong>Key insight:</strong> the whole point of function approximation is that prediction on unseen states is just plugging into the same formula.</p>
+      </div>
+      <div class="tab-panel" id="p2">
+        <p class="q">Q2 [4M]. Using Gradient Monte Carlo, θ starts at [1,1], features f(S)=[2,1], and the observed return for the episode is G<sub>t</sub>=6. With α=0.2, compute the new θ. Then predict v̂ for a new state f(S′)=[3,0] using the updated θ.</p>
+        <ol>
+          <li>v̂(S;θ) = [2,1]·[1,1] = 2+1 = 3.</li>
+          <li>Error = G<sub>t</sub> − v̂(S;θ) = 6 − 3 = 3.</li>
+          <li>θ ← θ + α·error·f(S) = [1,1] + 0.2×3×[2,1] = [1,1] + [1.2, 0.6] = [2.2, 1.6].</li>
+          <li>v̂(S′;θ) = [3,0]·[2.2,1.6] = 6.6 + 0 = 6.6.</li>
+        </ol>
+        <div class="ans">Updated θ = [2.2, 1.6]; predicted v̂(S′) = 6.6.</div>
+        <p class="insight"><strong>Key insight:</strong> Gradient Monte Carlo's update is unbiased (Gt is the real return), so this single update is guaranteed, on average, to move θ toward a better fit.</p>
+      </div>
+      <div class="tab-panel" id="p3">
+        <p class="q">Q3 [4M]. Using semi-gradient TD(0), θ=[0.5,0.5], f(S)=[1,2], f(S′)=[2,2], R=3, γ=0.9, α=0.1. Compute the TD error and the updated θ.</p>
+        <ol>
+          <li>v̂(S;θ) = [1,2]·[0.5,0.5] = 0.5+1 = 1.5.</li>
+          <li>v̂(S′;θ) = [2,2]·[0.5,0.5] = 1+1 = 2.</li>
+          <li>TD error = R + γv̂(S′;θ) − v̂(S;θ) = 3 + 0.9(2) − 1.5 = 3+1.8−1.5 = 3.3.</li>
+          <li>θ ← θ + α·error·f(S) = [0.5,0.5] + 0.1×3.3×[1,2] = [0.5,0.5] + [0.33,0.66] = [0.83, 1.16].</li>
+        </ol>
+        <div class="ans">TD error = 3.3; updated θ = [0.83, 1.16].</div>
+        <p class="insight"><strong>Key insight:</strong> notice v̂(S′;θ) was computed using the <em>current</em> (pre-update) θ — that's the bootstrapping step, and it's what makes this a "semi"-gradient rather than a full-gradient method.</p>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab-btns">
+        <button class="tab-btn active" data-target="p4">Q4 · SARSA vs Q-learning</button>
+        <button class="tab-btn" data-target="p5">Q5 · Double Q</button>
+        <button class="tab-btn" data-target="p6">Q6 · Concepts</button>
+      </div>
+      <div class="tab-panel active" id="p4">
+        <p class="q">Q4 [5M]. θ=[2.0, 1.0, 0.5], γ=0.5, α=0.5. Transition: (S1, action:0, reward:4, S2, next action taken:1). S1 features: φ(1,0,0). S2 features under action 0: φ(1,1,0); under action 1: φ(1,1,1). (a) Compute both the SARSA target/error and the Q-learning target/error. (b) Update θ<sub>1</sub> for each method and comment on which is more "optimistic."</p>
+        <ol>
+          <li>Q(S1,a=0,θ) = [1,0,0]·[2.0,1.0,0.5] = 2.0.</li>
+          <li>Q(S2,a=0,θ) = [1,1,0]·[2.0,1.0,0.5] = 2.0+1.0 = 3.0. Q(S2,a=1,θ) = [1,1,1]·[2.0,1.0,0.5] = 2.0+1.0+0.5 = 3.5.</li>
+          <li>SARSA (actual next action = 1): target = 4 + 0.5(3.5) = 5.75 → error = 5.75 − 2.0 = 3.75.</li>
+          <li>Q-learning (max over both): MAX{3.0, 3.5} = 3.5 → target = 4 + 0.5(3.5) = 5.75 → error = 3.75.</li>
+        </ol>
+        <div class="ans">(a) Both targets happen to be identical here (5.75, error 3.75), because the actual next action taken (1) is also the greedy/maximizing action. (b) θ1 update is the same for both: 2.0 + 0.5×3.75×1 = 3.875. Neither is "more optimistic" in this specific case — SARSA and Q-learning only diverge when the actually-taken next action is <em>not</em> the greedy one.</div>
+        <p class="insight"><strong>Key insight:</strong> this is a deliberately-designed "trick" question — students should recognize that the two methods coincide whenever the behavior policy happens to act greedily on that step.</p>
+      </div>
+      <div class="tab-panel" id="p5">
+        <p class="q">Q5 [5M]. Suppose the true value of both actions at some state S′ is 1.0. Noisy estimates under θ: Q(S′,0)=0.4, Q(S′,1)=1.6. Independent estimates under θ′: Q′(S′,0)=0.9, Q′(S′,1)=0.6. (a) Compute the vanilla Q-learning bootstrapped value (the MAX). (b) Compute the Double Q-learning bootstrapped value. (c) Which is closer to the true value of 1.0, and why?</p>
+        <ol>
+          <li>Vanilla Q-learning: MAX{Q(S′,0), Q(S′,1)} = MAX{0.4, 1.6} = 1.6.</li>
+          <li>Double Q-learning: select action via θ → argmax{0.4, 1.6} → action 1. Evaluate using θ′ at action 1 → Q′(S′,1) = 0.6.</li>
+        </ol>
+        <div class="ans">(a) Vanilla Q-learning bootstrap = 1.6 (overestimates the true value of 1.0 by 0.6). (b) Double Q-learning bootstrap = 0.6 (underestimates by 0.4). (c) Double Q-learning's magnitude of error (0.4) is smaller than vanilla Q-learning's (0.6) in this example, and — more importantly — its error direction (underestimation) is the generally safer failure mode, since it doesn't reinforce over-confident, potentially wrong actions the way overestimation does.</div>
+        <p class="insight"><strong>Key insight:</strong> Double Q-learning doesn't guarantee it lands closer to the true value on every single instance — but it removes the <em>systematic</em> upward bias that vanilla Q-learning always has.</p>
+      </div>
+      <div class="tab-panel" id="p6">
+        <p class="q">Q6 [5M]. Short answers. (a) [1.5] Why can't Gradient Monte Carlo be used for a continuing (never-terminating) task? (b) [1.5] What single change turns semi-gradient TD(0) into semi-gradient <em>n</em>-step TD? (c) [1] Why does DQN preprocess frames to 84×84 grayscale instead of using the full 210×160 color image directly? (d) [1] Name one concrete difference between coarse coding and tile coding.</p>
+        <ol>
+          <li>(a) Gradient Monte Carlo needs the true return G<sub>t</sub>, which requires the episode to actually terminate; a continuing task never provides that signal.</li>
+          <li>(b) Instead of bootstrapping after just 1 real step, bootstrap after n real steps — sum n real discounted rewards, then add γ<sup>n</sup>v̂(S<sub>t+n</sub>;θ) as the bootstrapped tail.</li>
+          <li>(c) Reducing resolution and color channels drastically cuts the input size (and thus network compute/memory) while retaining the visual information actually needed to play the game.</li>
+          <li>(d) Coarse coding uses arbitrary overlapping regions (e.g. circles) which can activate any number of features per state; tile coding structures this into offset grids where exactly one tile per tiling is active — a sparser, more computationally efficient special case.</li>
+        </ol>
+        <div class="ans">(a) No terminal episode ⇒ no Gt. (b) Sum n real rewards before bootstrapping, instead of just 1. (c) Reduces computational/memory cost while preserving gameplay-relevant detail. (d) Coarse coding = arbitrary overlapping regions, any number active; tile coding = offset grids, exactly one active tile per tiling.</div>
+        <p class="insight"><strong>Key insight:</strong> (b) is the single most commonly mis-answered conceptual question in this chapter — students often describe n-step TD as "using a bigger learning rate," which is incorrect.</p>
+      </div>
+    </div>
+
+    <div class="callout key">
+      <span class="tag">Pattern across this chapter</span>
+      <p>Three skills recur across every question type here: <strong>(1)</strong> computing v̂(s;θ) or Q(s,a;θ) via a dot product and applying the correct update rule (MC vs semi-gradient TD vs n-step); <strong>(2)</strong> correctly distinguishing the SARSA target (actual next action) from the Q-learning target (max over next actions); <strong>(3)</strong> the two-step Double Q-learning mechanic (select via one estimator, evaluate via the other). Drill those three and you cover the bulk of the exam surface for this chapter.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Required reading (per the source decks):</strong> Chapter 6 ("Temporal-Difference Learning") and Chapter 9–10 ("On-policy Prediction/Control with Approximation") of <em>Reinforcement Learning: An Introduction</em>, 2nd Ed., Sutton &amp; Barto — the textbook basis for both lecture decks this guide is built from.</p>
+    <p>Built as a standalone study reference from the "On-Policy Prediction with Approximation" and "Value-Based DRL: On/Off-Policy Prediction with Approximation (T-Rex Dino numerical use case)" lecture decks, BITS Pilani WILP, M.Tech (AIML), Deep Reinforcement Learning course. All formulas, pseudocode, and worked examples are transcribed and worked through directly from the source slides; "Research Enhanced" callouts add external grounding with cited sources.</p>
+    <p><a class="backtotop" href="#hero">↑ Back to top</a></p>
+  </footer>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  // ---------- Theme toggle ----------
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  function applyTheme(t){
+    root.setAttribute('data-theme', t);
+    btn.textContent = (t === 'day') ? 'Night mode' : 'Day mode';
+    try{ localStorage.setItem('drl-theme', t); }catch(e){}
+  }
+  var saved = null;
+  try{ saved = localStorage.getItem('drl-theme'); }catch(e){}
+  applyTheme(saved === 'night' ? 'night' : 'day');
+  btn.addEventListener('click', function(){
+    var current = root.getAttribute('data-theme');
+    applyTheme(current === 'day' ? 'night' : 'day');
+  });
+
+  // ---------- Mobile sidenav drawer ----------
+  var sidenav = document.getElementById('sidenav');
+  var backdrop = document.getElementById('sidenavBackdrop');
+  var menuBtn = document.getElementById('menuToggle');
+  function openDrawer(){ sidenav.classList.add('open'); backdrop.classList.add('open'); }
+  function closeDrawer(){ sidenav.classList.remove('open'); backdrop.classList.remove('open'); }
+  menuBtn.addEventListener('click', function(){
+    sidenav.classList.contains('open') ? closeDrawer() : openDrawer();
+  });
+  backdrop.addEventListener('click', closeDrawer);
+  sidenav.querySelectorAll('.sidenav-link').forEach(function(link){
+    link.addEventListener('click', closeDrawer);
+  });
+
+  // ---------- Scroll-spy: highlight active sidenav link ----------
+  var navLinks = Array.prototype.slice.call(sidenav.querySelectorAll('.sidenav-link'));
+  var sections = navLinks
+    .map(function(link){ return document.querySelector(link.getAttribute('href')); })
+    .filter(Boolean);
+  function setActive(id){
+    navLinks.forEach(function(link){
+      link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+    });
+  }
+  if('IntersectionObserver' in window){
+    var observer = new IntersectionObserver(function(entries){
+      var visible = entries.filter(function(e){ return e.isIntersecting; });
+      if(visible.length){
+        visible.sort(function(a,b){ return a.boundingClientRect.top - b.boundingClientRect.top; });
+        setActive(visible[0].target.id);
+      }
+    }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function(sec){ observer.observe(sec); });
+  }
+
+  // ---------- Tabs (worked examples) ----------
+  document.querySelectorAll('.tabs').forEach(function(tabset){
+    var btns = tabset.querySelectorAll('.tab-btn');
+    btns.forEach(function(b){
+      b.addEventListener('click', function(){
+        var target = b.getAttribute('data-target');
+        btns.forEach(function(x){ x.classList.remove('active'); });
+        b.classList.add('active');
+        tabset.querySelectorAll('.tab-panel').forEach(function(p){
+          p.classList.toggle('active', p.id === target);
+        });
+      });
+    });
+  });
+})();
+
+// ---------- Quiz ----------
+function answerQuiz(el, explanation){
+  var container = el.closest('.quiz-item');
+  var opts = container.querySelectorAll('.quiz-opt');
+  var already = container.getAttribute('data-answered');
+  if(already === 'true') return;
+  container.setAttribute('data-answered','true');
+  opts.forEach(function(o){
+    o.disabled = true;
+    if(o.getAttribute('data-correct') === 'true'){ o.classList.add('correct'); }
+  });
+  if(el.getAttribute('data-correct') !== 'true'){ el.classList.add('incorrect'); }
+  var idx = container.querySelector('.qn').textContent.trim().split('.')[0];
+  var expBox = container.querySelector('.quiz-explain');
+  expBox.textContent = explanation;
+  expBox.classList.add('show');
+}
+
+// ---------- Helpers ----------
+function parseVec(str){
+  return str.split(',').map(function(s){ return parseFloat(s.trim()); });
+}
+function dot(a,b){
+  var s = 0;
+  for(var i=0;i<Math.min(a.length,b.length);i++){ s += a[i]*b[i]; }
+  return s;
+}
+function fmt(n){ return (Math.round(n*10000)/10000).toString(); }
+
+// ---------- Demo 1: Linear approximator ----------
+function calcD1(){
+  var f = parseVec(document.getElementById('d1-f').value);
+  var t = parseVec(document.getElementById('d1-t').value);
+  if(f.length !== t.length){
+    document.getElementById('d1-out').textContent = 'Error: feature and weight vectors must be the same length.';
+    return;
+  }
+  var terms = f.map(function(fi,i){ return fi + '×' + t[i]; }).join(' + ');
+  var v = dot(f,t);
+  document.getElementById('d1-out').innerHTML =
+    'v̂(s;θ) = f(s)·θ = (' + terms + ') = <span class="hl">' + fmt(v) + '</span>';
+}
+
+// ---------- Demo 2: Gradient update (MC / TD) ----------
+function toggleD2(){
+  var mode = document.getElementById('d2-mode').value;
+  document.getElementById('d2-fsp-wrap').style.display = (mode === 'td') ? 'block' : 'none';
+  document.getElementById('d2-g-wrap').style.display = (mode === 'mc') ? 'block' : 'none';
+}
+function calcD2(){
+  var mode = document.getElementById('d2-mode').value;
+  var theta = parseVec(document.getElementById('d2-theta').value);
+  var fs = parseVec(document.getElementById('d2-fs').value);
+  var alpha = parseFloat(document.getElementById('d2-alpha').value);
+  var gamma = parseFloat(document.getElementById('d2-gamma').value);
+  var vs = dot(fs, theta);
+  var error, targetDesc;
+  if(mode === 'mc'){
+    var G = parseFloat(document.getElementById('d2-g').value);
+    error = G - vs;
+    targetDesc = 'Gt = ' + fmt(G);
+  } else {
+    var R = parseFloat(document.getElementById('d2-r').value);
+    var fsp = parseVec(document.getElementById('d2-fsp').value);
+    var vsp = dot(fsp, theta);
+    error = R + gamma*vsp - vs;
+    targetDesc = 'R + γ·v̂(s′;θ) = ' + fmt(R) + ' + ' + fmt(gamma) + '×' + fmt(vsp) + ' = ' + fmt(R+gamma*vsp);
+  }
+  var newTheta = theta.map(function(th,i){ return th + alpha*error*fs[i]; });
+  document.getElementById('d2-out').innerHTML =
+    'v̂(s;θ) = ' + fmt(vs) + '\n' +
+    'Target: ' + targetDesc + '\n' +
+    'Error = target − v̂(s;θ) = <span class="hl">' + fmt(error) + '</span>\n' +
+    'New θ = θ + α·error·f(s) = [' + theta.map(fmt).join(', ') + '] + ' + fmt(alpha) + '×' + fmt(error) + '×[' + fs.map(fmt).join(', ') + ']\n' +
+    '     = <span class="hl2">[' + newTheta.map(fmt).join(', ') + ']</span>';
+}
+toggleD2();
+
+// ---------- Demo 3: SARSA vs Q-learning ----------
+function calcD3(){
+  var qsa = parseFloat(document.getElementById('d3-qsa').value);
+  var r = parseFloat(document.getElementById('d3-r').value);
+  var gamma = parseFloat(document.getElementById('d3-gamma').value);
+  var q0 = parseFloat(document.getElementById('d3-q0').value);
+  var q1 = parseFloat(document.getElementById('d3-q1').value);
+  var actual = document.getElementById('d3-actual').value;
+  var actualQ = (actual === '0') ? q0 : q1;
+  var sarsaTarget = r + gamma*actualQ;
+  var sarsaError = sarsaTarget - qsa;
+  var maxQ = Math.max(q0,q1);
+  var qlTarget = r + gamma*maxQ;
+  var qlError = qlTarget - qsa;
+  var gap = qlError - sarsaError;
+  document.getElementById('d3-out').innerHTML =
+    'SARSA target  = r + γ·Q(s′, actual a=' + actual + ') = ' + fmt(r) + ' + ' + fmt(gamma) + '×' + fmt(actualQ) + ' = ' + fmt(sarsaTarget) + '\n' +
+    'SARSA error   = ' + fmt(sarsaTarget) + ' − ' + fmt(qsa) + ' = <span class="hl">' + fmt(sarsaError) + '</span>\n\n' +
+    'Q-learning target = r + γ·MAX{Q(s′,0), Q(s′,1)} = ' + fmt(r) + ' + ' + fmt(gamma) + '×' + fmt(maxQ) + ' = ' + fmt(qlTarget) + '\n' +
+    'Q-learning error  = ' + fmt(qlTarget) + ' − ' + fmt(qsa) + ' = <span class="hl2">' + fmt(qlError) + '</span>\n\n' +
+    (Math.abs(gap) < 1e-9
+      ? 'Gap = 0 → the actual next action taken IS the maximizing action, so SARSA and Q-learning coincide exactly.'
+      : 'Gap = Q-learning error − SARSA error = ' + fmt(gap) + ' → Q-learning is more "optimistic" here because the actual next action taken is not the maximizing one.');
+}
+
+// ---------- Demo 4: Maximization bias / Double Q ----------
+function calcD4(){
+  var trueVal = parseFloat(document.getElementById('d4-true').value);
+  var q0 = parseFloat(document.getElementById('d4-q0').value);
+  var q1 = parseFloat(document.getElementById('d4-q1').value);
+  var qp0 = parseFloat(document.getElementById('d4-qp0').value);
+  var qp1 = parseFloat(document.getElementById('d4-qp1').value);
+  var vanillaMax = Math.max(q0,q1);
+  var chosenAction = (q1 > q0) ? 1 : 0;
+  var chosenQP = (chosenAction === 1) ? qp1 : qp0;
+  var vanillaBias = vanillaMax - trueVal;
+  var doubleBias = chosenQP - trueVal;
+  document.getElementById('d4-out').innerHTML =
+    'Vanilla Q-learning bootstrap = MAX{' + fmt(q0) + ', ' + fmt(q1) + '} = <span class="hl">' + fmt(vanillaMax) + '</span>  (bias vs true value ' + fmt(trueVal) + ' = ' + fmt(vanillaBias) + ')\n\n' +
+    'Double Q-learning:\n' +
+    '  Step 1 — select via θ: argmax{' + fmt(q0) + ', ' + fmt(q1) + '} → action ' + chosenAction + '\n' +
+    '  Step 2 — evaluate via θ′ at action ' + chosenAction + ': = <span class="hl2">' + fmt(chosenQP) + '</span>  (bias vs true value = ' + fmt(doubleBias) + ')\n\n' +
+    (Math.abs(doubleBias) < Math.abs(vanillaBias)
+      ? '→ Double Q-learning\'s magnitude of error (' + fmt(Math.abs(doubleBias)) + ') is smaller than vanilla Q-learning\'s (' + fmt(Math.abs(vanillaBias)) + ') for these numbers.'
+      : '→ Try more "noisy" q0/q1 values (with the true value equal for both) to see Double Q-learning typically reduce the systematic overestimation vanilla Q-learning shows.');
+}
+</script>
+</body>
+</html>
