@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics Engineering — Lecture 9 Study Companion · M.Tech DMML</title>
+
+<!-- Mermaid (diagrams) -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<!-- KaTeX (math) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<!-- Type system: Source Serif 4 (editorial headings) + Inter (UI/body) + JetBrains Mono (code) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f3f3f0; --bg-elev:#ffffff; --bg-sidebar:#fbfbfa; --text:#181c22; --text-dim:#5c6370;
+  --border:#e2e1db; --border-strong:#cfcec6; --accent:#1e3a5f; --accent-2:#8a6a1e; --accent-soft:#eaeef3;
+  --green:#1e7d4f; --green-soft:#e9f5ef; --amber:#8a5a12; --amber-soft:#fbf1de;
+  --red:#a8323a; --red-soft:#f8e9ea; --blue:#1d4d8f; --blue-soft:#e9eff8; --purple:#5b3a91; --purple-soft:#efe9f6;
+  --gold:#8a6a1e; --gold-soft:#f7f1e1; --teal:#0f766e; --teal-soft:#e6f3f1;
+  --shadow:0 1px 2px rgba(20,20,15,0.04), 0 4px 16px rgba(20,20,15,0.05); --radius:10px;
+  --serif:'Source Serif 4',Georgia,'Iowan Old Style','Palatino Linotype',serif;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+}
+:root[data-theme="dark"]{
+  --bg:#111318; --bg-elev:#181b22; --bg-sidebar:#14161c; --text:#e6e6e2; --text-dim:#9a9fac;
+  --border:#2a2d36; --border-strong:#3a3e49; --accent:#a9c2e8; --accent-2:#d8bd7a; --accent-soft:#1d2b3f;
+  --green:#7ecba3; --green-soft:#122820; --amber:#dcb46e; --amber-soft:#2a2214;
+  --red:#e79aa0; --red-soft:#2c1a1c; --blue:#9dc0ee; --blue-soft:#182333; --purple:#c3aee0; --purple-soft:#221b30;
+  --gold:#d8bd7a; --gold-soft:#241d10; --teal:#5ecfc3; --teal-soft:#122927;
+  --shadow:0 1px 2px rgba(0,0,0,0.3), 0 4px 18px rgba(0,0,0,0.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111318; --bg-elev:#181b22; --bg-sidebar:#14161c; --text:#e6e6e2; --text-dim:#9a9fac;
+    --border:#2a2d36; --border-strong:#3a3e49; --accent:#a9c2e8; --accent-2:#d8bd7a; --accent-soft:#1d2b3f;
+    --green:#7ecba3; --green-soft:#122820; --amber:#dcb46e; --amber-soft:#2a2214;
+    --red:#e79aa0; --red-soft:#2c1a1c; --blue:#9dc0ee; --blue-soft:#182333; --purple:#c3aee0; --purple-soft:#221b30;
+    --gold:#d8bd7a; --gold-soft:#241d10; --teal:#5ecfc3; --teal-soft:#122927;
+    --shadow:0 1px 2px rgba(0,0,0,0.3), 0 4px 18px rgba(0,0,0,0.35);
+  }
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--sans);
+  font-size:15.5px; line-height:1.6; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+a{color:var(--accent);}
+h1,h2,h3,h4{font-family:var(--serif); line-height:1.25; font-weight:600; letter-spacing:-0.01em;}
+code{font-family:var(--mono); background:var(--accent-soft); padding:0.15em 0.45em; border-radius:5px; font-size:0.87em;}
+table{border-collapse:collapse; width:100%; margin:0.85em 0; font-size:0.92em;}
+table th, table td{border:1px solid var(--border); padding:9px 12px; text-align:left; vertical-align:top;}
+table th{background:var(--accent); color:#fff; font-weight:600; font-family:var(--sans); font-size:0.82em; text-transform:uppercase; letter-spacing:0.03em;}
+table tr:nth-child(even) td{background:rgba(127,127,127,0.05);}
+::selection{background:var(--gold-soft); color:var(--text);}
+
+/* ---------- Header ---------- */
+#brandbar{
+  height:4px; background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 60%,var(--gold) 100%);
+}
+#topbar{
+  position:sticky; top:0; z-index:50; background:var(--bg-elev); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:18px; padding:12px 22px; flex-wrap:wrap;
+}
+#brand{display:flex; align-items:center; gap:12px; margin-right:auto;}
+#brand .logo{
+  width:38px; height:38px; border-radius:8px; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-weight:700;
+  font-size:1.02rem; letter-spacing:0.01em; flex-shrink:0;
+}
+#brand .kicker{font-size:0.66rem; font-weight:600; letter-spacing:0.09em; text-transform:uppercase; color:var(--gold); margin:0 0 2px;}
+#brand h1{font-size:1.12rem; margin:0; font-weight:600;}
+#brand p{margin:2px 0 0; font-size:0.78rem; color:var(--text-dim); font-family:var(--sans);}
+#progressWrap{display:flex; align-items:center; gap:9px; min-width:150px;}
+#progressBarOuter{width:110px; height:6px; border-radius:6px; background:var(--border); overflow:hidden;}
+#progressBarInner{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--gold)); transition:width .35s ease;}
+#progressLabel{font-size:0.74rem; font-weight:600; color:var(--text-dim); white-space:nowrap; letter-spacing:0.01em;}
+#tabs{display:flex; gap:2px; background:var(--bg); border-radius:9px; padding:3px; border:1px solid var(--border);}
+.tab-btn{
+  border:none; background:transparent; color:var(--text-dim); font-size:0.82rem; font-weight:600;
+  padding:8px 15px; border-radius:7px; cursor:pointer; transition:all .15s; font-family:var(--sans); letter-spacing:0.01em;
+}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{background:var(--accent); color:#fff;}
+#themeToggle, #menuToggle{
+  border:1px solid var(--border); background:var(--bg-elev); color:var(--text); border-radius:8px;
+  width:36px; height:36px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;
+}
+#themeToggle:hover, #menuToggle:hover{border-color:var(--border-strong);}
+#menuToggle{display:none;}
+
+/* ---------- Layout ---------- */
+.app{display:flex; min-height:calc(100vh - 64px);}
+#sidebar{
+  width:290px; flex-shrink:0; background:var(--bg-sidebar); border-right:1px solid var(--border);
+  padding:18px 14px; overflow-y:auto; height:calc(100vh - 64px); position:sticky; top:64px;
+}
+#searchBox{
+  width:100%; padding:9px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-elev);
+  color:var(--text); font-size:0.85rem; margin-bottom:16px; font-family:var(--sans);
+}
+#searchBox:focus{outline:none; border-color:var(--accent);}
+#navList{list-style:none; margin:0; padding:0;}
+.nav-topic{margin-bottom:2px; border-radius:8px; overflow:hidden;}
+.nav-topic-btn{
+  width:100%; text-align:left; background:transparent; border:none; color:var(--text); font-size:0.84rem;
+  font-weight:500; padding:9px 10px; cursor:pointer; display:flex; align-items:center; gap:9px; border-radius:8px;
+  font-family:var(--sans);
+}
+.nav-topic-btn:hover{background:var(--accent-soft);}
+.nav-topic-btn.current{background:var(--accent-soft); color:var(--accent); font-weight:600;}
+.nav-badge{margin-left:auto; font-size:0.66rem; font-family:var(--mono); color:var(--text-dim); background:var(--bg-elev); border:1px solid var(--border); padding:1px 7px; border-radius:20px;}
+.nav-hidden{display:none !important;}
+
+#content{flex:1; padding:26px 30px 90px; max-width:960px; margin:0 auto;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* ---------- Study cards ---------- */
+.topic-heading{display:flex; align-items:baseline; gap:11px; margin:38px 0 16px; padding-bottom:10px; border-bottom:2px solid var(--accent);}
+.topic-heading:first-child{margin-top:0;}
+.topic-heading .topic-icon{font-size:1.15rem; line-height:1;}
+.topic-heading h2{margin:0; font-size:1.32rem;}
+.topic-progress{font-size:0.72rem; color:var(--text-dim); margin-left:auto; font-family:var(--mono); letter-spacing:0.02em; align-self:center;}
+
+.topic-article{
+  background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius);
+  box-shadow:var(--shadow); padding:4px 26px 8px; margin-bottom:16px;
+}
+.slide-block{padding:20px 0 22px; border-bottom:1px solid var(--border);}
+.slide-block:last-child{border-bottom:none;}
+.slide-block.reviewed{background:linear-gradient(180deg, transparent, transparent);}
+.slide-block-head{
+  display:flex; align-items:baseline; gap:11px; margin-bottom:11px;
+}
+.slide-num{
+  font-size:0.68rem; font-weight:600; font-family:var(--mono); color:var(--accent); background:var(--accent-soft);
+  padding:2px 8px; border-radius:5px; white-space:nowrap; align-self:center;
+}
+.slide-block-head h3{margin:0; font-size:1.05rem; flex:1; font-family:var(--serif); font-weight:600;}
+.review-toggle{
+  width:25px; height:25px; border-radius:50%; border:1.5px solid var(--border); background:var(--bg);
+  color:transparent; cursor:pointer; font-size:0.72rem; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; align-self:center; transition:all .15s; padding:0;
+}
+.review-toggle:hover{border-color:var(--green);}
+.review-toggle.done{background:var(--green); border-color:var(--green); color:#fff;}
+.slide-block-body{padding-left:0;}
+
+.callout{border-radius:8px; padding:13px 15px; margin:11px 0; font-size:0.92rem;}
+.callout-title{font-weight:600; font-size:0.72rem; margin-bottom:6px; display:flex; align-items:center; gap:6px; text-transform:uppercase; letter-spacing:.05em; font-family:var(--sans);}
+.callout p, .callout ul{margin:4px 0;}
+.callout ul{padding-left:20px;}
+.callout.def{background:var(--blue-soft); border-left:3px solid var(--blue);}
+.callout.def .callout-title{color:var(--blue);}
+.callout.ctx{background:var(--accent-soft); border-left:3px solid var(--accent);}
+.callout.ctx .callout-title{color:var(--accent);}
+.callout.warn{background:var(--red-soft); border-left:3px solid var(--red);}
+.callout.warn .callout-title{color:var(--red);}
+.callout.tip{background:var(--gold-soft); border-left:3px solid var(--gold);}
+.callout.tip .callout-title{color:var(--gold);}
+.callout.rc{background:var(--purple-soft); border-left:3px solid var(--purple);}
+.callout.rc .callout-title{color:var(--purple);}
+.callout.ins{background:var(--teal-soft); border-left:3px solid var(--teal);}
+.callout.ins .callout-title{color:var(--teal);}
+.src-list{font-size:0.79rem; margin-top:8px; color:var(--text-dim);}
+.src-list a{text-decoration:none;}
+.src-list a:hover{text-decoration:underline;}
+.mermaid-wrap{background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; margin:11px 0; overflow-x:auto;}
+.slide-sub{color:var(--text-dim); font-size:0.9rem; margin:-2px 0 12px; font-style:italic; line-height:1.5;}
+.term-list{list-style:none; margin:6px 0; padding:0;}
+.term-list li{padding:7px 2px; border-bottom:1px dashed var(--border); font-size:0.92rem;}
+.term-list li:last-child{border-bottom:none;}
+.term-list b{color:var(--accent); font-family:var(--serif); font-weight:600;}
+.mini-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; margin:12px 0;}
+.mini-grid > *{background:var(--accent-soft); border:1px solid var(--border); border-radius:7px; padding:9px 11px; font-size:0.8rem; text-align:center; font-weight:600; color:var(--accent); font-family:var(--sans); display:block;}
+.step-list{margin:6px 0; padding-left:0; list-style:none; counter-reset:step;}
+.step-list li{counter-increment:step; padding:6px 0 6px 34px; position:relative; font-size:0.92rem; border-bottom:1px dashed var(--border);}
+.step-list li:last-child{border-bottom:none;}
+.step-list li::before{content:counter(step); position:absolute; left:0; top:5px; width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-size:0.72rem; font-weight:700; display:flex; align-items:center; justify-content:center; font-family:var(--mono);}
+
+/* ---------- Quiz ---------- */
+.quiz-shell{max-width:680px; margin:0 auto;}
+.quiz-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;}
+.quiz-score{font-weight:700; font-size:0.92rem; font-family:var(--mono);}
+.quiz-progress-text{color:var(--text-dim); font-size:0.82rem; font-family:var(--mono);}
+.quiz-card{background:var(--bg-elev); border:1px solid var(--border); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow);}
+.quiz-q{font-size:1.12rem; font-weight:600; font-family:var(--serif); margin-bottom:18px; line-height:1.4;}
+.quiz-choice{
+  display:block; width:100%; text-align:left; background:var(--bg); border:1px solid var(--border);
+  border-radius:8px; padding:12px 15px; margin-bottom:9px; cursor:pointer; font-size:0.92rem; color:var(--text);
+  transition:all .15s; font-family:var(--sans);
+}
+.quiz-choice:hover{border-color:var(--accent);}
+.quiz-choice.correct{background:var(--green-soft); border-color:var(--green); color:var(--green); font-weight:600;}
+.quiz-choice.incorrect{background:var(--red-soft); border-color:var(--red); color:var(--red); font-weight:600;}
+.quiz-choice[disabled]{cursor:default;}
+.quiz-explain{background:var(--accent-soft); border-radius:8px; padding:13px 15px; margin-top:13px; font-size:0.87rem; display:none;}
+.quiz-explain.show{display:block;}
+.quiz-actions{display:flex; justify-content:flex-end; margin-top:16px; gap:10px;}
+.btn{
+  background:var(--accent); color:#fff; border:none; padding:10px 19px; border-radius:8px; font-weight:600;
+  cursor:pointer; font-size:0.86rem; font-family:var(--sans); letter-spacing:0.01em;
+}
+.btn:hover{filter:brightness(1.12);}
+.btn.secondary{background:transparent; color:var(--accent); border:1px solid var(--accent);}
+.quiz-result{text-align:center; padding:44px 20px;}
+.quiz-result h2{font-size:1.7rem;}
+.quiz-result .big-score{font-size:2.9rem; font-weight:700; font-family:var(--serif); color:var(--accent); margin:10px 0;}
+
+/* ---------- Flashcards ---------- */
+.cards-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+.cards-shell{max-width:600px; margin:0 auto; display:flex; flex-direction:column; align-items:center;}
+.flip-scene{width:100%; max-width:520px; height:280px; perspective:1400px; margin-bottom:18px;}
+.flip-card{width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform .5s; cursor:pointer;}
+.flip-card.flipped{transform:rotateY(180deg);}
+.flip-face{
+  position:absolute; inset:0; backface-visibility:hidden; border-radius:16px; padding:26px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  box-shadow:var(--shadow); border:1px solid var(--border);
+}
+.flip-front{background:var(--bg-elev);}
+.flip-back{background:var(--accent-soft); transform:rotateY(180deg); overflow-y:auto;}
+.flip-face .kicker{font-size:0.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--text-dim); margin-bottom:12px; font-weight:600; font-family:var(--sans);}
+.flip-face .content{font-size:1.1rem; font-weight:600; font-family:var(--serif);}
+.flip-back .content{font-size:0.95rem; font-weight:400; text-align:left; font-family:var(--sans);}
+.flip-hint{font-size:0.73rem; color:var(--text-dim); margin-top:16px; font-family:var(--sans);}
+.rate-row{display:flex; gap:10px; margin-top:6px;}
+.rate-btn{border:none; border-radius:8px; padding:9px 17px; font-weight:600; cursor:pointer; font-size:0.84rem; color:#fff; font-family:var(--sans);}
+.rate-easy{background:var(--green);}
+.rate-good{background:var(--blue);}
+.rate-hard{background:var(--red);}
+.cards-controls{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; justify-content:center;}
+.deck-stats{display:flex; gap:14px; font-size:0.8rem; color:var(--text-dim); margin-top:10px; flex-wrap:wrap; justify-content:center;}
+.deck-stats span b{color:var(--text);}
+
+/* ---------- Reference ---------- */
+.ref-section{margin-bottom:36px;}
+.checklist-item{
+  display:flex; align-items:flex-start; gap:11px; padding:11px 13px; border:1px solid var(--border);
+  border-radius:8px; margin-bottom:7px; background:var(--bg-elev); cursor:pointer; font-size:0.9rem;
+}
+.checklist-item input{margin-top:3px; width:16px; height:16px; flex-shrink:0; accent-color:var(--accent);}
+.checklist-item.checked{opacity:0.55; text-decoration:line-through;}
+#checklistProgress{font-size:0.83rem; color:var(--text-dim); margin-bottom:14px; font-family:var(--mono);}
+
+.section-title{display:flex; align-items:baseline; gap:9px; margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid var(--accent);}
+.section-title h2{margin:0;}
+
+footer{
+  text-align:center; padding:34px 10px 30px; color:var(--text-dim); font-size:0.78rem;
+  border-top:1px solid var(--border); margin-top:20px; line-height:1.7;
+}
+footer .footer-title{font-weight:600; color:var(--text); font-family:var(--serif); font-size:0.92rem;}
+footer .footer-meta{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.01em;}
+
+/* ---------- Print ---------- */
+@media print{
+  #topbar, #brandbar, #sidebar, #menuToggle, #themeToggle, .review-toggle, footer{display:none !important;}
+  .app{display:block;}
+  #content{max-width:100%; padding:0;}
+  .topic-article{box-shadow:none; border:1px solid #ccc; break-inside:avoid;}
+  .slide-block{break-inside:avoid;}
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width:880px){
+  #menuToggle{display:flex;}
+  #sidebar{
+    position:fixed; left:0; top:64px; height:calc(100vh - 64px); z-index:60; transform:translateX(-105%);
+    transition:transform .25s ease; box-shadow:4px 0 20px rgba(0,0,0,0.2); width:78vw; max-width:320px;
+  }
+  #sidebar.open{transform:translateX(0);}
+  #brand p{display:none;}
+  #tabs{order:3; width:100%; justify-content:space-between;}
+  #progressWrap{order:2;}
+  #content{padding:18px 14px 70px;}
+  .flip-scene{height:320px;}
+}
+@media (max-width:520px){
+  .tab-btn{padding:7px 8px; font-size:0.72rem;}
+  #brand h1{font-size:0.92rem;}
+}
+</style>
+</head>
+<body>
+
+<div id="brandbar"></div>
+<header id="topbar">
+  <button id="menuToggle" aria-label="Toggle menu">☰</button>
+  <div id="brand">
+    <span class="logo">AE</span>
+    <div>
+      <p class="kicker">M.Tech · Data Management for Machine Learning</p>
+      <h1>Analytics Engineering</h1>
+      <p>Lecture 9 · Instructor: Sunil Bhutada · Interactive Study Companion</p>
+    </div>
+  </div>
+  <div id="progressWrap">
+    <div id="progressBarOuter"><div id="progressBarInner"></div></div>
+    <span id="progressLabel">0% reviewed</span>
+  </div>
+  <div id="tabs">
+    <button class="tab-btn active" data-view="study">📖 Study</button>
+    <button class="tab-btn" data-view="quiz">❓ Quiz</button>
+    <button class="tab-btn" data-view="cards">🃏 Cards</button>
+    <button class="tab-btn" data-view="reference">📚 Reference</button>
+  </div>
+  <button id="themeToggle" aria-label="Toggle theme">🌙</button>
+</header>
+
+<div class="app">
+  <aside id="sidebar">
+    <input id="searchBox" type="text" placeholder="🔍 Search topics & slides…">
+    <ul id="navList"></ul>
+  </aside>
+
+  <main id="content">
+
+    <section id="view-study" class="view active">
+      <div id="studyRoot"></div>
+    </section>
+
+    <section id="view-quiz" class="view">
+      <div class="quiz-shell" id="quizRoot"></div>
+    </section>
+
+    <section id="view-cards" class="view">
+      <div class="cards-shell" id="cardsRoot"></div>
+    </section>
+
+    <section id="view-reference" class="view">
+      <div class="ref-section">
+        <div class="section-title"><h2>📗 Glossary</h2></div>
+        <table id="glossaryTable">
+          <thead><tr><th style="width:14%">Term</th><th style="width:26%">Full Form</th><th>Definition</th></tr></thead>
+          <tbody id="glossaryBody"></tbody>
+        </table>
+      </div>
+      <div class="ref-section">
+        <div class="section-title"><h2>✅ Revision Checklist</h2></div>
+        <div id="checklistProgress"></div>
+        <div id="checklistRoot"></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-title">Analytics Engineering — Lecture 9 Study Companion</div>
+      <div>M.Tech, Data Management for Machine Learning · Instructor: Sunil Bhutada</div>
+      <div class="footer-meta">Compiled from "L9 – Analytics Engineering: Complete Study Notes" · Every fact traceable to a source slide (#1–91) · For personal exam preparation</div>
+    </footer>
+  </main>
+</div>
+
+<script>
+/* =========================================================================
+   DATA — every fact below is paraphrased directly from the source markdown
+   study notes ("L9 - Analytics Engineering - Study Notes.md"). Nothing here
+   is invented; slide numbers (n) map 1:1 to "Extracted Info Slide No n".
+   ========================================================================= */
+
+const TOPICS = [
+  {id:'t1', icon:'🔗', title:'Data Integration', range:[1,15]},
+  {id:'t2', icon:'🔄', title:'Data Transformations', range:[16,26]},
+  {id:'t3', icon:'🏗️', title:'Transformation & Modelling Patterns', range:[27,38]},
+  {id:'t4', icon:'🧪', title:'Validation & Testing', range:[39,48]},
+  {id:'t5', icon:'📚', title:'Documentation of Data Models', range:[49,57]},
+  {id:'t6', icon:'🕰️', title:'Data Versioning', range:[58,71]},
+  {id:'t7', icon:'🧰', title:'Data Version Control Tools', range:[72,80]},
+  {id:'t8', icon:'🧬', title:'Data Lineage & Reproducibility', range:[81,89]},
+  {id:'t9', icon:'🏁', title:'References & Wrap-up', range:[90,91]},
+];
+
+function topicOf(n){ return TOPICS.find(t => n>=t.range[0] && n<=t.range[1]); }
+
+// Each slide: n, h(eading), d(efinition callout), c(ontext/explained), w(arning/misconception),
+// t(exam tip), r(esearch context), s(ources)=[[title,url]], m(ermaid code), tb(le)={h:[],r:[[]]}
+const SLIDES = [
+{n:1,h:"Title Slide",
+ sub:"<i>Sets the stage — this deck is about managing data for ML, taught by Sunil Bhutada.</i>",
+ d:"<b>Cover slide</b> for the deck <b>“Data Management for Machine Learning”</b>, presented by <b>Sunil Bhutada</b>.",
+ c:"<b>Just the title page</b> — it names the course and instructor, with no technical content yet."},
+
+{n:2,h:"Section Header",
+ sub:"<i>This lecture's real subject: turning raw data into clean, trustworthy, analytics-ready datasets.</i>",
+ d:"<b>Section header slide:</b> “Data Management for Machine Learning — Lecture No. 9: Analytics Engineering.”",
+ c:"<b>Analytics Engineering</b> is the lecture's real focus: turning raw data into clean, trustworthy, well-documented datasets that analysts and ML models can use.",
+ ins:"<b>Straight from the recording:</b> the instructor opened by asking the class “what is analytics?” live. A student answered “storytelling out of data” — the instructor confirmed: analytics means <b>finding inference, finding conclusion, finding something which was hidden</b> in the data."},
+
+{n:3,h:"Agenda",
+ sub:"<i>The agenda is the lecture's skeleton — and maps 1:1 onto this app's 9 sidebar topics.</i>",
+ d:"<b>Nine agenda items</b> outline this lecture's structure:<ul class='step-list'><li><b>Data Integration</b></li><li><b>Data Transformations</b></li><li><b>Data Transformation and Modelling Patterns</b></li><li><b>Data Transformation Validation and Testing</b></li><li><b>Documentation of Data Models</b> [Additional]</li><li><b>DBT Demo</b></li><li><b>Data Versioning</b></li><li><b>Data Version Control – Tools</b></li><li><b>Data Lineage & Reproducibility</b> [Additional]</li></ul>",
+ c:"<b>The story arc:</b> get data from many places into one place → clean/reshape it → organize it using proven patterns → prove it's correct with tests → document it → version it → trace where every number came from.<br>Items marked “[Additional]” are supplementary beyond core exam-relevant material.",
+ t:"<b>Memory anchor:</b> the agenda's 9 items map directly onto this app's 9 sidebar topics — a good high-level anchor for the whole lecture."},
+
+{n:4,h:"Section Divider: Data Integration",
+ sub:"<i>Just a transition slide — the real content starts next.</i>",
+ d:"<b>Section-break slide</b> announcing the first topic: <b>Data Integration</b>.",
+ c:"<b>Simple transition slide</b> — no new content."},
+
+{n:5,h:"Data Integration — Introduction",
+ sub:"<i>The plumbing that turns scattered CRM, app, and finance data into one unified fact base.</i>",
+ d:"<b>Data integration</b> combines various types and formats of data from any source across an organization into a <b>data lake</b> or <b>data warehouse</b>, providing a unified fact base for analytics.<br>Unified datasets let businesses make better decisions, align departments, and drive better customer experience.",
+ c:"<b>Think of a company</b> with four separate 'data sources':<ul class='term-list'><li><b>CRM:</b> customer records</li><li><b>Mobile app:</b> usage data</li><li><b>Payments system:</b> transactions</li><li><b>Finance spreadsheet:</b> financial records</li></ul>Integration is the plumbing pulling all four into one place so “how many customers do we have?” has one correct answer.",
+ ins:"<b>The instructor's own analogy for “unified base”:</b> if you're told to add 1 litre of milk plus 300 ml of water, you can't add “1 litre + 300 ml” directly — first convert both to the same unit (1000 ml + 300 ml = 1300 ml). That unit conversion <i>is</i> the unified base integration provides, just applied to entire datasets instead of two numbers.",
+ w:"<b>Misconception: integration is often mistaken for storage.</b> Simply copying every source into a data lake is <i>not</i> integration — integration means reconciling meaning (schemas, keys, units) into one unified fact base.",
+ r:"<b>Historical roots:</b> data integration grew out of 1990s/2000s enterprise data warehousing, combining ERP, CRM, and mainframe data.<br><b>Real-world example:</b> e-commerce firms integrate clickstream, order-DB, and support-ticket data into one customer profile for personalization and churn prediction.",
+ s:[["Data Integration vs ETL — LatentView","https://www.latentview.com/blog/data-integration-vs-elt/"]],
+ m:"flowchart LR\n    A1[Data Source] --> DI[Data Integration]\n    A2[Data Source] --> DI\n    A3[Data Source] --> DI\n    A4[Data Source] --> DI\n    DI --> UV[Unified View]"},
+
+{n:6,h:"Data Integration — Working (ETL vs ELT)",
+ sub:"<i>The core distinction: clean before you store (ETL) or store raw and clean later (ELT).</i>",
+ d:"<b>Moving data requires a pipeline</b> that understands both structure/meaning and the path through technical systems.<ul class='term-list'><li><b>Data ingestion:</b> the simplest form — regular landing of data.</li><li><b>Richer pipeline:</b> adds cleansing, sorting, and enrichment.</li><li><b>ETL</b> (Extract, Transform, Load): transforms <i>before</i> storing.</li><li><b>ELT</b> (Extract, Load, Transform): transforms <i>after</i> storing.</li></ul>",
+ c:"<b>Kitchen analogy:</b><div class='mini-grid'><div class='cell'>ETL</div><div class='cell'>ELT</div></div><ul class='term-list'><li><b>ETL:</b> cook the meal before putting it in the fridge — clean first, store later.</li><li><b>ELT:</b> put raw ingredients in the fridge, cook only what you need when you need it — store raw first, clean later using warehouse compute.</li></ul>",
+ t:"<b>Exam-relevant:</b> know that <b>ETL</b> transforms <i>before</i> load, while <b>ELT</b> transforms <i>after</i> load, inside the warehouse.",
+ r:"<ul class='step-list'><li><b>1970s–2000s:</b> ETL dominated — expensive on-prem compute forced pre-load cleaning.</li><li><b>2010s:</b> ELT rose as cloud warehouses (Snowflake, BigQuery, Redshift) made storage cheap and compute elastic — the shift that enabled dbt.</li><li><b>Today:</b> modern practice often blends both in a hybrid ETL/ELT approach.</li></ul>",
+ s:[["ETL vs ELT — AtScale","https://www.atscale.com/blog/etl-vs-elt-whats-the-difference-and-how-to-choose/"],["ETL vs ELT in 2025","https://www.inform-datalab.com/en/blog/etl-vs-elt-in-2025-how-modern-data-architectures-really-work/"]]},
+
+{n:7,h:"Data Ingestion vs Data Integration (diagram)",
+ sub:"<i>Ingestion gets data in; integration also transforms it — bronze, silver, gold shows the difference.</i>",
+ d:"<b>Three sources</b> — OLTP DB, SaaS API, and S3 — flow through Extract and Load steps into <b>bronze</b> staging tables.<ul class='term-list'><li><b>Data Ingestion</b> (green box): wraps only Extract + Load into bronze.</li><li><b>Data Integration</b> (red box): wraps everything — Extract, Load, and Transform, all the way through bronze → silver → gold.</li></ul>",
+ c:"<b>Ingestion is a subset of integration:</b> ingestion only gets raw data into bronze; integration additionally does the transform work to merge/clean/aggregate up to a gold, analytics-ready table.",
+ t:"<b>Classic exam distinction:</b> every integration pipeline contains an ingestion step, but not every ingestion pipeline does full integration.",
+ r:"<b>Naming preview:</b> this bronze/silver/gold naming previews the <b>Medallion Architecture</b> (formally introduced at slide 29).",
+ s:[["Data Ingestion vs Data Integration — Atlan","https://atlan.com/know/data-ingestion-vs-data-integration/"]],
+ m:"flowchart LR\n    subgraph Ingestion[\"Data Ingestion (green)\"]\n        O[OLTP database source] -->|E,L| B1[bronze: Clients table]\n        S[SaaS API source] -->|E,L| B2[bronze: Ads table]\n        T3[S3 source] -->|E,L| B3[bronze: Static dictionary table]\n    end\n    subgraph Integration[\"Data Integration (red) - everything\"]\n        B1 -->|T| SI[silver: Integrated table]\n        B2 -->|T| SI\n        B3 -->|T| SI\n        SI -->|T| G[gold: Aggregated table]\n    end"},
+
+{n:8,h:"Data Ingestion vs Data Integration — Comparison Table",
+ sub:"<i>Five aspects where ingestion and integration diverge — definition, use, quality, complexity, and skill.</i>",
+ d:"<b>5×3 comparison table</b> contrasting Data Ingestion and Data Integration across five aspects.",
+ tb:{h:["Aspect","Data Ingestion","Data Integration"],
+     r:[["Definition","Collecting/transferring data from various inputs to target storage.","Unifies raw data from disparate sources, applies transformations, loads into warehouse/lake."],
+        ["Use","Consolidates data in a central repository for further processing.","Ensures high-quality, credible data for analytics and reporting."],
+        ["Data quality","Doesn't automatically ensure data quality.","Improves data quality via merging/filtering transformations."],
+        ["Complexity","Less complex.","More complex — cleansing, ETL, metadata management, governance."],
+        ["Skill needed","Doesn't require deep domain expertise.","Requires skilled data/ETL engineers."]]},
+ c:"<b>Short version:</b> ingestion = moving data; integration = moving + making it trustworthy and analysis-ready.",
+ t:"<b>Frequently tested:</b> this exact ingestion-vs-integration table is a common exam topic — know all 5 rows."},
+
+{n:9,h:"Modern Data Integration Challenges",
+ sub:"<i>Five forces — data explosion, real-time demand, and cloud shift — are reshaping what integration must do.</i>",
+ d:"<b>Enterprise integration has been transformed</b> by five forces:<ul class='term-list'><li><b>Explosion of data/sources:</b> IoT, APIs, cloud, on-prem.</li><li><b>Infrastructure/compute innovation:</b> plus ML.</li><li><b>Demand for continuous, real-time data.</b></li><li><b>On-prem → cloud shift:</b> requiring cloud data integration.</li><li><b>Full lifecycle matters,</b> not just initial build — requiring automation.</li></ul>“Focus is not just on the 'how' but the 'what' the business needs.”",
+ c:"<b>Then vs now:</b> 20 years ago integration meant 'connect 3 databases nightly'. Today it means dozens of sources, streaming updates, and hybrid clouds — with the business caring about outcomes (self-service, always-on data) and expecting tooling to handle the mechanics.",
+ r:"<b>Mirrors Gartner's</b> 'data fabric' / 'data mesh' framing.<br><b>Real-world analogy:</b> Uber/Netflix built internal real-time integration platforms because nightly batch ETL couldn't support live pricing, fraud detection, or recommendations.",
+ ins:"<b>Live example from class:</b> the instructor pointed at the very lecture being recorded — a 2-hour session — and noted teams increasingly want AI/APIs to auto-summarize it into a 5–10 minute digest. That's exactly the “demand for continuous, real-time data” this slide describes: controlling fast-growing data has become its own hard problem."},
+
+{n:10,h:"Data Integration Tools — What? (Gartner definition)",
+ sub:"<i>Gartner's own definition of what a data integration tool actually is — and who's currently leading that market.</i>",
+ d:"<b>Gartner's definition:</b> “The market for data integration tools consists of stand-alone software products that enable organizations to combine data from multiple sources and perform tasks related to data access, transformation, enrichment and delivery.”<br>Bought by data engineers/architects, analysts, or data scientists; consumed as SaaS, on-prem, cloud, or hybrid.",
+ c:"<b>In plain English:</b> software whose job is to grab data, reshape/enrich it, and deliver it somewhere useful — runnable anywhere.",
+ r:"<b>Closely watched:</b> Gartner's Magic Quadrant for Data Integration Tools. In the 2025 edition, Leaders included <b>Oracle</b> (17th consecutive year), <b>Informatica</b> (20th year), <b>IBM</b> (20th year), <b>Microsoft</b>, and <b>Qlik</b>.",
+ s:[["Oracle named Leader — 2025 Gartner MQ","https://blogs.oracle.com/dataintegration/oracle-named-a-leader-in-2025-gartner-magic-quadrant-for-data-integration-tools-17-consecutive-years"]]},
+
+{n:11,h:"Common Use Cases (Gartner categories)",
+ sub:"<i>From technical pipeline-building to self-service to AI-ready data — one tool category, five jobs.</i>",
+ d:"<b>Five use cases</b> Gartner identifies for data integration tools:<ul class='term-list'><li><b>Data engineering:</b> technical personas building pipelines.</li><li><b>Delivering modern data management architectures:</b> lakehouse, data fabric, data mesh, data products.</li><li><b>Self-service data integration:</b> less-technical users, ABI/data science.</li><li><b>Operational data integration:</b> master data, data hubs, partner sharing.</li><li><b>Supporting AI projects:</b> chatbots, recommenders, AI-ready data.</li></ul>",
+ c:"<b>Five different 'jobs'</b> integration tools are hired to do — from technical pipeline-building, to business self-service, to feeding AI systems.",
+ r:"<b>Competing philosophies:</b><ul class='term-list'><li><b>Data fabric:</b> a centralized, metadata-driven layer.</li><li><b>Data mesh:</b> decentralized domain ownership publishing 'data products'.</li></ul>Both remain active debates in modern data architecture."},
+
+{n:12,h:"Expected Features — Movement & Transformation",
+ sub:"<i>What a serious integration tool must support: multiple movement styles and three levels of transformation power.</i>",
+ d:"<b>Integration styles</b> tools must support:<ul class='term-list'><li><b>Bulk/batch movement.</b></li><li><b>Replication/sync</b> — including <b>Change Data Capture (CDC)</b>.</li><li><b>Stream integration.</b></li><li><b>Data virtualization.</b></li></ul>All with prebuilt/configurable connectors.<br><b>Transformation levels</b> tools must support:<div class='mini-grid'><div class='cell'>Basic</div><div class='cell'>Intermediate</div><div class='cell'>Advanced</div></div><ul class='term-list'><li><b>Basic:</b> string operations.</li><li><b>Intermediate:</b> merging, aggregation.</li><li><b>Advanced:</b> complex parsing, text mining, multischema modeling.</li></ul>",
+ c:"<b>A checklist of 'must-have' capabilities:</b> multiple ways to move data, plus a spectrum of transformation power.",
+ r:"<b>Change Data Capture (CDC):</b> capturing only the rows that changed, via transaction logs, instead of re-reading whole tables. It's the backbone of near-real-time integration (Debezium, Fivetran, Qlik Replicate)."},
+
+{n:13,h:"Expected Features — Augmentation, Metadata, Governance",
+ sub:"<i>Beyond moving data: tools are now expected to self-document, auto-optimize, and govern data quality.</i>",
+ d:"<b>Three more expected feature categories:</b><ul class='term-list'><li><b>Augmentation features:</b> GenAI/ML to auto-generate pipeline code/docs, optimize operations (anomaly detection, auto-recovery), and enable natural-language querying.</li><li><b>Metadata management features:</b> discovery, access, and sharing of technical and business metadata via catalogs.</li><li><b>Data governance features:</b> quality, lineage, policy enforcement, masking, and master data management.</li></ul>",
+ c:"<b>The trend:</b> these three categories point toward AI-assisted, metadata-driven operation.",
+ r:"<b>Industry term:</b> 'augmentation features' is what the industry calls AI-augmented data engineering — e.g., natural-language-to-SQL transformation assistants."},
+
+{n:14,h:"Expected Features — DataOps, FinOps, AI-focused (MCP)",
+ sub:"<i>Modern feature checklist ends with AI-native capabilities — RAG and the Model Context Protocol (MCP).</i>",
+ d:"<b>Three more feature categories:</b><ul class='term-list'><li><b>DataOps features:</b> Git integration, automated testing, CI/CD orchestration for pipelines.</li><li><b>FinOps features:</b> monitor, control, and optimize cloud spend.</li><li><b>AI-focused features:</b> unstructured data processing, vector-database ingestion, LLM training support, Retrieval-Augmented Generation (RAG), and interfaces such as the Model Context Protocol (MCP).</li></ul>",
+ c:"<b>In one line each:</b><ul class='term-list'><li><b>DataOps:</b> the software-engineering discipline applied to pipelines.</li><li><b>FinOps:</b> watching the cloud bill.</li><li><b>AI-focused:</b> feeding unstructured data and vector DBs to LLMs using new standards like MCP.</li></ul>",
+ t:"<b>Know the names:</b> <b>MCP</b> and <b>RAG</b> are the two AI-integration terms called out by name here — both frequently referenced in exam questions on 'modern' data integration.",
+ r:"<ul class='term-list'><li><b>MCP:</b> a real open standard released by <b>Anthropic in November 2024</b>, solving the 'M×N integration problem' via one client–server protocol — described as 'USB for AI'.</li><li><b>RAG:</b> the standard technique of retrieving relevant documents/rows at query time to ground LLM answers.</li></ul>",
+ s:[["Introducing the Model Context Protocol — Anthropic","https://www.anthropic.com/news/model-context-protocol"],["MCP explained — Arize AI","https://arize.com/blog/model-context-protocol/"]]},
+
+{n:15,h:"Gartner's Magic Quadrant for Data Integration Tools",
+ sub:"<i>Who's where on Gartner's 2025 map — and why 'Leader' doesn't automatically mean 'best for you'.</i>",
+ d:"<b>Scatter chart</b> (as of Nov 2025), plotting <b>Completeness of Vision</b> (x-axis) against <b>Ability to Execute</b> (y-axis) across four quadrants:<div class='mini-grid'><div class='cell'>Leaders</div><div class='cell'>Challengers</div><div class='cell'>Visionaries</div><div class='cell'>Niche Players</div></div><ul class='term-list'><li><b>Leaders:</b> Microsoft, Informatica, AWS, Oracle, Google, Denodo, IBM, Qlik, Ab Initio.</li><li><b>Challengers:</b> Fivetran, Matillion, Confluent.</li><li><b>Visionaries:</b> SAP, SnapLogic, Workato, K2view.</li><li><b>Niche Players:</b> Safe Software, CData Software, Boomi, Precisely.</li></ul>",
+ c:"<b>Leaders</b> score high on both execution and vision. Interestingly, well-known ELT specialists like <b>Fivetran</b> and <b>Matillion</b> sit in 'Challengers', not 'Leaders'.",
+ w:"<b>Misconception: Magic Quadrant position ≠ 'best tool for you'.</b> A Niche Player like Safe Software (FME) dominates a specific niche — geospatial integration — that Leaders don't specialize in.",
+ r:"<b>Major marketing signal:</b> vendors issue press releases when named Leaders — e.g. Oracle's 17th consecutive year, Informatica's and IBM's 20th year, in 2025.",
+ s:[["2025 Gartner MQ for Data Integration — Informatica","https://www.informatica.com/data-integration-magic-quadrant.html"]]},
+
+{n:16,h:"Section Divider: Data Transformations",
+ sub:"After data is ingested, the next question is how it gets reshaped into something usable.",
+ d:"<b>Section-break slide</b> marking a transition point in the course.",
+ c:"<b>This section covers what happens to data after it's integrated or ingested — how it's reshaped into something usable.</b> It marks the start of the second major topic in the course."},
+
+{n:17,h:"Data Transformation — Introduction",
+ sub:"The pipeline diagram leaves one step blank — transformation is the ‘secret sauce’ that turns raw data into insight.",
+ d:"<b>Data transformation is the critical process of converting raw, unstructured, or inconsistent data into clean, usable formats that fuel analytics, reporting, and machine learning.</b> “It's what turns data into insight.”<br><br>Pipeline diagram: Source → Ingest → “What comes here?” → Stage → Destination.",
+ c:"<b>The missing piece between ingested and staged data is Transformation</b> — the deliberate blank the instructor leaves in the diagram. It's the “secret sauce” step that makes raw data valuable.",
+ r:"<b>This Source → Ingest → Transform → Stage → Destination shape is the generic form of virtually every ETL/ELT pipeline diagram in the industry.</b>",
+ s:[["What is Data Transformation? — Estuary","https://estuary.dev/blog/what-is-data-transformation/"]],
+ m:"flowchart LR\n    Source --> Ingest --> Q[\"? What comes here?\"] --> Stage --> Destination"},
+
+{n:18,h:"Types of Transformations (7 types)",
+ sub:"Seven transformation types share one word, ‘normalization’, with two very different meanings — a classic exam trap.",
+ d:"<b>Seven core transformation types, matched to their definitions:</b><ul class='term-list'><li><b>Data Aggregation:</b> summarizing granular data to higher-level insights.</li><li><b>Data Filtering/Selection:</b> narrows data by conditions.</li><li><b>Data Cleaning:</b> removing duplicates, missing values, and typos; validating formats.</li><li><b>Data Normalization:</b> structures data to minimize redundancy and improve integrity.</li><li><b>Data Enrichment:</b> adding new info from internal or external sources.</li><li><b>Data Integration:</b> combining sources into a unified view.</li><li><b>Data Standardization:</b> converting units, aligning date/time formats, harmonizing naming.</li></ul><div class='mini-grid'><div class='cell'>Aggregation</div><div class='cell'>Filtering</div><div class='cell'>Cleaning</div><div class='cell'>Normalization</div><div class='cell'>Enrichment</div><div class='cell'>Integration</div><div class='cell'>Standardization</div></div>",
+ c:"<b>A one-line mental model for each type:</b><ul class='term-list'><li><b>Cleaning:</b> fix broken values.</li><li><b>Standardization:</b> consistent formats.</li><li><b>Normalization:</b> restructure to avoid redundancy.</li><li><b>Enrichment:</b> add new info.</li><li><b>Integration:</b> merge sources.</li><li><b>Aggregation:</b> zoom out.</li><li><b>Filtering:</b> zoom in.</li></ul>",
+ w:"<b>“Data Normalization” here means database normalization</b> (redundancy reduction, 1NF/2NF/3NF) — a <i>different</i> concept from statistical/ML normalization (scaling values 0–1), which appears later (slide 43) as a separate transformation type.<br><br>The deck itself uses “normalization” both ways — a common source of exam confusion.",
+ t:"<b>Be ready to define all 7 basic transformation types</b> — and don't mix up the two meanings of “normalization”."},
+
+{n:19,h:"6-Step Data Transformation Process (wheel)",
+ sub:"Six steps, one memorable order: Discovery → Mapping → Logic Design → Execution → Validation → Monitoring.",
+ d:"<b>A circular diagram with the hub “Data Transformation Process” and six petals, in order:</b><ul class='step-list'><li><b>Data Discovery</b></li><li><b>Data Mapping</b></li><li><b>Transformation Logic Design</b></li><li><b>Execution</b></li><li><b>Validation and Testing</b></li><li><b>Documentation and Monitoring</b></li></ul><div class='mini-grid'><div class='cell'>01 Discovery</div><div class='cell'>02 Mapping</div><div class='cell'>03 Logic Design</div><div class='cell'>04 Execution</div><div class='cell'>05 Validation</div><div class='cell'>06 Documentation</div></div>",
+ c:"<b>This wheel is the “table of contents” for how any transformation project unfolds</b> — from understanding the data (discovery) to watching it after it's live (monitoring).",
+ t:"<b>Memorize this exact 6-step order</b> — Discovery → Mapping → Logic Design → Execution → Validation & Testing → Documentation & Monitoring. It's a frequently tested sequence.",
+ m:"flowchart TD\n    C((\"Data Transformation Process\"))\n    C --- S1[\"01 Data Discovery\"]\n    C --- S2[\"02 Data Mapping\"]\n    C --- S3[\"03 Transformation Logic Design\"]\n    C --- S4[\"04 Execution\"]\n    C --- S5[\"05 Validation and Testing\"]\n    C --- S6[\"06 Documentation and Monitoring\"]"},
+
+{n:20,h:"Process Step 1: Discovery",
+ sub:"You can't safely transform data you don't understand — Discovery is the ‘examination’ before the ‘prescription’.",
+ d:"<b>“Before any transformation begins, teams must understand the data.”</b><ul class='term-list'><li><b>Profiling:</b> structure, types, volumes, and quality.</li><li><b>Identifying:</b> inconsistencies and anomalies.</li><li><b>Gathering metadata:</b> key to automation and lineage tracking.</li></ul>",
+ c:"<b>Discovery is like a doctor's examination before writing a prescription</b> — you can't safely transform what you don't understand. The metadata gathered here feeds later lineage tracking.",
+ ins:"<b>Worked example from class:</b> if an “age” column normally ranges 1–80 but one row shows 1000 instead of 100, that value is an anomaly/outlier — exactly the kind of issue Discovery is meant to surface before any transformation logic runs."},
+
+{n:21,h:"Process Step 2: Data Mapping",
+ sub:"One wrong line in the mapping means the wrong value lands silently in the wrong column.",
+ d:"<b>Data Mapping defines how source fields correspond to destination fields</b>, ensuring the right values land in the right places across formats and schemas.<br><br>Example: <code>first_name</code> (CRM) → <code>customerFirstName</code> (warehouse).",
+ c:"<b>Mapping is literally drawing a line from “this field” to “that field.”</b> Get it wrong, and you silently put the wrong value in the wrong column.",
+ ins:"<b>Alternate example given live:</b> mapping five subject-mark fields (English, Chemistry, Maths, Biology, …) to a single destination field, “Total” — the destination value isn't a straight copy, it's the sum of the mapped source fields. Mapping can define a computation, not just a rename."},
+
+{n:22,h:"Process Step 3: Transformation Logic Design",
+ sub:"Logic Design writes the recipe; Execution is where that recipe actually gets cooked.",
+ d:"<b>Transformation Logic Design defines the logic that reshapes the data:</b><ul class='term-list'><li><b>Conditional logic</b></li><li><b>Regex-based cleaning</b></li><li><b>Date parsing</b></li><li><b>Aggregations</b></li><li><b>SQL transformations</b></li></ul>Implemented in code (<b>Python</b>/<b>SQL</b>) or visual <b>ETL</b>/<b>ELT</b> workflows.",
+ c:"<b>This step writes the “recipe”</b> — the rules and code that Step 4 (Execution) will actually run."},
+
+{n:23,h:"Process Step 4: Execution",
+ sub:"ETL transforms before loading; ELT transforms after — dbt and Apache Beam are the tools that do the cooking.",
+ d:"<b>Transformation logic runs as a batch or streaming job.</b><ul class='term-list'><li><b>ETL (traditional):</b> extract → transform → load.</li><li><b>ELT:</b> transform happens after loading, inside the warehouse.</li></ul>Execution engines: <b>dbt</b>, <b>Estuary Flow</b>, <b>Apache Beam</b>.",
+ c:"<b>The recipe gets “cooked”</b> — either as a big scheduled batch or a continuous stream. <b>Apache Beam</b> is a classic batch/stream engine; <b>dbt</b> is the poster-child ELT tool."},
+
+{n:24,h:"Process Step 5: Validation & Testing",
+ sub:"A perfectly-designed transformation can still fail silently — validation is the safety net that catches it.",
+ d:"<b>Transformed data must be validated:</b><ul class='term-list'><li><b>Data quality checks</b></li><li><b>Schema validation</b></li><li><b>Row counts</b> to verify integrity.</li></ul>“Without validation, even well-designed transformations can introduce silent errors into analytics.”",
+ c:"<b>Even a perfectly-designed transformation can break silently</b> — a join drops rows, a stale exchange rate. Validation is the safety net checked <i>after</i> the transform runs."},
+
+{n:25,h:"Process Step 6: Documentation and Monitoring",
+ sub:"A pipeline that succeeded once isn't done — schema drift can break it silently later.",
+ d:"<b>Teams must document workflows and monitor jobs</b> for failures, schema drift, or unexpected input changes. <b>Observability</b> is critical in production to detect issues early.",
+ c:"<b>The job isn't done after one successful run.</b> You must write down what the pipeline does (documentation) and keep watching for “schema drift” (observability).",
+ r:"<b>Schema drift:</b> an upstream API silently renames a field or changes a type, and downstream pipelines break loudly (better) or silently produce wrong numbers (worse). Caught by tools like <b>Monte Carlo</b>, <b>Great Expectations</b>, or <b>dbt</b> tests."},
+
+{n:26,h:"Process Recap Checkpoint",
+ sub:"Three steps down, three to go — Execution, Validation, and Documentation each get their own deep dive next.",
+ d:"<b>Wheel recap:</b><ul class='term-list'><li><b>Steps 01–03</b> (Discovery, Mapping, Logic Design): checked ✓ — already discussed in detail.</li><li><b>Steps 04–06</b> (Execution, Validation, Documentation): flagged — coming next, some partially covered here, some later.</li></ul>",
+ c:"<b>Checkpoint:</b> Discovery, Mapping, and Logic Design are covered. Execution (via patterns), Validation, and Documentation each get their own dedicated section next."},
+
+{n:27,h:"Section Divider: Transformation & Modelling Patterns",
+ sub:"Two proven blueprints replace reinventing transformation logic from scratch.",
+ d:"Section-break slide.",
+ c:"<b>Industry-proven patterns</b> replace designing transformation logic from scratch each time.<ul class='term-list'><li><b>Medallion Architecture:</b> the lakehouse layering pattern.</li><li><b>ELT-dbt pattern:</b> the dbt-based layering pattern.</li></ul>These are the two dominant patterns covered next."},
+
+{n:28,h:"What Is a Pattern? (medical analogy)",
+ sub:"A medical analogy for problem vs. solution patterns sets up two coming solutions that turn out to be one idea.",
+ d:"<b>Problem pattern vs. solution pattern</b>, explained via a medical analogy.<ul class='term-list'><li><b>Problem pattern:</b> a recurring disease outbreak with similar symptoms.</li><li><b>Solution pattern:</b> the standard combination of medicines doctors reach for.</li></ul>Discussion prompt: “We have Data Patterns, Design patterns, Architecture patterns… Medallion Architecture ↔ ELT-DBT.”",
+ c:"<b>Software has the same idea:</b> “design patterns” and “architecture patterns” are reusable solutions to recurring problems. The class is about to see two solution patterns for the recurring “how do I organize my transformation pipeline” problem — and, spoiler, they turn out to be the same idea.",
+ r:"Mirrors the classic <b>Gang-of-Four</b> “design pattern” concept from software engineering, deliberately imported into the data-modeling world.",
+ ins:"<b>The instructor's fuller analogy:</b> COVID was a real-world “problem pattern” — a disease outbreak with the same symptoms everywhere. The “solution pattern” contrast: in <b>Allopathy</b>, the same symptoms usually get the same standard combination of medicines (a repeatable solution pattern); in <b>Ayurveda</b>, treatment depends on an individual's “Prakruti” (constitution), so the same symptoms can get different medicines. Lesson: solution patterns are powerful, but not every problem has one universal fix."},
+
+{n:29,h:"Medallion Architecture",
+ sub:"Bronze, Silver, and Gold layers progressively raise data quality on the way from raw source to BI/ML.",
+ d:"<b>Medallion Architecture</b> is a data design pattern that logically organizes lakehouse data, incrementally improving structure and quality as it flows through each layer — also called “multi-hop” architecture.<div class='mini-grid'><div class='cell'>Bronze</div><div class='cell'>Silver</div><div class='cell'>Gold</div></div><ul class='step-list'><li><b>Bronze:</b> raw data landed as-is, no schema needed.</li><li><b>Silver:</b> filtered, cleaned, and augmented, with schema enforced.</li><li><b>Gold:</b> business-level aggregates, ready for BI/ML.</li></ul>Data enters as Batch or Streaming and flows Bronze ⇒ Silver ⇒ Gold ⇒ BI/ML.",
+ c:"<b>Analogy:</b> raw ore (Bronze) → refined metal (Silver) → polished medallion (Gold) — quality improves at each “hop”.",
+ t:"<b>Know the exact purpose of each layer:</b><ul class='term-list'><li><b>Bronze:</b> land as-is, no rules.</li><li><b>Silver:</b> clean + enforce structure.</li><li><b>Gold:</b> shape for specific business/ML consumption.</li></ul>",
+ r:"<b>Popularized by Databricks</b> for its Lakehouse platform; now industry-standard vocabulary.<ul class='term-list'><li><b>Retail chains:</b> Bronze = POS logs, Silver = validated transactions, Gold = regional sales aggregates for demand forecasting.</li><li><b>Hospitals:</b> Bronze = raw vitals, Silver = anomaly-flagged records, Gold = real-time alert dashboards.</li></ul>",
+ s:[["Medallion Architecture — Databricks glossary","https://www.databricks.com/glossary/medallion-architecture"],["Medallion Architecture real-world use cases","https://medium.com/@lreddyalva/mastering-the-databricks-medallion-architecture-a-comprehensive-guide-with-real-world-use-cases-5829386692d4"]],
+ m:"flowchart LR\n    Batch --> Bronze[\"Bronze: Raw Integration\"]\n    Streaming --> Bronze\n    Bronze --> Silver[\"Silver: Filtered, Cleaned, Augmented\"]\n    Silver --> Gold[\"Gold: Business-Level Aggregates\"]\n    Gold --> BI\n    Gold --> ML"},
+
+{n:30,h:"Medallion Architecture — Bronze & Silver Detail",
+ sub:"Bronze preserves an untouched snapshot; Silver applies just enough cleanup for one trustworthy version of each entity.",
+ d:"<b>Bronze and Silver each serve a distinct purpose in the lakehouse.</b><ul class='term-list'><li><b>Bronze:</b> lands external source data “as-is” plus metadata (load date/time, process ID); focused on quick CDC, historical archive, lineage, auditability, and reprocessing without re-reading the source.</li><li><b>Silver:</b> Bronze data matched, merged, conformed, and cleansed “just-enough” to give an “Enterprise view” of key entities (master customers, non-duplicated transactions); only minimal cleansing rules applied.</li></ul>",
+ c:"<b>Analogy:</b><ul class='term-list'><li><b>Bronze:</b> a photographic snapshot of the source, timestamped, nothing thrown away.</li><li><b>Silver:</b> the first clean-up pass — enough merging/dedup for one trustworthy version of key entities, not yet shaped for any specific report.</li></ul>"},
+
+{n:31,h:"Medallion Architecture — Gold Detail",
+ sub:"Gold is the presentation layer — de-normalized, project-specific data ready for BI tools and business users to query directly.",
+ d:"<b>Gold</b> organizes data in consumption-ready, “project-specific” databases — the presentation layer for analytics.<ul class='term-list'><li><b>Structure:</b> de-normalized and read-optimized, with fewer joins.</li><li><b>Processing:</b> final transformations and quality rules are applied here.</li><li><b>Consumers:</b> Customer Analytics, Product Quality Analytics, Inventory Analytics, Segmentation, Recommendations, Sales Analytics, etc.</li></ul>",
+ c:"<b>Analogy:</b> Gold is the “restaurant plate” — fully prepared, de-normalized, shaped for a specific purpose, and queried directly by BI tools and business users."},
+
+{n:32,h:"ELT-DBT Pattern",
+ sub:"dbt embraces ELT — load raw data first, then transform it inside the warehouse via Staging, Intermediate, and Marts.",
+ d:"<b>dbt</b> is “a type of medallion architecture” — a framework for managing warehouse transformations that embraces <b>ELT</b>: extract and load raw data first, then transform inside the warehouse.<div class='mini-grid'><div class='cell'>Staging</div><div class='cell'>Intermediate</div><div class='cell'>Marts</div></div>Layered modeling flows Staging → Intermediate → Marts (detailed in the next slides).",
+ c:"<b>dbt is explicitly called “a type of medallion architecture”</b> — the same Bronze/Silver/Gold idea, with dbt-specific layer names and SQL + dbt as the tool. dbt's job is purely the “T” in ELT.",
+ r:"<b>dbt was created in 2016</b> by Tristan Handy, Drew Banin, and Connor McArthur at Fishtown Analytics (later renamed <b>dbt Labs</b>).<ul class='term-list'><li><b>Enabling shift:</b> the cloud-warehouse compute revolution (Redshift 2013, Snowflake/BigQuery maturing 2015–2018) made dbt's approach viable.</li><li><b>Legacy:</b> dbt is widely credited with popularizing the job title “Analytics Engineer” — this deck's own title.</li></ul>",
+ s:[["History of dbt","https://community.getorchestra.io/dbt/history-of-dbt-data-transformation-analytics-engineering/"]],
+ m:"flowchart TD\n    Staging --> Intermediate --> Marts"},
+
+{n:33,h:"ELT-DBT Pattern — Detailed Diagram",
+ sub:"Model Contracts guard the layer boundaries, and Marts data flows onward to Reverse ETL and BI.",
+ d:"<b>Layer flow:</b> Landing → Staging → Intermediate → Marts, gated by “Model Contracts” at Landing→Staging and again at Marts output.<ul class='step-list'><li><b>Landing:</b> transformation type = none; physical object = source data.</li><li><b>Staging:</b> transformation type = column transformations; physical object = tables.</li><li><b>Intermediate:</b> transformation type = aggregation (business logic); physical object = views/tables.</li><li><b>Marts:</b> transformation type = reporting (facts, dims); physical object = tables.</li></ul>Marts flows on to <b>Reverse ETL</b> and <b>BI</b>.",
+ c:"<b>This is the “exploded view”</b> of Staging → Intermediate → Marts, plus <b>Model Contracts</b> — formal agreements about a table's shape, placed at entry and exit points to stop breaking changes from rippling through. <b>Reverse ETL</b> pushes clean warehouse data back out into operational tools like a CRM.",
+ m:"flowchart LR\n    Landing -->|Model Contracts| Staging --> Intermediate --> Marts\n    Marts -->|Model Contracts| ReverseETL[Reverse ETL]\n    Marts --> BI"},
+
+{n:34,h:"ELT-DBT Pattern — Landing Layer",
+ sub:"Landing is dbt's Bronze — an untouched 1:1 copy of source tables, with zero transformations applied.",
+ d:"<b>Landing layer</b> (raw zone/source layer) is the initial entry point for data.<ul class='term-list'><li><b>Structure:</b> a 1:1 reflection of source tables.</li><li><b>Transformations:</b> none.</li></ul>",
+ c:"<b>dbt's version of Bronze</b> — an exact, untouched copy of the source table."},
+
+{n:35,h:"ELT-DBT Pattern — Staging Layer",
+ sub:"stg_* models clean and standardize each source table individually — light touch-ups, still no joins.",
+ d:"<b>Staging models</b> (<code>stg_*</code>) transform raw data into a clean, consistent format.<ul class='term-list'><li><b>Structure:</b> 1:1 reflection of source, no joins between models.</li><li><b>Modifications:</b> light — type casting, column renaming, filtering deleted records.</li><li><b>Purpose:</b> cleanse and standardize data for downstream consumption.</li></ul>",
+ c:"<b>“Cleanup, but no joining”</b> — rename fields, cast types, drop soft-deleted rows, but still one table in, one table out."},
+
+{n:36,h:"ELT-DBT Pattern — Intermediate Layer",
+ sub:"int_* models do the heavy lifting: aggregations, window functions, and joins that bridge staging to marts.",
+ d:"<b>Intermediate models</b> (<code>int_*</code>) apply business logic to prepare data for fact modeling.<ul class='term-list'><li><b>Built on:</b> staging data, with heavier transformations — aggregations, CASE statements, window functions.</li><li><b>Purpose:</b> bridge between staging and the final marts.</li></ul>",
+ c:"<b>Where the real business logic and joins happen</b> — e.g., customer lifetime value via window functions, or combining orders + returns into net revenue."},
+
+{n:37,h:"ELT-DBT Pattern — Marts Layer",
+ sub:"Marts is the star-schema finish line — dims and facts assembled, with zero new transformation logic.",
+ d:"<b>Marts</b> is the final, business-facing layer.<ul class='term-list'><li><b>Dimension models</b> (<code>dim_*</code>): represent slowly changing entities.</li><li><b>Fact models</b> (<code>fact_*</code>): contain quantitative measures.</li><li><b>Structure:</b> joins/unions across facts, dims, and intermediate models.</li></ul><b>No transformation logic resides in marts</b> — the purpose is a dimensional model reflecting the business's perspective.",
+ c:"<b>Organized as a classic dimensional model (star schema):</b> dims describe who/what/where, facts hold the numbers. No new logic happens here — all the hard work is upstream in Intermediate.",
+ r:"<b>Dimension and fact tables</b> are the core building blocks of <b>Ralph Kimball's dimensional modeling</b> methodology (star schema), predating dbt by decades."},
+
+{n:38,h:"Medallion ↔ ELT-DBT: They're the Same Pattern",
+ sub:"Bronze=Landing+Staging, Silver=Intermediate, Gold=Marts — Medallion and ELT-dbt are the same pattern in different clothes.",
+ d:"<b>The detailed dbt diagram, relabeled</b> onto Medallion terms.<div class='mini-grid'><div class='cell'>Landing</div><div class='cell'>Staging</div><div class='cell'>Intermediate</div><div class='cell'>Marts</div></div><div class='mini-grid'><div class='cell'>Bronze</div><div class='cell'>Silver</div><div class='cell'>Gold</div></div><ul class='term-list'><li><b>Bronze</b> = Landing + Staging.</li><li><b>Silver</b> = Intermediate.</li><li><b>Gold</b> = Marts.</li></ul>“Few organizations got platinum as well” — data/output enhanced with AI/ML predictions.",
+ c:"<b>Closes the loop from slide 28:</b> Medallion Architecture and ELT-dbt are the same three-tier idea with different layer names. <b>Bonus:</b> Platinum is a layer beyond Gold, containing ML-prediction-enhanced data.",
+ t:"<b>Memorize the exact mapping</b> — frequently tested:<ul class='term-list'><li><b>Bronze</b> = Landing + Staging.</li><li><b>Silver</b> = Intermediate.</li><li><b>Gold</b> = Marts.</li></ul>",
+ tb:{h:["Medallion Layer","dbt Layer"],r:[["Bronze","Landing + Staging"],["Silver","Intermediate"],["Gold","Marts"],["Platinum","Beyond Marts — AI/ML-prediction-enhanced output (few organizations)"]]},
+ m:"flowchart LR\n    subgraph Bronze\n    Landing --> Staging\n    end\n    subgraph Silver\n    Intermediate\n    end\n    subgraph Gold\n    Marts\n    end\n    Bronze --> Silver --> Gold"},
+
+{n:39,h:"Section Divider: Transformation Validation and Testing",
+ sub:"A checkpoint slide: after building transformations, how do you actually prove they're correct?",
+ d:"<b>This is a section-break slide</b>, using the recurring process wheel as a visual anchor.",
+ c:"<b>This section launches the topic of proving transformations are correct.</b> It maps to Step 5 (Validation & Testing) of the process wheel."},
+
+{n:40,h:"Testing Intro — Worked Pivot Example",
+ sub:"One pivot example shows how a structurally successful transform can still be semantically wrong.",
+ d:"<b>A single worked example walks through three progressively transformed tables.</b><ul class='step-list'><li><b>Table I:</b> wide format — PT_ID × A, B, C, D columns, with blanks and raw percent values like “90%”/“20%” embedded directly.</li><li><b>Table II:</b> un-pivoted into long format (PT_ID / TEST / SCORE), with percent signs carried straight through into SCORE.</li><li><b>Table III:</b> percent values split out into a separate SCORE_PCT column, plus two new derived columns: ASMT (Positive/Negative) and METHOD (Panel-A/Panel-B).</li></ul>",
+ c:"<b>Each table represents a different stage of shape and meaning.</b> Table I is “wide” (one row per patient, one column per test); Table II un-pivots to “long/tidy” format. Table III is where real transformation-testing bites: raw scores stay in SCORE, percentages move to SCORE_PCT, and two brand-new derived columns appear.",
+ w:"<b>“What can go wrong?” — three specific bugs, not just structural mistakes:</b><ul class='step-list'><li>If logic doesn't detect the “%” suffix, a percentage score could be misread as a raw number of the same magnitude — is “20%” = 20, or 0.2?</li><li>The Positive/Negative ASMT label must use the correct threshold for that specific test — the wrong threshold means the wrong diagnosis label.</li><li>METHOD/panel assignment must correctly map each TEST code to the panel that actually ran it.</li></ul>A structurally successful transform can still be semantically wrong.",
+ t:"<b>This worked example is a frequently tested topic.</b> Be able to trace Table I → II → III by hand and name the 3 specific bugs above."},
+
+{n:41,h:"What to Test? — Basic Transformations (checklist)",
+ sub:"Eleven transformation types, eleven matching checks — a direct action-to-verification map.",
+ d:"<b>A basic-transformation checklist covers 11 categories to verify:</b><ul class='term-list'><li><b>Data type conversions</b></li><li><b>String manipulations</b></li><li><b>Date/time transformations</b></li><li><b>Data aggregations</b></li><li><b>Normalization/standardization conformance</b></li><li><b>Data filtering</b></li><li><b>Enrichment/lookups</b></li><li><b>Null handling</b></li><li><b>Splitting/merging</b></li><li><b>Error/outlier handling</b></li><li><b>Validation/verification</b></li></ul>",
+ c:"<b>Each transformation type has a matching test.</b> This is a one-to-one mapping between “what transformation did you do” and “what should you verify” — for every basic transformation type there's a matching test.",
+ ins:"<b>Class Q&A:</b> asked how to handle missing values, a student answered “replace it with the mean, median, or mode” — confirmed as the standard approach: guess the missing value from the existing distribution of that field."},
+
+{n:42,h:"What to Test? — Complex Transformations (Part 1)",
+ sub:"Four complex transformation types — from inventing new features to collapsing values into broader categories.",
+ tb:{h:["Type","Description / Example"],
+     r:[["Attribute Construction","Improving existing attributes/features; e.g. creating 'Salary ROI' from 'Money-Paid' and 'Products-Assembled'."],
+        ["Data Aggregation","Group data into higher-level categories, e.g. segmenting by age or city."],
+        ["Data Discretization","Divide continuous data into bins, e.g. age groups 21–30, 31–40, 41–50."],
+        ["Data Generalization","Transform low-level attributes into high-level ones for broader categorization, e.g. specific ages → broader age groups."]]},
+ c:"<b>Each complex transformation type reshapes data differently.</b> <b>Attribute Construction</b> invents a brand-new feature (overlaps with ML feature engineering); <b>Discretization</b> turns a continuous number into a bucket; <b>Generalization</b> collapses many specific values into fewer broad categories."},
+
+{n:43,h:"What to Test? — Complex Transformations (Part 2)",
+ sub:"Integration, Normalization, and Smoothing round out the complex-transformation set — watch for inconsistent terminology.",
+ tb:{h:["Type","Description / Example"],
+     r:[["Data Integration","Unify diverse data sets to view at once, e.g. consolidating multiple DBs into one analytical system."],
+        ["Data Normalization","Eliminate redundancy by converting to a different format, e.g. standardizing phone numbers to one uniform format like '(617)359-2117'."],
+        ["Data Smoothing","Eliminate anomalies/outliers, e.g. using moving averages for a smoother curve."]]},
+ c:"<b>Terminology isn't always consistent across sources.</b> This slide's “Data Normalization” example (phone-format unification) is actually closer to what earlier slides called standardization — industry terminology for “normalization” isn't perfectly consistent, so always check context. <b>Data Smoothing</b> (moving averages) is a classic time-series technique.",
+ r:"<b>Moving averages are foundational in time-series analysis.</b> They underpin classic stock-market indicators (50-day/200-day MAs) and sensor-noise reduction before ML."},
+
+{n:44,h:"Best Practices for Transformation Testing",
+ sub:"Five habits — from documentation to edge-case testing — that keep transformation logic trustworthy.",
+ d:"<b>Five best practices govern reliable transformation testing:</b><ul class='term-list'><li><b>Document Every Rule:</b> maintain a mapping sheet linking source → logic → target.</li><li><b>Automate Validation:</b> use SQL/Python/ETL-tool checks.</li><li><b>Test with Realistic Volumes:</b> simulate production-scale data.</li><li><b>Version Control Logic:</b> keep transformation code in Git.</li><li><b>Test Edge Cases:</b> missing data, extreme values, special characters.</li></ul>",
+ c:"<b>Five rules of thumb summarize the practice:</b> write down every rule, automate repetitive checks, test at real scale, keep code in Git, and deliberately throw weird inputs at your pipeline."},
+
+{n:45,h:"Exercise — Insurance Claims Scenario",
+ sub:"An insurance claims scenario shows what high-stakes transformation testing looks like in practice.",
+ d:"<b>Scenario:</b> an insurance company's payout transformation rules depend on policy type, location, and claim history.<ul class='term-list'><li><b>Sample check 1:</b> verify every claim calculation against manually-verified samples.</li><li><b>Sample check 2:</b> check monthly payout aggregation accuracy.</li><li><b>Sample check 3:</b> test new fraud-detection logic in parallel with production (“shadow testing”) to ensure no false positives.</li></ul><b>Cited result:</b> zero payout errors, 20% faster claim approval. Explicitly noted: “these are not definite ways — just samples.”",
+ c:"<b>This is a general template for high-stakes transformation testing:</b> spot-check against golden examples, validate aggregated totals, and run new logic side-by-side with production before switching over.",
+ r:"<b>“Testing new logic in parallel with production” has an industry name.</b> It's known as <b>shadow deployment</b>/“dark launch” — new logic runs silently, its outputs are logged/compared, but only the old logic's results are used until confidence is established."},
+
+{n:46,h:"Suggested Steps 1 & 2: Schema Validation, Contract Validation",
+ sub:"Before checking business logic, first confirm the schema is structurally sound and contractually stable.",
+ d:"<b>Two suggested steps validate a transformation's output structure:</b><ul class='step-list'><li><b>Step 1 — Schema Validation:</b> <ul class='term-list'><li><b>Column Names/Presence</b></li><li><b>Data Types</b></li><li><b>Constraints:</b> NOT NULL / UNIQUE / ACCEPTED VALUES</li><li><b>Referential Integrity</b></li><li><b>Naming Conventions</b></li></ul></li><li><b>Step 2 — Contract Validation:</b> producer–consumer contracts, breaking vs non-breaking changes, versioned schemas.</li></ul>",
+ c:"<b>Step 1 is the “structural” check; Step 2 treats the schema as a formal contract.</b> A breaking change (renaming/removing a column) snaps the contract; a non-breaking change (adding an optional column) is safe.",
+ r:"<b>“Data contracts” borrow directly from software engineering.</b> They're inspired by API versioning/contract-testing (OpenAPI/Pact-style), now applied to data pipelines — the same “Model Contracts” idea from the dbt diagrams (slides 33–38).",
+ ins:"<b>Concrete example from class:</b> referential integrity means a foreign key actually resolves — e.g. the <code>customer_id</code> in an Orders table must correspond to a real row in the Customers table. If it doesn't, that row fails referential integrity."},
+
+{n:47,h:"Suggested Steps 3: Validation of Transformation",
+ sub:"Step 3 moves past structure to verify the business logic itself was correctly applied.",
+ d:"<b>Step 3 checks that the actual business logic was applied correctly:</b><ul class='term-list'><li><b>Business Rule Validation:</b> e.g. “apply 15% VAT to category X only.”</li><li><b>Source-to-Target Data Verification</b></li><li><b>Data Profiling Post-Transformation</b></li><li><b>Regression Testing</b></li><li><b>Performance Testing</b></li></ul>",
+ c:"<b>Step 3 goes beyond schema checks.</b> It's not just “is the schema fine” but “did we really apply 15% VAT only to category X.”"},
+
+{n:48,h:"Levels of Testing (Unit / Integration / Regression)",
+ sub:"The classic unit/integration/regression testing pyramid, applied to data pipelines.",
+ d:"<b>Three levels of testing form a pyramid over data pipelines.</b><div class='mini-grid'><div class='cell'>Unit</div><div class='cell'>Integration</div><div class='cell'>Regression</div></div><ul class='term-list'><li><b>Level 1 — Unit Tests:</b> single transformation logic; dbt generic & singular tests.</li><li><b>Level 2 — Integration Tests:</b> multiple transformations together, end-to-end pipeline.</li><li><b>Level 3 — Regression Tests:</b> compare against historical outputs, detect unintended changes.</li></ul>",
+ c:"<b>This maps the classic software-testing pyramid onto data pipelines.</b>",
+ t:"<b>Know all 3 testing levels by name and what each checks.</b> This is a frequently tested topic alongside the Step 1–3 framework.",
+ r:"<b>dbt's generic tests map directly onto this framework.</b> <code>unique</code>, <code>not_null</code>, <code>accepted_values</code>, and <code>relationships</code> map to Schema Validation (slide 46); <b>dbt-expectations</b> (inspired by <b>Great Expectations</b>) extends to statistical/distribution checks matching “Data Profiling Post-Transformation” (slide 47).",
+ s:[["dbt-expectations — Metaplane","https://www.metaplane.dev/blog/dbt-expectations"]]},
+
+{n:49,h:"Section Divider: Documentation of Data Models",
+ sub:"A checkpoint slide before turning to how — and why — data models get documented.",
+ d:"<b>Section-break slide.</b> The recap wheel appears with all 6 steps checked, showing the pipeline is complete.",
+ c:"<b>Transition point:</b> this marks the shift into the '[Additional]' topic — documenting the data models that all the prior transformation work has produced."},
+
+{n:50,h:"Documentation — Introduction",
+ sub:"Documentation turns a data model from a black box into something the whole team can understand and trust.",
+ d:"<b>Data modeling documentation</b> includes diagrams, table definitions, usage scenarios, and design notes.<br>It helps teams understand how data is organized and why key decisions were made. It is especially useful for:<ul class='term-list'><li><b>Onboarding</b> new team members</li><li><b>Cross-department collaboration</b></li><li><b>Aligning data</b> with business goals</li></ul>",
+ c:"<b>Think of it as the “instruction manual” for a data model</b> — not just a list of what exists, but an explanation of why it was designed that way."},
+
+{n:51,h:"Documentation — Benefits",
+ sub:"Five paybacks for the effort of documenting a data model, from onboarding speed to safer changes.",
+ d:"<b>Documentation delivers five concrete benefits:</b><ul class='term-list'><li><b>Improved Clarity:</b> understandable to both technical and non-technical stakeholders</li><li><b>Easier Maintenance:</b> component connections are visible</li><li><b>Faster Onboarding</b></li><li><b>Consistent Data Use:</b> standardized definitions</li><li><b>Better Collaboration</b></li></ul>",
+ c:"<b>In plain terms:</b> everyone understands the data, changes are safer, new hires ramp up fast, there are no “which revenue column is real” arguments, and teams collaborate more smoothly."},
+
+{n:52,h:"Documentation — Conceptual/Logical/Physical Model Pyramid",
+ sub:"The same data model described at three zoom levels — business language, entities, and physical tables.",
+ d:"<b>Data models exist at three “zoom levels,” shown top to bottom:</b><div class='mini-grid'><span class='chip'>Conceptual</span><span class='chip'>Logical</span><span class='chip'>Physical</span></div><ul class='term-list'><li><b>Conceptual</b> (top): Business Concept — audience is Business Stakeholders; purpose is communication and definition of business terms.</li><li><b>Logical</b> (middle): Data Entities — audience is Data Architects/Business Analysts; purpose is to clarify business rules and data structure.</li><li><b>Physical</b> (base): Physical Tables — audience is DBAs/Developers; purpose is technical implementation.</li></ul>",
+ c:"<b>Conceptual</b> is a business-language sketch, <b>Logical</b> defines entities, attributes, and relationships in a tech-agnostic way, and <b>Physical</b> is the actual tables, types, and indexes.",
+ t:"<b>Frequently tested:</b> know the audience AND purpose for each of the three model types — see the table above.",
+ r:"<b>This hierarchy is classical database-design theory</b> — still the standard vocabulary in tools like <b>ERwin</b>, <b>archiMate</b>, and <b>dbt docs</b>.",
+ tb:{h:["Model Layer","Audience","Purpose"],r:[["Conceptual","Business Stakeholders","Communicate and define business terms"],["Logical","Data Architects / Business Analysts","Clarify business rules and data structure"],["Physical","DBAs / Developers","Technical implementation"]]}},
+
+{n:53,h:"Popular Tools — dbt (for documentation)",
+ sub:"Because every dbt model lives in code, its documentation can be generated automatically and never goes stale.",
+ d:"<b>dbt</b> provides version control, modularization, and documentation for collaborative data modeling.<br>Docs are generated directly from code, which keeps stakeholders on the latest model version and improves productivity and maintainability.",
+ c:"<b>dbt doubles as a documentation tool.</b> Since every model is defined in code (SQL + YAML), <b>dbt</b> auto-generates a browsable docs site — descriptions, lineage graphs, and tests — that stays in sync with reality."},
+
+{n:54,h:"Popular Tools — DataHub",
+ sub:"LinkedIn's second try at data discovery — a metadata platform built around Kafka streaming.",
+ d:"<b>DataHub</b> is a modern data catalog for metadata management, data discovery, and governance.<ul class='term-list'><li><b>Tracks</b> lineage</li><li><b>Profiles</b> datasets</li><li><b>Establishes</b> data contracts</li></ul><b>Architecture:</b> Source Systems push/pull metadata into the DataHub Metadata Platform; API & Stream Integrations (GraphQL, REST, Kafka) expose it to consumers.",
+ c:"<b>DataHub</b> works like a search engine plus card-catalog for an organization's data — continuously ingesting metadata and exposing it via APIs and streams.",
+ r:"<b>Built at LinkedIn</b>, open-sourced in 2020 — this was LinkedIn's second attempt at data discovery, after an earlier tool called <b>WhereHows</b> (2016).<br>Architected as a metadata platform using <b>Kafka</b> for stream-based ingestion.",
+ s:[["Amundsen vs DataHub comparison","https://medium.com/@han.yu_47442/amundsen-lyft-vs-linkedin-datahub-what-are-the-difference-between-the-two-data-catalog-tools-346c7fd0a73b"]]},
+
+{n:55,h:"Popular Tools — Amundsen",
+ sub:"Lyft's answer to data discovery — Google-style search built on a graph database, contrasted with DataHub's streaming approach.",
+ d:"<b>Amundsen</b> is a data discovery and metadata engine built by Lyft, creating a centralized cataloging repository across sources.<ul class='term-list'><li>Text search with in-line metadata</li><li>Popularity ranking</li><li>Recommended sources</li></ul>",
+ c:"<b>Amundsen is “Google Search, but for your company's internal datasets.”</b> Search returns tables with descriptions, owners, most-frequent users, and trust/popularity signals.",
+ r:"<b>Developed at Lyft</b>, introduced internally in April 2019 and open-sourced in October 2019, to reduce time spent hunting for and verifying trust in datasets.<br>Uses <b>Neo4j</b> (graph DB) — contrasted with DataHub's Kafka-based streaming architecture.",
+ s:[["Amundsen — Lyft's Open Source Discovery Tool — Atlan","https://atlan.com/amundsen-lyft-open-source-data-catalog/"]],
+ tb:{h:["Tool","Built By","Core Idea"],r:[["dbt","—","Auto-generates a docs site (descriptions, lineage, tests) directly from code"],["DataHub","LinkedIn","Metadata platform for catalog, lineage, and governance (Kafka-based)"],["Amundsen","Lyft","Search-style data discovery engine (Neo4j-based)"]]}},
+
+{n:56,h:"Section Divider: DBT Demo",
+ sub:"A pause point in the deck for a hands-on dbt walkthrough rather than slide content.",
+ d:"<b>Placeholder slide</b> marking a live in-class dbt demonstration.",
+ c:"<b>No transcribable content</b> — this slide is simply a cue for the live demo."},
+
+{n:57,h:"Demo Links",
+ sub:"Two starting points for practicing dbt outside of class: a free fundamentals course and a cloud quickstart.",
+ d:"<b>Two reference links for hands-on practice:</b><ul class='term-list'><li><code>courses.getdbt.com/courses/fundamentals</code> — dbt Labs' free Fundamentals course</li><li><code>docs.getdbt.com/docs/quickstarts/dbt-cloud/snowflake</code> — dbt Cloud + Snowflake quickstart</li></ul>",
+ c:"<b>Resources for students</b> to follow along with dbt hands-on."},
+
+{n:58,h:"Section Divider: Data Versioning",
+ sub:"A quick pause before diving into how datasets get tracked like source code.",
+ d:"<b>Section break:</b> introduces the topic of Data Versioning.",
+ c:"<b>Data Versioning</b> means tracking different versions of a dataset over time — analogous to <b>Git</b> for source code."},
+
+{n:59,h:"Data Versioning — Why?",
+ sub:"Three concrete payoffs for keeping old dataset versions around, not just the newest one.",
+ d:"<b>Three reasons drive data versioning:</b><ul class='term-list'><li><b>Riskless Testing:</b> experiment freely, since you can always roll back.</li><li><b>Measuring Business Performance:</b> tracking data changes over time is itself useful business insight.</li><li><b>Ease Harmonization with Data Laws & Audit Process:</b> versioning helps meet legal and audit requirements.</li></ul>",
+ c:"<b>Why each reason matters:</b><ul class='term-list'><li><b>Riskless testing:</b> rollback is always possible, so you can safely experiment without fear.</li><li><b>Business insight:</b> tracking data changes over time is itself valuable business insight.</li><li><b>Compliance:</b> regulators and auditors often require showing exactly what data looked like at a past point in time.</li></ul>"},
+
+{n:60,h:"Data Versioning — What & Why (branching diagram)",
+ sub:"IBM's stream diagram maps Git branching concepts onto how data models evolve across teams.",
+ d:"<b>Data versioning</b> is the storage of different versions of data that were created or changed at specific points in time. An IBM-sourced diagram shows parallel timeline “streams” — Industry Models, Enterprise, Project 1, Project 2, Practitioner A, Practitioner B — with version numbers increasing left-to-right.<ul class='term-list'><li><b>Propagate:</b> flows down to specific streams.</li><li><b>Harvest:</b> flows back up, merging with the common ancestor.</li></ul>",
+ c:"<b>Think of it as Git branching, drawn for data models.</b><ul class='term-list'><li><b>Enterprise Stream:</b> the shared “main” branch.</li><li><b>Project/Practitioner streams:</b> feature branches.</li><li><b>Propagate:</b> changes flow down — like pulling the latest main.</li><li><b>Harvest:</b> changes flow back up — like merging a branch into main.</li></ul>",
+ m:"flowchart TB\n    IM[\"Industry Models Stream (1.0)\"] -- Propagate --> ES[\"Enterprise Stream\"]\n    ES -- Propagate --> P1[\"Project 1 Stream\"]\n    ES -- Propagate --> P2[\"Project 2 Stream\"]\n    P2 -- Propagate --> PA[\"Practitioner A Stream\"]\n    P2 -- Propagate --> PB[\"Practitioner B Stream\"]\n    PA -- Harvest --> P2\n    PB -- Harvest --> P2\n    P2 -- Harvest --> ES"},
+
+{n:61,h:"Data Versioning — Benefit: Riskless Testing",
+ sub:"Versioning turns failed data experiments into a rollback, not a disaster.",
+ d:"<b>Testing efficiency improvements risks the previous working version</b> of a dataset. Most engineering attempts end up as inefficient trials, so the previous dataset needs to be saved. If an attempt fails, simply reload the old dataset — preventing loss of business.",
+ c:"<b>The “safety net” argument:</b> most experiments don't pan out. With versioning, a failed experiment costs only wasted time, not permanently damaged production data."},
+
+{n:62,h:"Data Versioning — Benefits: Business Performance & Compliance",
+ sub:"Beyond safety nets, versioning tracks business trends and satisfies legal audit requirements like GDPR.",
+ d:"<b>Two more benefits of data versioning:</b><ul class='term-list'><li><b>Measuring business performance:</b> datasets change even without engineer intervention (e.g. every sale changes sales data); storing history over years reveals consumer-trend insight.</li><li><b>Compliance/auditing:</b> versioning helps internal/external audits; regulations like <b>GDPR</b> force retention of certain data sources; it also eases fraud detection.</li></ul>",
+ c:"<b>Two more benefits, explained:</b><ul class='term-list'><li><b>Business insight:</b> data naturally drifts over time even without any engineer touching it — keep snapshots to spot trends.</li><li><b>Legal requirement:</b> regulators care about proving what data looked like at a specific time — versioning can be a legal requirement, not just a nice-to-have.</li></ul>",
+ r:"<b>GDPR</b> doesn't specify a fixed retention period — it requires justifying retention length based on original purpose, documenting that decision, and proving compliance via audit trails, which is exactly what systematic data versioning provides.",
+ s:[["GDPR Data Retention — Advisera","https://advisera.com/articles/gdpr-data-retention/"]]},
+
+{n:63,h:"Naming of Versions",
+ sub:"The everyday habit of naming files _Test or _Dev is exactly what proper versioning is meant to replace.",
+ d:"<b>Bad informal naming patterns to avoid:</b><ul class='term-list'><li><code>FileName_Test</code></li><li><code>FileName_Dev</code></li><li><code>FileName_InProgress</code></li><li><code>FileName_19Dec1998</code></li><li><code>FileName_YourName</code></li></ul>These are contrasted with a Windows file Properties screenshot showing a proper build number, “File version: 10.0.19041.546”.",
+ c:"<b>Sloppy ad-hoc naming vs proper version numbers:</b> this is a reality check — many workplaces still rely on the messy habits being called out here, instead of structured version numbers."},
+
+{n:64,h:"Formats of Data Versions — Semantic Versioning",
+ sub:"MAJOR.MINOR.PATCH — the same numbering scheme from software packages, now applied to dataset versions.",
+ d:"<b>The three-part semantic version number is the most common format,</b> e.g. 3.2.4.<div class='mini-grid'><span class='chip'>MAJOR (3)</span><span class='chip'>MINOR (2)</span><span class='chip'>PATCH (4)</span></div><ul class='term-list'><li><b>MAJOR</b> (left number): a significant/major change.</li><li><b>MINOR</b> (middle number): new compatible features.</li><li><b>PATCH</b> (right number): minor bug fixes.</li></ul>Versions can also encode status (incomplete/complete, filtered/unfiltered, cleaned/uncleaned) or process (e.g. normalized/adjusted).",
+ c:"<b>Semantic Versioning (SemVer)</b>, written as <code>MAJOR.MINOR.PATCH</code>, borrows this convention from software:<ul class='term-list'><li><b>MAJOR:</b> meaningfully different.</li><li><b>MINOR:</b> new stuff added but old still works.</li><li><b>PATCH:</b> small fixes only.</li></ul>",
+ t:"<b>Exam tip:</b> know the exact meaning of each of the 3 SemVer positions — a frequently tested topic.",
+ r:"<b>Semantic Versioning</b> (semver.org) was formalized for software packages; its adoption for data versions is a relatively recent borrowing of software-engineering discipline."},
+
+{n:65,h:"Versioning Options — File vs Tool Based",
+ sub:"Whether to hand-save files or adopt a dedicated tool depends on team size, collaboration, and accountability needs.",
+ d:"<b>Two versioning approaches, chosen by need:</b><div class='mini-grid'><span class='chip'>File Versioning</span><span class='chip'>Tool Based</span></div><ul class='term-list'><li><b>File versioning</b> (manual saves): appropriate for small firms, protecting sensitive info, and individual work.</li><li><b>Tool Based</b> (build or use providers like <b>DVC</b>, <b>Delta Lake</b>, <b>Pachyderm</b>): appropriate for real-time editing, multi-location collaboration, and accountability.</li></ul>",
+ c:"<b>Cheap-and-manual vs tool-based:</b> file versioning is fine for one person or a tiny sensitive dataset; tool-based versioning becomes necessary once multiple people, multiple locations, or accountability needs enter the picture.",
+ ins:"<b>Live class poll:</b> asked which versioning tool their own companies actually use, the class's answer was simply <b>GitHub</b> — a reminder that in practice, most teams reach for plain Git/GitHub long before adopting a specialized data-versioning tool like DVC or lakeFS."},
+
+{n:66,h:"Implementation Approaches (tree)",
+ sub:"Three ways to bolt version control onto data, ranging from copy-everything to dedicated tooling.",
+ d:"<b>How can we implement data version control?</b> This branches into three approaches:<div class='mini-grid'><span class='chip'>Full Duplication</span><span class='chip'>Valid From/To Metadata</span><span class='chip'>Tool Based</span></div>",
+ c:"<b>A menu of three concrete techniques,</b> ranging from crudest to most sophisticated:<ul class='term-list'><li><b>Full Duplication:</b> the crudest approach — copy everything.</li><li><b>Valid From/To Metadata:</b> a middle-ground metadata technique.</li><li><b>Tool Based:</b> the most sophisticated approach — dedicated tooling.</li></ul>",
+ m:"flowchart TD\n    A[\"Approaches: How can we implement data version control?\"]\n    A --> B[Full Duplication]\n    A --> C[\"Valid From/To Metadata\"]\n    A --> D[Tool Based]"},
+
+{n:67,h:"Approach #1 — Full Duplication",
+ sub:"Copy-paste versioning: easy to implement, but wasteful on storage and fragile for querying.",
+ d:"<b>Full Duplication:</b> save a full copy under a new location each time you want a version. Works best for smaller datasets with daily-ish frequency.<ul class='term-list'><li><b>Space:</b> “does create versioned data, but does so in the least space-efficient way.”</li><li><b>Queries:</b> need date values hardcoded, which is error-prone.</li><li><b>Verdict:</b> “something is better than nothing.”</li></ul>Example: daily folders for a “Users” dataset — <code>dt=2021-11-20/</code>, <code>dt=2021-11-21/</code>, <code>dt=2021-11-22/</code>.",
+ c:"<b>The simplest approach:</b> copy the whole dataset into a new dated folder every day. Dead simple, but wasteful on storage (duplicates unchanged data daily) and fragile in code (hardcoded date folders)."},
+
+{n:68,h:"Approach #2 — Valid From/To Metadata",
+ sub:"Never overwrite a row — append a new one and timestamp when each version was valid, so you can query data “as of” any date.",
+ d:"<b>Valid From/To Metadata:</b> add and maintain two metadata fields, <code>valid_from</code> and <code>valid_to</code>. Never overwrite a record — instead append new records, and set <code>valid_to</code> on the record being superseded. Good for “time traveling” a single table, but only queryable via date filters.<br><b>Worked example</b> — Orders table, order_id=1:<ul class='term-list'><li><b>Pending:</b> until 2021-10-16.</li><li><b>Shipped:</b> 2021-10-16 → 2021-10-18.</li><li><b>Delivered:</b> from 2021-10-18 onward.</li></ul>Query <code>WHERE valid_from &lt;= '2021-10-17' AND valid_to &gt;= '2021-10-17'</code> returns exactly the “shipped” row.",
+ c:"<b>This is the classic “slowly changing dimensions” / bitemporal table technique.</b> Instead of overwriting, close out the old row and append a new one. Walking the example: as of Oct 17, only the “shipped” row's window contains that date, so the filter naturally returns exactly one row.",
+ t:"<b>Exam tip:</b> be able to write the <code>valid_from</code>/<code>valid_to</code> filter query from memory and trace which row it returns for a given date — explicitly listed as a frequently tested worked example.",
+ tb:{h:["Status","valid_from","valid_to"],r:[["Pending","–","2021-10-16"],["Shipped","2021-10-16","2021-10-18"],["Delivered","2021-10-18","– (ongoing)"]]}},
+
+{n:69,h:"Approach #3 — Tooling",
+ sub:"Purpose-built tools treat versioning as a core data property instead of a bolted-on afterthought.",
+ d:"<b>Approaches #1–2 just “add a bit of versioning to data I already have.”</b> Tooling instead treats versioning as a first-class, inherent property of data.<ul class='term-list'><li><b>Storage footprint:</b> minimize it — don't copy unchanged data.</li><li><b>Direct operations:</b> expose create/delete/compare-a-version operations.</li><li><b>Uniformity:</b> work the same way across scale, format, and structured-or-not data.</li></ul>Solution: extend the Git model to data — projects like <b>lakeFS</b>, <b>DVC</b>, and <b>Git LFS</b>.",
+ c:"<b>The “why bother with real tools” pitch:</b> dedicated tools give storage-efficient, Git-like, uniform versioning instead of bolted-on workarounds."},
+
+{n:70,h:"Versioning Challenges — Storage & Security",
+ sub:"More versions mean more cost and more risk — versioning isn't a free lunch.",
+ d:"<b>Two real costs versioning must balance against its benefits:</b><ul class='term-list'><li><b>Limited storage space:</b> more versions mean more storage cost; companies must balance versioning benefits against storage cost.</li><li><b>Security issues:</b> more stored versions mean greater risk of data loss/leakage, amplified for cloud users who outsource IT control.</li></ul>",
+ c:"<b>Two costs that balance against versioning's benefits:</b> storage isn't free, and every extra copy is one more thing that could leak or be breached."},
+
+{n:71,h:"Versioning Challenges — Choosing a Provider",
+ sub:"A five-point checklist for picking a data versioning tool, before the deeper comparison to come.",
+ d:"<b>Evaluate versioning tools against five criteria:</b><ul class='term-list'><li><b>Open source or not</b></li><li><b>Storage capacity</b></li><li><b>User-friendly interface or not</b></li><li><b>Support of common clouds</b> (e.g. <b>AWS</b>) and storage types</li><li><b>Cost</b></li></ul>",
+ c:"<b>A practical vendor checklist</b> that sets up the deeper “how to choose” criteria (slide 73) and the tool profiles that follow (slides 74–80)."},
+
+{n:72,h:"Section Divider: Data Version Control – Tools",
+ sub:"A quick pit stop before a tool-by-tool tour of the leading data version control products.",
+ d:"<b>Section-break slide</b> marking a shift in focus.",
+ c:"<b>This section</b> begins a tool-by-tool tour of the leading data version control products."},
+
+{n:73,h:"How to Choose a Data Versioning Tool",
+ sub:"The right tool isn't the most powerful one — it's the one your team will actually use.",
+ d:"<b>Five questions</b> help narrow down the right data versioning tool for a team.<ul class='term-list'><li><b>Data modality support:</b> can it preview/support your data type (video, audio, tabular)?</li><li><b>Ease of use:</b> how much workflow overhead does it add?</li><li><b>Diff and compare:</b> can you diff something like an image directory?</li><li><b>Stack compatibility:</b> how well does it work with your existing stack?</li><li><b>Team adoption:</b> can you actually get your team on board?</li></ul>",
+ c:"<b>The team-adoption question matters most and gets ignored most</b>: a technically 'best' tool is worthless if the team won't use it. Adoption is a people problem as much as a technology one."},
+
+{n:74,h:"Tool #1: Neptune.ai",
+ sub:"Neptune.ai is built for tracking experiments at scale, with dataset versioning bolted on as a side feature.",
+ d:"<b>Neptune.ai</b> calls itself “the most scalable experiment tracker,” built for teams training foundation models.<ul class='term-list'><li><b>Monitoring:</b> tracks months-long training runs.</li><li><b>Scale:</b> tracks massive data and compares thousands of metrics.</li><li><b>“Neptune artifacts”:</b> version datasets, models, and files from local or S3-compatible storage in one line of code.</li><li><b>Saved metadata:</b> version hash, location, folder structure, size.</li></ul>",
+ c:"<b>Primarily an ML experiment tracker</b> — a lab notebook for training runs — with data versioning as a side feature. Its 'artifacts' fingerprint a dataset/folder with a hash, linking every experiment run to the exact data version used."},
+
+{n:75,h:"Tool #2: Pachyderm",
+ sub:"Pachyderm version-controls the whole ML pipeline, not just the data files.",
+ d:"<b>Pachyderm</b> bills itself as “a complete version-controlled data science platform” controlling the end-to-end ML lifecycle.<ul class='term-list'><li><b>Branching model:</b> continuously updates data on a master branch while experimenting on separate branches/commits.</li><li><b>File support:</b> any file type, size, or number.</li><li><b>Commits:</b> centralized and transactional.</li><li><b>Provenance:</b> a complete, automatic audit trail for reproducibility.</li></ul>",
+ c:"<b>Treats the entire ML pipeline like a Git repo</b>: data on branches, transactional (all-or-nothing) commits, and full provenance — an automatic paper trail of which data version produced which output."},
+
+{n:76,h:"Tool #3: DVC",
+ sub:"DVC feels like Git for data — the lightest-weight entry point into the ML-versioning tool world.",
+ d:"<b>DVC</b> is open-source version control for ML projects, with language-agnostic pipelines.<ul class='term-list'><li><b>Storage:</b> storage-agnostic.</li><li><b>Provenance:</b> full code + data provenance.</li><li><b>Reproducibility:</b> via consistent input/config/code combinations.</li><li><b>Tracking:</b> metric tracking, a built-in DAG connecting ML steps, and tracking of failed attempts.</li><li><b>Foundation:</b> runs on top of any Git repo/server.</li></ul>",
+ c:"<b>Deliberately designed to feel like an extension of Git itself</b>, running on top of an existing Git repo. Usually the easiest of these tools to adopt if the team already uses Git.",
+ r:"<b>Comparing the three ML-focused tools</b> side by side:<ul class='term-list'><li><b>DVC:</b> lightest-weight and easiest to adopt — a good starting point.</li><li><b>Pachyderm:</b> most powerful/complex, built for enterprise-scale provenance and pipeline automation.</li><li><b>lakeFS</b> (next): sits in front of cloud object storage, scaling to petabytes.</li></ul>Common combo: DVC for local tracking + lakeFS/Pachyderm as the production backend.",
+ s:[["DVC vs Pachyderm vs LakeFS guide","https://drcodes.com/posts/dvc-vs-pachyderm-vs-lakefs-mlops-data-versioning-guide"],["So you want Data Version Control? — DoltHub","https://www.dolthub.com/blog/2022-04-27-data-version-control/"]]},
+
+{n:77,h:"Tool #4: Git LFS",
+ sub:"Git LFS lets Git handle multi-gigabyte files without bloating the repo.",
+ d:"<b>Git LFS</b> (Git Large File Storage) is an open-source project that replaces large files with text pointers inside Git.<ul class='term-list'><li><b>File types:</b> audio, video, datasets, graphics, and other large files.</li><li><b>Storage:</b> actual content lives on a remote server (e.g. GitHub); Git only holds the pointer.</li><li><b>Versioning:</b> handles large files, even multi-GB, while keeping normal Git access controls/permissions.</li><li><b>Performance:</b> enables faster clone/fetch.</li></ul>",
+ c:"<b>Ordinary Git chokes on huge binaries</b> because it stores every full version forever. LFS keeps only a small text pointer in Git while the real content lives elsewhere, so the repo stays small and fast and the workflow stays familiar."},
+
+{n:78,h:"Tool #5: Dolt",
+ sub:"Dolt isn't a tool that versions a database — it IS a database, with Git built in.",
+ d:"<b>Dolt</b> is a SQL database that can fork, clone, branch, merge, push, and pull just like a Git repository.<ul class='term-list'><li><b>Schema evolution:</b> allows data and schema to evolve together.</li><li><b>Connectivity:</b> connect to it just like any MySQL database to run queries/updates via SQL.</li></ul>",
+ c:"<b>Flips the versioning idea around</b>: instead of versioning files that hold data, Dolt IS an actual SQL (MySQL-compatible) database with Git's operations built directly into the engine."},
+
+{n:79,h:"Tool #6: lakeFS",
+ sub:"lakeFS brings Git-style branching to petabyte-scale object storage, without copying the data.",
+ d:"<b>lakeFS</b> is an open-source Git-like branching/committing model that scales to petabytes, using S3 or GCS for storage.<ul class='term-list'><li><b>Development Environment for Data:</b> isolated snapshots for reproducibility.</li><li><b>Continuous Data Integration:</b> one of its three focus areas.</li><li><b>Continuous Data Deployment:</b> quick reverts, consistency, avoiding cascading quality issues.</li><li><b>ACID-compliant:</b> branches are created, merged, and rolled back atomically and instantly.</li></ul>",
+ c:"<b>Applies Git's branch/commit/merge/rollback model as a thin layer</b> on top of existing S3/GCS storage. Branching is a cheap metadata operation, not a data copy — which is how it scales to petabytes."},
+
+{n:80,h:"Tool #7: Delta Lake",
+ sub:"Delta Lake adds database-grade ACID guarantees to cloud data lakes, powering the Medallion Architecture.",
+ d:"<b>Delta Lake</b> is an open-source storage layer that brings reliability to data lakes.<ul class='term-list'><li><b>ACID transactions</b> and serializable isolation.</li><li><b>Scalable metadata handling:</b> Spark-powered, petabyte-scale, billions of files.</li><li><b>Unified tables:</b> streaming + batch in one table type, with schema enforcement.</li><li><b>Data versioning:</b> rollbacks, audit trails, reproducible ML experiments.</li><li><b>Merge/update/delete support:</b> CDC, SCD, streaming upserts.</li></ul>",
+ c:"<b>The tool most directly responsible for making the Medallion Architecture practically buildable</b> — its own homepage shows the Bronze/Silver/Gold diagram. It brings database-grade guarantees to what used to be 'just files' in cloud storage.",
+ t:"<b>Know that ACID = Atomicity, Consistency, Isolation, Durability</b> — the same guarantees relational databases have offered for decades, now brought to data lakes.",
+ r:"<b>Delta Lake was created and open-sourced by Databricks</b>. Along with Apache Iceberg and Apache Hudi, it anchors the modern 'lakehouse' category — a low-cost, flexible data lake combined with the transactional reliability of a warehouse. It uses a transaction log with optimistic concurrency control.",
+ s:[["ACID guarantees on Databricks","https://docs.databricks.com/aws/en/lakehouse/acid"]],
+ tb:{h:["Tool","One-Line Identity"],r:[["Neptune.ai","ML experiment tracker with dataset-hash artifacts"],["Pachyderm","Version-controlled data science platform for the full ML lifecycle"],["DVC","Git-based, lightest-weight ML version control"],["Git LFS","Text-pointer system for versioning large files in Git"],["Dolt","A SQL database with Git's operations built in"],["lakeFS","Git-like branching for petabyte-scale S3/GCS storage"],["Delta Lake","ACID storage layer bringing reliability to data lakes"]]}},
+
+{n:81,h:"Section Divider: Data Lineage & Reproducibility",
+ sub:"The final topic: tracing data's origin and recreating past results exactly.",
+ d:"<b>Section-break slide.</b>",
+ c:"<b>This section covers two intertwined ideas: data lineage and reproducibility.</b> Data lineage traces where any piece of data came from and how it was transformed on its journey. Reproducibility means being able to recreate a past result exactly."},
+
+{n:82,h:"Data Lineage — What?",
+ sub:"Tracing a single column back through every transformation, merge, and split to its origin.",
+ d:"<b>Data Lineage</b> is “the process of understanding and visualizing data flows from source to current location and tracking any alterations made to the data on its journey.”<ul class='term-list'><li><b>Origin:</b> where the data came from</li><li><b>Field splits/merges:</b> where fields were separated or merged</li><li><b>Transformations:</b> every change applied along the way</li></ul>Diagram: Files/Data Sources/Files-without-rules → Extract → Transform → Publish, with crossing lines showing field-level lineage.",
+ c:"<b>Think of it like a package-tracking system — but for data fields.</b> For any column in a final report, you can trace backward through every transformation, merge, and split, back to the original source.",
+ r:"<b>Field-level (column-level) lineage is the 'gold standard.'</b> It answers 'which upstream source feeds this exact number on my dashboard?' — a question coarser table-level lineage can't answer.",
+ s:[["Data Lineage — Qlik","https://www.qlik.com/us/data-management/data-lineage"]]},
+
+{n:83,h:"Data Lineage — How?",
+ sub:"Every ETL stage secretly leaves a metadata breadcrumb — lineage is just following the trail.",
+ d:"<b>Lineage works by collecting and managing metadata from every step of the pipeline</b>, storing it in a <b>metadata repository</b> used later for lineage analysis. Metadata is updated at every process step. Diagram: Sources → Extract → Staging Area (Transform) → Load → Data Warehouse → Analyze → Analytics, with every stage also writing “Metadata” into a central Metadata Repository.",
+ c:"<b>Lineage isn't magic.</b> Every stage of the ordinary ETL pipeline also writes a record of what it just did into a separate metadata repository — lineage is just the accumulated trail of these breadcrumbs.",
+ m:"flowchart LR\n    Src[\"Sources: SQL RDBMS / NoSQL / SaaS / XML\"] -->|Extract| Stg[\"Staging Area: Transform\"]\n    Stg -->|Load| DW[Data Warehouse]\n    DW -->|Analyze| An[Analytics]\n    Src -.Metadata.-> MR[(Metadata Repository)]\n    Stg -.Metadata.-> MR\n    DW -.Metadata.-> MR"},
+
+{n:84,h:"Reproducibility — 'Do You Remember?' (ML lifecycle recall)",
+ sub:"Reproducibility means recreating the exact ML environment — versions of every resource — at a past point in time.",
+ d:"<b>Reproducibility</b> “enables the re-creation of the ML environment at a specific point in time, reflecting the versions of resources and environments at that time.” It recalls a full ML lifecycle architecture — Process Data → Develop Model → Deploy → Monitor — with feature stores, model registry, feedback loops, and a dedicated <b>Lineage Tracker</b> box.",
+ c:"<b>Reproducibility isn't a bolt-on.</b> It depends on the <b>Lineage Tracker</b> being wired into every stage of the bigger ML picture — feature stores, model registry, deployment — not just the data-transformation slice.",
+ r:"<b>This diagram follows the AWS Well-Architected Machine Learning Lens pattern</b>, which recommends a lineage-tracking component spanning the full ML lifecycle.",
+ s:[["AWS Well-Architected ML Lens — architecture diagram","https://docs.aws.amazon.com/wellarchitected/latest/machine-learning-lens/architecture-diagram.html"]]},
+
+{n:85,h:"Components of a Lineage Tracker (6 components)",
+ sub:"The Lineage Tracker pins six separate things to specific versions — miss one, and reproducibility breaks.",
+ d:"<b>The Lineage Tracker</b> collects references to traceable Model & Infrastructure resource changes from six sources — each with its own “commit” action into a version-controlled or container repository.<div class='mini-grid'><span>Infrastructure as Code</span><span>Data</span><span>Implementation Code</span><span>Model Feature List</span><span>Model Algorithm Code</span><span>Model Container Image</span></div>",
+ c:"<b>Six different things must all be pinned to a specific version to fully reproduce a result</b> — miss any one, and you can't truly recreate a past result.<ul class='term-list'><li><b>Infrastructure as Code:</b> cloud resource config, version-controlled</li><li><b>Data:</b> schema/metadata versioned, data referenced via a config pointer</li><li><b>Implementation Code:</b> point-in-time commits in version control</li><li><b>Model Feature List:</b> feature store keeps historical versions</li><li><b>Model Algorithm Code:</b> point-in-time commits in version control</li><li><b>Model Container Image:</b> versioned in a container registry</li></ul>",
+ t:"<b>Frequently tested:</b> be able to list all 6 components by name.",
+ m:"flowchart BT\n    IaC[\"Infrastructure as Code\"] --> LT[\"Lineage Tracker\"]\n    Data --> LT\n    Impl[\"Implementation Code\"] --> LT\n    Feat[\"Model Feature List\"] --> LT\n    Algo[\"Model Algorithm Code\"] --> LT\n    Img[\"Model Container Image\"] --> LT"},
+
+{n:86,h:"Lineage Tracker Component — Infrastructure as Code",
+ sub:"IaC turns server/network setup into version-controlled code, so 'what config was running?' is always answerable.",
+ d:"<b>Infrastructure as Code (IaC)</b> automates modeling, provisioning, and managing cloud resources — compute, storage, network, and application services. Changes are committed to a version-controlled repository, which avoids configuration drift.",
+ c:"<b>Describing servers and networks as code</b> (e.g. Terraform, CloudFormation) instead of clicking through a console. Since it's code, it's version-controllable — making 'which infra config was running when this model trained?' an answerable question.",
+ r:"<b>Configuration drift</b> — manually configured servers slowly diverging from each other and from documentation over time — is exactly the kind of untracked change IaC prevents."},
+
+{n:87,h:"Lineage Tracker Components — Data, Implementation Code, Feature List",
+ sub:"Data, code, and features each get versioned differently — but all three stay traceable to a point in time.",
+ d:"<b>Three of the six Lineage Tracker components, in more depth:</b><ul class='term-list'><li><b>Data:</b> schemas/metadata stored in version control; the actual data lives in a data lake, referenced via a config-file pointer</li><li><b>Implementation Code:</b> point-in-time commits via version control</li><li><b>Model Feature List:</b> a feature store maintains feature details and previous versions, for point-in-time changes</li></ul>",
+ c:"<b>For Data, you version the schema/metadata plus a pointer</b> to where the data lives — not necessarily the raw bytes in Git. <b>Implementation code</b> is versioned like any other code. <b>The feature store</b> keeps historical feature versions."},
+
+{n:88,h:"Lineage Tracker Components — Algorithm Code, Container Image",
+ sub:"Algorithm code lives in Git; the packaged container image it runs in lives in a separate container registry.",
+ d:"<b>The last two of the six Lineage Tracker components:</b><ul class='term-list'><li><b>Model Algorithm Code:</b> changes at specific points in time, stored in version control</li><li><b>Model Container Image:</b> versions of container images stored in container repositories, managed by a container registry</li></ul>",
+ c:"<b>Algorithm code</b> is versioned in Git like any code. The packaged, runnable <b>container image</b> (e.g. a Docker image) is versioned separately in a container registry (Docker Hub, ECR) — because it's a large binary artifact, not source code."},
+
+{n:89,h:"Data Lineage for Training Datasets",
+ sub:"A trained model is a black box unless you can trace its data, code, performance, and deployment.",
+ d:"<b>“If you can't explain the data that trained the model, you can't trust the model.”</b><ul class='term-list'><li><b>Data Origin and Transformations</b></li><li><b>Code and Parameters:</b> Git versions + hyperparameters</li><li><b>Model Artifacts:</b> versions + metrics/eval reports</li><li><b>Deployment and Usage</b></li><li><b>Reproducibility:</b> helps reproduce the “last best version” if issues arise</li></ul>",
+ c:"<b>This brings the whole lecture full-circle.</b> A trained model is a black box unless you can answer: what data trained it, what code/settings produced it, how well it performed, and where it's deployed now.",
+ r:"<b>This principle became mainstream after high-profile ML failures traced to training-data issues.</b><ul class='term-list'><li><b>Zillow's 2021 shutdown of “Zillow Offers”:</b> its Zestimate pricing model overvalued homes in a fast-shifting market</li><li><b>Knight Capital trading glitch (Aug 1, 2012):</b> a deployment updated 7 of 8 servers, the 8th silently ran old logic, causing ~$440–460M in losses in 45 minutes — a classic non-ML cautionary tale rooted in a lack of traceability over which exact code version ran on each server</li></ul>",
+ s:[["Lessons from Zillow's Flipping Business Failure","https://towardsdatascience.com/invaluable-data-science-lessons-to-learn-from-the-failure-of-zillows-flipping-business-25fdc218a62/"],["The Knight Capital Meltdown","https://www.markethistories.com/en/the-knight-capital-meltdown-how-45-minutes-of-bad-code-cost-440-million-2012"]]},
+
+{n:90,h:"References",
+ sub:"The instructor's own bibliography — every source cited across the deck, gathered in one place.",
+ d:"<b>Full bibliography</b> of source links cited throughout the original deck:<ul class='term-list'><li>Atlan</li><li>Gartner</li><li>Estuary</li><li>Databricks</li><li>Medium articles on dbt modeling and transformation verification</li><li>Airbyte</li><li>Testriq</li><li>Qlik</li><li>AWS Well-Architected docs</li><li>DataHub docs</li><li>Neptune.ai blog</li></ul>",
+ c:"<b>An administrative slide</b> — the instructor's own bibliography, listed here for completeness and citation-tracing."},
+
+{n:91,h:"Thank You",
+ sub:"The closing slide — no technical content, just a segue into the next class session.",
+ d:"<b>Closing slide:</b> “Thank You” / “In our next session:” (topic left unspecified).",
+ c:"<b>Closing slide for the lecture</b> — no technical content, segues into the next class session."},
+];
+
+// ---- Glossary (terms explicitly defined/used in the source markdown) ----
+const GLOSSARY = [
+["ETL","Extract, Transform, Load","Transform data BEFORE loading it into the destination warehouse (slide 6)."],
+["ELT","Extract, Load, Transform","Load raw data first, then transform it inside the destination warehouse (slide 6)."],
+["CDC","Change Data Capture","Capturing only the rows that changed in a source (via transaction logs) instead of re-reading the whole table (slide 12)."],
+["MCP","Model Context Protocol","Anthropic's open standard (Nov 2024) for connecting AI systems to external tools/data via one client–server protocol (slide 14)."],
+["RAG","Retrieval-Augmented Generation","Retrieving relevant documents/rows at query time to ground an LLM's answer (slide 14)."],
+["ABI","Analytics and Business Intelligence","A self-service data integration use case for less-technical personas (slide 11)."],
+["GDPR","General Data Protection Regulation","EU data-protection law that can force companies to retain certain data sources, motivating data versioning for compliance (slide 62)."],
+["SemVer","Semantic Versioning","MAJOR.MINOR.PATCH version-numbering convention adopted for data versions (slide 64)."],
+["ACID","Atomicity, Consistency, Isolation, Durability","The four transactional guarantees Delta Lake brings to data lakes (slide 80)."],
+["IaC","Infrastructure as Code","Modeling/provisioning cloud resources as version-controlled code instead of manual console clicks (slide 86)."],
+["CI/CD","Continuous Integration / Continuous Delivery","Automated pipelines for orchestrating data delivery, part of DataOps features (slide 14)."],
+["DAG","Directed Acyclic Graph","The structure DVC uses to connect ML pipeline steps end-to-end (slide 76)."],
+["SCD","Slowly Changing Dimension","A data-warehousing operation type supported by Delta Lake's merge/update/delete features (slide 80)."],
+["dbt","data build tool","An ELT transformation framework (and documentation tool) created in 2016 by Fishtown Analytics/dbt Labs (slides 32, 53)."],
+["DVC","Data Version Control","An open-source, Git-based version control system for ML datasets/pipelines (slide 76)."],
+["LFS","Large File Storage","Git LFS — replaces large files with text pointers inside Git while storing content remotely (slide 77)."],
+["MQ","Magic Quadrant","Gartner's vendor-ranking report (Ability to Execute × Completeness of Vision) for data integration tools (slide 15)."],
+["BI","Business Intelligence","Reporting/dashboarding tools that consume the Gold layer / Marts layer of a pipeline (slides 29, 33)."],
+["SaaS","Software as a Service","One deployment model for data integration tools, alongside on-prem/cloud/hybrid (slide 10)."],
+["LLM","Large Language Model","An AI model type that AI-focused integration features help train/feed via vector databases and RAG (slide 14)."],
+["DBA","Database Administrator","The primary audience for the Physical data model layer (slide 52)."],
+];
+
+// ---- Revision Checklist (verbatim items from the source markdown's own "Revision Checklist") ----
+const CHECKLIST = [
+"Can explain the difference between Data Ingestion and Data Integration, with an example.",
+"Can explain ETL vs. ELT and why cloud warehouses caused the shift toward ELT.",
+"Can draw/describe the Medallion Architecture (Bronze/Silver/Gold/Platinum) and state the purpose of each layer.",
+"Can map dbt's Landing → Staging → Intermediate → Marts layers onto Bronze/Silver/Gold.",
+"Can list and define the 7 basic transformation types without confusing DB-normalization with ML-normalization.",
+"Can list and briefly define the 4 complex transformation types plus data smoothing.",
+"Can walk through the 6-step Data Transformation Process (Discovery → Mapping → Logic Design → Execution → Validation & Testing → Documentation & Monitoring).",
+"Can explain the 3-step suggested testing framework (Schema → Contract → Transformation Validation) and the 3 testing levels (Unit/Integration/Regression).",
+"Can work through the slide-40 pivot example and explain what could go wrong (percentage vs. raw score confusion, wrong threshold, wrong panel mapping).",
+"Can explain the conceptual/logical/physical data model pyramid, including audience and purpose of each tier.",
+"Can name at least 3 documentation/catalog tools (dbt docs, DataHub, Amundsen) and one differentiator for each.",
+"Can explain why data versioning matters (safety net for testing, business trend analysis, compliance/audit e.g. GDPR).",
+"Can explain Semantic Versioning (MAJOR.MINOR.PATCH) as applied to data.",
+"Can compare the 3 versioning implementation approaches (Full Duplication, Valid From/To Metadata, Tool-Based) and their trade-offs.",
+"Can walk through the valid_from/valid_to worked example and write the filtering query logic from memory.",
+"Can name and briefly differentiate at least 4 of the 7 data version control tools (Neptune.ai, Pachyderm, DVC, Git LFS, Dolt, lakeFS, Delta Lake).",
+"Can explain what ACID transactions mean in the context of Delta Lake / data lakes.",
+"Can explain what data lineage is and how a metadata repository captures it across pipeline stages.",
+"Can list all 6 components of a full Lineage Tracker and why each matters for reproducibility.",
+"Can explain why training-dataset lineage specifically is critical to trusting an ML model, with a real-world example (e.g. Zillow Zestimate, Knight Capital).",
+];
+
+// ---- Quiz questions (26) — every fact traces to a specific slide above ----
+const QUIZ = [
+{q:"Per slide 8's comparison table, which statement correctly distinguishes Data Ingestion from Data Integration?",
+ choices:["Ingestion automatically ensures data quality; integration does not","Integration is simpler and needs less domain expertise than ingestion","Ingestion moves data into storage; integration additionally cleanses/transforms it to be analysis-ready","Ingestion always uses ELT while integration always uses ETL"],
+ correct:2, exp:"Slide 8: ingestion 'doesn't automatically ensure data quality' and is 'less complex', while integration 'improves data quality' and 'requires skilled data engineers'."},
+{q:"According to slide 6, what is the key difference between ETL and ELT?",
+ choices:["ETL transforms before loading; ELT transforms after loading, inside the warehouse","ETL is for streaming data; ELT is for batch data","ELT was used before cloud warehouses existed","ETL and ELT both transform data before storing it"],
+ correct:0, exp:"Slide 6: ETL transforms before storing ('cook before fridge'); ELT stores raw data first, then transforms it using the destination system's power."},
+{q:"In the Medallion Architecture (slide 29), which layer is described as the 'landing zone for raw data, no schema needed'?",
+ choices:["Silver","Gold","Bronze","Platinum"],
+ correct:2, exp:"Slide 29: Bronze = 'Raw Integration... landing zone for raw data, no schema needed'."},
+{q:"Slide 38 maps dbt's layers onto the Medallion Architecture. Which pairing is correct?",
+ choices:["Bronze = Marts, Silver = Intermediate, Gold = Landing/Staging","Bronze = Landing/Staging, Silver = Intermediate, Gold = Marts","Bronze = Intermediate, Silver = Marts, Gold = Landing/Staging","Bronze = Staging only, Silver = Landing only, Gold = Intermediate"],
+ correct:1, exp:"Slide 38 explicitly labels: Bronze = Landing + Staging columns, Silver = Intermediate column, Gold = Marts column."},
+{q:"Per slide 37, what is true of dbt's Marts layer (dim_*/fact_*)?",
+ choices:["It contains the heaviest transformation logic in the whole pipeline","No transformation logic resides in the marts layer — it just joins/organizes already-processed data","It is a 1:1 reflection of source tables with no joins","It is where raw data first enters the warehouse"],
+ correct:1, exp:"Slide 37: 'No transformation logic resides in marts layer' — all business logic is already done upstream in Intermediate."},
+{q:"Slide 18 defines 7 basic transformation types. Which one is defined as 'structures data to minimize redundancy and improve integrity'?",
+ choices:["Data Enrichment","Data Standardization","Data Normalization","Data Aggregation"],
+ correct:2, exp:"Slide 18: Data Normalization = 'structures data to minimize redundancy and improve integrity' (classic DB-normalization sense)."},
+{q:"Slide 18's Research Context flags a common point of confusion. What is it?",
+ choices:["Cleaning and Filtering mean the same thing","'Normalization' is used both in the database-redundancy sense AND the separate statistical/ML scaling sense elsewhere in the deck","Standardization and Integration are identical operations","Aggregation always requires a data warehouse"],
+ correct:1, exp:"Slide 18: DB-normalization (redundancy reduction) is a different meaning from ML/statistical normalization (0-1 scaling), which appears later at slide 43 — the deck itself uses the term both ways."},
+{q:"What is the correct order of the 6-step Data Transformation Process introduced at slide 19?",
+ choices:["Execution → Discovery → Mapping → Logic Design → Documentation → Validation","Discovery → Mapping → Logic Design → Execution → Validation & Testing → Documentation & Monitoring","Mapping → Discovery → Validation → Logic Design → Execution → Monitoring","Documentation → Discovery → Mapping → Execution → Validation → Logic Design"],
+ correct:1, exp:"Slide 19's wheel: 01 Discovery, 02 Mapping, 03 Logic Design, 04 Execution, 05 Validation & Testing, 06 Documentation & Monitoring."},
+{q:"In the worked pivot example (slide 40), what specific risk is called out about the '20%' and '90%' values in Table II's SCORE column?",
+ choices:["They should have been deleted before un-pivoting","A percentage score could be misread as a raw numeric score of the same magnitude if the '%' suffix isn't detected","They are duplicate rows that must be removed","They indicate a schema validation failure"],
+ correct:1, exp:"Slide 40: 'if the transformation logic doesn't detect the \"%\" suffix, a percentage score could be misread as a raw numeric score of the same magnitude'."},
+{q:"Per slide 46, what does 'Contract Validation' specifically check, beyond basic Schema Validation?",
+ choices:["Row counts only","Whether producer–consumer contracts are honored, distinguishing breaking vs non-breaking schema changes","Whether the data is stored on the correct cloud provider","Whether column names use camelCase"],
+ correct:1, exp:"Slide 46, Step 2: Contract Validation covers producer–consumer contracts, breaking vs non-breaking changes, and versioned schemas."},
+{q:"Slide 48 defines 3 levels of testing. Which level 'compares against historical outputs to detect unintended changes'?",
+ choices:["Unit Tests","Integration Tests","Regression Tests","Contract Tests"],
+ correct:2, exp:"Slide 48: Level 3 - Regression Tests: 'Compare against historical outputs; detect unintended changes'."},
+{q:"According to slide 52, who is the primary audience for a Physical data model?",
+ choices:["Business Stakeholders","Data Architects and Business Analysts","DBAs and Developers","Marketing teams"],
+ correct:2, exp:"Slide 52: Physical model — Audience: DBAs, Developers; Purpose: technical implementation on a physical database."},
+{q:"Per slide 54's Research Context, where was DataHub originally built, and what was its predecessor?",
+ choices:["Built at Lyft; predecessor was Amundsen","Built at LinkedIn; predecessor was an internal tool called WhereHows (2016)","Built at Databricks; predecessor was Delta Lake","Built at Netflix; predecessor was Metacat"],
+ correct:1, exp:"Slide 54 Research Context: DataHub was built at LinkedIn, open-sourced 2020 — LinkedIn's second attempt after WhereHows (2016)."},
+{q:"Per slide 55's Research Context, which company built Amundsen, and roughly when was it open-sourced?",
+ choices:["Lyft, open-sourced October 2019","LinkedIn, open-sourced 2020","Uber, open-sourced 2018","Airbnb, open-sourced 2021"],
+ correct:0, exp:"Slide 55: Amundsen was developed at Lyft, introduced internally April 2019, open-sourced October 2019."},
+{q:"In Semantic Versioning as described on slide 64 (example 3.2.4), what does the middle number (2) indicate?",
+ choices:["A significant/breaking change","New features added in a backward-compatible manner","Minor bug fixes only","The dataset's completeness status"],
+ correct:1, exp:"Slide 64: the middle MINOR number indicates 'new features in a compatible manner'."},
+{q:"Which data versioning implementation approach does slide 67 describe as 'the least space-efficient way' to version data?",
+ choices:["Valid From/To Metadata","Tool Based (e.g. DVC/lakeFS)","Full Duplication","Semantic Versioning"],
+ correct:2, exp:"Slide 67: Full Duplication 'does create versioned data, but does so in the least space-efficient way'."},
+{q:"In the slide 68 worked example, for the query filtering WHERE valid_from <= '2021-10-17' AND valid_to >= '2021-10-17' on the Orders table, which single row is returned?",
+ choices:["order_id 1, status pending","order_id 1, status shipped","order_id 1, status delivered","No rows are returned"],
+ correct:1, exp:"Slide 68: the 'shipped' row's window (2021-10-16 to 2021-10-18) is the only one that contains Oct 17, so the query returns exactly that row."},
+{q:"Slide 69 says the industry solved data-versioning's challenges by extending which model to data?",
+ choices:["The relational database transaction model","The Kanban board model","The Git version-control model (e.g. lakeFS, DVC, Git LFS)","The OSI network model"],
+ correct:2, exp:"Slide 69: 'One of the more popular approaches...extends the git version control model to data — projects like lakeFS, DVC, and git LFS'."},
+{q:"Per slide 76's Research Context, which data versioning tool is described as the lightest-weight and easiest to adopt, especially for teams already using Git?",
+ choices:["Pachyderm","lakeFS","DVC","Delta Lake"],
+ correct:2, exp:"Slide 76 Research Context: 'DVC is the lightest-weight and easiest to adopt — a good starting point for small ML teams.'"},
+{q:"What makes Dolt (slide 78) distinct from the other data versioning tools in this deck?",
+ choices:["It is a SQL (MySQL-compatible) database with Git operations (branch, merge, fork) built directly into the engine","It only supports unstructured video files","It requires Kubernetes to run","It is exclusively for versioning infrastructure-as-code files"],
+ correct:0, exp:"Slide 78: 'Dolt is a SQL database that can fork, clone, branch, merge, push, and pull just like a git repository'."},
+{q:"Per slide 79, what allows lakeFS to scale to petabytes of data efficiently?",
+ choices:["It duplicates the entire dataset on every branch","Branching is a cheap metadata operation, not a data copy, since it sits atop existing S3/GCS storage","It stores all data in local memory","It converts all data to CSV format first"],
+ correct:1, exp:"Slide 79 explanation: lakeFS's branch/commit/merge model sits atop existing object storage — branching is a metadata operation, not a data copy."},
+{q:"What does ACID stand for in the context of Delta Lake (slide 80)?",
+ choices:["Aggregation, Cleansing, Integration, Deployment","Atomicity, Consistency, Isolation, Durability","Access, Control, Identity, Data","Analytics, Compliance, Ingestion, Documentation"],
+ correct:1, exp:"Slide 80 Research Context: ACID = Atomicity, Consistency, Isolation, Durability — the same guarantees relational databases have offered for decades."},
+{q:"Per slide 82's Research Context, why is field-level (column-level) lineage considered the 'gold standard' compared to table-level lineage?",
+ choices:["It's cheaper to implement","It can answer exactly which upstream source feeds a specific column/number, not just that one table feeds another","It doesn't require a metadata repository","It only works for streaming data"],
+ correct:1, exp:"Slide 82: field-level lineage answers precise questions like 'which upstream source feeds this exact number', unlike coarser table-level lineage."},
+{q:"How many components does the Lineage Tracker (slide 85) collect references from?",
+ choices:["Three: Data, Code, Model","Four: Data, Code, Infra, Container","Six: Infrastructure as Code, Data, Implementation Code, Model Feature List, Model Algorithm Code, Model Container Image","Eight, including Cloud Billing and Network Logs"],
+ correct:2, exp:"Slide 85 lists exactly six components feeding the Lineage Tracker."},
+{q:"What is the Model Context Protocol (MCP), as described in slide 14's Research Context?",
+ choices:["A database indexing algorithm","Anthropic's open standard (Nov 2024) letting AI systems connect to external tools/data via one common protocol ('USB for AI')","A Gartner-specific data integration certification","A file format for storing ML model weights"],
+ correct:1, exp:"Slide 14 Research Context: MCP is Anthropic's open standard released November 2024, solving the M×N integration problem — described as 'USB for AI'."},
+{q:"Per slide 89's Research Context, what real-world example illustrates the danger of not being able to explain/trust training data?",
+ choices:["The 2016 dbt Labs founding","Zillow's 2021 shutdown of 'Zillow Offers' after its Zestimate pricing model overvalued homes","The 2020 launch of DataHub at LinkedIn","The release of Delta Lake by Databricks"],
+ correct:1, exp:"Slide 89 Research Context cites Zillow's 2021 'Zillow Offers' shutdown as a cautionary tale about training-data trust and lineage."},
+{q:"According to slide 89's Research Context, what was the fundamental root cause of the Knight Capital trading glitch (Aug 1, 2012)?",
+ choices:["A database schema migration error","A lack of traceability over which exact code version was running on each of its production servers (1 of 8 servers ran outdated logic)","A GDPR compliance violation","An incorrect Gartner Magic Quadrant rating"],
+ correct:1, exp:"Slide 89: a deployment updated 7 of 8 servers; the 8th silently ran defunct legacy logic — a lack of traceability over which code version ran where, causing ~$440-460M in losses."},
+];
+
+// ---- Flashcards (32) — term/question front, explanation back, all from source facts ----
+const FLASHCARDS = [
+{front:"ETL", back:"Extract, Transform, Load — data is cleaned/transformed BEFORE being loaded into the destination warehouse (slide 6). Dominated 1970s-2000s due to expensive on-prem compute."},
+{front:"ELT", back:"Extract, Load, Transform — raw data is loaded into the warehouse FIRST, then transformed inside it using the warehouse's own compute (slide 6). Rose in the 2010s with cheap cloud warehouses; enabled tools like dbt."},
+{front:"Data Ingestion vs. Data Integration", back:"Ingestion = moving raw data into storage (Extract+Load only). Integration = ingestion PLUS transformation to merge/clean/aggregate data into a trustworthy, analysis-ready form (slides 7-8). Every integration pipeline contains ingestion, but not vice versa."},
+{front:"Change Data Capture (CDC)", back:"Capturing only the ROWS THAT CHANGED in a source database (via transaction logs) instead of re-reading the whole table — backbone of near-real-time integration (slide 12)."},
+{front:"Medallion Architecture", back:"A lakehouse data design pattern that incrementally improves data quality across layers: Bronze (raw, as-is) → Silver (cleansed/conformed) → Gold (business-ready aggregates), sometimes + Platinum (AI/ML-enhanced). Also called 'multi-hop' (slide 29)."},
+{front:"Bronze Layer", back:"Raw data landed exactly 'as-is' from source systems, plus load metadata. Focus: quick CDC, historical archive, lineage, auditability (slide 30)."},
+{front:"Silver Layer", back:"Bronze data matched/merged/conformed/cleansed 'just enough' to provide an 'Enterprise view' of key business entities (e.g. one master customer table) (slide 30)."},
+{front:"Gold Layer", back:"Consumption-ready, de-normalized, project-specific data for reporting/BI/ML — e.g. Customer Analytics, Product Recommendations (slide 31)."},
+{front:"dbt (data build tool)", back:"An ELT transformation framework created in 2016 by Fishtown Analytics (later dbt Labs); embraces ELT and is credited with popularizing the 'Analytics Engineer' role (slide 32)."},
+{front:"dbt layers: Landing → Staging → Intermediate → Marts", back:"Landing = raw copy (=Bronze). Staging (stg_*) = light cleaning, 1:1 with source, no joins (=Bronze). Intermediate (int_*) = business logic, aggregations, joins (=Silver). Marts (dim_*/fact_*) = final dimensional model, no new logic (=Gold) (slides 34-38)."},
+{front:"Model Contracts", back:"Formal agreements about a table's shape (columns/types) placed at layer boundaries (e.g. Landing→Staging, Marts→consumers) to prevent breaking changes from silently rippling through a pipeline (slide 33)."},
+{front:"Reverse ETL", back:"The practice of pushing clean, transformed warehouse data BACK OUT into operational tools, like a CRM (slide 33)."},
+{front:"Platinum Layer", back:"A layer some organizations add beyond Gold, containing data/output further enhanced with AI/ML predictions (slide 38)."},
+{front:"7 Basic Transformation Types", back:"Cleaning (fix dirty values), Standardization (consistent formats), Normalization (reduce redundancy - DB sense), Enrichment (add new info), Integration (merge sources), Aggregation (zoom out/summarize), Filtering/Selection (zoom in/narrow) (slide 18)."},
+{front:"Attribute Construction", back:"A complex transformation that builds a brand-new feature from existing ones — e.g. creating a 'Salary ROI' attribute from 'Money-Paid' and 'Products-Assembled' fields (slide 42). Overlaps with ML feature engineering."},
+{front:"Data Discretization", back:"Dividing continuous data into bins for analysis — e.g. turning specific ages into age-group buckets like 21-30, 31-40 (slide 42)."},
+{front:"Data Smoothing", back:"Eliminating anomalies/outliers using techniques like moving averages, producing a smoother curve with fewer spikes/dips — classic time-series preprocessing (slide 43)."},
+{front:"6-Step Data Transformation Process", back:"01 Discovery → 02 Mapping → 03 Transformation Logic Design → 04 Execution → 05 Validation & Testing → 06 Documentation & Monitoring (slide 19)."},
+{front:"Data Contract", back:"A producer-consumer agreement over a schema, distinguishing breaking vs non-breaking changes, often using versioned schemas — inspired by API contract-testing (slide 46)."},
+{front:"3 Levels of Testing", back:"Unit Tests (single transformation, e.g. dbt generic/singular tests) → Integration Tests (multiple transformations end-to-end) → Regression Tests (compare vs historical output to catch unintended changes) (slide 48)."},
+{front:"Shadow Deployment ('dark launch')", back:"Running new transformation/fraud-detection logic silently alongside production logic, logging/comparing outputs, but only using the old logic's results until confidence is established (slide 45)."},
+{front:"Conceptual / Logical / Physical Data Models", back:"Conceptual = business-language blueprint for Business Stakeholders. Logical = entities/attributes/relationships for Architects/Analysts. Physical = actual tables/types/indexes for DBAs/Developers (slide 52)."},
+{front:"DataHub", back:"A metadata platform/data catalog built at LinkedIn, open-sourced 2020 (successor to internal tool WhereHows, 2016); uses Kafka for stream-based metadata ingestion (slide 54)."},
+{front:"Amundsen", back:"A data discovery/metadata engine built at Lyft (introduced April 2019, open-sourced October 2019); uses Neo4j graph DB; like 'Google Search for your company's datasets' (slide 55)."},
+{front:"Semantic Versioning (SemVer) for data", back:"MAJOR.MINOR.PATCH format, e.g. 3.2.4: MAJOR=significant change, MINOR=new compatible features, PATCH=minor bug fixes (slide 64)."},
+{front:"Valid From/To Metadata Pattern", back:"Never overwrite a record — append a new row for each change and set the old row's valid_to timestamp. Enables point-in-time 'time travel' queries via valid_from/valid_to filters (slide 68)."},
+{front:"DVC (Data Version Control)", back:"Open-source, storage-agnostic ML version control that runs ON TOP of an existing Git repo; tracks code+data provenance, metrics, and failed attempts via a built-in DAG (slide 76). Lightest-weight of the ML versioning tools."},
+{front:"Pachyderm", back:"A complete version-controlled data science platform with transactional, centralized commits and full provenance/audit trails across the ML lifecycle — the most powerful/complex of the ML versioning tools (slide 75)."},
+{front:"lakeFS", back:"Open-source, Git-like branching/commit model sitting atop S3/GCS object storage, scaling to petabytes; ACID-compliant; branching is a cheap metadata operation (slide 79)."},
+{front:"Delta Lake", back:"Open-source storage layer bringing ACID transactions, schema enforcement, and versioned rollbacks/time-travel to data lakes; created by Databricks; anchors the modern 'lakehouse' category alongside Iceberg/Hudi (slide 80)."},
+{front:"ACID (Atomicity, Consistency, Isolation, Durability)", back:"The four transactional guarantees traditional databases provide, which Delta Lake brings to data lakes via a transaction log and optimistic concurrency control (slide 80)."},
+{front:"Data Lineage", back:"Understanding/visualizing data flows from source to current location, tracking every alteration on the way — lets you trace any final field back to its original source (slide 82). Built by every pipeline stage writing metadata into a shared repository (slide 83)."},
+{front:"6 Components of a Lineage Tracker", back:"Infrastructure as Code, Data, Implementation Code, Model Feature List, Model Algorithm Code, Model Container Image — all must be pinned to a version to fully reproduce a past ML result (slide 85)."},
+{front:"Model Context Protocol (MCP)", back:"Anthropic's open standard (Nov 2024) giving one client-server protocol so any AI system can connect to external tools/data uniformly — described as 'USB for AI', solving the M×N integration problem (slide 14)."},
+{front:"Data Fabric vs. Data Mesh", back:"Data Fabric = centralized, metadata-driven layer automating integration across silos. Data Mesh = decentralized ownership, with domain teams publishing 'data products' (slide 11)."},
+];
+
+/* =========================================================================
+   APPLICATION STATE (JS-only, no localStorage/sessionStorage)
+   ========================================================================= */
+const state = {
+  reviewed: new Set(),
+  view: 'study',
+  quiz: { order: [], idx: 0, score: 0, answered: false, finished:false },
+  cards: { order: FLASHCARDS.map((_,i)=>i), idx: 0, flipped:false, easy:0, good:0, hard:0, seen:new Set() },
+  checklist: new Set(),
+};
+
+/* =========================================================================
+   RENDER: Sidebar
+   ========================================================================= */
+function renderSidebar(filter){
+  const nav = document.getElementById('navList');
+  nav.innerHTML = '';
+  filter = (filter||'').toLowerCase();
+  TOPICS.forEach(topic=>{
+    const slidesInTopic = SLIDES.filter(s=>s.n>=topic.range[0] && s.n<=topic.range[1]);
+    const matches = !filter || topic.title.toLowerCase().includes(filter) ||
+      slidesInTopic.some(s => s.h.toLowerCase().includes(filter) || (s.d&&s.d.toLowerCase().includes(filter)) || (s.c&&s.c.toLowerCase().includes(filter)));
+    const li = document.createElement('li');
+    li.className = 'nav-topic' + (matches ? '' : ' nav-hidden');
+    const reviewedCount = slidesInTopic.filter(s=>state.reviewed.has(s.n)).length;
+    li.innerHTML = `<button class="nav-topic-btn" data-topic="${topic.id}">
+        <span>${topic.icon}</span><span>${topic.title}</span>
+        <span class="nav-badge">${reviewedCount}/${slidesInTopic.length}</span>
+      </button>`;
+    nav.appendChild(li);
+  });
+}
+
+document.getElementById('searchBox').addEventListener('input', e=>renderSidebar(e.target.value));
+
+document.getElementById('navList').addEventListener('click', e=>{
+  const btn = e.target.closest('.nav-topic-btn');
+  if(!btn) return;
+  goToView('study');
+  const el = document.getElementById('topic-'+btn.dataset.topic);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  document.querySelectorAll('.nav-topic-btn').forEach(b=>b.classList.remove('current'));
+  btn.classList.add('current');
+  if(window.innerWidth<=880) document.getElementById('sidebar').classList.remove('open');
+});
+
+/* =========================================================================
+   RENDER: Study mode
+   ========================================================================= */
+function calloutHtml(cls, icon, label, bodyHtml){
+  return `<div class="callout ${cls}"><div class="callout-title">${icon} ${label}</div>${bodyHtml}</div>`;
+}
+function wrapText(t){ return `<p>${t}</p>`; }
+
+function slideBlockHtml(s){
+  let body = '';
+  if(s.d) body += calloutHtml('def','📘','Definition / Extracted Content', wrapText(s.d));
+  if(s.tb){
+    let rows = s.tb.r.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('');
+    let head = '<tr>'+s.tb.h.map(h=>`<th>${h}</th>`).join('')+'</tr>';
+    body += `<table><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+  }
+  if(s.m){
+    body += `<div class="mermaid-wrap"><pre class="mermaid">${s.m}</pre></div>`;
+  }
+  if(s.c) body += calloutHtml('ctx','💡','Explained / Classroom Context', wrapText(s.c));
+  if(s.w) body += calloutHtml('warn','⚠️','Common Misconception / Challenge', wrapText(s.w));
+  if(s.t) body += calloutHtml('tip','⭐','Exam Tip', wrapText(s.t));
+  if(s.r) body += calloutHtml('rc','🔬','Research Context', wrapText(s.r));
+  if(s.ins) body += calloutHtml('ins','🎓','Instructor Note — from the class recording', wrapText(s.ins));
+  if(s.s && s.s.length){
+    body += '<div class="src-list"><b>Sources:</b><br>' + s.s.map(x=>`<a href="${x[1]}" target="_blank" rel="noopener">${x[0]}</a>`).join('<br>') + '</div>';
+  }
+  return `<div class="slide-block${state.reviewed.has(s.n)?' reviewed':''}" id="slide-${s.n}" data-n="${s.n}">
+      <div class="slide-block-head">
+        <span class="slide-num">#${s.n}</span>
+        <h3>${s.h}</h3>
+        <button class="review-toggle${state.reviewed.has(s.n)?' done':''}" data-n="${s.n}" title="Mark reviewed">✓</button>
+      </div>
+      ${s.sub?`<p class="slide-sub">${s.sub}</p>`:''}
+      <div class="slide-block-body">${body}</div>
+    </div>`;
+}
+
+function renderStudy(){
+  const root = document.getElementById('studyRoot');
+  let html = '';
+  TOPICS.forEach(topic=>{
+    const slidesInTopic = SLIDES.filter(s=>s.n>=topic.range[0] && s.n<=topic.range[1]);
+    const reviewedCount = slidesInTopic.filter(s=>state.reviewed.has(s.n)).length;
+    html += `<div class="topic-heading" id="topic-${topic.id}"><span class="topic-icon">${topic.icon}</span><h2>${topic.title}</h2><span class="topic-progress">${reviewedCount}/${slidesInTopic.length} reviewed</span></div>`;
+    html += `<div class="topic-article">` + slidesInTopic.map(slideBlockHtml).join('') + `</div>`;
+  });
+  root.innerHTML = html;
+  try{ mermaid.run({querySelector:'.mermaid'}); }catch(e){}
+  renderMath(root);
+}
+
+document.getElementById('studyRoot').addEventListener('click', e=>{
+  const toggle = e.target.closest('.review-toggle');
+  if(!toggle) return;
+  const n = Number(toggle.dataset.n);
+  if(state.reviewed.has(n)){ state.reviewed.delete(n); } else { state.reviewed.add(n); }
+  toggle.classList.toggle('done', state.reviewed.has(n));
+  toggle.closest('.slide-block').classList.toggle('reviewed', state.reviewed.has(n));
+  const topicHeading = toggle.closest('.topic-article').previousElementSibling;
+  const topicId = topicHeading.id.replace('topic-','');
+  const topic = TOPICS.find(t=>t.id===topicId);
+  const slidesInTopic = SLIDES.filter(s=>s.n>=topic.range[0] && s.n<=topic.range[1]);
+  const reviewedCount = slidesInTopic.filter(s=>state.reviewed.has(s.n)).length;
+  topicHeading.querySelector('.topic-progress').textContent = `${reviewedCount}/${slidesInTopic.length} reviewed`;
+  updateProgress();
+  renderSidebar(document.getElementById('searchBox').value);
+});
+
+function updateProgress(){
+  const pct = Math.round((state.reviewed.size / SLIDES.length) * 100);
+  document.getElementById('progressBarInner').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct + '% reviewed';
+}
+
+/* =========================================================================
+   RENDER: Quiz mode
+   ========================================================================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function startQuiz(){
+  state.quiz.order = shuffle(QUIZ.map((_,i)=>i));
+  state.quiz.idx = 0; state.quiz.score = 0; state.quiz.answered = false; state.quiz.finished = false;
+  renderQuiz();
+}
+
+function renderQuiz(){
+  const root = document.getElementById('quizRoot');
+  if(state.quiz.order.length === 0){ startQuiz(); return; }
+  if(state.quiz.finished){
+    const pct = Math.round((state.quiz.score / QUIZ.length)*100);
+    root.innerHTML = `<div class="quiz-card quiz-result">
+        <div style="font-size:2.4rem;">${pct>=80?'🏆':pct>=50?'👍':'📚'}</div>
+        <h2>Quiz Complete</h2>
+        <div class="big-score">${state.quiz.score} / ${QUIZ.length}</div>
+        <p style="color:var(--text-dim)">${pct}% correct</p>
+        <div class="quiz-actions" style="justify-content:center;">
+          <button class="btn" id="retryQuiz">🔁 Try Again</button>
+        </div>
+      </div>`;
+    document.getElementById('retryQuiz').addEventListener('click', startQuiz);
+    return;
+  }
+  const qIndex = state.quiz.order[state.quiz.idx];
+  const q = QUIZ[qIndex];
+  root.innerHTML = `
+    <div class="quiz-top">
+      <span class="quiz-score">Score: ${state.quiz.score}</span>
+      <span class="quiz-progress-text">Question ${state.quiz.idx+1} of ${QUIZ.length}</span>
+    </div>
+    <div class="quiz-card">
+      <div class="quiz-q">${q.q}</div>
+      <div id="choicesWrap"></div>
+      <div class="quiz-explain" id="quizExplain">${q.exp}</div>
+      <div class="quiz-actions" id="quizActions"></div>
+    </div>`;
+  const choicesWrap = document.getElementById('choicesWrap');
+  q.choices.forEach((choice, i)=>{
+    const b = document.createElement('button');
+    b.className = 'quiz-choice';
+    b.textContent = choice;
+    b.dataset.i = i;
+    b.addEventListener('click', ()=>answerQuiz(i));
+    choicesWrap.appendChild(b);
+  });
+}
+
+function answerQuiz(i){
+  if(state.quiz.answered) return;
+  state.quiz.answered = true;
+  const qIndex = state.quiz.order[state.quiz.idx];
+  const q = QUIZ[qIndex];
+  const correct = q.correct;
+  document.querySelectorAll('.quiz-choice').forEach(btn=>{
+    btn.disabled = true;
+    const bi = Number(btn.dataset.i);
+    if(bi === correct) btn.classList.add('correct');
+    else if(bi === i) btn.classList.add('incorrect');
+  });
+  if(i === correct) state.quiz.score++;
+  document.getElementById('quizExplain').classList.add('show');
+  const actions = document.getElementById('quizActions');
+  const nextLabel = (state.quiz.idx === QUIZ.length-1) ? 'See Results →' : 'Next Question →';
+  actions.innerHTML = `<button class="btn" id="nextQ">${nextLabel}</button>`;
+  document.getElementById('nextQ').addEventListener('click', ()=>{
+    if(state.quiz.idx === QUIZ.length-1){ state.quiz.finished = true; }
+    else { state.quiz.idx++; state.quiz.answered = false; }
+    renderQuiz();
+  });
+}
+
+/* =========================================================================
+   RENDER: Flashcards mode
+   ========================================================================= */
+function renderCards(){
+  const root = document.getElementById('cardsRoot');
+  const total = state.cards.order.length;
+  const cardIndex = state.cards.order[state.cards.idx];
+  const card = FLASHCARDS[cardIndex];
+  root.innerHTML = `
+    <div class="cards-top" style="width:100%;justify-content:center;gap:20px;">
+      <span style="font-size:0.85rem;color:var(--text-dim)">Card ${state.cards.idx+1} of ${total}</span>
+      <button class="btn secondary" id="shuffleCards">🔀 Shuffle</button>
+    </div>
+    <div class="flip-scene">
+      <div class="flip-card ${state.cards.flipped?'flipped':''}" id="flipCard">
+        <div class="flip-face flip-front">
+          <div class="kicker">Term / Question</div>
+          <div class="content">${card.front}</div>
+          <div class="flip-hint">Click card to flip</div>
+        </div>
+        <div class="flip-face flip-back">
+          <div class="kicker">Explanation</div>
+          <div class="content">${card.back}</div>
+        </div>
+      </div>
+    </div>
+    <div class="rate-row" id="rateRow" style="display:${state.cards.flipped?'flex':'none'}">
+      <button class="rate-btn rate-hard" data-r="hard">😖 Hard</button>
+      <button class="rate-btn rate-good" data-r="good">🙂 Good</button>
+      <button class="rate-btn rate-easy" data-r="easy">😄 Easy</button>
+    </div>
+    <div class="cards-controls">
+      <button class="btn secondary" id="prevCard">← Prev</button>
+      <button class="btn secondary" id="nextCard">Next →</button>
+    </div>
+    <div class="deck-stats">
+      <span>Easy: <b>${state.cards.easy}</b></span>
+      <span>Good: <b>${state.cards.good}</b></span>
+      <span>Hard: <b>${state.cards.hard}</b></span>
+      <span>Seen: <b>${state.cards.seen.size}</b>/${FLASHCARDS.length}</span>
+    </div>`;
+  document.getElementById('flipCard').addEventListener('click', ()=>{
+    state.cards.flipped = !state.cards.flipped;
+    document.getElementById('flipCard').classList.toggle('flipped');
+    document.getElementById('rateRow').style.display = state.cards.flipped ? 'flex' : 'none';
+    state.cards.seen.add(cardIndex);
+  });
+  document.getElementById('shuffleCards').addEventListener('click', ()=>{
+    state.cards.order = shuffle(state.cards.order);
+    state.cards.idx = 0; state.cards.flipped = false;
+    renderCards();
+  });
+  document.getElementById('prevCard').addEventListener('click', ()=>{
+    state.cards.idx = (state.cards.idx - 1 + total) % total;
+    state.cards.flipped = false;
+    renderCards();
+  });
+  document.getElementById('nextCard').addEventListener('click', ()=>{
+    state.cards.idx = (state.cards.idx + 1) % total;
+    state.cards.flipped = false;
+    renderCards();
+  });
+  root.querySelectorAll('.rate-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state.cards[btn.dataset.r]++;
+      state.cards.idx = (state.cards.idx + 1) % total;
+      state.cards.flipped = false;
+      renderCards();
+    });
+  });
+}
+
+/* =========================================================================
+   RENDER: Reference tab (Glossary + Checklist)
+   ========================================================================= */
+function renderGlossary(){
+  const body = document.getElementById('glossaryBody');
+  body.innerHTML = GLOSSARY.map(g=>`<tr><td><b>${g[0]}</b></td><td>${g[1]}</td><td>${g[2]}</td></tr>`).join('');
+}
+
+function renderChecklist(){
+  const root = document.getElementById('checklistRoot');
+  root.innerHTML = CHECKLIST.map((item,i)=>`
+    <label class="checklist-item ${state.checklist.has(i)?'checked':''}" data-i="${i}">
+      <input type="checkbox" ${state.checklist.has(i)?'checked':''}>
+      <span>${item}</span>
+    </label>`).join('');
+  updateChecklistProgress();
+  root.querySelectorAll('.checklist-item').forEach(el=>{
+    el.addEventListener('click', ev=>{
+      ev.preventDefault();
+      const i = Number(el.dataset.i);
+      if(state.checklist.has(i)) state.checklist.delete(i); else state.checklist.add(i);
+      el.classList.toggle('checked');
+      el.querySelector('input').checked = state.checklist.has(i);
+      updateChecklistProgress();
+    });
+  });
+}
+function updateChecklistProgress(){
+  document.getElementById('checklistProgress').textContent =
+    `${state.checklist.size} / ${CHECKLIST.length} skills checked off`;
+}
+
+/* =========================================================================
+   Math rendering (KaTeX auto-render) — safe no-op if no math present
+   ========================================================================= */
+function renderMath(container){
+  try{
+    if(window.renderMathInElement){
+      renderMathInElement(container, {
+        delimiters:[
+          {left:'$$', right:'$$', display:true},
+          {left:'$', right:'$', display:false}
+        ],
+        throwOnError:false
+      });
+    }
+  }catch(e){}
+}
+
+/* =========================================================================
+   Tabs / navigation / theme / mobile menu
+   ========================================================================= */
+function goToView(view){
+  state.view = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  if(view==='quiz' && state.quiz.order.length===0) startQuiz();
+  if(view==='cards') renderCards();
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>goToView(btn.dataset.view));
+});
+
+document.getElementById('themeToggle').addEventListener('click', ()=>{
+  const root = document.documentElement;
+  const current = root.getAttribute('data-theme');
+  const isDark = current === 'dark' || (!current && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
+  try{
+    mermaid.initialize({...MERMAID_BASE, theme:'base', themeVariables: isDark ? {
+      primaryColor:'#eaeef3', primaryTextColor:'#181c22', primaryBorderColor:'#1e3a5f',
+      lineColor:'#5c6370', secondaryColor:'#f7f1e1', tertiaryColor:'#f3f3f0'
+    } : {
+      primaryColor:'#1d2b3f', primaryTextColor:'#e6e6e2', primaryBorderColor:'#a9c2e8',
+      lineColor:'#9a9fac', secondaryColor:'#241d10', tertiaryColor:'#181b22'
+    }});
+    mermaid.run({querySelector:'.mermaid'});
+  }catch(e){}
+});
+
+document.getElementById('menuToggle').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+const MERMAID_BASE = {startOnLoad:false, securityLevel:'loose', fontFamily:'Inter, sans-serif'};
+mermaid.initialize({...MERMAID_BASE, theme:'base', themeVariables:{
+  primaryColor:'#eaeef3', primaryTextColor:'#181c22', primaryBorderColor:'#1e3a5f',
+  lineColor:'#5c6370', secondaryColor:'#f7f1e1', tertiaryColor:'#f3f3f0'
+}});
+renderSidebar('');
+renderStudy();
+renderGlossary();
+renderChecklist();
+updateProgress();
+</script>
+</body>
+</html>
