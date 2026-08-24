@@ -1,0 +1,1313 @@
+<title>Feature Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#F3F6F5;
+  --surface:#FFFFFF;
+  --surface-2:#E8EEEC;
+  --surface-3:#DEE7E4;
+  --border:#CBD6D2;
+  --text:#152220;
+  --text-muted:#546661;
+  --text-faint:#849691;
+  --accent:#0E7C74;
+  --accent-strong:#0A5A54;
+  --accent-soft:#DCEEEB;
+  --amber:#9A600B;
+  --amber-soft:#F3E4CB;
+  --green:#2E8B4F;
+  --green-soft:#DEF0E2;
+  --red:#B23A2E;
+  --red-soft:#F6E0DC;
+  --shadow: 0 1px 2px rgba(15,30,28,0.06), 0 8px 24px rgba(15,30,28,0.06);
+  --radius: 10px;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1412;
+    --surface:#121C19;
+    --surface-2:#182420;
+    --surface-3:#213029;
+    --border:#2B3B35;
+    --text:#E7EEEC;
+    --text-muted:#93A5A0;
+    --text-faint:#5F7570;
+    --accent:#4FD8C4;
+    --accent-strong:#7CE6D6;
+    --accent-soft:#173430;
+    --amber:#E3A857;
+    --amber-soft:#33280F;
+    --green:#79D19B;
+    --green-soft:#163627;
+    --red:#E8776A;
+    --red-soft:#341F1B;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.45);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1412;
+  --surface:#121C19;
+  --surface-2:#182420;
+  --surface-3:#213029;
+  --border:#2B3B35;
+  --text:#E7EEEC;
+  --text-muted:#93A5A0;
+  --text-faint:#5F7570;
+  --accent:#4FD8C4;
+  --accent-strong:#7CE6D6;
+  --accent-soft:#173430;
+  --amber:#E3A857;
+  --amber-soft:#33280F;
+  --green:#79D19B;
+  --green-soft:#163627;
+  --red:#E8776A;
+  --red-soft:#341F1B;
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.45);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-mono);font-weight:600;text-wrap:balance;margin:0;color:var(--text);}
+p{margin:0 0 0.9em 0;max-width:66ch;color:var(--text);}
+a{color:var(--accent-strong);}
+::selection{background:var(--accent-soft);}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+.tabular{font-variant-numeric:tabular-nums;}
+code{font-family:var(--font-mono);font-size:0.92em;background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}
+}
+
+/* ============ APP SHELL ============ */
+.app{display:grid;grid-template-columns:272px 1fr;grid-template-rows:auto 1fr;min-height:100vh;}
+.topbar{
+  grid-column:1 / -1;
+  display:flex;align-items:center;gap:20px;
+  padding:12px 22px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:40;
+}
+.topbar .brand{display:flex;align-items:center;gap:10px;flex:0 0 auto;}
+.brand-mark{
+  width:30px;height:30px;border-radius:7px;
+  background:var(--accent);color:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;font-size:14px;
+  flex-shrink:0;
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.1;}
+.brand-text strong{font-family:var(--font-mono);font-size:14px;letter-spacing:0.01em;}
+.brand-text span{font-size:11px;color:var(--text-muted);font-family:var(--font-mono);}
+
+/* DAG progress strip */
+.dagstrip{display:flex;align-items:center;gap:3px;overflow-x:auto;flex:1 1 auto;padding:4px 0;}
+.dagstrip .node{
+  flex:1 1 0;min-width:16px;height:8px;border-radius:4px;
+  background:var(--surface-3);position:relative;cursor:pointer;border:none;padding:0;
+  transition:background 160ms ease;
+}
+.dagstrip .node[data-state="active"]{background:var(--accent);}
+.dagstrip .node[data-state="visited"]{background:var(--accent-soft);}
+.dagstrip .node:hover{background:var(--accent);}
+.dagstrip::-webkit-scrollbar{height:0;}
+.progress-label{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);white-space:nowrap;flex:0 0 auto;}
+.theme-toggle{
+  display:flex;align-items:center;gap:6px;flex:0 0 auto;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.03em;text-transform:uppercase;
+  padding:6px 11px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text-muted);cursor:pointer;
+}
+.theme-toggle:hover{background:var(--surface-3);color:var(--text);}
+.theme-icon{font-size:13px;line-height:1;}
+
+/* ============ SIDEBAR ============ */
+.sidebar{
+  border-right:1px solid var(--border);
+  background:var(--surface);
+  padding:18px 12px 60px;
+  overflow-y:auto;
+  position:sticky;top:57px;
+  height:calc(100vh - 57px);
+}
+.taskgroup{margin-bottom:6px;}
+.taskgroup-head{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:none;border:none;text-align:left;cursor:pointer;
+  padding:8px 10px;border-radius:8px;color:var(--text-muted);
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;
+}
+.taskgroup-head:hover{background:var(--surface-2);color:var(--text);}
+.taskgroup-head .caret{transition:transform 160ms ease;font-size:10px;}
+.taskgroup.collapsed .caret{transform:rotate(-90deg);}
+.taskgroup.collapsed .taskgroup-body{display:none;}
+.taskgroup-body{display:flex;flex-direction:column;gap:1px;padding:2px 0 8px 8px;}
+.navlink{
+  display:flex;align-items:baseline;gap:8px;
+  padding:7px 10px;border-radius:7px;color:var(--text);
+  text-decoration:none;font-size:13.5px;border-left:2px solid transparent;
+}
+.navlink:hover{background:var(--surface-2);}
+.navlink.active{background:var(--accent-soft);border-left-color:var(--accent);color:var(--accent-strong);font-weight:600;}
+.navlink .dot{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);}
+
+/* ============ MAIN ============ */
+main{padding:0;overflow-x:hidden;min-width:0;}
+.module{
+  padding:56px clamp(20px,5vw,64px) 40px;
+  border-bottom:1px solid var(--border);
+  scroll-margin-top:64px;
+}
+.module:last-of-type{border-bottom:none;}
+.module-head{max-width:76ch;margin-bottom:28px;}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--accent-strong);margin-bottom:10px;
+}
+.eyebrow .idx{
+  background:var(--accent-soft);color:var(--accent-strong);
+  padding:1px 7px;border-radius:5px;font-weight:700;
+}
+h2.title{font-size:clamp(24px,3vw,32px);letter-spacing:-0.01em;}
+.dek{color:var(--text-muted);font-size:16px;margin-top:8px;max-width:64ch;}
+
+.block{max-width:76ch;margin-bottom:26px;}
+.block h3{font-size:16.5px;margin-bottom:8px;color:var(--text);}
+.block h4{font-size:14px;font-family:var(--font-sans);font-weight:600;margin-bottom:6px;}
+
+.grid{display:grid;gap:16px;}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:880px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
+}
+.card h4{display:flex;align-items:center;gap:8px;}
+.card p:last-child{margin-bottom:0;}
+.card.compact{padding:14px 16px;}
+
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.03em;
+  padding:3px 9px;border-radius:20px;border:1px solid var(--border);
+  color:var(--text-muted);background:var(--surface-2);
+}
+.pill.good{color:var(--green);background:var(--green-soft);border-color:transparent;}
+.pill.bad{color:var(--red);background:var(--red-soft);border-color:transparent;}
+.pill.warn{color:var(--amber);background:var(--amber-soft);border-color:transparent;}
+.pill.accent{color:var(--accent-strong);background:var(--accent-soft);border-color:transparent;}
+
+/* field note aside */
+.fieldnote{
+  border-left:3px solid var(--accent);
+  background:var(--surface-2);
+  border-radius:0 8px 8px 0;
+  padding:14px 18px;margin:18px 0;max-width:72ch;
+}
+.fieldnote .fn-label{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--accent-strong);margin-bottom:6px;display:block;
+}
+.fieldnote p{margin:0;font-size:14.5px;color:var(--text);max-width:none;}
+.fieldnote p + p{margin-top:8px;}
+
+/* comparison table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:16px 0;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+thead th{
+  font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;
+  color:var(--text-muted);background:var(--surface-2);position:sticky;top:0;white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+td.hl{color:var(--accent-strong);font-weight:600;}
+
+/* diagrams */
+figure.diagram{margin:18px 0;max-width:100%;}
+figure.diagram svg{max-width:100%;height:auto;display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+figure.diagram figcaption{font-size:13px;color:var(--text-muted);margin-top:8px;max-width:66ch;}
+.diagram-row{display:flex;gap:18px;flex-wrap:wrap;}
+.diagram-row figure{flex:1 1 260px;}
+svg text{font-family:var(--font-mono);fill:currentColor;}
+
+/* formula block */
+.formula{
+  font-family:var(--font-mono);font-size:15px;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;
+  max-width:60ch;color:var(--accent-strong);overflow-x:auto;white-space:nowrap;
+}
+
+/* hashing calc demo */
+.hashcalc{border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;background:var(--surface);max-width:520px;margin:18px 0;}
+.hashcalc-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.hashcalc-row input[type=range]{flex:1;accent-color:var(--accent);}
+.hashcalc-readout{font-family:var(--font-mono);font-size:13.5px;color:var(--text-muted);}
+.hashcalc-big{font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--accent-strong);}
+
+/* flashcards */
+.flash-controls{display:flex;gap:10px;align-items:center;margin-bottom:18px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);}
+.flash-controls button{
+  font-family:var(--font-sans);font-size:13px;padding:7px 14px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text);
+}
+.flash-controls button:hover{background:var(--surface-2);}
+.flash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.flashcard{
+  perspective:900px;height:150px;cursor:pointer;
+}
+.flashcard-inner{
+  position:relative;width:100%;height:100%;transition:transform 420ms cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;
+}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+.flashcard-face{
+  position:absolute;inset:0;border-radius:var(--radius);border:1px solid var(--border);
+  backface-visibility:hidden;padding:16px;display:flex;flex-direction:column;
+  background:var(--surface);box-shadow:var(--shadow);
+}
+.flashcard-face.back{transform:rotateY(180deg);background:var(--accent-soft);border-color:transparent;}
+.flashcard-face .term{font-family:var(--font-mono);font-weight:600;font-size:14.5px;margin-bottom:8px;color:var(--accent-strong);}
+.flashcard-face .hint{font-size:12px;color:var(--text-muted);margin-top:auto;}
+.flashcard-face .def{font-size:13.5px;line-height:1.45;overflow-y:auto;color:var(--text);}
+
+/* quiz */
+.quiz-card{max-width:64ch;}
+.quiz-progress{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+.quiz-q{font-size:16px;font-weight:600;margin-bottom:14px;font-family:var(--font-sans);}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.quiz-opt{
+  text-align:left;padding:11px 14px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;font-size:14px;color:var(--text);
+}
+.quiz-opt:hover{background:var(--surface-2);}
+.quiz-opt.correct{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600;}
+.quiz-opt.incorrect{background:var(--red-soft);border-color:var(--red);color:var(--red);font-weight:600;}
+.quiz-opt[disabled]{cursor:default;}
+.quiz-explain{font-size:13.5px;color:var(--text-muted);background:var(--surface-2);border-radius:8px;padding:12px 14px;margin-bottom:14px;display:none;}
+.quiz-explain.show{display:block;}
+.quiz-actions{display:flex;gap:10px;align-items:center;}
+.btn{
+  font-family:var(--font-mono);font-size:13px;font-weight:600;
+  padding:9px 18px;border-radius:8px;border:1px solid var(--accent);
+  background:var(--accent);color:var(--surface);cursor:pointer;
+}
+.btn:hover{background:var(--accent-strong);border-color:var(--accent-strong);}
+.btn.ghost{background:transparent;color:var(--accent-strong);}
+.quiz-score{font-family:var(--font-mono);font-size:14px;color:var(--text-muted);}
+.quiz-result{display:none;text-align:center;padding:24px 0;}
+.quiz-result.show{display:block;}
+.quiz-result .big{font-family:var(--font-mono);font-size:42px;font-weight:700;color:var(--accent-strong);}
+
+/* checklist */
+.checklist{display:flex;flex-direction:column;gap:2px;max-width:70ch;}
+.check-item{
+  display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
+}
+.check-item:hover{background:var(--surface-2);}
+.check-item input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;}
+.check-item span{font-size:14.5px;}
+.check-item.done span{color:var(--text-muted);text-decoration:line-through;}
+.check-summary{font-family:var(--font-mono);font-size:13px;color:var(--text-muted);margin-bottom:12px;}
+.check-bar{height:6px;border-radius:4px;background:var(--surface-3);overflow:hidden;margin-bottom:18px;max-width:70ch;}
+.check-bar-fill{height:100%;background:var(--accent);width:0%;transition:width 300ms ease;}
+
+footer{
+  padding:30px clamp(20px,5vw,64px) 50px;font-size:12.5px;color:var(--text-faint);
+  font-family:var(--font-mono);
+}
+footer a{color:var(--text-faint);}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);}
+  .taskgroup-body{padding-left:4px;}
+}
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">⚙</div>
+      <div class="brand-text">
+        <strong>Feature Lab</strong>
+        <span>DMML · Lecture 11</span>
+      </div>
+    </div>
+    <div class="dagstrip" id="dagstrip" role="img" aria-label="Study progress shown as a DAG run, one node per module"></div>
+    <span class="progress-label tabular" id="progressLabel">0/11 modules</span>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between light and dark theme">
+      <span class="theme-icon" aria-hidden="true">◐</span><span id="themeToggleLabel">theme</span>
+    </button>
+  </header>
+
+  <nav class="sidebar" id="sidebar" aria-label="Section navigation"></nav>
+
+  <main id="main">
+
+    <!-- 1 : INTRODUCTION -->
+    <section class="module" id="intro" data-title="Introduction">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">01</span> What are we even talking about</div>
+        <h2 class="title">Not every column is a feature</h2>
+        <p class="dek">Before you can engineer features, you need a precise, shared definition of what one actually is — and it's narrower than "a column in the table."</p>
+      </div>
+
+      <div class="block">
+        <h3>The running example: predicting rainfall</h3>
+        <p>A scientist logs 13 raw fields per reading: a RecordID, their own name, country, date, latitude, longitude, temperature, morning/evening, humidity, cloud coverage, an IP address, wind direction, atmospheric pressure. Only some of these help predict rainfall.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>date</th><th>lat</th><th>long</th><th>temp</th><th>humidity</th><th>cloud_coverage</th><th>wind_direction</th><th>atmp_pressure</th></tr></thead>
+          <tbody>
+            <tr><td>2021-09-09</td><td>49.71N</td><td>82.16W</td><td>74</td><td>20</td><td>3</td><td>N</td><td>18.6</td></tr>
+            <tr><td>2021-09-09</td><td>32.71N</td><td>117.16W</td><td>82</td><td>42</td><td>6</td><td>SW</td><td>29.94</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid grid-2">
+        <div class="card"><h4><span class="pill good">Kept</span></h4><p>Latitude, longitude, temperature, humidity, cloud coverage, wind direction, atmospheric pressure — each has a plausible causal link to rainfall.</p></div>
+        <div class="card"><h4><span class="pill bad">Dropped</span></h4><p>RecordID, scientist's name, IP address — pure metadata about how the row was logged, with no causal relationship to the weather itself.</p></div>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>Including identifier-like columns (primary keys, IP addresses) "as features" by mistake is a classic real-world pitfall — it doesn't just add noise, it can leak information that quietly inflates offline accuracy.</p>
+      </div>
+
+      <div class="block">
+        <h3>What is a feature, precisely</h3>
+        <p>A <strong>feature</strong> is an individual measurable property of a dataset that you've judged useful for the model's goal. Features are frequently <em>not</em> the raw data itself — they involve preprocessing. A trained model is a formula for combining feature definitions; features are the bridge connecting the model back to messy real-world data.</p>
+      </div>
+
+      <div class="block">
+        <h3>Definition vs. value — the distinction that matters most</h3>
+        <p>People conflate these constantly, so the deck draws the line twice, once numeric and once not:</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h4><span class="pill accent">Feature definition</span></h4>
+          <p>The code/recipe describing <em>what</em> to extract — not any specific instance. Example: <code>lat</code>, <code>long</code>, <code>temp</code> as column headers; or "source country, looked up from the customer's IP via a geolocation service."</p>
+        </div>
+        <div class="card">
+          <h4><span class="pill accent">Feature value</span></h4>
+          <p>One concrete output of applying that definition to a real record. Example: <code>49.71N</code>, <code>74</code>; or "The Dominican Republic", "India", "Russia" for three different customers.</p>
+        </div>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// why it matters</span>
+        <p>This split is the conceptual backbone of feature stores (Feast, Tecton, Databricks): definitions are versioned, reusable code; values are cached and served fast. Keeping them cleanly separated is what prevents <strong>training-serving skew</strong> — one of the most cited causes of silent model degradation.</p>
+      </div>
+
+      <div class="block">
+        <h3>The feature engineering pyramid</h3>
+        <p>Feature engineering is the umbrella; it decomposes into four sub-activities.</p>
+      </div>
+      <figure class="diagram">
+        <svg viewBox="0 0 620 190" role="img" aria-label="Feature Engineering splits into Feature Selection, Feature Transformation, Feature Creation, and Feature Extraction">
+          <defs><marker id="arrFE" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+          <g font-size="11.5" text-anchor="middle">
+            <rect x="230" y="14" width="160" height="38" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/><text x="310" y="38" fill="var(--accent-strong)" font-weight="600">Feature Engineering</text>
+            <rect x="10" y="120" width="135" height="46" rx="7" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="77" y="140">Feature</text><text x="77" y="154">Selection</text>
+            <rect x="165" y="120" width="135" height="46" rx="7" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="232" y="140">Feature</text><text x="232" y="154">Transformation</text>
+            <rect x="320" y="120" width="145" height="46" rx="7" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="392" y="134">Feature Creation</text><text x="392" y="149" font-size="9">(encoding, binning)</text>
+            <rect x="480" y="120" width="140" height="46" rx="7" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="550" y="134">Feature</text><text x="550" y="149" font-size="9">Extraction (auto in DL)</text>
+            <path d="M280,52 L90,118" stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrFE)"/>
+            <path d="M300,52 L240,118" stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrFE)"/>
+            <path d="M320,52 L400,118" stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrFE)"/>
+            <path d="M340,52 L545,118" stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrFE)"/>
+          </g>
+        </svg>
+        <figcaption>All four together are "feature engineering." Selection asks what to keep; transformation/creation reshape or invent columns; extraction compresses many features into fewer, information-dense ones (PCA, ICA, LDA) — mostly automated inside deep networks today.</figcaption>
+      </figure>
+      <div class="grid grid-2">
+        <div class="card"><h4>Selection</h4><p>Picking the subset of features that actually reduce a trained model's error — guided by feature-importance scores or a correlation matrix.</p></div>
+        <div class="card"><h4>Transformation &amp; imputation</h4><p>Fixing missing/invalid values; techniques include feature crosses and non-linear transforms like binning.</p></div>
+        <div class="card"><h4>Creation</h4><p>Making brand-new features from existing ones: one-hot encoding, binning, splitting, calculated fields.</p></div>
+        <div class="card"><h4>Extraction</h4><p>Dimensionality reduction — PCA, ICA, LDA — trading a huge feature set for a smaller one that keeps most of the signal.</p></div>
+      </div>
+
+      <div class="block">
+        <h3>Human-driven vs. algorithmic feature engineering</h3>
+        <p>Building and managing features has moved from an entirely manual process toward a mostly automated, then increasingly algorithmic one.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <h4><span class="pill">Human-driven</span></h4>
+          <p>Starts from domain intuition: understand the problem deeply, brainstorm candidate features, then use statistics/model metrics to keep the useful ones. Example: without knowing what "yarn" or "knitting needles" are, you'd never guess that needle size or season matters for a knitting retailer's purchase model. Humans can also imagine <em>new data to collect</em> — no algorithm can do that.</p>
+        </div>
+        <div class="card">
+          <h4><span class="pill">Algorithmic / automated</span></h4>
+          <p>AutoML applies transforms (log-scaling, thresholding) programmatically and searches combinations on its own. <strong>Embeddings</strong> let an algorithm learn a compact numeric fingerprint without being told what it means — "cat" → <code>[0.2, 0.8, 0.1]</code>, "dog" → <code>[0.3, 0.7, 0.1]</code>, close because they're used similarly. Limitation: algorithms only see data that already exists.</p>
+        </div>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>One cited industrial comparison: automated feature engineering generated 200+ candidate features in 20–30 minutes; a human expert produced only ~40 features but took about a month — and those 40 still won on accuracy, because domain understanding found signal an automated search couldn't discover on its own.</p>
+      </div>
+
+      <div class="block">
+        <h3>Embedding, worked by hand: king − man + woman</h3>
+        <p>A machine has no innate notion of "king" or "queen" — it only sees rotted, meaningless tokens until an embedding algorithm learns a dense vector for each word from how it's used. The textbook proof that the vectors actually capture meaning: take the vector for <code>king</code>, subtract <code>man</code>, add <code>woman</code> — the closest vector in the space to the result is <code>queen</code>. Nobody hand-specified that arithmetic; the algorithm learned it purely from context, and you never see the "formula" it used.</p>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// class example — why scanning has to be exhaustive</span>
+        <p>Searching "Sachin Tendulkar" across 1,000 documents mostly returns <em>cricket, god, legend, centuries</em> — but a 1,001st document calling him a <em>Rajya Sabha member</em> can't be dropped just because it's an outlier. Stop scanning early and your embedding/feature extraction is confidently wrong, not just incomplete.</p>
+        <p>The same table shows why <strong>context</strong> matters as much as coverage: "Taj Mahal" alone is ambiguous — restaurant, hotel, monument, or theatre — and only resolves to "monument" once you add context like "in Agra." This context-resolution step is <strong>semantic analysis</strong>, and skipping it silently returns the wrong feature value, not an error.</p>
+      </div>
+    </section>
+
+    <!-- 2 : FEATURE LIFE-CYCLE -->
+    <section class="module" id="lifecycle" data-title="Feature Life-Cycle">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">02</span> Birth to retirement</div>
+        <h2 class="title">A feature isn't a one-time artifact</h2>
+        <p class="dek">It's born, developed, evaluated, deployed and versioned, then eventually killed off — and skipping any stage is exactly how "feature debt" quietly piles up.</p>
+      </div>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 760 130" role="img" aria-label="Feature life cycle flow: Collection and Creation, Development, Evaluation, In-Production Use and Versioning, Retirement">
+          <defs><marker id="arrLC" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+          <g font-size="10.5" text-anchor="middle">
+            <rect x="6" y="40" width="132" height="48" rx="7" fill="none" stroke="var(--accent)" stroke-width="1.4"/><text x="72" y="60" fill="var(--accent-strong)">Collection /</text><text x="72" y="74" fill="var(--accent-strong)">Creation</text>
+            <rect x="164" y="40" width="132" height="48" rx="7" fill="none" stroke="var(--accent)" stroke-width="1.4"/><text x="230" y="68" fill="var(--accent-strong)">Development</text>
+            <rect x="322" y="40" width="132" height="48" rx="7" fill="none" stroke="var(--accent)" stroke-width="1.4"/><text x="388" y="68" fill="var(--accent-strong)">Evaluation</text>
+            <rect x="480" y="40" width="150" height="48" rx="7" fill="none" stroke="var(--accent)" stroke-width="1.4"/><text x="555" y="60" fill="var(--accent-strong)">In-Production /</text><text x="555" y="74" fill="var(--accent-strong)">Versioning</text>
+            <rect x="646" y="40" width="110" height="48" rx="7" fill="none" stroke="var(--red)" stroke-width="1.4"/><text x="701" y="68" fill="var(--red)">Retirement</text>
+            <line x1="138" y1="64" x2="162" y2="64" stroke="currentColor" stroke-width="1.3" marker-end="url(#arrLC)"/>
+            <line x1="296" y1="64" x2="320" y2="64" stroke="currentColor" stroke-width="1.3" marker-end="url(#arrLC)"/>
+            <line x1="454" y1="64" x2="478" y2="64" stroke="currentColor" stroke-width="1.3" marker-end="url(#arrLC)"/>
+            <line x1="630" y1="64" x2="644" y2="64" stroke="currentColor" stroke-width="1.3" marker-end="url(#arrLC)"/>
+          </g>
+        </svg>
+        <figcaption>Five stages. Skipping the last one is the least glamorous mistake and the most common: dead features quietly cost storage, compute, and confuse the next engineer.</figcaption>
+      </figure>
+
+      <div class="grid grid-2">
+        <div class="card"><h4>1 · Collection / Creation</h4><p>Coarse pre-processing before any clever feature work: drop malformed rows, normalize scale, purge data you're not permitted to use (consent withdrawal, regulation).</p></div>
+        <div class="card"><h4>2 · Development</h4><p>Form a hypothesis, then write extraction code. One-off use can compute inline; repeated training should materialize (store) the result. The same extraction code should ideally run at both training and serving time.</p></div>
+        <div class="card"><h4>3 · Evaluation</h4><p><em>Coarse-grained</em>: a go/no-go screen on whether to keep the feature at all. <em>Fine-grained</em>: ongoing monitoring of quality vs. cost, since a feature can go stale or stop earning its keep. (Named after milling grain thick vs. fine — broad-strokes screen first, small-detail tracking after.)</p></div>
+        <div class="card"><h4>4 · In-Production / Versioning</h4><p>Definitions still change (bug fixes, improvements) — versioned like software (v1, v2…), not edited in place, so old models keep their version while new ones opt in, with optional backfill.</p></div>
+      </div>
+      <div class="card" style="max-width:76ch;margin-top:16px;border-top:3px solid var(--red);">
+        <h4>5 · Retirement — the four-step teardown</h4>
+        <p>Every feature eventually dies: something better replaces it, or the world changes enough that it stops mattering. <span class="pill bad">1</span> remove serving code → <span class="pill bad">2</span> remove stored feature values → <span class="pill bad">3</span> stop the extraction job → <span class="pill bad">4</span> delete the feature code. Skip this and you accumulate "feature debt" — a specific case of the hidden technical debt famously documented in ML systems.</p>
+      </div>
+
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>Facebook's click-through-rate model: the top 10 features carried roughly <strong>half</strong> of total feature importance, while the last 300 combined contributed <strong>under 1%</strong> — the textbook case for why "fine-grained" evaluation has to be ongoing, not one-and-done.</p>
+        <p>GDPR's "right to erasure" is a very concrete reason a feature's stored values might need removing mid-production, not just at retirement — tracing and deleting every downstream value derived from one user's data is exactly what data lineage (next section) is for.</p>
+      </div>
+
+      <div class="block">
+        <h3>Worked example: candidate feature definition → evaluation</h3>
+        <p>You have raw latitude/longitude and want a <code>country</code> feature. <strong>Coarse-grained:</strong> first decide, do I even need country-level location at all? If yes, that's a go. <strong>Development:</strong> write the extraction code — this is reverse geocoding (lat/long → country name; the opposite of the usual geocoding direction, country name → coordinates). <strong>Fine-grained:</strong> once <code>country</code> is live and proven useful, the raw lat/long columns may no longer earn their keep and can be retired — exactly the four-step teardown above.</p>
+      </div>
+
+      <div class="fieldnote">
+        <span class="fn-label">// why "store, then delete" — not just "keep everything"</span>
+        <p>Think of a B.Tech transcript: every semester's marks are stored and actively used while the degree is in progress. Once the final degree — say, "B.Tech, First Class with Distinction" — is awarded, that becomes the new feature value people care about; individual semester marks stop mattering for, say, an MS admission. Storing keeps things fast, consistent, and reusable; deleting keeps things cheap, private, and free of stale junk. The same logic applies to updating a feature's <strong>version</strong> — e.g. re-running a "countries affected" feature after a new tsunami or earthquake event — old versions stay attached to the models trained on them rather than being silently overwritten.</p>
+        <p>Real governance example (not just GDPR): India's voter-ID "SIR" (Special Intensive Revision) drive exists because people who relocate end up holding two voter IDs — one feature value has to be revoked/merged, but only after the affected person's record is verified and re-uploaded, not deleted blindly. Same four-step discipline, higher stakes.</p>
+        <p>"Discontinue a feature definition" happens at the product level too: Zomato/Blinkit-style single-purpose apps and CRED's original "just pay your credit card bill" app each started narrow, then absorbed more and more user features (location, spend patterns, bill due-dates) until a single consolidated app (e.g. District) could retire the standalone ones — the features didn't disappear, they got folded into one definition set.</p>
+      </div>
+    </section>
+
+    <!-- 3 : DATA ANNOTATION -->
+    <section class="module" id="annotation" data-title="Data Annotation / Labelling">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">03</span> Where the answer key comes from</div>
+        <h2 class="title">Features vs. labels, and what to do without enough of the latter</h2>
+        <p class="dek">Almost every production ML system is supervised — which means someone had to attach correct answers to raw data before any model could learn a thing.</p>
+      </div>
+
+      <div class="block">
+        <h3>Feature vs. label, concretely</h3>
+        <p>Predicting house prices from size, bedrooms, bathrooms, and zip code: those four columns are the <strong>features</strong> (measurable, ideally independent inputs); sale price is the <strong>label</strong> (the dependent output the model predicts). Because every row already carries the correct answer, this is <strong>supervised</strong> learning.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card"><h4>Features</h4><p>Measurable, ideally independent of each other. Numerical (age), categorical (color), or text (reviews).</p></div>
+        <div class="card"><h4>Labels</h4><p>Dependent on the input features — the model's target. Categorical (spam / not spam) or numerical (price).</p></div>
+      </div>
+
+      <div class="block">
+        <h3>Why hand-labeling is painful</h3>
+      </div>
+      <div class="grid grid-3">
+        <div class="card"><h4><span class="pill bad">Expensive</span></h4><p>Cost scales with required expertise, not data volume — 20 crowdworkers trained in 15 minutes can label spam comments; a chest X-ray needs a board-certified radiologist.</p></div>
+        <div class="card"><h4><span class="pill bad">Private</span></h4><p>Labeling requires a human to <em>see</em> the data — often illegal or impossible for patient records or data that can't leave the organization.</p></div>
+        <div class="card"><h4><span class="pill bad">Slow</span></h4><p>Careful transcription can run ~400× the duration of the recording itself, delaying iteration and model adaptability.</p></div>
+      </div>
+
+      <div class="block">
+        <h3>Label multiplicity &amp; data lineage</h3>
+        <p><strong>Label multiplicity:</strong> three annotators tagging the same sentence for named entities produced 3, 6, and 4 entities respectively — all individually "reasonable," but contradictory as training data. Disagreement rises with required domain expertise. Fix: write the problem definition and rulebook <em>before</em> labeling starts, then train every annotator on it.</p>
+        <p><strong>Data lineage:</strong> tracking the origin (source, annotator, timestamp) of every sample and label. A model trained on 100K well-labeled rows got <em>worse</em> after adding 1M new crowdsourced rows — the new batch was labeled less accurately, and once mixed in, the bad rows couldn't be isolated and removed.</p>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>reCAPTCHA's "select all traffic lights" is itself a labeling mechanism — free, crowdsourced image annotation later reused to train computer-vision systems. And <strong>natural labels</strong> — generated automatically as a byproduct of normal use, like "clicked" vs. "no click in 10 minutes" for a recommender — need no annotator at all, but can be noisy: YouTube moved from optimizing pure clicks to watch time because click-only labels rewarded clickbait.</p>
+      </div>
+
+      <div class="block">
+        <h3>Handling the lack of labels: four levers</h3>
+        <p>None of these replace hand-labeling entirely — they're four different ways to squeeze more model performance out of a limited labeling budget, often combined.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card tool-card"><h4>Weak supervision</h4><p>Subject-matter experts encode heuristics as <strong>labeling functions</strong> (keyword match, regex, DB lookup). A generative label model (<strong>Snorkel</strong>) statistically combines/denoises conflicting votes — no ground truth required, though a small labeled sample helps validate the heuristics.</p></div>
+        <div class="card tool-card"><h4>Semi-supervision</h4><p>Leverages structural assumptions to expand a small <em>required</em> seed of real labels — self-training (label your own unlabeled data with high-confidence predictions), similarity-based, or perturbation-based consistency.</p></div>
+        <div class="card tool-card"><h4>Transfer learning</h4><p>Reuse a model pretrained on a cheap/abundant task (e.g. next-token prediction) for a new one. Zero-shot needs no labels; fine-tuning needs some, but far fewer than training from scratch — <strong>BERT</strong> fine-tuning is the canonical example.</p></div>
+        <div class="card tool-card"><h4>Active learning</h4><p>The model itself decides which unlabeled examples are most worth a human's time — via uncertainty sampling or query-by-committee. Tesla's Autopilot "data engine" pulls only uncertain/disengagement clips from fleet footage for labeling.</p></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>How</th><th>Ground truth required?</th></tr></thead>
+          <tbody>
+            <tr><td class="hl">Weak supervision</td><td>Leverages (often noisy) heuristics to generate labels</td><td>No — but a small sample helps guide heuristic development</td></tr>
+            <tr><td class="hl">Semi-supervision</td><td>Leverages structural assumptions to generate more labels</td><td>Yes — a small seed set to bootstrap from</td></tr>
+            <tr><td class="hl">Transfer learning</td><td>Leverages models pretrained on another task</td><td>No for zero-shot; yes (but much less) for fine-tuning</td></tr>
+            <tr><td class="hl">Active learning</td><td>Labels the samples most useful to the model</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>GPT-3 cost roughly $4.6M to pretrain from scratch — but fine-tuning that same pretrained model on a specific downstream task can cost under $100. That gap is the entire economic case for transfer learning.</p>
+      </div>
+    </section>
+
+    <!-- 4 : DATA AUGMENTATION -->
+    <section class="module" id="augmentation" data-title="Data Augmentation">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">04</span> Manufacturing more training data</div>
+        <h2 class="title">Grow the dataset without collecting anything new</h2>
+        <p class="dek">A family of techniques for creating extra, plausible training examples from data you already have — a scarcity workaround that's now also a standard robustness booster.</p>
+      </div>
+
+      <div class="block">
+        <h3>The "rewind" analogy</h3>
+        <p>Classic school-lab graphs — transistor characteristic curves, titration pH curves — are mostly flat, with one narrow, information-dense transition zone that needs dense sampling to characterize well. Real training data is often sparse exactly where it matters most: decision boundaries and rare cases. Augmentation fills in those missing, critical values instead of only reading off the few points you actually measured.</p>
+      </div>
+
+      <div class="block">
+        <h3>Three families of technique</h3>
+      </div>
+      <div class="grid grid-3">
+        <div class="card">
+          <h4>Label-preserving transforms</h4>
+          <p><strong>Vision:</strong> crop, flip, rotate, random erase — a rotated dog is still a dog.<br><strong>NLP:</strong> synonym swap, dialect substitution, intensity insertion — meaning-sensitive, so changes must stay small.</p>
+        </div>
+        <div class="card">
+          <h4>Perturbation</h4>
+          <p>Neural nets are surprisingly sensitive to imperceptible noise. <strong>FGSM</strong> generates adversarial noise cheaply via one gradient-sign step; <strong>DeepFool</strong> iteratively finds the <em>minimum</em> perturbation that crosses the decision boundary. Training on these patches weak spots and improves robustness.</p>
+        </div>
+        <div class="card">
+          <h4>Data synthesis</h4>
+          <p><strong>Templates:</strong> a sentence skeleton like <code>"Find me a [CUISINE] restaurant within [NUMBER] miles of [LOCATION]"</code>, cross-filled from value lists — near-zero-cost bulk generation. <strong>MixUp:</strong> blend two examples' pixels and labels together.</p>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>MixUp, worked</h3>
+      </div>
+      <div class="formula">x' = γ·x₁ + (1−γ)·x₂ &nbsp;&nbsp;&nbsp; label = γ·y₁ + (1−γ)·y₂</div>
+      <p style="max-width:70ch;">With x₁ = a dog image (label 0), x₂ = a cat image (label 1), and γ = 0.7: the blended image is 70% dog / 30% cat, and its label is <code>0.7×0 + 0.3×1 = 0.3</code> — "mostly dog, a bit of cat." Training on blends like this improves generalization, resists memorizing corrupted labels, and boosts adversarial robustness.</p>
+
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>Goodfellow, Shlens &amp; Szegedy's FGSM paper (ICLR 2015) argued neural nets' vulnerability to adversarial noise comes from surprisingly <em>linear</em> behavior in high-dimensional space — and showed adversarial training acts as a regularizer, which is precisely why it's used as an augmentation technique rather than only an attack.</p>
+      </div>
+    </section>
+
+    <!-- 5 : COMMON FE OPERATIONS -->
+    <section class="module" id="fe-ops" data-title="Common Feature Engineering Operations">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">05</span> The standard toolbox</div>
+        <h2 class="title">Missing values, scaling, binning, encoding, crossing</h2>
+        <p class="dek">Five recurring operations that libraries like scikit-learn now package as reusable pipeline steps instead of ad-hoc scripts.</p>
+      </div>
+
+      <div class="block">
+        <h3>Missing values: know <em>why</em> before you fix it</h3>
+      </div>
+      <div class="grid grid-3">
+        <div class="card"><h4>MNAR</h4><p><em>Missing Not At Random</em> — missingness depends on the hidden value itself. High earners deliberately omit income.</p></div>
+        <div class="card"><h4>MAR</h4><p><em>Missing At Random</em> — depends on another <em>observed</em> variable. Age missing specifically for Gender = A rows.</p></div>
+        <div class="card"><h4>MCAR</h4><p><em>Missing Completely At Random</em> — no pattern at all. Rare in practice; investigate before assuming it.</p></div>
+      </div>
+      <p style="max-width:74ch;">Row/column <strong>deletion</strong> is only safe under MCAR with few affected rows — under MAR/MNAR it silently removes a demographic or the extreme values that matter most. <strong>Imputation</strong> (mean/median/mode — ideally group-wise — or model-based KNN/iterative imputation) is usually safer, but watch for a classic pitfall: imputing "0" for missing children collides with a real 0. Fix with a companion binary "was-missing" indicator feature.</p>
+
+      <div class="block">
+        <h3>Scaling</h3>
+        <p>Gradient-based (linear/logistic regression, neural nets) and distance-based (k-NN, k-means, SVM) algorithms are sensitive to raw magnitude — an income feature spanning 10,000–150,000 can numerically dominate an age feature spanning 20–40, regardless of true predictive value. Tree-based models are largely scale-invariant.</p>
+      </div>
+      <div class="formula">z = (x − μ) / σ</div>
+      <p style="max-width:70ch;">StandardScaler's formula, where μ and σ are computed on the <em>training</em> set only, then frozen and reused at inference — recomputing them on new data is a documented source of training-serving skew.</p>
+
+      <div class="block">
+        <h3>Discretization / binning</h3>
+        <p>Converts a continuous feature into discrete buckets, so near-identical values are treated as equivalent. Its core weakness: boundary values — a cutoff like "&lt;1.5 → bucket 1, &gt;1.5 → bucket 2" has no principled answer for exactly 1.5, and a tiny change near the edge can flip the bucket entirely.</p>
+      </div>
+
+      <div class="block">
+        <h3>Encoding categorical features — the UNKNOWN problem</h3>
+        <p>Fixed, closed category sets encode safely. High-cardinality, growing sets break in production: Amazon had 2M+ brand IDs by 2019; a brand-new brand with no ID crashes the pipeline. Reserving one UNKNOWN ID stops the crash but the model never learned UNKNOWN behavior, so it recommends nothing useful. Lumping the bottom 1% of training brands into UNKNOWN also fails — brand-new luxury, established, and knockoff brands all land in the same bucket.</p>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// the fix — hashing trick</span>
+        <p>Run each category through a hash function; the hashed value becomes its index into a <em>fixed-size</em> space, decided in advance regardless of true vocabulary size. Any category — even one invented after training — deterministically lands somewhere valid. Popularized by Vowpal Wabbit; scikit-learn ships it as <code>FeatureHasher</code>.</p>
+      </div>
+      <div class="hashcalc">
+        <h4 style="margin-bottom:4px;">Try it: hash-space size</h4>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Drag the bit-width to see how many distinct hashed slots that space provides — the exact calculation behind the deck's 18-bit → 262,144 example.</p>
+        <div class="hashcalc-row">
+          <span class="hashcalc-readout"><span id="hashBitsLabel">18</span>-bit space</span>
+          <input type="range" id="hashBits" min="4" max="24" value="18" step="1">
+        </div>
+        <div class="hashcalc-big tabular">2<sup style="font-size:15px;">^<span id="hashBitsExp">18</span></sup> = <span id="hashBitsResult">262,144</span> slots</div>
+        <p style="font-size:12.5px;color:var(--text-muted);margin-top:8px;margin-bottom:0;">indices 0 – <span id="hashBitsMax" class="tabular">262,143</span></p>
+      </div>
+
+      <div class="block">
+        <h3>Feature crossing</h3>
+        <p>Combines two or more features into one joint feature, letting simple models capture non-linear interactions they can't learn on their own. Crossing marital status (3 values) with number of children (10 values) yields up to <strong>3 × 10 = 30</strong> combinations — cardinality that multiplies fast with more or higher-cardinality features. This is exactly the "wide" half of Google's <strong>Wide &amp; Deep</strong> architecture: crosses for memorization, a deep net alongside for generalization.</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card"><h4><span class="pill bad">Drawback</span> Space blow-up</h4><p>Cardinality multiplies across every crossed feature, echoing the same explosion problem as categorical vocabularies.</p></div>
+        <div class="card"><h4><span class="pill bad">Drawback</span> Overfitting risk</h4><p>More crossed features means more knobs to fit — including noise — especially with limited training data per combination.</p></div>
+      </div>
+    </section>
+
+    <!-- 6 : ENGINEERING GOOD FEATURES -->
+    <section class="module" id="good-features" data-title="Engineering Good Features">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">06</span> Which ones earn their keep</div>
+        <h2 class="title">More features isn't automatically better</h2>
+        <p class="dek">Once you have a pile of candidates, the real work is deciding which ones are worth keeping — worth their cost, and reliable in production.</p>
+      </div>
+
+      <div class="block">
+        <h3>The cost of too many features</h3>
+      </div>
+      <div class="grid grid-2">
+        <div class="card"><h4><span class="pill bad">Leakage &amp; overfitting</span></h4><p>Every added feature is a new chance to leak post-outcome information, or to let the model memorize noise instead of real signal.</p></div>
+        <div class="card"><h4><span class="pill bad">Cost &amp; debt</span></h4><p>More storage, more serving latency, and — per Google's "high-interest credit card" framing — ongoing maintenance debt for features that barely help.</p></div>
+      </div>
+
+      <div class="block">
+        <h3>Feature importance</h3>
+        <p>Measures how much a model's performance drops if a feature is removed. <strong>SHAP</strong> (Shapley-value game theory) gives both global and per-prediction importance; <strong>XGBoost</strong> produces gain/weight/cover scores as a training byproduct; <strong>InterpretML</strong> (Microsoft) wraps glassbox models and blackbox explainers alike.</p>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>Facebook's CTR prediction model (boosted trees + logistic regression, 2014): the <strong>top 10 features ≈ 50%</strong> of total importance; the <strong>last 300 features &lt; 1%</strong> combined. Most features in a large production model are nearly dead weight.</p>
+      </div>
+
+      <div class="block">
+        <h3>Feature generalization</h3>
+        <p><strong>Coverage</strong> = % of samples that have a value for the feature. <strong>Distribution overlap</strong> = whether the values seen in training match what serving will see. High coverage doesn't guarantee generalization:</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card"><h4><span class="pill bad">DAY_OF_WEEK</span></h4><p>100% coverage — but if a rolling 6-day training window spans Mon–Sat, "SUNDAY" never appears. Predicting on Sunday, the model has zero learned signal for that value.</p></div>
+        <div class="card"><h4><span class="pill good">HOUR_OF_DAY</span></h4><p>Every hour (0–23) recurs daily, so any 6-day window fully covers the value range seen at test time — 100% overlap, no mismatch.</p></div>
+      </div>
+
+      <div class="block">
+        <h3>Reuse, sharing, and knowing when a feature is worth it</h3>
+        <p><strong>"Log and wait"</strong>: instead of recomputing features from raw data for retraining, log the values the live serving system already computed, then join them with the outcome label once it arrives — saves compute and guarantees train/serve consistency. At the org level, many teams need similar features; without coordination, everyone reinvents the same "average order value." <strong>Feature stores</strong> exist precisely to make that computation a shared, discoverable asset — Uber's <strong>Michelangelo Palette</strong> is the flagship example.</p>
+        <p>Even a feature that measurably helps can still be rejected: <strong>A/B testing</strong> a candidate feature against a control on real traffic, weighed against a rough <strong>ROI</strong> calculation (ongoing collection/processing/storage/maintenance cost vs. value gained), decides whether it ships for good.</p>
+      </div>
+    </section>
+
+    <!-- 7 : FEATURE STORE -->
+    <section class="module" id="feature-store" data-title="Feature Store">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">07</span> The shared infrastructure layer</div>
+        <h2 class="title">Compute once, serve everywhere, stay consistent</h2>
+        <p class="dek">A feature store ingests data, computes features, and stores them so training pipelines and live production models get the same answer, every time.</p>
+      </div>
+
+      <div class="block">
+        <h3>Online vs. offline — a dual-database design</h3>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dimension</th><th>Online</th><th>Offline</th></tr></thead>
+          <tbody>
+            <tr><td class="hl">Latency</td><td>Milliseconds — low-latency point lookups</td><td>Seconds to minutes — high-throughput scans</td></tr>
+            <tr><td class="hl">Example tech</td><td>MySQL Cluster, Redis, Cassandra, DynamoDB</td><td>Hive, BigQuery, Parquet, Snowflake, S3</td></tr>
+            <tr><td class="hl">Use case</td><td>Real-time inference in production</td><td>Model training, historical analysis, governance</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block">
+        <h3>Five architecture components</h3>
+        <p>Every real feature store — Feast, Tecton, Hopsworks, SageMaker Feature Store — is doing the same five jobs.</p>
+      </div>
+      <figure class="diagram">
+        <svg viewBox="0 0 460 240" role="img" aria-label="Registry sits at the hub, with Transform, Storage, Serving, and Operational Monitoring around it">
+          <defs><marker id="arrFS" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+          <g font-size="11.5" text-anchor="middle">
+            <rect x="150" y="96" width="160" height="48" rx="8" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/><text x="230" y="124" fill="var(--accent-strong)" font-weight="600">Registry</text>
+            <rect x="20" y="14" width="140" height="42" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="90" y="40" font-size="10.5">Transform</text>
+            <rect x="300" y="14" width="140" height="42" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="370" y="40" font-size="10.5">Storage</text>
+            <rect x="20" y="184" width="140" height="42" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="90" y="210" font-size="10.5">Serving</text>
+            <rect x="300" y="184" width="140" height="42" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="370" y="203" font-size="9.5">Operational</text><text x="370" y="215" font-size="9.5">Monitoring</text>
+            <line x1="160" y1="45" x2="200" y2="98" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#arrFS)"/>
+            <line x1="300" y1="45" x2="260" y2="98" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#arrFS)"/>
+            <line x1="160" y1="192" x2="200" y2="142" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#arrFS)"/>
+            <line x1="300" y1="192" x2="260" y2="142" stroke="var(--accent)" stroke-width="1.2" marker-end="url(#arrFS)"/>
+          </g>
+        </svg>
+        <figcaption>The Registry is the single source of truth other components read their configuration from — a hub-and-spoke design, not a mesh.</figcaption>
+      </figure>
+      <div class="grid grid-2">
+        <div class="card"><h4>Transform</h4><p>Orchestrates the jobs (Spark, Pandas) that turn raw stream/batch data into fresh feature values, configured by definitions held in the Registry.</p></div>
+        <div class="card"><h4>Storage</h4><p>Persists features in two layers — an online key-value store and an offline data lake — so both millisecond lookups and bulk historical scans are served from one pipeline.</p></div>
+        <div class="card"><h4>Serving</h4><p>Delivers point-in-time-correct views for training via SDKs, and a single fresh feature vector via a low-latency API for production.</p></div>
+        <div class="card"><h4>Registry</h4><p>The centralized catalog of standardized feature definitions and metadata — how teams discover, develop, and publish features.</p></div>
+      </div>
+      <div class="card compact" style="max-width:76ch;margin-top:14px;">
+        <h4>Operational Monitoring</h4>
+        <p>Tracks storage (availability, staleness, capacity) and serving (latency, throughput, error rate) health — positioned to catch problems early, since most production ML failures are data problems, not model problems.</p>
+      </div>
+
+      <div class="block">
+        <h3>Training-serving skew</h3>
+        <p>Occurs when the feature computation used in training doesn't exactly match what production serving computes — the model doesn't crash, it just silently degrades, and if corrupted serving data later gets reused for retraining, the error compounds across generations before anyone notices.</p>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// the fix</span>
+        <p><strong>Point-in-time correctness ("time-travel") joins</strong>: every training example's features are joined using values timestamped strictly at-or-before that example's event time, preventing future-data leakage and guaranteeing offline and online views compute identically. Skipping this can inflate offline evaluation metrics by 5–20% AUC while real online performance collapses.</p>
+      </div>
+    </section>
+
+    <!-- 8 : FEATURE GOVERNANCE -->
+    <section class="module" id="governance" data-title="Feature Governance">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">08</span> Keeping order at scale</div>
+        <h2 class="title">Rules, roles, and a lifecycle for every feature</h2>
+        <p class="dek">As feature stores become mission-critical, ad-hoc management breaks down into duplication, lost lineage, and compliance risk — governance is the rulebook that prevents it.</p>
+      </div>
+
+      <div class="block">
+        <h3>Five core principles</h3>
+      </div>
+      <div class="grid grid-3">
+        <div class="card"><h4><span class="pill accent">Discoverability</span></h4><p>Users can find existing features so they get reused, not rebuilt under a different name.</p></div>
+        <div class="card"><h4><span class="pill accent">Understandability</span></h4><p>Clear definitions and metadata let users judge a feature's suitability without reading its code.</p></div>
+        <div class="card"><h4><span class="pill accent">Trustworthiness</span></h4><p>Confidence in a feature's quality and lineage, backed by validation and monitoring.</p></div>
+        <div class="card"><h4><span class="pill accent">Accountability</span></h4><p>Every feature has a clearly assigned owner responsible for maintenance and eventual deprecation.</p></div>
+        <div class="card"><h4><span class="pill accent">Compliance</span></h4><p>Supports GDPR/CCPA-style regulation and internal data-usage policy, especially for personal data.</p></div>
+      </div>
+
+      <div class="block">
+        <h3>Naming, ownership, and approval</h3>
+        <p>Good naming is systematic: <code>entity_featuregroup_aggregation_window</code>, e.g. <code>user_transaction_counts_7d</code> — instantly readable. Bad: ad-hoc names like <code>avgpurch</code> vs. <code>AvgPurchaseAmt</code> for the same concept. Every feature needs a designated <strong>owner</strong> recorded in the registry — not just a verbal understanding. New or changed features move through a Git-PR-style workflow: propose → review (business value, technical soundness, compliance) → approve → implement &amp; test → deploy via CI/CD, usually to staging first.</p>
+      </div>
+
+      <div class="block">
+        <h3>Feature lifecycle stages</h3>
+      </div>
+      <figure class="diagram">
+        <svg viewBox="0 0 760 110" role="img" aria-label="Feature lifecycle: Experimental, Staging, Production, Deprecated, Retired">
+          <defs><marker id="arrGV" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+          <g font-size="10.5" text-anchor="middle">
+            <rect x="6" y="30" width="138" height="42" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="75" y="55">Experimental</text>
+            <rect x="168" y="30" width="120" height="42" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="228" y="55">Staging</text>
+            <rect x="312" y="30" width="140" height="42" rx="7" fill="none" stroke="var(--accent)" stroke-width="1.5"/><text x="382" y="55" fill="var(--accent-strong)">Production</text>
+            <rect x="476" y="30" width="140" height="42" rx="7" fill="none" stroke="var(--amber)" stroke-width="1.4"/><text x="546" y="55" fill="var(--amber)">Deprecated</text>
+            <rect x="640" y="30" width="112" height="42" rx="7" fill="none" stroke="var(--red)" stroke-width="1.4"/><text x="696" y="55" fill="var(--red)">Retired</text>
+            <line x1="144" y1="51" x2="166" y2="51" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrGV)"/>
+            <line x1="288" y1="51" x2="310" y2="51" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrGV)"/>
+            <line x1="452" y1="51" x2="474" y2="51" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrGV)"/>
+            <line x1="616" y1="51" x2="638" y2="51" stroke="currentColor" stroke-width="1.2" marker-end="url(#arrGV)"/>
+          </g>
+        </svg>
+        <figcaption>Mirrors a standard software release progression, plus deprecation and retirement so historical governance stays intact.</figcaption>
+      </figure>
+
+      <div class="block">
+        <h3>Access control (RBAC) — cumulative tiers</h3>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tier</th><th>Grants</th></tr></thead>
+          <tbody>
+            <tr><td class="hl">CAN VIEW METADATA</td><td>Read/search the feature table and publish it to the online store — no changes.</td></tr>
+            <tr><td class="hl">CAN EDIT METADATA</td><td>Everything above, plus write feature values and update the table description.</td></tr>
+            <tr><td class="hl">CAN MANAGE</td><td>Everything above, plus modify permissions and delete the table entirely — owner-level power.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block">
+        <h3>Versioning — four independently-versioned things</h3>
+        <p>Needed for reproducibility, rollback, safe experimentation, auditing, and collaboration. <strong>1</strong> feature definitions (name, type, owner) · <strong>2</strong> transformation logic/code · <strong>3</strong> feature data (computed values tied to a point in time) · <strong>4</strong> feature-group schemas (the bundle's shape as members change).</p>
+      </div>
+
+      <div class="fieldnote">
+        <span class="fn-label">// implementing it practically — 5 moves</span>
+        <p><strong>Centralize</strong> owners/tags/status in the Registry · <strong>Infrastructure as Code</strong> — feature defs as YAML/Python in Git for peer review and CI/CD · <strong>Policy enforcement</strong> — automatic checks instead of relying on memory · <strong>RBAC</strong> — enforce who can define, modify, approve, consume · <strong>Start simple, iterate</strong> — naming and ownership first, sophistication later.</p>
+      </div>
+      <div class="fieldnote">
+        <span class="fn-label">// field note</span>
+        <p>Under GDPR/CCPA's "right to be forgotten," a deletion request may require erasing derived feature values tied to one person — hard, because models can memorize training data, spawning the research area of <strong>machine unlearning</strong>.</p>
+      </div>
+    </section>
+
+    <!-- 9 : FLASHCARDS -->
+    <section class="module" id="flashcards" data-title="Flashcards">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">09</span> Practice · recall</div>
+        <h2 class="title">Flashcards</h2>
+        <p class="dek">Click a card to flip it. Reset shuffles nothing — it just flips everything face-up again.</p>
+      </div>
+      <div class="flash-controls">
+        <button id="flashReset">Flip all back</button>
+        <span id="flashCount"></span>
+      </div>
+      <div class="flash-grid" id="flashGrid"></div>
+    </section>
+
+    <!-- 10 : QUIZ -->
+    <section class="module" id="quiz" data-title="Quiz">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">10</span> Practice · test</div>
+        <h2 class="title">Quick quiz</h2>
+        <p class="dek">Questions pulled from the topics this deck flags as frequently tested. Your best score is remembered on this device.</p>
+      </div>
+      <div class="card quiz-card" id="quizCard">
+        <div class="quiz-progress" id="quizProgress"></div>
+        <div class="quiz-q" id="quizQ"></div>
+        <div class="quiz-opts" id="quizOpts"></div>
+        <div class="quiz-explain" id="quizExplain"></div>
+        <div class="quiz-actions">
+          <button class="btn" id="quizNext">Next</button>
+          <span class="quiz-score tabular" id="quizScore"></span>
+        </div>
+        <div class="quiz-result" id="quizResult">
+          <div class="big tabular" id="quizFinalScore"></div>
+          <p id="quizFinalMsg" style="margin-top:6px;"></p>
+          <button class="btn ghost" id="quizRetake">Retake quiz</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 : CHECKLIST -->
+    <section class="module" id="checklist" data-title="Revision Checklist">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">11</span> Before the exam</div>
+        <h2 class="title">Revision checklist</h2>
+        <p class="dek">Checked items persist in this browser, so you can close the tab and pick up where you left off.</p>
+      </div>
+      <div class="check-summary tabular" id="checkSummary"></div>
+      <div class="check-bar"><div class="check-bar-fill" id="checkBarFill"></div></div>
+      <div class="checklist" id="checklistGrid"></div>
+    </section>
+
+    <footer>
+      <p>Built from "L11 · Feature Preparations" study notes (DMML, presenter Sunil Bhutada). Sources cited within the deck include AWS's Well-Architected ML Lens, Google's ML Design Patterns and Wide &amp; Deep paper, Chip Huyen's "Designing Machine Learning Systems," Snorkel AI, Featuretools, Uber's Michelangelo, Feast/Tecton/Hopsworks docs, and the DAMA-DMBOK governance framework.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- THEME TOGGLE ---------- */
+  var THEME_KEY = "feat_lab_theme";
+  var root = document.documentElement;
+  var themeBtn = document.getElementById("themeToggle");
+  var themeLabel = document.getElementById("themeToggleLabel");
+  var themeIcon = themeBtn.querySelector(".theme-icon");
+
+  function systemPrefersDark(){
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function getStoredTheme(){
+    try { return localStorage.getItem(THEME_KEY); } catch(e){ return null; }
+  }
+  function applyTheme(theme){
+    if(theme === "light" || theme === "dark"){
+      root.setAttribute("data-theme", theme);
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    var isDark = theme === "dark" || (theme !== "light" && systemPrefersDark());
+    themeIcon.textContent = isDark ? "☾" : "☀";
+    themeLabel.textContent = theme === "light" ? "light" : theme === "dark" ? "dark" : "auto";
+  }
+
+  var storedTheme = getStoredTheme();
+  applyTheme(storedTheme);
+
+  themeBtn.addEventListener("click", function(){
+    var current = getStoredTheme();
+    var isDarkNow = current === "dark" || (!current && systemPrefersDark());
+    var next = isDarkNow ? "light" : "dark";
+    try { localStorage.setItem(THEME_KEY, next); } catch(e){}
+    applyTheme(next);
+  });
+
+  /* ---------- NAV / TASKGROUPS ---------- */
+  var groups = [
+    { key:"g1", label:"introduction", items:[["intro","Introduction"]] },
+    { key:"g2", label:"life_cycle", items:[["lifecycle","Feature Life-Cycle"]] },
+    { key:"g3", label:"annotation", items:[["annotation","Data Annotation / Labelling"]] },
+    { key:"g4", label:"augmentation", items:[["augmentation","Data Augmentation"]] },
+    { key:"g5", label:"fe_operations", items:[["fe-ops","Common FE Operations"]] },
+    { key:"g6", label:"good_features", items:[["good-features","Engineering Good Features"]] },
+    { key:"g7", label:"feature_store", items:[["feature-store","Feature Store"]] },
+    { key:"g8", label:"governance", items:[["governance","Feature Governance"]] },
+    { key:"g9", label:"practice", items:[["flashcards","Flashcards"],["quiz","Quiz"],["checklist","Revision Checklist"]] }
+  ];
+
+  var sidebar = document.getElementById("sidebar");
+  groups.forEach(function(g){
+    var wrap = document.createElement("div");
+    wrap.className = "taskgroup";
+    var head = document.createElement("button");
+    head.className = "taskgroup-head";
+    head.innerHTML = '<span class="caret">▾</span><span>' + g.label + '</span>';
+    head.addEventListener("click", function(){ wrap.classList.toggle("collapsed"); });
+    var body = document.createElement("div");
+    body.className = "taskgroup-body";
+    g.items.forEach(function(item){
+      var a = document.createElement("a");
+      a.className = "navlink";
+      a.href = "#" + item[0];
+      a.dataset.target = item[0];
+      a.innerHTML = '<span class="dot">·</span>' + item[1];
+      body.appendChild(a);
+    });
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    sidebar.appendChild(wrap);
+  });
+
+  var navlinks = Array.prototype.slice.call(document.querySelectorAll(".navlink"));
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".module"));
+
+  /* ---------- DAG PROGRESS STRIP ---------- */
+  var strip = document.getElementById("dagstrip");
+  var progressLabel = document.getElementById("progressLabel");
+  var visited = {};
+  sections.forEach(function(sec){
+    var btn = document.createElement("button");
+    btn.className = "node";
+    btn.dataset.target = sec.id;
+    btn.title = sec.dataset.title;
+    btn.addEventListener("click", function(){
+      document.getElementById(sec.id).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    strip.appendChild(btn);
+  });
+  var stripNodes = Array.prototype.slice.call(strip.querySelectorAll(".node"));
+
+  function updateProgressLabel(){
+    var count = Object.keys(visited).length;
+    progressLabel.textContent = count + "/" + sections.length + " modules";
+  }
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var id = entry.target.id;
+      if(entry.isIntersecting){
+        visited[id] = true;
+        navlinks.forEach(function(l){ l.classList.toggle("active", l.dataset.target === id); });
+        stripNodes.forEach(function(n){
+          if(n.dataset.target === id) n.dataset.state = "active";
+          else if(visited[n.dataset.target]) n.dataset.state = "visited";
+        });
+        updateProgressLabel();
+      }
+    });
+  }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+
+  navlinks.forEach(function(l){
+    l.addEventListener("click", function(e){
+      e.preventDefault();
+      document.getElementById(l.dataset.target).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  });
+
+  /* ---------- HASHING TRICK CALCULATOR ---------- */
+  var hashBits = document.getElementById("hashBits");
+  var hashBitsLabel = document.getElementById("hashBitsLabel");
+  var hashBitsExp = document.getElementById("hashBitsExp");
+  var hashBitsResult = document.getElementById("hashBitsResult");
+  var hashBitsMax = document.getElementById("hashBitsMax");
+  function fmt(n){ return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  function paintHash(){
+    var bits = parseInt(hashBits.value, 10);
+    var size = Math.pow(2, bits);
+    hashBitsLabel.textContent = bits;
+    hashBitsExp.textContent = bits;
+    hashBitsResult.textContent = fmt(size);
+    hashBitsMax.textContent = fmt(size - 1);
+  }
+  hashBits.addEventListener("input", paintHash);
+  paintHash();
+
+  /* ---------- FLASHCARDS ---------- */
+  var terms = [
+    ["Feature","An individual measurable property of a dataset, judged useful for a model's goal — often requires preprocessing, not raw as-is."],
+    ["Feature definition","The reusable code/logic describing what to extract from data — not any specific instance of it."],
+    ["Feature value","One concrete output of applying a feature definition to a real record."],
+    ["Feature engineering","The umbrella process of selecting, transforming, creating, and extracting features for a model."],
+    ["Feature extraction","Dimensionality reduction (PCA, ICA, LDA) that compresses many features into fewer, information-dense ones."],
+    ["Embedding","A learned compact numeric fingerprint (e.g. for a word) with no human specifying what it means — similar items land close together. Classic proof: vector(king) − vector(man) + vector(woman) ≈ vector(queen)."],
+    ["Semantic analysis","Resolving a term's meaning from context (e.g. 'Taj Mahal' as monument vs. restaurant vs. hotel) — needed on top of raw embeddings, or you extract a confidently wrong feature value."],
+    ["Reverse geocoding","Deriving a place name (e.g. country) from coordinates — the opposite direction of geocoding (place name → coordinates); a classic candidate-feature-definition example."],
+    ["Feature debt","Accumulated dead, duplicate, or undocumented features from skipping life-cycle discipline."],
+    ["Training-serving skew","When feature computation differs between training and live serving, silently degrading accuracy."],
+    ["Coarse-grained evaluation","The initial go/no-go check on whether a candidate feature is worth integrating at all."],
+    ["Feature versioning","Tracking feature-definition changes (v1, v2…) so old models keep their version while new ones opt in."],
+    ["Label","The dependent output/answer a supervised model is trained to predict."],
+    ["Label multiplicity","When a data point validly deserves more than one label, causing annotator disagreement."],
+    ["Data lineage","A tracked record of a sample/label's origin, used to flag bias and debug quality regressions."],
+    ["Natural label","A label generated automatically from user behavior (e.g. a click), with no manual annotation."],
+    ["Weak supervision","Using heuristic labeling functions instead of hand labels; a label model statistically denoises their combined votes."],
+    ["Labeling function (LF)","A small heuristic (keyword, regex, lookup) used to weakly-supervise labels, e.g. in Snorkel."],
+    ["Semi-supervision","Bootstrapping more labels from a small required seed set, via self-training or structural assumptions."],
+    ["Self-training","A model labels unlabeled data with its own high-confidence predictions, then retrains on the expanded set."],
+    ["Transfer learning","Reusing a model pretrained on one task as the starting point for a new, related task."],
+    ["Fine-tuning","Continuing to train a pretrained model on a smaller downstream-task dataset."],
+    ["Zero-shot learning","Using a pretrained model directly on a new task with no additional training or labels."],
+    ["Active learning","The model selects which unlabeled examples are most worth human labeling — uncertainty sampling or query-by-committee."],
+    ["Data augmentation","Techniques to artificially expand or diversify training data without collecting new real data."],
+    ["Label-preserving transform","A modification (crop, flip, synonym swap) that keeps the original label valid."],
+    ["FGSM","Fast Gradient Sign Method — generates adversarial noise via one step along the gradient's sign."],
+    ["DeepFool","Iteratively finds the minimum perturbation needed to push a sample across a model's decision boundary."],
+    ["MixUp","Augmentation that linearly blends two examples' inputs and labels by a ratio γ."],
+    ["MNAR","Missing Not At Random — missingness depends on the hidden value itself (e.g. high earners hiding income)."],
+    ["MAR","Missing At Random — missingness depends on another observed variable, not the value itself."],
+    ["MCAR","Missing Completely At Random — no pattern to the missingness at all; rare in real data."],
+    ["StandardScaler formula","z = (x − μ) / σ, computed on training data only and reused (frozen) at inference."],
+    ["Discretization","Converting a continuous feature into discrete buckets; weak at arbitrary boundary cutoffs."],
+    ["Hashing trick","Mapping categories to indices via a hash function into a fixed-size space, so unseen categories still get a valid slot."],
+    ["Feature crossing","Combining two or more features into one to capture their joint, non-linear interaction."],
+    ["Wide & Deep","Google's architecture pairing a linear model (memorization via feature crosses) with a neural net (generalization)."],
+    ["Feature importance","How much a model's performance drops when a given feature is removed."],
+    ["SHAP","Shapley-value-based method giving both global feature importance and per-prediction local contributions."],
+    ["Coverage","Percentage of samples that have a value for a given feature."],
+    ["Distribution overlap","Whether the range of feature values seen in training matches the range seen at serving/test time."],
+    ["Log and wait","Reusing feature values already computed by live serving, joined later with the outcome label, instead of recomputing."],
+    ["Online feature store","Low-latency key-value store (Redis, Cassandra) serving the freshest feature values to live models."],
+    ["Offline feature store","Scale-out batch store (Hive, BigQuery, Parquet) providing historical features for training and governance."],
+    ["Point-in-time correctness","Joining training examples to feature values as they existed at that exact past moment, preventing future-data leakage."],
+    ["Feature store registry","The centralized, single-source-of-truth catalog of feature definitions and metadata."],
+    ["Operational monitoring (store)","Tracks storage and serving health metrics — availability, staleness, latency — to catch data problems early."],
+    ["Discoverability (governance)","Users can easily find existing features so they get reused instead of rebuilt."],
+    ["Accountability (governance)","Every feature has a clearly assigned owner responsible for its maintenance and retirement."],
+    ["Feature lifecycle stages","Experimental/Development → Staging → Production → Deprecated → Retired."],
+    ["CAN MANAGE (RBAC)","The highest feature-store access tier: full control including permission changes and deletion."],
+    ["Machine unlearning","The research area addressing GDPR/CCPA 'right to be forgotten' when a model has memorized training data."]
+  ];
+  var flashGrid = document.getElementById("flashGrid");
+  terms.forEach(function(t){
+    var card = document.createElement("div");
+    card.className = "flashcard";
+    card.innerHTML =
+      '<div class="flashcard-inner">' +
+        '<div class="flashcard-face front"><div class="term">' + t[0] + '</div><div class="hint">click to reveal</div></div>' +
+        '<div class="flashcard-face back"><div class="def">' + t[1] + '</div></div>' +
+      '</div>';
+    card.addEventListener("click", function(){ card.classList.toggle("flipped"); });
+    flashGrid.appendChild(card);
+  });
+  document.getElementById("flashCount").textContent = terms.length + " terms";
+  document.getElementById("flashReset").addEventListener("click", function(){
+    Array.prototype.slice.call(flashGrid.children).forEach(function(c){ c.classList.remove("flipped"); });
+  });
+
+  /* ---------- QUIZ ---------- */
+  var quizData = [
+    { q:"In the rainfall example, why are RecordID and IP Address excluded as features?", opts:["They are too hard to store","They have no plausible causal relationship to rainfall — they're metadata about logging, not the weather","They are non-numeric","They change too often"], correct:1, exp:"A feature must plausibly help predict the target. RecordID and IP Address describe the logging process, not the weather, and including them risks noise or leakage." },
+    { q:"What distinguishes a feature definition from a feature value?", opts:["A definition is the reusable code/recipe; a value is one concrete output of applying it to a record","They are the same thing","A value is always numeric; a definition is always text","A definition only exists in feature stores"], correct:0, exp:"The definition ('lat', or 'lookup source country from IP') is fixed and reusable; the value ('49.71N', 'India') changes per record." },
+    { q:"Which stage of the feature life-cycle involves a four-step teardown (remove serving code, remove stored values, stop the job, delete the code)?", opts:["Development","Evaluation","In-Production / Versioning","Retirement"], correct:3, exp:"Retirement is the deliberate, disciplined process of decommissioning a feature so it doesn't become silent 'feature debt'." },
+    { q:"In Facebook's CTR model, roughly what share of total feature importance came from the top 10 features?", opts:["About 10%","About 25%","About 50%","About 90%"], correct:2, exp:"The top 10 features carried roughly half of total importance, while the last 300 combined contributed under 1%." },
+    { q:"Which technique requires NO ground-truth labels at all (only recommends a small number for validation)?", opts:["Active learning","Semi-supervision","Weak supervision","Fine-tuning"], correct:2, exp:"Weak supervision relies on heuristic labeling functions rather than hand labels, though a few real labels help validate the heuristics." },
+    { q:"What is the key difference between weak supervision and semi-supervision?", opts:["Semi-supervision requires an initial set of real labeled data; weak supervision does not","Weak supervision needs more compute","They are identical techniques","Semi-supervision uses only unlabeled data"], correct:0, exp:"Semi-supervision bootstraps from a required labeled seed; weak supervision substitutes heuristics for real labels entirely." },
+    { q:"Tesla's Autopilot 'data engine,' which selectively pulls uncertain or disengagement clips for labeling, is a real-world example of which technique?", opts:["Transfer learning","Weak supervision","Active learning","Natural labels"], correct:2, exp:"Choosing which examples are most worth a human's labeling time is the core active-learning loop." },
+    { q:"In MixUp with x1 = DOG (label 0), x2 = CAT (label 1), and γ = 0.7, what is the resulting label of x'?", opts:["0.0","0.3","0.5","0.7"], correct:1, exp:"label = γ·y1 + (1−γ)·y2 = 0.7×0 + 0.3×1 = 0.3." },
+    { q:"Which technique finds the minimum perturbation needed to cause misclassification, as opposed to a single fast step?", opts:["FGSM","MixUp","DeepFool","Synonym replacement"], correct:2, exp:"DeepFool iteratively computes the smallest nudge across the nearest decision boundary; FGSM instead takes one fast gradient-sign step." },
+    { q:"A dataset shows Age is missing only for rows where Gender = 'A'. What type of missingness is this?", opts:["MCAR","MAR","MNAR","Not classifiable"], correct:1, exp:"Missingness correlates with an observed variable (Gender), not the hidden Age value itself — that's Missing At Random." },
+    { q:"Using an 18-bit hash space for the hashing trick, how many distinct hashed index values are possible?", opts:["18","18,000","131,072","262,144"], correct:3, exp:"2^18 = 262,144, indexed 0 to 262,143." },
+    { q:"If Marital status has 3 categories and Number of children has 10, how many combinations can the crossed feature produce?", opts:["13","30","100","3"], correct:1, exp:"Cross-product cardinality = 3 × 10 = 30." },
+    { q:"Why must StandardScaler's mean and standard deviation be computed only on training data, then reused unchanged on new data?", opts:["It's computationally faster","Recomputing on new data causes training-serving skew, breaking the model's learned assumptions","scikit-learn forbids recomputation","New data never has a valid mean"], correct:1, exp:"The model learned relationships assuming a fixed scaling; recomputing stats on production data yields inconsistent scaling." },
+    { q:"A feature has 100% coverage but still hurts model performance at test time. What is the most likely cause?", opts:["The feature is categorical","Training data's value range for that feature doesn't overlap with values seen at test time","The feature has too many missing values","The feature was not scaled"], correct:1, exp:"This is the DAY_OF_WEEK case: perfect coverage, but a Mon–Sat training window never saw 'SUNDAY,' so the model has no learned signal for it." },
+    { q:"What does the 'log and wait' practice primarily save an organization from doing?", opts:["Labeling training data manually","Building a feature store","Recomputing features from raw data during retraining that live serving already computed","Running A/B tests"], correct:2, exp:"It logs already-computed serving-time values and joins them with the later-arriving label, avoiding redundant computation and skew." },
+    { q:"What primarily causes training-serving skew?", opts:["Insufficient GPU compute","Feature definitions/values differing between training and production serving","Using Parquet instead of ORC","Too many features in the registry"], correct:1, exp:"Skew arises specifically when the feature computed during training doesn't exactly match what's delivered in production." },
+    { q:"Which feature-store component acts as the single source of truth that other components read their configuration from?", opts:["Serving","Registry","Operational Monitoring","Storage"], correct:1, exp:"The Registry is the central catalog of feature definitions and metadata everything else configures itself against." },
+    { q:"Which technique prevents future-data leakage when building training datasets from a feature store?", opts:["On-demand transform","Operational monitoring","Point-in-time ('time-travel') joins","Blob storage"], correct:2, exp:"Point-in-time joins restrict feature values to those timestamped at-or-before each training example's event time." },
+    { q:"Which principle of feature governance is primarily about preventing feature duplication across teams?", opts:["Compliance","Discoverability","Accountability","Versioning"], correct:1, exp:"Discoverability ensures users can find existing features before rebuilding the same thing under a different name." },
+    { q:"What is the correct order of the feature lifecycle stages?", opts:["Production → Staging → Experimental → Deprecated → Retired","Experimental/Development → Staging → Production → Deprecated → Retired","Staging → Experimental → Production → Retired → Deprecated","Experimental → Production → Staging → Retired → Deprecated"], correct:1, exp:"It mirrors a standard software release progression, plus deprecation and retirement for governed wind-down." },
+    { q:"In the feature-store RBAC tiers, which level is required to delete a feature table?", opts:["CAN VIEW METADATA","CAN EDIT METADATA","CAN MANAGE","Deletion is unrestricted"], correct:2, exp:"Only CAN MANAGE, the top cumulative tier, allows deleting a table or changing its permissions." },
+    { q:"Which research area addresses the difficulty of deleting a person's data after it has already influenced a trained model?", opts:["Infrastructure as Code","Machine unlearning","Role-Based Access Control","Schema validation"], correct:1, exp:"Machine unlearning addresses GDPR/CCPA 'right to be forgotten' requests when models have memorized training data." },
+    { q:"In the classic word-embedding example, vector(king) − vector(man) + vector(woman) is closest to which vector?", opts:["vector(prince)", "vector(queen)", "vector(throne)", "vector(crown)"], correct:1, exp:"This arithmetic is the standard proof that embeddings capture meaning purely from usage context, with no rule hand-written by a human." },
+    { q:"Deriving a country name from raw latitude/longitude coordinates is an example of which technique?", opts:["Geocoding", "Reverse geocoding", "Feature hashing", "Semantic analysis"], correct:1, exp:"Reverse geocoding goes from coordinates to a place name — the opposite direction of ordinary geocoding (place name to coordinates)." }
+  ];
+  var qIdx = 0, qScore = 0, qAnswered = false;
+  var quizProgress = document.getElementById("quizProgress");
+  var quizQ = document.getElementById("quizQ");
+  var quizOpts = document.getElementById("quizOpts");
+  var quizExplain = document.getElementById("quizExplain");
+  var quizNext = document.getElementById("quizNext");
+  var quizScore = document.getElementById("quizScore");
+  var quizCard = document.getElementById("quizCard");
+  var quizResult = document.getElementById("quizResult");
+
+  function bestScore(){
+    try { return parseInt(localStorage.getItem("feat_lab_best_score") || "0", 10); } catch(e){ return 0; }
+  }
+  function saveBest(score){
+    try { if(score > bestScore()) localStorage.setItem("feat_lab_best_score", String(score)); } catch(e){}
+  }
+
+  function renderQuestion(){
+    qAnswered = false;
+    var item = quizData[qIdx];
+    quizProgress.textContent = "Question " + (qIdx+1) + " / " + quizData.length;
+    quizQ.textContent = item.q;
+    quizOpts.innerHTML = "";
+    quizExplain.classList.remove("show");
+    quizExplain.textContent = "";
+    quizNext.textContent = (qIdx === quizData.length - 1) ? "Finish" : "Next";
+    item.opts.forEach(function(opt, i){
+      var b = document.createElement("button");
+      b.className = "quiz-opt";
+      b.textContent = opt;
+      b.addEventListener("click", function(){
+        if(qAnswered) return;
+        qAnswered = true;
+        var buttons = Array.prototype.slice.call(quizOpts.children);
+        buttons.forEach(function(bb, bi){
+          bb.setAttribute("disabled","true");
+          if(bi === item.correct) bb.classList.add("correct");
+          else if(bi === i) bb.classList.add("incorrect");
+        });
+        if(i === item.correct) qScore++;
+        quizExplain.textContent = item.exp;
+        quizExplain.classList.add("show");
+        quizScore.textContent = "score " + qScore + "/" + quizData.length;
+      });
+      quizOpts.appendChild(b);
+    });
+    quizScore.textContent = "score " + qScore + "/" + quizData.length;
+  }
+
+  quizNext.addEventListener("click", function(){
+    if(!qAnswered) return;
+    if(qIdx < quizData.length - 1){
+      qIdx++;
+      renderQuestion();
+    } else {
+      saveBest(qScore);
+      quizCard.querySelectorAll(".quiz-progress,.quiz-q,.quiz-opts,.quiz-explain,.quiz-actions").forEach(function(el){ el.style.display = "none"; });
+      document.getElementById("quizFinalScore").textContent = qScore + "/" + quizData.length;
+      var pct = Math.round((qScore/quizData.length)*100);
+      var msg = pct === 100 ? "Perfect run." : pct >= 75 ? "Solid — revisit the misses above." : "Worth another pass through the deck.";
+      document.getElementById("quizFinalMsg").textContent = msg + " Best on this device: " + Math.max(qScore, bestScore()) + "/" + quizData.length + ".";
+      quizResult.classList.add("show");
+    }
+  });
+  document.getElementById("quizRetake").addEventListener("click", function(){
+    qIdx = 0; qScore = 0;
+    quizResult.classList.remove("show");
+    quizCard.querySelectorAll(".quiz-progress,.quiz-q,.quiz-opts,.quiz-explain,.quiz-actions").forEach(function(el){ el.style.display = ""; });
+    renderQuestion();
+  });
+  renderQuestion();
+
+  /* ---------- CHECKLIST ---------- */
+  var checklistItems = [
+    "Can define feature vs. label, and feature definition vs. feature value",
+    "Can explain human-driven vs. algorithmic/automated feature engineering, with examples",
+    "Can walk through the king − man + woman = queen embedding example and explain why semantic analysis (e.g. the Taj Mahal example) still matters on top of it",
+    "Can name and describe the 4 parts of the feature engineering pyramid (selection, transformation, creation, extraction)",
+    "Can list and explain the 5 stages of the feature life-cycle",
+    "Can walk through the feature retirement 4-step checklist and why skipping it causes 'feature debt'",
+    "Can explain hand-labeling drawbacks: cost, privacy, slowness — with concrete examples",
+    "Can explain label multiplicity and how annotator disagreement is resolved",
+    "Can explain data lineage and why tracking data origin matters",
+    "Can explain natural labels with a recommender-system example",
+    "Can compare weak supervision, semi-supervision, transfer learning, and active learning (mechanism + ground-truth needs)",
+    "Can explain Snorkel labeling functions and how a label model combines noisy, conflicting LF outputs",
+    "Can explain the three data augmentation types: label-preserving transforms, perturbation, data synthesis",
+    "Can state and apply the MixUp formula with a worked numeric example",
+    "Can explain FGSM vs. DeepFool and why adversarial augmentation improves robustness",
+    "Can explain MNAR, MAR, MCAR and the appropriate remedy (deletion vs. imputation) for each",
+    "Can explain feature scaling (why, and the StandardScaler formula) and discretization's boundary-value weakness",
+    "Can explain the categorical-encoding UNKNOWN-bucket problem and the hashing-trick fix, including the bit-space math",
+    "Can explain feature crossing with a worked cardinality example and its drawbacks",
+    "Can explain feature importance methods (SHAP, XGBoost, InterpretML) and the Facebook CTR concentration numbers",
+    "Can explain feature generalization: coverage vs. distribution of values, with the taxi ETA example",
+    "Can explain feature reuse ('log and wait') and why feature stores exist",
+    "Can explain feature quality evaluation via A/B testing and ROI",
+    "Can explain online vs. offline feature stores, and the 5 feature-store architecture components",
+    "Can explain training-serving skew and point-in-time correctness / time-travel joins",
+    "Can explain the 5 principles of feature governance (Discoverability, Understandability, Trustworthiness, Accountability, Compliance)",
+    "Can explain feature lifecycle stages (Experimental → Retired) and the approval-workflow steps",
+    "Can explain the RBAC access tiers (CAN VIEW METADATA / CAN EDIT METADATA / CAN MANAGE)",
+    "Can explain feature versioning: why it's needed, and the four things that can each independently be versioned"
+  ];
+  var checklistGrid = document.getElementById("checklistGrid");
+  var checkSummary = document.getElementById("checkSummary");
+  var checkBarFill = document.getElementById("checkBarFill");
+  var STORE_KEY = "feat_lab_checklist_v1";
+
+  function loadChecks(){
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch(e){ return {}; }
+  }
+  function saveChecks(state){
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
+  }
+  var checkState = loadChecks();
+
+  function refreshSummary(){
+    var done = Object.keys(checkState).filter(function(k){ return checkState[k]; }).length;
+    checkSummary.textContent = done + " / " + checklistItems.length + " checked";
+    checkBarFill.style.width = Math.round((done/checklistItems.length)*100) + "%";
+  }
+
+  checklistItems.forEach(function(text, idx){
+    var id = "chk_" + idx;
+    var row = document.createElement("label");
+    row.className = "check-item" + (checkState[id] ? " done" : "");
+    row.innerHTML = '<input type="checkbox" id="' + id + '"' + (checkState[id] ? " checked" : "") + '><span>' + text + '</span>';
+    var input = row.querySelector("input");
+    input.addEventListener("change", function(){
+      checkState[id] = input.checked;
+      row.classList.toggle("done", input.checked);
+      saveChecks(checkState);
+      refreshSummary();
+    });
+    checklistGrid.appendChild(row);
+  });
+  refreshSummary();
+
+})();
+</script>
