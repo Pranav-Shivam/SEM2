@@ -1,0 +1,1526 @@
+<meta charset="utf-8">
+<title>Distributed Systems Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#F3F6F5;
+  --surface:#FFFFFF;
+  --surface-2:#E8EEEC;
+  --surface-3:#DEE7E4;
+  --border:#CBD6D2;
+  --text:#152220;
+  --text-muted:#546661;
+  --text-faint:#849691;
+  --accent:#0E7C74;
+  --accent-strong:#0A5A54;
+  --accent-soft:#DCEEEB;
+  --amber:#9A600B;
+  --amber-soft:#F3E4CB;
+  --green:#2E8B4F;
+  --green-soft:#DEF0E2;
+  --red:#B23A2E;
+  --red-soft:#F6E0DC;
+  --shadow: 0 1px 2px rgba(15,30,28,0.06), 0 8px 24px rgba(15,30,28,0.06);
+  --radius: 10px;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1412;
+    --surface:#121C19;
+    --surface-2:#182420;
+    --surface-3:#213029;
+    --border:#2B3B35;
+    --text:#E7EEEC;
+    --text-muted:#93A5A0;
+    --text-faint:#5F7570;
+    --accent:#4FD8C4;
+    --accent-strong:#7CE6D6;
+    --accent-soft:#173430;
+    --amber:#E3A857;
+    --amber-soft:#33280F;
+    --green:#79D19B;
+    --green-soft:#163627;
+    --red:#E8776A;
+    --red-soft:#341F1B;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.45);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1412;
+  --surface:#121C19;
+  --surface-2:#182420;
+  --surface-3:#213029;
+  --border:#2B3B35;
+  --text:#E7EEEC;
+  --text-muted:#93A5A0;
+  --text-faint:#5F7570;
+  --accent:#4FD8C4;
+  --accent-strong:#7CE6D6;
+  --accent-soft:#173430;
+  --amber:#E3A857;
+  --amber-soft:#33280F;
+  --green:#79D19B;
+  --green-soft:#163627;
+  --red:#E8776A;
+  --red-soft:#341F1B;
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.45);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-mono);font-weight:600;text-wrap:balance;margin:0;color:var(--text);}
+p{margin:0 0 0.9em 0;max-width:66ch;color:var(--text);}
+a{color:var(--accent-strong);}
+::selection{background:var(--accent-soft);}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+.tabular{font-variant-numeric:tabular-nums;}
+code{font-family:var(--font-mono);font-size:0.92em;background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}
+}
+
+/* ============ APP SHELL ============ */
+.app{display:grid;grid-template-columns:272px 1fr;grid-template-rows:auto 1fr;min-height:100vh;}
+.topbar{
+  grid-column:1 / -1;
+  display:flex;align-items:center;gap:20px;
+  padding:12px 22px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:40;
+}
+.topbar .brand{display:flex;align-items:center;gap:10px;flex:0 0 auto;}
+.brand-mark{
+  width:30px;height:30px;border-radius:7px;
+  background:var(--accent);color:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;font-size:14px;
+  flex-shrink:0;
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.1;}
+.brand-text strong{font-family:var(--font-mono);font-size:14px;letter-spacing:0.01em;}
+.brand-text span{font-size:11px;color:var(--text-muted);font-family:var(--font-mono);}
+
+/* DAG progress strip */
+.dagstrip{display:flex;align-items:center;gap:3px;overflow-x:auto;flex:1 1 auto;padding:4px 0;}
+.dagstrip .node{
+  flex:1 1 0;min-width:16px;height:8px;border-radius:4px;
+  background:var(--surface-3);position:relative;cursor:pointer;border:none;padding:0;
+  transition:background 160ms ease;
+}
+.dagstrip .node[data-state="active"]{background:var(--accent);}
+.dagstrip .node[data-state="visited"]{background:var(--accent-soft);}
+.dagstrip .node:hover{background:var(--accent);}
+.dagstrip::-webkit-scrollbar{height:0;}
+.progress-label{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);white-space:nowrap;flex:0 0 auto;}
+.theme-toggle{
+  display:flex;align-items:center;gap:6px;flex:0 0 auto;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.03em;text-transform:uppercase;
+  padding:6px 11px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text-muted);cursor:pointer;
+}
+.theme-toggle:hover{background:var(--surface-3);color:var(--text);}
+.theme-icon{font-size:13px;line-height:1;}
+
+/* ============ SIDEBAR ============ */
+.sidebar{
+  border-right:1px solid var(--border);
+  background:var(--surface);
+  padding:18px 12px 60px;
+  overflow-y:auto;
+  position:sticky;top:57px;
+  height:calc(100vh - 57px);
+}
+.taskgroup{margin-bottom:6px;}
+.taskgroup-head{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:none;border:none;text-align:left;cursor:pointer;
+  padding:8px 10px;border-radius:8px;color:var(--text-muted);
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;
+}
+.taskgroup-head:hover{background:var(--surface-2);color:var(--text);}
+.taskgroup-head .caret{transition:transform 160ms ease;font-size:10px;}
+.taskgroup.collapsed .caret{transform:rotate(-90deg);}
+.taskgroup.collapsed .taskgroup-body{display:none;}
+.taskgroup-body{display:flex;flex-direction:column;gap:1px;padding:2px 0 8px 8px;}
+.navlink{
+  display:flex;align-items:baseline;gap:8px;
+  padding:7px 10px;border-radius:7px;color:var(--text);
+  text-decoration:none;font-size:13.5px;border-left:2px solid transparent;
+}
+.navlink:hover{background:var(--surface-2);}
+.navlink.active{background:var(--accent-soft);border-left-color:var(--accent);color:var(--accent-strong);font-weight:600;}
+.navlink .dot{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);}
+
+/* ============ MAIN ============ */
+main{padding:0;overflow-x:hidden;min-width:0;}
+.module{
+  padding:56px clamp(20px,5vw,64px) 40px;
+  border-bottom:1px solid var(--border);
+  scroll-margin-top:64px;
+}
+.module:last-of-type{border-bottom:none;}
+.module-head{max-width:76ch;margin-bottom:28px;}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--accent-strong);margin-bottom:10px;
+}
+.eyebrow .idx{
+  background:var(--accent-soft);color:var(--accent-strong);
+  padding:1px 7px;border-radius:5px;font-weight:700;
+}
+h2.title{font-size:clamp(24px,3vw,32px);letter-spacing:-0.01em;}
+.dek{color:var(--text-muted);font-size:16px;margin-top:8px;max-width:64ch;}
+
+.block{max-width:76ch;margin-bottom:26px;}
+.block h3{font-size:16.5px;margin-bottom:8px;color:var(--text);}
+.block h4{font-size:14px;font-family:var(--font-sans);font-weight:600;margin-bottom:6px;}
+
+.grid{display:grid;gap:16px;}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:880px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
+}
+.card h4{display:flex;align-items:center;gap:8px;}
+.card p:last-child{margin-bottom:0;}
+.card.compact{padding:14px 16px;}
+
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.03em;
+  padding:3px 9px;border-radius:20px;border:1px solid var(--border);
+  color:var(--text-muted);background:var(--surface-2);
+}
+.pill.good{color:var(--green);background:var(--green-soft);border-color:transparent;}
+.pill.bad{color:var(--red);background:var(--red-soft);border-color:transparent;}
+.pill.warn{color:var(--amber);background:var(--amber-soft);border-color:transparent;}
+.pill.accent{color:var(--accent-strong);background:var(--accent-soft);border-color:transparent;}
+
+/* field note aside */
+.fieldnote{
+  border-left:3px solid var(--accent);
+  background:var(--surface-2);
+  border-radius:0 8px 8px 0;
+  padding:14px 18px;margin:18px 0;max-width:72ch;
+}
+.fieldnote .fn-label{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--accent-strong);margin-bottom:6px;display:block;
+}
+.fieldnote p{margin:0;font-size:14.5px;color:var(--text);max-width:none;}
+.fieldnote p + p{margin-top:8px;}
+
+/* comparison table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:16px 0;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+thead th{
+  font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;
+  color:var(--text-muted);background:var(--surface-2);position:sticky;top:0;white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+td.hl{color:var(--accent-strong);font-weight:600;}
+
+/* diagrams */
+figure.diagram{margin:18px 0;max-width:100%;}
+figure.diagram svg{max-width:100%;height:auto;display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+figure.diagram figcaption{font-size:13px;color:var(--text-muted);margin-top:8px;max-width:66ch;}
+.diagram-row{display:flex;gap:18px;flex-wrap:wrap;}
+.diagram-row figure{flex:1 1 260px;}
+svg text{font-family:var(--font-mono);fill:currentColor;}
+
+/* formula block */
+.formula{
+  font-family:var(--font-mono);font-size:15px;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;
+  max-width:60ch;color:var(--accent-strong);overflow-x:auto;white-space:nowrap;
+}
+
+/* flashcards */
+.flash-controls{display:flex;gap:10px;align-items:center;margin-bottom:18px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);}
+.flash-controls button{
+  font-family:var(--font-sans);font-size:13px;padding:7px 14px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text);
+}
+.flash-controls button:hover{background:var(--surface-2);}
+.flash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.flashcard{
+  perspective:900px;height:150px;cursor:pointer;
+}
+.flashcard-inner{
+  position:relative;width:100%;height:100%;transition:transform 420ms cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;
+}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+.flashcard-face{
+  position:absolute;inset:0;border-radius:var(--radius);border:1px solid var(--border);
+  backface-visibility:hidden;padding:16px;display:flex;flex-direction:column;
+  background:var(--surface);box-shadow:var(--shadow);
+}
+.flashcard-face.back{transform:rotateY(180deg);background:var(--accent-soft);border-color:transparent;}
+.flashcard-face .term{font-family:var(--font-mono);font-weight:600;font-size:14.5px;margin-bottom:8px;color:var(--accent-strong);}
+.flashcard-face .hint{font-size:12px;color:var(--text-muted);margin-top:auto;}
+.flashcard-face .def{font-size:13.5px;line-height:1.45;overflow-y:auto;color:var(--text);}
+
+/* quiz */
+.quiz-card{max-width:64ch;}
+.quiz-progress{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+.quiz-q{font-size:16px;font-weight:600;margin-bottom:14px;font-family:var(--font-sans);}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.quiz-opt{
+  text-align:left;padding:11px 14px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;font-size:14px;color:var(--text);
+}
+.quiz-opt:hover{background:var(--surface-2);}
+.quiz-opt.correct{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600;}
+.quiz-opt.incorrect{background:var(--red-soft);border-color:var(--red);color:var(--red);font-weight:600;}
+.quiz-opt[disabled]{cursor:default;}
+.quiz-explain{font-size:13.5px;color:var(--text-muted);background:var(--surface-2);border-radius:8px;padding:12px 14px;margin-bottom:14px;display:none;}
+.quiz-explain.show{display:block;}
+.quiz-actions{display:flex;gap:10px;align-items:center;}
+.btn{
+  font-family:var(--font-mono);font-size:13px;font-weight:600;
+  padding:9px 18px;border-radius:8px;border:1px solid var(--accent);
+  background:var(--accent);color:var(--surface);cursor:pointer;
+}
+.btn:hover{background:var(--accent-strong);border-color:var(--accent-strong);}
+.btn.ghost{background:transparent;color:var(--accent-strong);}
+.quiz-score{font-family:var(--font-mono);font-size:14px;color:var(--text-muted);}
+.quiz-result{display:none;text-align:center;padding:24px 0;}
+.quiz-result.show{display:block;}
+.quiz-result .big{font-family:var(--font-mono);font-size:42px;font-weight:700;color:var(--accent-strong);}
+
+/* checklist */
+.checklist{display:flex;flex-direction:column;gap:2px;max-width:70ch;}
+.check-item{
+  display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
+}
+.check-item:hover{background:var(--surface-2);}
+.check-item input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;}
+.check-item span{font-size:14.5px;}
+.check-item.done span{color:var(--text-muted);text-decoration:line-through;}
+.check-summary{font-family:var(--font-mono);font-size:13px;color:var(--text-muted);margin-bottom:12px;}
+.check-bar{height:6px;border-radius:4px;background:var(--surface-3);overflow:hidden;margin-bottom:18px;max-width:70ch;}
+.check-bar-fill{height:100%;background:var(--accent);width:0%;transition:width 300ms ease;}
+
+footer{
+  padding:30px clamp(20px,5vw,64px) 50px;font-size:12.5px;color:var(--text-faint);
+  font-family:var(--font-mono);
+}
+footer a{color:var(--text-faint);}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);}
+  .taskgroup-body{padding-left:4px;}
+}
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">D</div>
+      <div class="brand-text">
+        <strong>Distributed Systems Lab</strong>
+        <span>DMML &middot; Lecture 13</span>
+      </div>
+    </div>
+    <div class="dagstrip" id="dagstrip" role="img" aria-label="Study progress shown as a DAG run, one node per module"></div>
+    <span class="progress-label tabular" id="progressLabel">0/14 modules</span>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between light and dark theme">
+      <span class="theme-icon" aria-hidden="true">&#9680;</span><span id="themeToggleLabel">theme</span>
+    </button>
+  </header>
+
+  <nav class="sidebar" id="sidebar" aria-label="Section navigation"></nav>
+
+  <main id="main">
+
+<section class="module" id="landscape" data-title="Bigdata Analytics Landscape">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">01</span> Where this whole lecture starts</div>
+    <h2 class="title">Big data isn't more data — it's a different way of working with it</h2>
+    <p class="dek">A single machine and a single database ran out of room. Everything in this lecture &mdash; distributed storage, parallel processing, Hadoop, Spark, streaming, cloud platforms &mdash; exists because of that one fact.</p>
+  </div>
+
+  <div class="block">
+    <h3>What is big data?</h3>
+    <p>Massive, complex data sets that traditional data management systems cannot handle. It's not just volume &mdash; it's an intricate ecosystem of technologies, methodologies, and processes built to capture, store, manage, and analyze data at a scale no single machine can hold. A shop owner's notebook of receipts is fine for a traditional database; Amazon tracking every click, purchase, and page view from hundreds of millions of shoppers every second, worldwide, is not.</p>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>IBM characterizes big data along volume, velocity, and variety &mdash; data sets too large or complex for traditional processing software. Big data adoption accelerated through the 2000s/2010s as storage costs fell and digitally-generated data (web clicks, sensors, mobile, social) exploded &mdash; the exact wave that motivated Google's GFS/MapReduce, and later Hadoop, covered later in this deck. (ibm.com/think/topics/big-data)</p>
+  </div>
+
+  <div class="block">
+    <h3>The V's of big data</h3>
+    <p>A checklist for what makes data "big" and hard to work with, beyond sheer size.</p>
+  </div>
+  <div class="grid grid-3">
+    <div class="card"><h4><span class="pill accent">Volume</span></h4><p>How much data &mdash; petabytes, not megabytes. Cloud storage helps organizations manage ever-larger datasets so information isn't lost to storage limits.</p></div>
+    <div class="card"><h4><span class="pill accent">Velocity</span></h4><p>How fast it arrives &mdash; real-time social updates, high-frequency trading. Stream-processing and in-memory systems capture, analyze, and act on it in near real time.</p></div>
+    <div class="card"><h4><span class="pill accent">Variety</span></h4><p>How many shapes it comes in &mdash; structured, unstructured (text, images, video), semi-structured (JSON, XML). Managed with NoSQL databases and schema-on-read data lakes.</p></div>
+    <div class="card"><h4><span class="pill warn">Veracity</span></h4><p>Can you trust it &mdash; noise, duplicates, missing fields, collected automatically at scale. Addressed with cleaning, validation, and verification tools.</p></div>
+    <div class="card"><h4><span class="pill good">Value</span></h4><p>Does it actually help &mdash; the real-world benefit extracted via analytics, ML, and AI. Collecting data is pointless if you can't turn it into a decision.</p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; origin of the V's</span>
+    <p>The original 3 V's (Volume, Velocity, Variety) were coined by Gartner (then META Group) analyst Doug Laney in a 2001 note, "3D Data Management" &mdash; years before "big data" became a mainstream term. Veracity was added by IBM and others around 2012; Value followed as a business-outcome framing. Some models now extend to 5&ndash;7 V's. (techtarget.com/whatis/definition/3Vs)</p>
+  </div>
+
+  <div class="block">
+    <h3>Traditional analytics vs. big data analytics</h3>
+    <p>The "old way vs. new way" cheat sheet. Traditional analytics designs a rigid schema up front and moves data to the analysis tool; big data analytics keeps schema flexible (schema-on-read) and moves the analysis to the data instead &mdash; the same "data locality" idea that recurs throughout this deck.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Traditional data analytics</th><th>Big data analytics</th></tr></thead>
+      <tbody>
+        <tr><td>Systems that produce specific results</td><td class="hl">Platforms that support applications</td></tr>
+        <tr><td>Collect valuable data</td><td class="hl">Find data, explore value</td></tr>
+        <tr><td>Data quality &amp; consistency</td><td class="hl">Speed &amp; low latency</td></tr>
+        <tr><td>Extract &rarr; Transform &rarr; Load (ETL)</td><td class="hl">Extract &rarr; Load &rarr; Transform (ELT)</td></tr>
+        <tr><td>Problem &rarr; Data &rarr; Solution</td><td class="hl">Data &rarr; Analytics &rarr; Knowledge</td></tr>
+        <tr><td>Long-term, inflexible structure</td><td class="hl">Dynamic, flexible structure</td></tr>
+        <tr><td>Bring data to analysis</td><td class="hl">Move analysis closer to data</td></tr>
+        <tr><td>Limited intra-discipline access</td><td class="hl">Wide inter-discipline access</td></tr>
+        <tr><td>Centralized computing</td><td class="hl">Distributed computing</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; why ETL became ELT</span>
+    <p>The ETL &rarr; ELT shift is tied to cheap, scalable cloud storage (S3, ADLS, GCS): once storage got radically cheaper than compute, it became economical to dump raw data first and defer transformation until it's actually needed &mdash; the pattern underlying data lakes and modern cloud platforms like Snowflake, BigQuery, and Databricks (Section 10). (ibm.com/think/topics/big-data-analytics)</p>
+  </div>
+
+  <div class="block">
+    <h3>How big data analytics works &mdash; the five-step pipeline</h3>
+    <p>Nearly everything else in this lecture zooms into one of these five boxes.</p>
+  </div>
+  <div class="grid grid-3">
+    <div class="card"><h4>1 &middot; Collection</h4><p>From sensors, social media, and more &mdash; often too large for one machine, and structured, semi-structured, or unstructured.</p></div>
+    <div class="card"><h4>2 &middot; Storage</h4><p>Stored in a distributed file system such as HDFS (Section 6), enabling later processing.</p></div>
+    <div class="card"><h4>3 &middot; Processing</h4><p>Specialized tools &mdash; MapReduce and Spark (Sections 7&ndash;8) &mdash; extract insight from the stored data.</p></div>
+    <div class="card"><h4>4 &middot; Analysis</h4><p>Statistics, ML, and visualization find trends and patterns in the processed data.</p></div>
+    <div class="card"><h4>5 &middot; Results</h4><p>Insights inform business decisions, or generate reports and dashboards for stakeholders.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>Big data analytics in the wild</h3>
+  </div>
+  <div class="grid grid-3">
+    <div class="card">
+      <h4><span class="pill accent">eCommerce &amp; Retail</span></h4>
+      <p><strong>Amazon</strong> tailors personalized advertising, forecasts demand, segments customers, prices dynamically, and detects fraud &mdash; all from click/search/purchase data at massive scale. Its item-to-item collaborative filtering ("customers who bought X also bought Y") became a model widely imitated across e-commerce.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill good">HealthCare</span></h4>
+      <p><strong>Ginger.io</strong> (an MIT startup) uses smartphone signals &mdash; messaging frequency, calls, sleep, exercise &mdash; as a passive early-warning system for mental health: decreased communication may flag depression, increased calls/messages may flag mania in bipolar patients.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill warn">Manufacturing</span></h4>
+      <p><strong>KIA Motors</strong> monitors vehicle sensor data to catch failure patterns before they happen (predictive maintenance) and optimizes supply chain via inventory, demand, and logistics data.</p>
+    </div>
+  </div>
+
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; myth-busting</span>
+    <p>Big data analytics is <strong>not</strong> meant to replace RDBMS or data warehouses, and it isn't only for big data companies. It's a complement: traditional systems still fit structured, transactional, well-understood data; big data tools step in specifically when data outgrows what those tools can efficiently handle.</p>
+  </div>
+</section>
+
+<section class="module" id="challenges" data-title="Challenges of Big Data Analytics">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">02</span> Before you can use it, you have to survive it</div>
+    <h2 class="title">Six challenges that make collection hard, and useless if ignored</h2>
+    <p class="dek">Nearly half of decision-makers doubt their infrastructure can keep up; a third of big-data budgets go straight to compliance and defense &mdash; before a single insight is produced.</p>
+  </div>
+
+  <div class="block">
+    <h3>The stakes, in numbers</h3>
+  </div>
+  <div class="grid grid-4">
+    <div class="card compact"><p class="pill warn">43%</p><p>of decision-makers believe infrastructure can't keep up with future data growth.</p></div>
+    <div class="card compact"><p class="pill warn">50% / 39%</p><p>of US / European executives cite limited IT budgets as a top barrier to value from data.</p></div>
+    <div class="card compact"><p class="pill bad">&gt;1/3</p><p>of the big-data budget is spent on compliance and defense alone.</p></div>
+    <div class="card compact"><p class="pill good">11.5M</p><p>new data-science jobs projected by 2026 &mdash; a large, growing talent gap.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>The six challenges, grouped into three buckets</h3>
+    <p>Strategy problems, technical problems, and people/governance problems &mdash; each with its own fix.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Bucket</th><th>Challenge</th><th>How to address it</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">Strategy</td><td>Defining clear objectives &amp; use cases</td><td>Align with strategic goals; prioritize by potential impact; involve stakeholders</td></tr>
+        <tr><td class="hl">Technical</td><td>Managing vast amounts of data</td><td>Scalable infrastructure and lifecycle management before volume outgrows it</td></tr>
+        <tr><td class="hl">Technical</td><td>Data integration &amp; quality assurance</td><td>Governance practices and validation processes across scattered sources/formats</td></tr>
+        <tr><td class="hl">Technical</td><td>Infrastructure &amp; scalability</td><td>Cloud-based, pay-as-you-go services matched to budget and compute needs</td></tr>
+        <tr><td class="hl">People &amp; governance</td><td>Talent shortages</td><td>Training programs, education partnerships, or external expert collaboration</td></tr>
+        <tr><td class="hl">People &amp; governance</td><td>Privacy, security &amp; compliance</td><td>Encryption, access controls, anonymization, and staying current with data-protection law</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Poor data quality is frequently cited by Gartner and IBM as costing organizations millions annually in bad decisions and failed AI/ML projects &mdash; "garbage in, garbage out" applies to big data pipelines just as strongly as to any smaller system. Regulatory frameworks like GDPR and CCPA have made compliance a first-class engineering concern rather than an afterthought. (sciencedirect.com/topics/computer-science/big-data-analytics)</p>
+  </div>
+
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; "a story," the deck's own framing device</span>
+    <p>The deck poses its own narrative: data poured in faster than any machine could handle &mdash; logs, transactions, images, sensor signals. The "recommendations" that follow are, in plain English, the four technologies the rest of this lecture explains formally: break files into blocks and scatter/replicate them across machines (<strong>Distributed Storage</strong> &rarr; HDFS, Section 6); split jobs into pieces and reassign work on failure (<strong>Parallel Processing</strong> &rarr; MapReduce, Section 7); keep data in memory instead of re-reading disk (<strong>In-memory computing</strong> &rarr; Spark, Section 8); and process events the moment they arrive (<strong>Streaming</strong> &rarr; Section 9). Understanding this story intuitively means understanding the motivation for everything that follows.</p>
+  </div>
+</section>
+
+<section class="module" id="distributed-parallel" data-title="Distributed vs Parallel Processing">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">03</span> Two different bets on how machines cooperate</div>
+    <h2 class="title">Shared memory, tightly coupled &mdash; or independent machines, loosely coupled</h2>
+    <p class="dek">Parallel systems trade scale and resilience for raw speed. Distributed systems trade speed for scale and resilience &mdash; and at big-data scale, resilience wins.</p>
+  </div>
+
+  <div class="block">
+    <h3>The core distinction</h3>
+    <p>In <strong>parallel computing</strong>, several processors sit inside the same machine and share one memory pool &mdash; several chefs in one kitchen sharing one pantry. In <strong>distributed computing</strong>, each machine has its own processor and memory, and they talk over a network &mdash; independent kitchens in different cities, coordinating by phone calls (network messages) to cook one big meal together.</p>
+  </div>
+
+  <div class="diagram-row">
+    <figure class="diagram">
+      <svg viewBox="0 0 320 210" role="img" aria-label="Parallel computing: one server containing four processors that all connect to one shared memory bar.">
+        <defs><marker id="arrPD1" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+        <g font-size="10.5" text-anchor="middle">
+          <rect x="90" y="12" width="140" height="34" rx="7" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><text x="160" y="33" fill="var(--accent-strong)" font-weight="600">Single machine</text>
+          <rect x="20" y="70" width="60" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="50" y="94">Proc 1</text>
+          <rect x="90" y="70" width="60" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="120" y="94">Proc 2</text>
+          <rect x="160" y="70" width="60" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="190" y="94">Proc 3</text>
+          <rect x="230" y="70" width="60" height="40" rx="6" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="260" y="94">Proc 4</text>
+          <rect x="20" y="150" width="270" height="36" rx="6" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.4"/><text x="155" y="172" fill="var(--green)" font-weight="600">Shared memory</text>
+          <g stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrPD1)">
+            <path d="M50,110 L50,148"/><path d="M120,110 L120,148"/><path d="M190,110 L190,148"/><path d="M260,110 L260,148"/>
+          </g>
+        </g>
+      </svg>
+      <figcaption>Parallel: processors are tightly coupled and share one memory space &mdash; fast, but a single point of failure.</figcaption>
+    </figure>
+    <figure class="diagram">
+      <svg viewBox="0 0 320 210" role="img" aria-label="Distributed computing: three independent machines, each with its own processor and memory, connected to each other over a network.">
+        <defs><marker id="arrPD2" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+        <g font-size="10" text-anchor="middle">
+          <rect x="15" y="30" width="90" height="60" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="60" y="55">Machine A</text><text x="60" y="70" fill="var(--text-muted)" font-size="9">CPU + own mem</text>
+          <rect x="115" y="130" width="90" height="60" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="160" y="155">Machine B</text><text x="160" y="170" fill="var(--text-muted)" font-size="9">CPU + own mem</text>
+          <rect x="215" y="30" width="90" height="60" rx="7" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="260" y="55">Machine C</text><text x="260" y="70" fill="var(--text-muted)" font-size="9">CPU + own mem</text>
+          <g stroke="var(--accent)" stroke-width="1.3" fill="none" marker-end="url(#arrPD2)" marker-start="url(#arrPD2)">
+            <path d="M100,80 L130,138"/>
+            <path d="M190,138 L220,80"/>
+            <path d="M108,60 L212,60"/>
+          </g>
+        </g>
+      </svg>
+      <figcaption>Distributed: independent machines, own memory, coordinating over a network &mdash; slower per message, but no single point of failure.</figcaption>
+    </figure>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>This shared-memory vs. distributed-memory split is foundational in computer architecture (Flynn's taxonomy; shared- vs. distributed-memory multiprocessors). Most "big data" systems (Hadoop, Spark) run on distributed-memory architectures precisely because they must scale far beyond one machine's shared memory bus; GPUs and multi-core CPUs remain classic shared-memory parallel systems within a single node. (cloud.google.com/learn/what-is-apache-spark)</p>
+  </div>
+
+  <div class="block">
+    <h3>Five dimensions, one clear pattern</h3>
+    <p>Distributed systems trade speed for scale and resilience; parallel systems trade scale and resilience for speed.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Dimension</th><th>Distributed system</th><th>Parallel system</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">Architecture</td><td>Multiple independent computers, each with own processor/memory/OS, network-coordinated</td><td>Single machine or tightly coupled cluster with unified memory architecture</td></tr>
+        <tr><td class="hl">Memory</td><td>Independent per node; message-passing; no contention, but network overhead</td><td>Shared common memory; fast exchange, but a growing bottleneck as processors increase</td></tr>
+        <tr><td class="hl">Communication</td><td>Network protocols, latency in milliseconds &mdash; best for loosely coupled tasks</td><td>High-speed buses/interconnects, nanosecond&ndash;microsecond speed &mdash; best for tightly coupled tasks</td></tr>
+        <tr><td class="hl">Scalability</td><td>Horizontal &mdash; add machines, scales to thousands, spans data centers</td><td>Vertical &mdash; add processors, hits memory-bandwidth/thermal/bus limits, scales to hundreds of cores</td></tr>
+        <tr><td class="hl">Fault tolerance</td><td>Inherent &mdash; other nodes continue, failed work is reassigned</td><td>Single point of failure &mdash; one machine down stops the whole computation</td></tr>
+        <tr><td class="hl">Geographic distribution</td><td>Nodes can span cities/continents &mdash; CDNs, data-residency compliance</td><td>Concentrated in one data center on local infrastructure</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="formula">Parallel &rarr; shared memory, tight coupling, vertical scale, nanosecond bus, SPOF
+Distributed &rarr; own memory, loose coupling, horizontal scale, millisecond network, fault-tolerant</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; why this matters for the rest of the lecture</span>
+    <p>This tension is exactly what motivated Google's GFS and MapReduce papers: designed for a world where component failures are the statistical norm across thousands of commodity machines, with fault tolerance (replication, automatic re-execution) built into the software layer rather than relying on expensive, failure-proof hardware. That philosophy carried directly into Hadoop's HDFS and MapReduce &mdash; both covered next. (research.google.com/archive/mapreduce-osdi04.pdf)</p>
+  </div>
+</section>
+
+<section class="module" id="in-memory" data-title="In-Memory Computing">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">04</span> The pantry next to the stove</div>
+    <h2 class="title">RAM is ~100,000&times; faster than disk &mdash; that gap is why Spark exists</h2>
+    <p class="dek">A chef who keeps ingredients in a nearby pantry cooks a lot faster than one who walks to a basement storeroom for every single item.</p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4><span class="pill warn">Disk-based computing</span></h4>
+      <p>Data lives persistently on SSDs/HDDs and is loaded into RAM only when needed &mdash; every access is a round trip to the basement storeroom. Access speed: milliseconds.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill good">In-memory computing (IMC)</span></h4>
+      <p>Data resides primarily in RAM, eliminating slow disk I/O and processing at memory speed &mdash; ingredients kept in the pantry right next to the stove. Access speed: microseconds.</p>
+    </div>
+  </div>
+  <div class="formula">Main memory reference &asymp; 100 ns   :   Disk seek &asymp; 10 ms   &rarr;   ~100,000&times; gap</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>This latency gap is one of the most cited numbers in computer science &mdash; from Jeff Dean's "Numbers Everyone Should Know" talks at Google. It's the fundamental physical reason in-memory systems like Apache Spark, SAP HANA, and Redis can be orders of magnitude faster than disk-oriented systems like classic Hadoop MapReduce, especially for iterative or interactive workloads. (cloud.google.com/learn/what-is-apache-spark)</p>
+  </div>
+
+  <div class="block">
+    <h3>In-memory computing for big data</h3>
+    <p>Two of the V's get solved by two different tools: <strong>Volume</strong> and speed are addressed by keeping working data in RAM (IMC); <strong>Variety</strong> &mdash; unstructured/semi-structured data that doesn't fit relational tables &mdash; is addressed by NoSQL databases. Falling RAM prices over the past two decades made keeping large working datasets entirely in memory across a cluster economically feasible, where it would once have been cost-prohibitive.</p>
+  </div>
+</section>
+
+<section class="module" id="hadoop" data-title="Hadoop Ecosystem">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">05</span> Cheap machines, treated as one giant computer</div>
+    <h2 class="title">Hadoop: the "operating system" of big data</h2>
+    <p class="dek">Not literally an OS &mdash; a foundational open-source layer that lets a cluster of ordinary, inexpensive computers act as one giant storage and compute system.</p>
+  </div>
+
+  <div class="block">
+    <h3>What Hadoop is</h3>
+    <p>An open-source framework for storing huge amounts of data, managing it via distributed storage and parallel processing, and running applications on clusters of commodity hardware. Its main advantage: handling structured, unstructured, and semi-structured data in huge volumes, making collection, processing, and analysis easier and more flexible than traditional processors allowed.</p>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; origin story</span>
+    <p>Hadoop was created by Doug Cutting and Mike Cafarella, split out of the Apache Nutch crawler project in January 2006, and named after Cutting's son's stuffed yellow toy elephant &mdash; hence the logo. Yahoo hired Cutting in 2006 and drove early development; by 2008, Yahoo's production search index ran on a 10,000-core Hadoop cluster, before Hadoop was donated fully to the Apache Software Foundation. (hpcwire.com/bigdatawire/2015/04/15/from-spiders-to-elephants-the-history-of-hadoop)</p>
+  </div>
+
+  <div class="block">
+    <h3>The ecosystem, as a stack</h3>
+    <p>HDFS is the foundation (storage), YARN is the traffic-management layer (who gets which resources, when), and everything else &mdash; Hive, Pig, Spark, HBase, Kafka, and more &mdash; is a specialized tool built on top.</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 760 260" role="img" aria-label="Hadoop ecosystem stack: ingestion tools Flume and Sqoop feed into YARN resource management and HDFS storage at the base, which support a row of processing, querying, ML, streaming, search, and coordination tools on top.">
+      <defs><marker id="arrHE" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="20" y="20" width="720" height="60" rx="7" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.3"/>
+        <rect x="40" y="34" width="150" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="115" y="54">MapReduce</text>
+        <rect x="205" y="34" width="140" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="275" y="54">Hive / Drill / Pig</text>
+        <rect x="360" y="34" width="150" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="435" y="54">Mahout / MLlib</text>
+        <rect x="525" y="34" width="90" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="570" y="54">HBase</text>
+        <rect x="630" y="34" width="90" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="675" y="54">Spark</text>
+        <text x="380" y="15" fill="var(--text-muted)" font-size="9.5">Processing, querying, ML, NoSQL, in-memory engine</text>
+
+        <rect x="20" y="100" width="720" height="40" rx="7" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><text x="380" y="124" fill="var(--accent-strong)" font-weight="600">YARN &mdash; resource management &amp; job scheduling</text>
+        <rect x="20" y="155" width="720" height="40" rx="7" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.5"/><text x="380" y="179" fill="var(--green)" font-weight="600">HDFS &mdash; distributed storage</text>
+
+        <rect x="30" y="215" width="180" height="34" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="120" y="237">Flume (unstructured in)</text>
+        <rect x="550" y="215" width="180" height="34" rx="6" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="640" y="237">Sqoop (structured in/out)</text>
+        <text x="380" y="237" fill="var(--text-muted)" font-size="9.5">Kafka / Storm (streaming) &middot; Solr / Lucene (search) &middot; Oozie (scheduling) &middot; Zookeeper / Ambari (coordination)</text>
+
+        <g stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrHE)">
+          <path d="M120,213 L120,197"/>
+          <path d="M640,213 L640,197"/>
+          <path d="M380,153 L380,142"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Data flows in through Flume (messy/streaming) and Sqoop (structured), lands in HDFS, is scheduled by YARN, and is processed/queried/analyzed by whichever specialized tool fits the job.</figcaption>
+  </figure>
+
+  <div class="block">
+    <h3>What each piece does</h3>
+  </div>
+  <div class="grid grid-3">
+    <div class="card compact"><h4>Storage</h4><p><strong>HDFS</strong> stores files; <strong>HBase</strong> is a distributed NoSQL database built on top of HDFS.</p></div>
+    <div class="card compact"><h4>Processing engines</h4><p><strong>MapReduce</strong> &mdash; original, disk-based. <strong>Spark</strong> &mdash; newer, in-memory, much faster.</p></div>
+    <div class="card compact"><h4>Querying</h4><p><strong>Hive</strong> (SQL on structured/batch data), <strong>Drill</strong> (flexible semi-structured queries), <strong>Pig</strong> (scripting, "Pig Latin").</p></div>
+    <div class="card compact"><h4>Ingestion</h4><p><strong>Flume</strong> moves large volumes of log/unstructured data in; <strong>Sqoop</strong> transfers structured data between RDBMS and Hadoop.</p></div>
+    <div class="card compact"><h4>Streaming</h4><p><strong>Kafka</strong> &mdash; the messaging backbone. <strong>Storm</strong> &mdash; real-time stream and complex event processing.</p></div>
+    <div class="card compact"><h4>Machine learning</h4><p><strong>Mahout</strong> &mdash; older, standalone. <strong>MLlib</strong> &mdash; built into Spark.</p></div>
+    <div class="card compact"><h4>Search</h4><p><strong>Lucene</strong> &mdash; underlying full-text search library. <strong>Solr</strong> &mdash; enterprise search platform built on Lucene.</p></div>
+    <div class="card compact"><h4>Ops &amp; coordination</h4><p><strong>Zookeeper</strong> syncs distributed components; <strong>Oozie</strong> schedules multi-step workflows; <strong>Ambari</strong> provides a management/monitoring dashboard.</p></div>
+    <div class="card compact"><h4>Resource management</h4><p><strong>YARN</strong> (Yet Another Resource Negotiator) decides who gets CPU/memory and when &mdash; introduced in Hadoop 2.0 specifically so non-MapReduce engines like Spark could share the same cluster.</p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; tools that outgrew Hadoop</span>
+    <p>Several ecosystem tools became bigger than Hadoop itself: Kafka (created at LinkedIn ~2010&ndash;2011 by Jay Kreps, Neha Narkhede, and Jun Rao) is now the de facto event-streaming standard industry-wide, independent of Hadoop &mdash; its creators later founded Confluent. Spark (Section 8) similarly outgrew its Hadoop-ecosystem origins to become a general-purpose engine usable with or without HDFS. Lucene/Solr predate Hadoop and were created by the same person, Doug Cutting, whose search-indexing work directly shaped his later thinking about distributed processing. (edureka.co/blog/hadoop-ecosystem)</p>
+  </div>
+</section>
+
+<section class="module" id="hdfs" data-title="Distributed Data Processing & HDFS">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">06</span> One librarian, many storage rooms</div>
+    <h2 class="title">HDFS: split the file into blocks, copy every block, survive any one failure</h2>
+    <p class="dek">A director/worker architecture where the director never holds a single byte of actual data &mdash; only the map of where everything lives.</p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4><span class="pill accent">NameNode</span> &mdash; the director</h4>
+      <p>One per cluster. Tracks the status of every file, file permissions, and the location of every block. Manages the file-system namespace and controls client access &mdash; opening, closing, renaming.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill good">DataNode</span> &mdash; the worker</h4>
+      <p>Manages block creation, deletion, and replication, plus read/write requests. Each stores its blocks as separate files on its own local disk. Runs on commodity hardware to keep cost down.</p>
+    </div>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 700 260" role="img" aria-label="An HDFS client asks the NameNode for block locations, then reads/writes directly with DataNodes, each holding replicated blocks on its own local disk.">
+      <defs><marker id="arrHD" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="20" y="100" width="120" height="50" rx="7" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="80" y="122">HDFS</text><text x="80" y="136">Client</text>
+        <rect x="290" y="20" width="150" height="46" rx="7" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/><text x="365" y="40" fill="var(--accent-strong)" font-weight="600">NameNode</text><text x="365" y="54" fill="var(--accent-strong)" font-size="9">metadata &middot; block map</text>
+
+        <rect x="190" y="130" width="90" height="48" rx="6" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="235" y="150">DataNode 1</text><text x="235" y="163" font-size="8.5">blocks A,B</text>
+        <rect x="305" y="130" width="90" height="48" rx="6" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="350" y="150">DataNode 2</text><text x="350" y="163" font-size="8.5">blocks B,C</text>
+        <rect x="420" y="130" width="90" height="48" rx="6" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="465" y="150">DataNode 3</text><text x="465" y="163" font-size="8.5">blocks A,C</text>
+        <rect x="535" y="130" width="90" height="48" rx="6" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="580" y="150">DataNode 4</text><text x="580" y="163" font-size="8.5">blocks A,B,C</text>
+
+        <rect x="190" y="210" width="90" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1"/><text x="235" y="229" font-size="9">Local disk</text>
+        <rect x="305" y="210" width="90" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1"/><text x="350" y="229" font-size="9">Local disk</text>
+        <rect x="420" y="210" width="90" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1"/><text x="465" y="229" font-size="9">Local disk</text>
+        <rect x="535" y="210" width="90" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1"/><text x="580" y="229" font-size="9">Local disk</text>
+
+        <g stroke="var(--accent)" stroke-width="1.3" fill="none" marker-end="url(#arrHD)">
+          <path d="M140,115 L292,50"/>
+          <path d="M140,135 L233,133"/>
+          <path d="M140,140 L349,138"/>
+          <path d="M140,145 L464,140"/>
+          <path d="M140,150 L579,145"/>
+          <path d="M235,178 L235,208"/>
+          <path d="M350,178 L350,208"/>
+          <path d="M465,178 L465,208"/>
+          <path d="M580,178 L580,208"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>The client asks the NameNode where blocks live, then reads/writes DataNodes directly. Block A lives on nodes 1, 3, and 4 &mdash; three copies (the default replication factor), so losing any one DataNode loses no data.</figcaption>
+  </figure>
+
+  <div class="block">
+    <h3>How data moves through it</h3>
+    <p>Data is broken into blocks and distributed across the cluster; blocks are replicated onto other nodes so they can be processed in parallel and survive node failure &mdash; removing one copy never risks corrupting the file. HDFS provides a native Java API, a C-language wrapper, and an HTTP browser interface for access.</p>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>HDFS closely reimplements Google's proprietary Google File System (GFS), described in Ghemawat, Gobioff, and Leung's 2003 SOSP paper. Both use the same master/worker split (NameNode/DataNode &harr; master/chunkserver) and the same "replicate each block onto multiple machines" fault-tolerance strategy &mdash; GFS defaults to 3 replicas, and HDFS follows the same default. (ibm.com/think/topics/hdfs)</p>
+  </div>
+
+  <div class="block">
+    <h3>Worked use case &mdash; a nationwide phone directory</h3>
+    <p>Surnames starting with A live on server 1, B on server 2, and so on. Reconstructing the whole directory needs blocks from every server &mdash; that's the block-distribution model. To survive a server failing, HDFS replicates each piece onto two more servers by default &mdash; three copies total. Redundancy can be raised or lowered per file or environment (a dev cluster typically skips it). The same split also lets the cluster run jobs on all servers in parallel, and keeps computation next to the data it needs (data locality).</p>
+  </div>
+  <div class="formula">Default replication factor = 3   (1 original + 2 copies)</div>
+</section>
+
+<section class="module" id="mapreduce" data-title="Parallel Data Processing & MapReduce">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">07</span> Two functions, run at massive scale</div>
+    <h2 class="title">Map, Shuffle, Reduce &mdash; the pattern behind almost every big-data aggregation</h2>
+    <p class="dek">A 10-hour single-machine job split across 10 machines can, in the best case, finish in about an hour &mdash; the entire value proposition in one sentence.</p>
+  </div>
+
+  <div class="block">
+    <h3>The two tasks</h3>
+    <p><strong>Map</strong> takes raw data and converts it into key/value pairs. <strong>Reduce</strong> takes the mapped outputs, aggregates all values sharing a key, and produces a final set of key/value pairs. In between, <strong>Shuffle</strong> sorts and routes every pair so everything sharing a key lands at the same reducer &mdash; the "traffic control" step that makes the aggregation correct.</p>
+  </div>
+  <div class="formula">1 processor, 10 hours   &rarr;   10 processors in parallel, ~1 hour (ideal case)</div>
+
+  <div class="block">
+    <h3>Worked example &mdash; word count</h3>
+    <p>Input: <code>"Deer Bear River / Car Car River / Deer Car Bear"</code></p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 780 300" role="img" aria-label="Word count MapReduce flow: three sentences are split, mapped to word/count pairs, shuffled so identical words group together, then reduced to final per-word totals.">
+      <defs><marker id="arrMR" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="9.5" text-anchor="middle">
+        <text x="55" y="14" fill="var(--text-muted)">Splitting</text>
+        <text x="235" y="14" fill="var(--text-muted)">Mapping</text>
+        <text x="450" y="14" fill="var(--text-muted)">Shuffling</text>
+        <text x="640" y="14" fill="var(--text-muted)">Reducing</text>
+        <text x="740" y="14" fill="var(--text-muted)">Result</text>
+
+        <rect x="10" y="26" width="150" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="85" y="45">Deer Bear River</text>
+        <rect x="10" y="66" width="150" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="85" y="85">Car Car River</text>
+        <rect x="10" y="106" width="150" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="85" y="125">Deer Car Bear</text>
+
+        <rect x="190" y="20" width="170" height="42" rx="5" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.1"/><text x="275" y="38">Deer,1 Bear,1</text><text x="275" y="52">River,1</text>
+        <rect x="190" y="66" width="170" height="42" rx="5" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.1"/><text x="275" y="84">Car,1 Car,1</text><text x="275" y="98">River,1</text>
+        <rect x="190" y="112" width="170" height="42" rx="5" fill="var(--surface-2)" stroke="var(--border)" stroke-width="1.1"/><text x="275" y="130">Deer,1 Car,1</text><text x="275" y="144">Bear,1</text>
+
+        <rect x="405" y="10" width="130" height="30" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/><text x="470" y="29">Bear,1 Bear,1</text>
+        <rect x="405" y="46" width="130" height="30" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/><text x="470" y="65">Car,1 Car,1 Car,1</text>
+        <rect x="405" y="82" width="130" height="30" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/><text x="470" y="101">Deer,1 Deer,1</text>
+        <rect x="405" y="118" width="130" height="30" rx="5" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.2"/><text x="470" y="137">River,1 River,1</text>
+
+        <rect x="590" y="10" width="100" height="30" rx="5" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="640" y="29" fill="var(--green)">Bear,2</text>
+        <rect x="590" y="46" width="100" height="30" rx="5" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="640" y="65" fill="var(--green)">Car,3</text>
+        <rect x="590" y="82" width="100" height="30" rx="5" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="640" y="101" fill="var(--green)">Deer,2</text>
+        <rect x="590" y="118" width="100" height="30" rx="5" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="640" y="137" fill="var(--green)">River,2</text>
+
+        <rect x="700" y="55" width="70" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="735" y="75">Bear,2</text><text x="735" y="88">Car,3</text><text x="735" y="101">Deer,2 River,2</text>
+
+        <g stroke="var(--accent)" stroke-width="1.1" fill="none" marker-end="url(#arrMR)">
+          <path d="M162,41 L188,41"/><path d="M162,81 L188,87"/><path d="M162,121 L188,133"/>
+          <path d="M362,30 L403,25"/><path d="M362,74 L403,61"/><path d="M362,120 L403,97"/><path d="M362,86 L403,133"/>
+          <path d="M537,25 L588,25"/><path d="M537,61 L588,61"/><path d="M537,97 L588,97"/><path d="M537,133 L588,133"/>
+          <path d="M692,25 L698,60"/><path d="M692,61 L698,75"/><path d="M692,97 L698,85"/><path d="M692,133 L698,95"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Splitting divides input into lines; mapping emits (word,1) pairs; shuffling groups identical words together; reducing sums each group into a final count.</figcaption>
+  </figure>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>MapReduce was introduced by Google's Jeffrey Dean and Sanjay Ghemawat in their 2004 OSDI paper, directly inspired by functional programming's <code>map</code> and <code>reduce</code>/<code>fold</code> primitives &mdash; hiding parallelization, fault tolerance, and load balancing from ordinary programmers, who only write the Map and Reduce functions. Google's own production use included generating its web search index from 20+ terabytes of crawled documents via five to ten chained MapReduce jobs. (research.google.com/archive/mapreduce-osdi04.pdf)</p>
+  </div>
+
+  <div class="block">
+    <h3>Second worked example &mdash; maximum temperature per city</h3>
+    <p>The reduce function is what changes: sum becomes max. Records like <code>&lt;Tokyo,38&gt;</code> are scattered across input files; shuffling groups every city's readings together; each reducer keeps only the highest value for its city.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>City</th><th>Readings after shuffle</th><th>Reduced (max)</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">Tokyo</td><td>37, 38, 31, 30</td><td>38</td></tr>
+        <tr><td class="hl">London</td><td>27, 20, 19, 22</td><td>27</td></tr>
+        <tr><td class="hl">New York</td><td>32, 33, 20, 19</td><td>33</td></tr>
+        <tr><td class="hl">Toronto</td><td>18, 32, 22, 31</td><td>32</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>This only works because shuffling guarantees every one city's records land at the same reducer &mdash; split across two reducers, neither would see the true maximum. This is a close variant of the "weather dataset" example popularized by Tom White's <em>Hadoop: The Definitive Guide</em>, using real NOAA station data. (ibm.com/think/topics/mapreduce)</p>
+  </div>
+</section>
+
+<section class="module" id="spark" data-title="In Memory Computing & Apache Spark">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">08</span> The same idea, minus the disk round trips</div>
+    <h2 class="title">Apache Spark: keep the half-finished dish on the counter</h2>
+    <p class="dek">MapReduce writes every stage's output back to disk before the next stage reads it. Spark keeps it in memory &mdash; a modest win for one pass, a massive one for anything iterative.</p>
+  </div>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 720 190" role="img" aria-label="Hadoop MapReduce writes to and reads from disk between every processing stage; Spark keeps data in memory between stages instead.">
+      <defs><marker id="arrHS" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="10" text-anchor="middle">
+        <text x="20" y="20" fill="var(--text-muted)" text-anchor="start">Hadoop MapReduce &mdash; disk between every stage</text>
+        <rect x="10" y="30" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="40" y="49">Input</text>
+        <rect x="120" y="30" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="150" y="49">Process</text>
+        <rect x="230" y="30" width="50" height="30" rx="5" fill="var(--red-soft)" stroke="var(--red)" stroke-width="1.2"/><text x="255" y="49" fill="var(--red)">Disk</text>
+        <rect x="330" y="30" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="360" y="49">Process</text>
+        <rect x="440" y="30" width="50" height="30" rx="5" fill="var(--red-soft)" stroke="var(--red)" stroke-width="1.2"/><text x="465" y="49" fill="var(--red)">Disk</text>
+        <rect x="540" y="30" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="570" y="49">Process</text>
+        <rect x="650" y="30" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="680" y="49">Output</text>
+        <g stroke="currentColor" stroke-width="1.1" fill="none" marker-end="url(#arrHS)">
+          <path d="M72,45 L118,45"/><path d="M182,45 L228,45"/><path d="M282,45 L328,45"/><path d="M392,45 L438,45"/><path d="M492,45 L538,45"/><path d="M602,45 L648,45"/>
+        </g>
+
+        <text x="20" y="115" fill="var(--text-muted)" text-anchor="start">Spark &mdash; memory between stages</text>
+        <rect x="10" y="125" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="40" y="144">Input</text>
+        <rect x="120" y="125" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="150" y="144">Process</text>
+        <rect x="230" y="125" width="50" height="30" rx="5" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="255" y="144" fill="var(--green)">RAM</text>
+        <rect x="330" y="125" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="360" y="144">Process</text>
+        <rect x="440" y="125" width="50" height="30" rx="5" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.2"/><text x="465" y="144" fill="var(--green)">RAM</text>
+        <rect x="540" y="125" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="570" y="144">Process</text>
+        <rect x="650" y="125" width="60" height="30" rx="5" fill="none" stroke="currentColor" stroke-width="1.1"/><text x="680" y="144">Output</text>
+        <g stroke="currentColor" stroke-width="1.1" fill="none" marker-end="url(#arrHS)">
+          <path d="M72,140 L118,140"/><path d="M182,140 L228,140"/><path d="M282,140 L328,140"/><path d="M392,140 L438,140"/><path d="M492,140 L538,140"/><path d="M602,140 L648,140"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>For a single pass the difference is modest. For iterative algorithms (ML training loops over the same data dozens or hundreds of times), MapReduce pays the disk cost every iteration; Spark pays it once.</figcaption>
+  </figure>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Spark was created by Matei Zaharia starting in 2009 at UC Berkeley's AMPLab specifically to fix this weakness, open-sourced in 2010, donated to Apache in 2013. Its core abstraction, the Resilient Distributed Dataset (RDD) &mdash; Zaharia et al.'s 2012 NSDI paper &mdash; lets data be cached in memory across a cluster while staying fault-tolerant via <strong>lineage</strong>: Spark remembers how each RDD was derived, so it can recompute a lost partition rather than needing disk replication. (en.wikipedia.org/wiki/Apache_Spark)</p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card"><h4>Low-latency queries</h4><p>Cache the working dataset in memory once, then run many different queries against it at memory speed &mdash; ask a question, get an answer in seconds, ask another.</p></div>
+    <div class="card"><h4>Iterative computations</h4><p>Subsequent iterations reuse the same in-memory data instead of re-reading from disk each pass &mdash; exactly what ML training loops (e.g. gradient descent) need.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>Spark's ecosystem</h3>
+    <p>Spark Core handles memory management, fault recovery, scheduling, and cluster monitoring; four libraries sit on top, sharing the same RDD/DataFrame abstraction so they can be mixed in one program.</p>
+  </div>
+  <div class="grid grid-4">
+    <div class="card compact"><h4>Spark Streaming</h4><p>Real-time processing of live data streams.</p></div>
+    <div class="card compact"><h4>MLlib</h4><p>Machine learning at scale.</p></div>
+    <div class="card compact"><h4>Spark SQL</h4><p>Query via SQL or HiveQL over Spark's engine.</p></div>
+    <div class="card compact"><h4>GraphX</h4><p>Graph &amp; graph-parallel computation.</p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Each library has its own Berkeley AMPLab paper: Spark Streaming's D-Streams (2012 HotCloud), Spark SQL (from the earlier Shark project, formalized in a 2015 SIGMOD paper), and GraphX (2014 OSDI). This shared-engine-plus-specialized-libraries pattern is a key reason Spark displaced many single-purpose tools that had proliferated in the Hadoop ecosystem. (spark.apache.org/research.html)</p>
+  </div>
+
+  <div class="block">
+    <h3>Architecture: Driver, Cluster Manager, Workers</h3>
+    <p>Your program becomes the <strong>Driver</strong>, running on the master node; its first act is creating a <strong>Spark Context</strong> &mdash; a "gateway to all Spark functionality," like opening a database connection. The Spark Context hands the job to the <strong>Cluster Manager</strong>, which splits it into <strong>Tasks</strong> distributed across <strong>Worker</strong> nodes, each executing its slice of the partitioned RDD and caching data in memory for reuse. More workers means both more parallelism and more total cache memory.</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 220" role="img" aria-label="Spark architecture: a driver program with a Spark Context talks to a cluster manager, which distributes tasks to worker nodes, each with a task and a cache.">
+      <defs><marker id="arrSA" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="10.5" text-anchor="middle">
+        <rect x="40" y="15" width="200" height="55" rx="7" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><text x="140" y="37" fill="var(--accent-strong)" font-weight="600">Driver Program</text><text x="140" y="53" fill="var(--accent-strong)" font-size="9.5">Spark Context</text>
+        <rect x="380" y="15" width="200" height="55" rx="7" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="480" y="47">Cluster Manager</text>
+
+        <rect x="60" y="140" width="150" height="60" rx="7" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.3"/><text x="135" y="163" fill="var(--green)" font-weight="600">Worker Node</text><text x="135" y="179" fill="var(--green)" font-size="9">Task + Cache</text>
+        <rect x="240" y="140" width="150" height="60" rx="7" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.3"/><text x="315" y="163" fill="var(--green)" font-weight="600">Worker Node</text><text x="315" y="179" fill="var(--green)" font-size="9">Task + Cache</text>
+        <rect x="420" y="140" width="150" height="60" rx="7" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.3"/><text x="495" y="163" fill="var(--green)" font-weight="600">Worker Node</text><text x="495" y="179" fill="var(--green)" font-size="9">Task + Cache</text>
+
+        <g stroke="var(--accent)" stroke-width="1.3" fill="none" marker-end="url(#arrSA)">
+          <path d="M242,42 L378,42"/>
+          <path d="M420,72 L200,138"/>
+          <path d="M480,72 L400,138"/>
+          <path d="M500,72 L500,138"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>The driver's Spark Context requests resources from the cluster manager, which distributes tasks across worker nodes; each worker executes on its data partition and returns results.</figcaption>
+  </figure>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; lazy evaluation &amp; DAGs</span>
+    <p>Spark builds a Directed Acyclic Graph (DAG) of every requested transformation but doesn't execute anything until an "action" (like <code>.count()</code> or <code>.collect()</code>) triggers it &mdash; like planning an entire road trip's route before driving, rather than deciding turn-by-turn. Because Spark sees the whole plan up front, it can optimize it. DataFrames add a schema on top of raw RDDs, enabling further rewriting via the Catalyst optimizer &mdash; similar to how a SQL database's query planner works. This driver/cluster-manager/worker model runs unchanged whether the underlying manager is Spark's own Standalone manager, YARN, Mesos, or Kubernetes &mdash; letting Spark run on an existing Hadoop cluster or entirely independently on cloud infrastructure. (spark.apache.org/research.html)</p>
+  </div>
+</section>
+
+<section class="module" id="streaming" data-title="Modern Distributed/Streaming Frameworks">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">09</span> From batch-adapted to streaming-first to AI-native</div>
+    <h2 class="title">Five frameworks, five different bets on latency vs. flexibility</h2>
+    <p class="dek">Latency drops and Python-native, ML-focused flavor increases as you move from Spark toward Flink, Ray, and Dask &mdash; a real industry shift toward real-time and AI-native workloads.</p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4><span class="pill accent">Spark Streaming (DStreams)</span></h4>
+      <p>Treats a live stream as a rapid sequence of small micro-batches, built on RDDs &mdash; so MLlib, Spark SQL, and the DAG optimizer all work on streaming data with barely any changes. Sources include Kafka, Flume, Kinesis; output to file systems, databases, dashboards.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill accent">Structured Streaming</span></h4>
+      <p>Production-ready since Spark 2.2. Treats an incoming stream as an infinitely growing table: write one batch-style query, and Spark incrementalizes it &mdash; recomputing only the update at each trigger, not the whole table.</p>
+    </div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>D-Streams were formalized in a 2012 HotCloud paper, trading a small micro-batch-window latency for the same fault-tolerance/load-balancing benefits as Spark's batch model. Structured Streaming's "unbounded table" model closely parallels the Google Dataflow model (basis for Apache Beam) &mdash; a broader convergence around unifying batch and streaming semantics under one query abstraction. (databricks.com/glossary/what-is-spark-streaming)</p>
+  </div>
+
+  <div class="block">
+    <h3>Apache Flink &mdash; true event-at-a-time streaming</h3>
+    <p>Where Spark Streaming is fundamentally a batch engine adapted for streaming, Flink was built streaming-first: it processes each event individually the instant it arrives, with sophisticated out-of-order/late-event handling (event-time processing) and exactly-once state-consistency guarantees even through machine failures.</p>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Flink originated as the Stratosphere research project at TU Berlin (2009), renamed and entering the Apache Incubator in 2014. Several creators later founded Data Artisans (renamed Ververica after Alibaba's 2019 acquisition). Flink is the streaming engine of choice at Alibaba, Netflix, Uber, and Stripe for genuinely low-latency, stateful use cases like fraud detection. (textql.com/wiki/apache-flink)</p>
+  </div>
+
+  <div class="block">
+    <h3>Ray &mdash; Python functions and classes, distributed</h3>
+    <p>Three primitives: a <strong>Task</strong> runs a stateless function remotely; an <strong>Actor</strong> is an instance of a class that keeps persistent state between calls (useful for online learning or simulations); an <strong>Object</strong> is shared data referenced across the cluster without needless copying. This flexibility makes Ray the go-to for AI workloads that don't fit a "big static dataset" mold &mdash; reinforcement learning, distributed LLM training.</p>
+  </div>
+  <div class="grid grid-3">
+    <div class="card compact"><h4>Task</h4><p>Stateless &mdash; run this function elsewhere, give me the result.</p></div>
+    <div class="card compact"><h4>Actor</h4><p>Stateful &mdash; run this class elsewhere, keep it alive between calls.</p></div>
+    <div class="card compact"><h4>Object</h4><p>Shared value in Ray's in-memory object store, referenced across nodes.</p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Ray originated in 2016 at UC Berkeley's RISELab (successor to the AMPLab that created Spark), purpose-built for reinforcement learning workloads Spark handles poorly &mdash; heterogeneous CPU/GPU allocation, stateful actors, fine-grained low-latency scheduling. OpenAI has publicly used Ray to coordinate RLHF-style training used in models like ChatGPT. (bair.berkeley.edu/blog/2018/01/09/ray)</p>
+  </div>
+
+  <div class="block">
+    <h3>Dask &mdash; scale the Python you already know</h3>
+    <p>Collections (Array, DataFrame, Bag, Delayed, Futures) generate a task graph, executed by a scheduler (threads/processes locally, or a distributed cluster). A Dask DataFrame behaves like a giant Pandas DataFrame but is actually many smaller DataFrames spread across a cluster, with Dask figuring out how to run <code>.groupby()</code> or <code>.mean()</code> across all the pieces in parallel.</p>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Created by Matthew Rocklin, first described at SciPy 2015. Unlike JVM-based Spark/Flink, Dask is a native Python library integrating directly with NumPy, Pandas, and scikit-learn &mdash; popular with data scientists who want to scale existing code without a rewrite. (dl.acm.org/doi/10.5555/3291168.3291210)</p>
+  </div>
+
+  <div class="block">
+    <h3>Side by side</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Spark</th><th>Structured Streaming</th><th>Flink</th><th>Ray</th><th>Dask</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">Focus</td><td>General batch &amp; streaming</td><td>Unified batch/stream API</td><td>True event-at-a-time streaming</td><td>Scaling AI/ML workloads</td><td>Scaling NumPy/Pandas/scikit-learn</td></tr>
+        <tr><td class="hl">Model</td><td>Batch-first, micro-batch streaming</td><td>Unified batch &amp; stream APIs</td><td>Streaming-first</td><td>Actor-based, asynchronous</td><td>Task graphs over Python code</td></tr>
+        <tr><td class="hl">Latency</td><td>Seconds (micro-batch)</td><td>Higher than Flink</td><td>Milliseconds</td><td>Low, performance-critical ML</td><td>Moderate, task-dependent</td></tr>
+        <tr><td class="hl">Languages</td><td>Scala, Java, Python, R, SQL</td><td>Scala, Java, Python, R, SQL</td><td>Java, Scala, Python, SQL</td><td>Python (primary)</td><td>Python (primary)</td></tr>
+        <tr><td class="hl">Key use cases</td><td>ETL, analytics, ML, graph</td><td>Real-time dashboards, IoT</td><td>Fraud detection, personalization</td><td>Distributed RL, hyperparameter tuning</td><td>Scaling data-science pipelines</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Spark remains dominant for ETL/analytics/BI; Flink leads for genuinely latency-sensitive streaming; Ray has seen explosive adoption in the LLM/generative-AI era (2023 onward) since modern AI training/serving (distributed GPU training, RLHF, agentic pipelines) fits neither Spark's batch model nor Flink's streaming model well. Dask stays popular in scientific Python specifically because it avoids the JVM/Scala learning curve entirely.</p>
+  </div>
+</section>
+
+<section class="module" id="cloud" data-title="Cloud Native Data Platforms">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">10</span> The same ideas, delivered as a service</div>
+    <h2 class="title">No hardware to rack, no cluster to manage &mdash; just storage and compute as a service</h2>
+    <p class="dek">Everything before this section required buying, racking, and operating physical servers. Cloud-native platforms remove that burden and charge only for what's actually used.</p>
+  </div>
+
+  <div class="block">
+    <h3>What a cloud data platform is</h3>
+    <p>An integrated suite of cloud services to collect, store, process, analyze, and act on data at scale &mdash; combining storage, compute, and analytics under pay-as-you-go pricing, with elastic scalability and no physical infrastructure to manage.</p>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <h4><span class="pill accent">Snowflake</span></h4>
+      <p>Separates storage from compute entirely &mdash; one pool of stored data, multiple independent Virtual Warehouses reading from it without contention. Multi-cloud (AWS/Azure/GCP), strong encryption and RBAC. Best for self-service BI and secure cross-team/partner data sharing.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill accent">BigQuery</span></h4>
+      <p>Fully serverless &mdash; submit SQL, pay per data scanned, no cluster to provision. Built on Google's Dremel (query engine), Colossus (storage), Jupiter (network), and Borg (compute, Kubernetes's precursor). BigQuery ML runs ML models via plain SQL. Best inside an existing Google Cloud stack.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill accent">Databricks</span></h4>
+      <p>Combines Spark's processing power with Delta Lake's reliability into a "lakehouse" &mdash; a data lake's flexibility with a warehouse's ACID transactions and schema enforcement. Founded by Spark's own creators; strong for collaborative data science/ML with integrated notebooks.</p>
+    </div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Snowflake was founded in 2012 by Benoit Dageville, Thierry Cruanes, and Marcin Żukowski &mdash; its storage/compute separation directly solved the "noisy neighbor" contention problem of earlier shared-cluster warehouses. BigQuery's Dremel was first described in Google's 2010 VLDB paper, and heavily influenced Apache Drill and the Parquet columnar format; Colossus is GFS's successor (Section 6). Databricks was founded in 2013 by the original AMPLab Spark team (Matei Zaharia, Ali Ghodsi); Delta Lake was open-sourced in 2019 to close the reliability gap between raw lakes and structured warehouses. (rudderstack.com/blog/cloud-data-platform)</p>
+  </div>
+
+  <div class="block">
+    <h3>Detailed comparison</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Snowflake</th><th>Databricks</th><th>BigQuery</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">Core philosophy</td><td>Managed data cloud + AI/native app framework</td><td>Open lakehouse, agentic AI, real-time</td><td>Serverless warehouse + Gemini/Agentspace</td></tr>
+        <tr><td class="hl">Primary user</td><td>Data engineers, analysts, app devs</td><td>Engineers, data scientists, agent devs</td><td>Analysts, ML users, business users</td></tr>
+        <tr><td class="hl">Architecture</td><td>Hybrid multi-cluster, adaptive compute</td><td>Delta/Iceberg + LakeFlow + Lakebase OLTP</td><td>Serverless, per-query auto-scaling</td></tr>
+        <tr><td class="hl">Data support</td><td>Structured/semi-structured, multimodal</td><td>All types incl. multimodal, Unity Catalog</td><td>Structured/semi-structured + semantic UDFs</td></tr>
+        <tr><td class="hl">AI/ML</td><td>Cortex AI, Native Apps, secure agents</td><td>Agent Bricks, MLflow 3.0, serverless GPU</td><td>BigQuery ML, Gemini agents, Looker</td></tr>
+        <tr><td class="hl">Scalability</td><td>Virtual Warehouses + adaptive compute</td><td>User-managed or serverless clusters</td><td>Fully automatic, per-query</td></tr>
+        <tr><td class="hl">Pricing</td><td>Pay-per-second, adaptive</td><td>Pay-per-DBU + cloud VMs</td><td>Pay-per-TB scanned</td></tr>
+        <tr><td class="hl">Cloud strategy</td><td>Multi-cloud (AWS/Azure/GCP)</td><td>Multi-cloud, deep ecosystem</td><td>GCP-only, deep Vertex/Gemini integration</td></tr>
+        <tr><td class="hl">Differentiator</td><td>Simplicity + governance</td><td>Agentic lakehouse + GPU + OLTP</td><td>True serverless + embedded AI</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Independent 2024&ndash;2025 comparisons generally agree: Snowflake wins on ease-of-use, governance, and cross-cloud portability; Databricks wins for heavy data engineering/ML teams wanting an open lakehouse (Delta Lake, Apache Iceberg); BigQuery wins for organizations already committed to Google Cloud wanting a fully serverless experience. All three have converged toward embedding LLM-based "agentic" features directly into their platforms as of 2025&ndash;2026. (datacouch.io/blog/snowflake-vs-databricks-vs-bigquery-2025-guide)</p>
+  </div>
+</section>
+
+<section class="module" id="batch-stream" data-title="Batch vs. Streaming for ML">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">11</span> The capstone question</div>
+    <h2 class="title">It's not batch OR streaming &mdash; it's batch AND streaming, at different points in the ML lifecycle</h2>
+    <p class="dek">Train on batch. Serve on stream. Most production ML systems need both families of tools this lecture covered.</p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4><span class="pill accent">Batch processing</span></h4>
+      <p>Bounded input, a job runs over it, output is produced. Success measured by throughput and data quality. Runs on a schedule &mdash; and because it accumulates data before processing, it introduces latency. This is exactly what MapReduce and traditional Spark jobs are built for.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill good">Stream processing</span></h4>
+      <p>Consumes and produces continuously, operating on small, immutable "events" shortly after they occur, often via a broker like Kafka. Near-real-time, but a harder fault-tolerance problem &mdash; input never stops arriving, so failure recovery happens while data keeps flowing.</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3>Deciding between them: the time value of data</h3>
+    <p>If the business value of your data decays sharply within minutes of being emitted, batch is the wrong first choice. But most decision-making doesn't happen second-to-second &mdash; replicating a database, building reports, updating dashboards are all served fine by batch.</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 700 240" role="img" aria-label="Time value of data: for batch use cases, value builds up over hours to weeks; for streaming use cases, value collapses to near zero within minutes.">
+      <g font-size="10" text-anchor="middle">
+        <text x="160" y="16" fill="var(--text-muted)">Batch use case</text>
+        <line x1="40" y1="150" x2="300" y2="150" stroke="currentColor" stroke-width="1"/>
+        <line x1="40" y1="30" x2="40" y2="150" stroke="currentColor" stroke-width="1"/>
+        <path d="M40,50 C90,90 140,120 300,140" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+        <path d="M40,140 C110,120 180,80 300,45" fill="none" stroke="var(--green)" stroke-width="1.6"/>
+        <text x="40" y="165" font-size="8.5">Real-time</text><text x="300" y="165" font-size="8.5" text-anchor="end">Weeks</text>
+        <text x="270" y="55" fill="var(--green)" font-size="8.5">rising value</text>
+        <text x="270" y="135" fill="var(--red)" font-size="8.5">declining value</text>
+
+        <text x="530" y="16" fill="var(--text-muted)">Streaming use case</text>
+        <line x1="410" y1="150" x2="670" y2="150" stroke="currentColor" stroke-width="1"/>
+        <line x1="410" y1="30" x2="410" y2="150" stroke="currentColor" stroke-width="1"/>
+        <path d="M410,35 C440,110 460,140 670,145" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+        <text x="410" y="165" font-size="8.5">Real-time</text><text x="670" y="165" font-size="8.5" text-anchor="end">Weeks</text>
+        <text x="470" y="45" fill="var(--red)" font-size="8.5">value collapses fast</text>
+
+        <text x="20" y="200" fill="var(--text-muted)" text-anchor="start" font-size="10.5">Q1 &mdash; latency requirements: does value decay within minutes?</text>
+        <text x="20" y="220" fill="var(--text-muted)" text-anchor="start" font-size="10.5">Q2 &mdash; resources: do you have the budget/maturity to build and run a streaming pipeline? Batch still wins on cost.</text>
+      </g>
+    </svg>
+    <figcaption>Batch use cases (reports, dashboards) hold or gain value over hours to weeks. Streaming use cases (fraud alerts, live recommendations) lose almost all value within minutes &mdash; the deciding signal for which paradigm to build.</figcaption>
+  </figure>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; Lambda vs. Kappa</span>
+    <p><strong>Lambda architecture</strong> (Nathan Marz) runs separate batch and speed/streaming layers side by side, merging results &mdash; extra complexity for both deep historical accuracy and low-latency freshness. <strong>Kappa architecture</strong> (Kafka co-creator Jay Kreps, 2014) simplifies this by treating all data, including historical reprocessing, as a single continuous stream &mdash; avoiding two parallel codebases. (kai-waehner.de/blog/2021/09/23/real-time-kappa-architecture-mainstream-replacing-batch-lambda)</p>
+  </div>
+
+  <div class="block">
+    <h3>Where each paradigm fits in the ML lifecycle</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Stage</th><th>Paradigm</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">Initial training</td><td>Batch</td><td>Needs a large, bounded historical dataset and heavy iterative computation</td></tr>
+        <tr><td class="hl">Batch inference</td><td>Batch</td><td>Predictions needed by a scheduled deadline, not instantly &mdash; e.g. daily sales forecasts</td></tr>
+        <tr><td class="hl">Continuous / online training</td><td>Streaming</td><td>Model adapts to fresh patterns without waiting for a full retraining cycle</td></tr>
+        <tr><td class="hl">Real-time inference</td><td>Streaming</td><td>Prediction value collapses within minutes &mdash; fraud detection, live recommendations</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>This batch-for-training, streaming-for-serving pattern is widely recognized MLOps best practice, closely paralleling Lambda architecture: a batch layer for deep historical accuracy (training on the full dataset), a speed layer for immediate results (real-time inference), both feeding a combined serving outcome. (airbyte.com/blog/processing-paradigms-stream-vs-batch-in-the-ml-era)</p>
+  </div>
+</section>
+
+    <!-- 12 : FLASHCARDS -->
+    <section class="module" id="flashcards" data-title="Flashcards">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">12</span> Practice &middot; recall</div>
+        <h2 class="title">Flashcards</h2>
+        <p class="dek">Click a card to flip it. Reset shuffles nothing &mdash; it just flips everything face-up again.</p>
+      </div>
+      <div class="flash-controls">
+        <button id="flashReset">Flip all back</button>
+        <span id="flashCount"></span>
+      </div>
+      <div class="flash-grid" id="flashGrid"></div>
+    </section>
+
+    <!-- 13 : QUIZ -->
+    <section class="module" id="quiz" data-title="Quiz">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">13</span> Practice &middot; test</div>
+        <h2 class="title">Quick quiz</h2>
+        <p class="dek">Questions pulled from the topics this deck flags as frequently tested. Your best score is remembered on this device.</p>
+      </div>
+      <div class="card quiz-card" id="quizCard">
+        <div class="quiz-progress" id="quizProgress"></div>
+        <div class="quiz-q" id="quizQ"></div>
+        <div class="quiz-opts" id="quizOpts"></div>
+        <div class="quiz-explain" id="quizExplain"></div>
+        <div class="quiz-actions">
+          <button class="btn" id="quizNext">Next</button>
+          <span class="quiz-score tabular" id="quizScore"></span>
+        </div>
+        <div class="quiz-result" id="quizResult">
+          <div class="big tabular" id="quizFinalScore"></div>
+          <p id="quizFinalMsg" style="margin-top:6px;"></p>
+          <button class="btn ghost" id="quizRetake">Retake quiz</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 : CHECKLIST -->
+    <section class="module" id="checklist" data-title="Revision Checklist">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">14</span> Before the exam</div>
+        <h2 class="title">Revision checklist</h2>
+        <p class="dek">Checked items persist in this browser, so you can close the tab and pick up where you left off.</p>
+      </div>
+      <div class="check-summary tabular" id="checkSummary"></div>
+      <div class="check-bar"><div class="check-bar-fill" id="checkBarFill"></div></div>
+      <div class="checklist" id="checklistGrid"></div>
+    </section>
+
+    <footer>
+      <p>Built from "L13 &middot; Distributed &amp; Scalable Data Processing" study notes (DMML, presenter Sunil Bhutada). Sources cited within the deck include IBM (Big Data, Big Data Analytics, HDFS, MapReduce), Google Research (GFS, MapReduce, Dremel papers), Edureka's Hadoop ecosystem guide, Apache Spark's research page, Databricks, Cloud Google's Spark/BigQuery guides, RudderStack, DataCouch's cloud-platform comparison, Airbyte, and Kai Waehner on Lambda/Kappa architecture.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- THEME TOGGLE ---------- */
+  var THEME_KEY = "dsp_lab_theme";
+  var root = document.documentElement;
+  var themeBtn = document.getElementById("themeToggle");
+  var themeLabel = document.getElementById("themeToggleLabel");
+  var themeIcon = themeBtn.querySelector(".theme-icon");
+
+  function systemPrefersDark(){
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function getStoredTheme(){
+    try { return localStorage.getItem(THEME_KEY); } catch(e){ return null; }
+  }
+  function applyTheme(theme){
+    if(theme === "light" || theme === "dark"){
+      root.setAttribute("data-theme", theme);
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    var isDark = theme === "dark" || (theme !== "light" && systemPrefersDark());
+    themeIcon.textContent = isDark ? "☾" : "☀";
+    themeLabel.textContent = theme === "light" ? "light" : theme === "dark" ? "dark" : "auto";
+  }
+
+  var storedTheme = getStoredTheme();
+  applyTheme(storedTheme);
+
+  themeBtn.addEventListener("click", function(){
+    var current = getStoredTheme();
+    var isDarkNow = current === "dark" || (!current && systemPrefersDark());
+    var next = isDarkNow ? "light" : "dark";
+    try { localStorage.setItem(THEME_KEY, next); } catch(e){}
+    applyTheme(next);
+  });
+
+  /* ---------- NAV / TASKGROUPS ---------- */
+  var groups = [
+    { key:"g1", label:"landscape", items:[["landscape","Bigdata Analytics Landscape"]] },
+    { key:"g2", label:"challenges", items:[["challenges","Challenges of Big Data"]] },
+    { key:"g3", label:"distributed_parallel", items:[["distributed-parallel","Distributed vs Parallel"]] },
+    { key:"g4", label:"in_memory", items:[["in-memory","In-Memory Computing"]] },
+    { key:"g5", label:"hadoop", items:[["hadoop","Hadoop Ecosystem"]] },
+    { key:"g6", label:"hdfs", items:[["hdfs","HDFS Architecture"]] },
+    { key:"g7", label:"mapreduce", items:[["mapreduce","MapReduce"]] },
+    { key:"g8", label:"spark", items:[["spark","Apache Spark"]] },
+    { key:"g9", label:"streaming", items:[["streaming","Streaming Frameworks"]] },
+    { key:"g10", label:"cloud_platforms", items:[["cloud","Cloud Native Platforms"]] },
+    { key:"g11", label:"batch_vs_stream", items:[["batch-stream","Batch vs Streaming (ML)"]] },
+    { key:"g12", label:"practice", items:[["flashcards","Flashcards"],["quiz","Quiz"],["checklist","Revision Checklist"]] }
+  ];
+
+  var sidebar = document.getElementById("sidebar");
+  groups.forEach(function(g){
+    var wrap = document.createElement("div");
+    wrap.className = "taskgroup";
+    var head = document.createElement("button");
+    head.className = "taskgroup-head";
+    head.innerHTML = '<span class="caret">▾</span><span>' + g.label + '</span>';
+    head.addEventListener("click", function(){ wrap.classList.toggle("collapsed"); });
+    var body = document.createElement("div");
+    body.className = "taskgroup-body";
+    g.items.forEach(function(item){
+      var a = document.createElement("a");
+      a.className = "navlink";
+      a.href = "#" + item[0];
+      a.dataset.target = item[0];
+      a.innerHTML = '<span class="dot">&middot;</span>' + item[1];
+      body.appendChild(a);
+    });
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    sidebar.appendChild(wrap);
+  });
+
+  var navlinks = Array.prototype.slice.call(document.querySelectorAll(".navlink"));
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".module"));
+
+  /* ---------- DAG PROGRESS STRIP ---------- */
+  var strip = document.getElementById("dagstrip");
+  var progressLabel = document.getElementById("progressLabel");
+  var visited = {};
+  sections.forEach(function(sec){
+    var btn = document.createElement("button");
+    btn.className = "node";
+    btn.dataset.target = sec.id;
+    btn.title = sec.dataset.title;
+    btn.addEventListener("click", function(){
+      document.getElementById(sec.id).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    strip.appendChild(btn);
+  });
+  var stripNodes = Array.prototype.slice.call(strip.querySelectorAll(".node"));
+
+  function updateProgressLabel(){
+    var count = Object.keys(visited).length;
+    progressLabel.textContent = count + "/" + sections.length + " modules";
+  }
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var id = entry.target.id;
+      if(entry.isIntersecting){
+        visited[id] = true;
+        navlinks.forEach(function(l){ l.classList.toggle("active", l.dataset.target === id); });
+        stripNodes.forEach(function(n){
+          if(n.dataset.target === id) n.dataset.state = "active";
+          else if(visited[n.dataset.target]) n.dataset.state = "visited";
+        });
+        updateProgressLabel();
+      }
+    });
+  }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+
+  navlinks.forEach(function(l){
+    l.addEventListener("click", function(e){
+      e.preventDefault();
+      document.getElementById(l.dataset.target).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  });
+
+  /* ---------- FLASHCARDS ---------- */
+  var terms = [
+    ["Big data", "Massive, complex data sets traditional data-management systems cannot handle — an ecosystem of tools/methods to capture, store, manage, and analyze data at scale."],
+    ["The 5 V's", "Volume, Velocity, Variety, Veracity, Value — the checklist for what makes data 'big.' Originally 3 V's (Doug Laney, 2001); Veracity and Value added later."],
+    ["Data locality", "Moving computation to where data resides, rather than moving data to computation — a foundational MapReduce/HDFS efficiency principle."],
+    ["ETL vs ELT", "ETL = clean data before loading (traditional warehouses). ELT = load raw data first, transform later — the pattern underlying data lakes and cloud platforms."],
+    ["Distributed computing", "Independent machines, each with own memory/CPU, coordinating over a network — loosely coupled, horizontally scalable, fault-tolerant."],
+    ["Parallel computing", "Multiple processors inside one machine sharing common memory — tightly coupled, vertically scalable, a single point of failure."],
+    ["Amdahl's Law", "The max speedup from parallelizing a fraction p of a program is capped at 1/(1-p), no matter how many processors are added."],
+    ["In-memory computing (IMC)", "Keeping data primarily in RAM instead of disk — microsecond access vs. disk's millisecond access, a roughly 100,000x gap."],
+    ["Hadoop", "Open-source framework for distributed storage and parallel processing of huge data volumes across commodity-hardware clusters."],
+    ["HDFS", "Hadoop Distributed File System — splits files into replicated blocks distributed across DataNodes, tracked by a NameNode."],
+    ["NameNode", "HDFS's single director node — tracks file status, permissions, and every block's location; holds no data itself."],
+    ["DataNode", "HDFS worker node — stores actual data blocks on local disk, handles block creation/deletion/replication and read/write requests."],
+    ["HDFS replication factor", "Default is 3 copies of every block, spread across different DataNodes, so losing one node loses no data."],
+    ["YARN", "Yet Another Resource Negotiator — Hadoop's resource-management/job-scheduling layer, introduced in Hadoop 2.0 so non-MapReduce engines like Spark could share a cluster."],
+    ["MapReduce", "A programming model splitting big jobs into parallel Map (produce key/value pairs) and Reduce (aggregate per key) tasks."],
+    ["Shuffle (MapReduce)", "The step that sorts and routes all key/value pairs so every pair sharing a key lands at the same reducer."],
+    ["Hive", "SQL-on-Hadoop tool for structured, batch-oriented querying — contributed by Facebook."],
+    ["Pig", "A high-level scripting language ('Pig Latin') for processing large datasets on Hadoop — contributed by Yahoo."],
+    ["HBase", "A distributed, scalable NoSQL database built on top of HDFS, inspired by Google's Bigtable paper."],
+    ["Flume vs Sqoop", "Flume moves large volumes of unstructured/log data into Hadoop; Sqoop transfers structured data between RDBMS and Hadoop."],
+    ["Zookeeper", "Coordinates and synchronizes distributed components across a Hadoop cluster."],
+    ["RDD", "Resilient Distributed Dataset — Spark's fault-tolerant, in-memory distributed data abstraction, recoverable via lineage rather than disk replication."],
+    ["DAG (Spark)", "Directed Acyclic Graph of all requested transformations, built before execution so Spark can optimize the whole plan."],
+    ["Lazy evaluation", "Spark transformations aren't run immediately — only when an 'action' (e.g. .collect()) triggers execution of the full DAG."],
+    ["DataFrame vs RDD", "DataFrames add a schema on top of RDDs, enabling the Catalyst optimizer to rewrite queries more efficiently than raw RDDs allow."],
+    ["Spark Driver", "The master-node program holding the Spark Context — the 'gateway' through which all Spark commands are issued."],
+    ["Spark Cluster Manager", "Splits a job into tasks and distributes them across available worker nodes (Standalone, YARN, Mesos, or Kubernetes)."],
+    ["Spark Worker Node", "Executes assigned tasks on its data partition and caches data in memory for reuse; more workers = more parallelism + more cache."],
+    ["Spark Core", "The base engine handling memory management, fault recovery, scheduling, and cluster monitoring underneath every Spark library."],
+    ["MLlib", "Spark's built-in machine learning library."],
+    ["GraphX", "Spark's API for graphs and graph-parallel computation, extending RDDs with a Resilient Distributed Property Graph."],
+    ["DStream", "Discretized Stream — Spark Streaming's abstraction representing a live stream as a sequence of small RDD-based micro-batches."],
+    ["Structured Streaming", "Spark's high-level streaming API treating a stream as an infinitely growing table, incrementally executing batch-style queries."],
+    ["Apache Flink", "A true event-at-a-time streaming engine with exactly-once state consistency and sophisticated out-of-order/late-event handling."],
+    ["Ray Task", "A stateless function executed remotely on another machine, with no memory of past calls."],
+    ["Ray Actor", "An instance of a class kept alive on a remote machine, retaining state between calls — e.g. for RL or online learning."],
+    ["Dask", "A native Python library scaling NumPy/Pandas/scikit-learn-style code via collections → task graph → scheduler, without a JVM."],
+    ["Storage/compute separation", "The shared architectural principle behind Snowflake, BigQuery, and (via Delta Lake) Databricks — scale each independently, pay only for what's used."],
+    ["Snowflake Virtual Warehouse", "An independent compute cluster reading from one shared storage pool — lets teams run heavy queries without contention."],
+    ["BigQuery's Dremel", "Google's distributed SQL query engine underneath BigQuery, organized as a root/mixer/leaf execution tree fanning a query across many machines."],
+    ["Lakehouse (Databricks)", "Combines a data lake's cheap flexibility with a warehouse's reliability (ACID transactions, schema enforcement) via Delta Lake."],
+    ["Batch processing", "Bounded input processed all at once on a schedule — higher throughput, but introduces latency by design."],
+    ["Stream processing", "Continuous processing of small, immutable events shortly after they occur — low latency, harder fault tolerance."],
+    ["Time value of data", "The heuristic for choosing batch vs. streaming: does the data's business value decay within minutes, or hold for hours/days/weeks?"],
+    ["Lambda architecture", "Runs separate batch and speed/streaming layers side by side, merging results — more complexity, both deep accuracy and freshness."],
+    ["Kappa architecture", "Treats all data, including historical reprocessing, as a single continuous stream — avoids maintaining two parallel codebases."],
+    ["Batch-for-training, streaming-for-serving", "The common ML pattern: batch for initial training and bulk inference; streaming for continuous/online training and real-time inference."]
+  ];
+  var flashGrid = document.getElementById("flashGrid");
+  terms.forEach(function(t){
+    var card = document.createElement("div");
+    card.className = "flashcard";
+    card.innerHTML =
+      '<div class="flashcard-inner">' +
+        '<div class="flashcard-face front"><div class="term">' + t[0] + '</div><div class="hint">click to reveal</div></div>' +
+        '<div class="flashcard-face back"><div class="def">' + t[1] + '</div></div>' +
+      '</div>';
+    card.addEventListener("click", function(){ card.classList.toggle("flipped"); });
+    flashGrid.appendChild(card);
+  });
+  document.getElementById("flashCount").textContent = terms.length + " terms";
+  document.getElementById("flashReset").addEventListener("click", function(){
+    Array.prototype.slice.call(flashGrid.children).forEach(function(c){ c.classList.remove("flipped"); });
+  });
+
+  /* ---------- QUIZ ---------- */
+  var quizData = [
+    { q:"What were the original 3 V's of big data, and who coined them?", opts:["Volume, Velocity, Value — IBM","Volume, Velocity, Variety — Doug Laney (Gartner/META Group, 2001)","Volume, Veracity, Value — Google","Variety, Veracity, Value — Hadoop team"], correct:1, exp:"Laney's 2001 note pre-dates the mainstream term 'big data' itself; Veracity and Value were added later." },
+    { q:"What is the key difference between ETL and ELT?", opts:["ETL loads raw data first, ELT transforms first","ELT loads raw data first and defers transformation — enabled by cheap cloud storage","They are the same process","ELT only works with RDBMS"], correct:1, exp:"ELT's rise is tied directly to cheap, scalable cloud storage making it economical to dump raw data first." },
+    { q:"In the parallel vs. distributed computing distinction, what does 'tightly coupled' refer to?", opts:["Machines connected by a network","Processors sharing a single physical memory space","Independent nodes with their own OS","Cloud-based virtual machines"], correct:1, exp:"Parallel systems are tightly coupled because processing units directly share memory; distributed systems are loosely coupled over a network." },
+    { q:"Why do distributed systems favor fault tolerance over a parallel system's raw speed?", opts:["Distributed systems are always cheaper","At big-data scale, hardware failure across thousands of commodity machines is a statistical certainty, not an edge case","Parallel systems cannot use commodity hardware","Distributed systems don't require networking"], correct:1, exp:"This is exactly the design philosophy behind Google's GFS/MapReduce and, later, Hadoop." },
+    { q:"Roughly how much faster is a main-memory reference than a disk seek?", opts:["About 10x", "About 1,000x", "About 100,000x", "About 10,000,000x"], correct:2, exp:"~100 ns for RAM vs. ~10 ms for disk — a gap popularized by Jeff Dean's 'Numbers Everyone Should Know' talks." },
+    { q:"In HDFS, what does the NameNode actually store?", opts:["The full contents of every file","Only metadata — file status, permissions, and block locations", "Nothing; it is a passive load balancer", "A complete replica of every DataNode's blocks"], correct:1, exp:"The NameNode is the 'director' — it never holds file data itself, only the map of where every block lives." },
+    { q:"What is HDFS's default block replication factor?", opts:["1", "2", "3", "5"], correct:2, exp:"Three copies of every block by default, spread across different DataNodes — matching GFS's own default." },
+    { q:"In MapReduce, what is the purpose of the Shuffle step?", opts:["To randomize the input data for privacy","To sort and route all key/value pairs so every pair sharing a key reaches the same reducer","To compress data before writing to disk","To split the input file into blocks"], correct:1, exp:"Without Shuffle grouping identical keys together, a Reducer could never see all the values for its key." },
+    { q:"In the word-count MapReduce example, what does the Mapping phase produce?", opts:["Final summed counts per word","(word, 1) pairs for every word occurrence, unsummed","A sorted list of unique words","Nothing — mapping only splits the input"], correct:1, exp:"Each occurrence becomes an individual (word,1) pair; summing only happens later, in Reduce." },
+    { q:"Why is Apache Spark generally much faster than Hadoop MapReduce for iterative algorithms like ML training?", opts:["Spark uses a different programming language","Spark keeps intermediate data in memory between stages instead of writing to disk each time","Spark does not use a cluster","MapReduce cannot run on commodity hardware"], correct:1, exp:"MapReduce pays the disk read/write cost every single iteration; Spark pays it once and reuses cached in-memory data." },
+    { q:"What is an RDD's fault-tolerance mechanism?", opts:["Disk replication of every partition","Lineage — Spark remembers how each RDD was derived and can recompute a lost partition","A separate backup cluster","RDDs cannot recover from failure"], correct:1, exp:"This lineage-based recovery, from Zaharia et al.'s 2012 NSDI paper, avoids needing to replicate data to disk like GFS/HDFS do." },
+    { q:"What does 'lazy evaluation' mean in Spark?", opts:["Spark runs code slowly on purpose","Transformations are not executed until an action triggers the full DAG, letting Spark optimize the whole plan first","Spark skips error handling","Spark only works with cached data"], correct:1, exp:"Like planning an entire road trip before driving, rather than deciding turn by turn." },
+    { q:"In Spark's architecture, what does the Cluster Manager do?", opts:["Executes the actual computation","Splits a job into tasks and distributes them across available worker nodes","Stores the final output","Writes the DAG to disk"], correct:1, exp:"The Driver's Spark Context requests resources from the Cluster Manager, which hands out tasks to Workers." },
+    { q:"Which Spark library lets you query data via SQL or HiveQL?", opts:["MLlib","GraphX","Spark SQL","Spark Streaming"], correct:2, exp:"Spark SQL integrates relational processing with Spark's functional API, evolving from the earlier Shark project." },
+    { q:"What is the key difference between Spark Streaming (DStreams) and Structured Streaming?", opts:["DStreams are micro-batches built on RDDs; Structured Streaming treats the stream as an incrementally-queried unbounded table","They are identical APIs","DStreams cannot integrate with MLlib","Structured Streaming does not support SQL"], correct:0, exp:"Structured Streaming lets you write batch-style queries that Spark automatically incrementalizes at each trigger." },
+    { q:"What distinguishes Apache Flink from Spark Streaming?", opts:["Flink cannot run on a cluster","Flink processes each event individually and immediately (true streaming), rather than in micro-batches","Flink only supports batch jobs","Flink has no fault tolerance"], correct:1, exp:"Flink was built streaming-first, with event-time processing and exactly-once state consistency, unlike Spark's micro-batch model." },
+    { q:"In Ray, what is the difference between a Task and an Actor?", opts:["A Task is stateful, an Actor is stateless","A Task is a stateless remote function call; an Actor is a class instance that keeps state between calls","Tasks only run locally","Actors cannot be used for reinforcement learning"], correct:1, exp:"Actors are essential for stateful use cases like online ML models or ongoing simulations." },
+    { q:"What makes Dask distinct from Spark or Flink?", opts:["Dask is JVM-based like Spark","Dask is a native Python library that scales existing NumPy/Pandas/scikit-learn code directly, without a JVM","Dask cannot build task graphs","Dask only works on a single machine"], correct:1, exp:"This makes Dask popular specifically with data scientists who want to scale existing Python code with minimal rewriting." },
+    { q:"What is the shared architectural principle behind Snowflake, BigQuery, and Databricks?", opts:["All three run exclusively on-premises","Separation of storage and compute, allowing each to scale (and be priced) independently","All three require the same programming language","None support SQL"], correct:1, exp:"This separation is what lets multiple workloads run against the same data without resource contention." },
+    { q:"What are Dremel, Colossus, Jupiter, and Borg, as referenced in BigQuery's architecture?", opts:["Four separate SaaS companies","Google's internal query engine, distributed storage, network fabric, and cluster manager underlying BigQuery","Four different Hadoop distributions","Four Apache Software Foundation projects"], correct:1, exp:"Colossus is GFS's successor; Borg directly inspired Kubernetes's design." },
+    { q:"What does the 'lakehouse' architecture (Databricks/Delta Lake) combine?", opts:["Two separate warehouses","A data lake's cheap flexibility with a data warehouse's reliability features like ACID transactions","Two competing cloud vendors","Batch processing with no storage layer"], correct:1, exp:"Delta Lake adds a transaction log on top of cloud object storage, giving database-like guarantees without losing the lake's openness and low cost." },
+    { q:"According to the 'time value of data' framework, when should you avoid batch processing?", opts:["When data volume is very large","When the business value of the data decays sharply within the first few minutes after it's emitted","When the data is structured","When cost is not a concern"], correct:1, exp:"If value doesn't decay that fast — true for most reporting and dashboarding — batch remains simpler, cheaper, and adequate." },
+    { q:"What is the second key question (besides latency) for choosing batch vs. streaming?", opts:["What programming language is used","What resources are available to build and maintain the pipeline","How many V's the data has","What cloud provider is used"], correct:1, exp:"Streaming pipelines are inherently more operationally complex and costly to build and maintain than batch pipelines." },
+    { q:"What is the core difference between Lambda and Kappa architecture?", opts:["Lambda runs separate batch and streaming layers merged at serving time; Kappa treats all data as one continuous stream, including reprocessing","They are identical","Kappa cannot handle historical data","Lambda was proposed by Jay Kreps"], correct:0, exp:"Kappa (Jay Kreps, 2014) simplifies Lambda by avoiding the need to maintain two parallel codebases." },
+    { q:"In the ML lifecycle, which processing paradigm is typically used for initial model training?", opts:["Streaming, because models must adapt instantly","Batch, because training needs a large bounded historical dataset and heavy iterative computation","Neither — training doesn't use either paradigm","Streaming, because training data is always small"], correct:1, exp:"Batch inference (e.g. daily forecasts) also uses batch; streaming is reserved for continuous training and real-time inference." },
+    { q:"Which use case is the canonical justification for real-time inference via streaming?", opts:["Monthly sales trend reports","Fraud detection and live recommendation engines, where prediction value collapses within minutes","Annual compliance audits","Static dataset backups"], correct:1, exp:"These are the same use cases repeatedly cited across the streaming-frameworks section (Kafka, Flink) as justification for adopting stream processing." },
+    { q:"What is 'data locality,' and where does it first appear conceptually in this lecture?", opts:["Encrypting data at rest; appears in the cloud platforms section","Moving computation to where data resides rather than moving data to computation; appears with Big Data Analytics (Section 1) and recurs in HDFS/MapReduce","Storing data in one location only; appears in HDFS","A GDPR requirement; appears in the challenges section"], correct:1, exp:"Popularized by Google's MapReduce paper, data locality is a design goal inherited by Hadoop and referenced repeatedly throughout the deck." }
+  ];
+  var qIdx = 0, qScore = 0, qAnswered = false;
+  var quizProgress = document.getElementById("quizProgress");
+  var quizQ = document.getElementById("quizQ");
+  var quizOpts = document.getElementById("quizOpts");
+  var quizExplain = document.getElementById("quizExplain");
+  var quizNext = document.getElementById("quizNext");
+  var quizScore = document.getElementById("quizScore");
+  var quizCard = document.getElementById("quizCard");
+  var quizResult = document.getElementById("quizResult");
+
+  function bestScore(){
+    try { return parseInt(localStorage.getItem("dsp_lab_best_score") || "0", 10); } catch(e){ return 0; }
+  }
+  function saveBest(score){
+    try { if(score > bestScore()) localStorage.setItem("dsp_lab_best_score", String(score)); } catch(e){}
+  }
+
+  function renderQuestion(){
+    qAnswered = false;
+    var item = quizData[qIdx];
+    quizProgress.textContent = "Question " + (qIdx+1) + " / " + quizData.length;
+    quizQ.textContent = item.q;
+    quizOpts.innerHTML = "";
+    quizExplain.classList.remove("show");
+    quizExplain.textContent = "";
+    quizNext.textContent = (qIdx === quizData.length - 1) ? "Finish" : "Next";
+    item.opts.forEach(function(opt, i){
+      var b = document.createElement("button");
+      b.className = "quiz-opt";
+      b.textContent = opt;
+      b.addEventListener("click", function(){
+        if(qAnswered) return;
+        qAnswered = true;
+        var buttons = Array.prototype.slice.call(quizOpts.children);
+        buttons.forEach(function(bb, bi){
+          bb.setAttribute("disabled","true");
+          if(bi === item.correct) bb.classList.add("correct");
+          else if(bi === i) bb.classList.add("incorrect");
+        });
+        if(i === item.correct) qScore++;
+        quizExplain.textContent = item.exp;
+        quizExplain.classList.add("show");
+        quizScore.textContent = "score " + qScore + "/" + quizData.length;
+      });
+      quizOpts.appendChild(b);
+    });
+    quizScore.textContent = "score " + qScore + "/" + quizData.length;
+  }
+
+  quizNext.addEventListener("click", function(){
+    if(!qAnswered) return;
+    if(qIdx < quizData.length - 1){
+      qIdx++;
+      renderQuestion();
+    } else {
+      saveBest(qScore);
+      quizCard.querySelectorAll(".quiz-progress,.quiz-q,.quiz-opts,.quiz-explain,.quiz-actions").forEach(function(el){ el.style.display = "none"; });
+      document.getElementById("quizFinalScore").textContent = qScore + "/" + quizData.length;
+      var pct = Math.round((qScore/quizData.length)*100);
+      var msg = pct === 100 ? "Perfect run." : pct >= 75 ? "Solid — revisit the misses above." : "Worth another pass through the deck.";
+      document.getElementById("quizFinalMsg").textContent = msg + " Best on this device: " + Math.max(qScore, bestScore()) + "/" + quizData.length + ".";
+      quizResult.classList.add("show");
+    }
+  });
+  document.getElementById("quizRetake").addEventListener("click", function(){
+    qIdx = 0; qScore = 0;
+    quizResult.classList.remove("show");
+    quizCard.querySelectorAll(".quiz-progress,.quiz-q,.quiz-opts,.quiz-explain,.quiz-actions").forEach(function(el){ el.style.display = ""; });
+    renderQuestion();
+  });
+  renderQuestion();
+
+  /* ---------- CHECKLIST ---------- */
+  var checklistItems = [
+    "Can define Big Data and explain the V's (Volume, Velocity, Variety, Veracity, Value) with an example for each",
+    "Can explain the difference between traditional data analytics (ETL) and big data analytics (ELT)",
+    "Can list the six major challenges of big data analytics and at least one mitigation strategy for each",
+    "Can distinguish Distributed Computing from Parallel Computing across architecture, memory, communication speed, scalability, and fault tolerance",
+    "Can explain why in-memory computing is faster than disk-based computing, and quantify the rough speed difference",
+    "Can draw the Hadoop ecosystem diagram and correctly place each major tool (HDFS, YARN, MapReduce, Hive, Pig, HBase, Spark, Kafka, Flume, Sqoop, Zookeeper, Oozie, Ambari) in its layer",
+    "Can describe the NameNode/DataNode architecture of HDFS and explain block replication and its default factor",
+    "Can walk through a full MapReduce word-count example by hand (splitting, mapping, shuffling, reducing, final result)",
+    "Can explain why MapReduce struggles with iterative algorithms, and how Spark's RDD/in-memory model solves this",
+    "Can describe Spark's architecture (Driver, Spark Context, Cluster Manager, Worker Nodes, Executors) and the role of the DAG and lazy evaluation",
+    "Can name and briefly describe each Spark library (Spark Core, Spark SQL, MLlib, Spark Streaming, GraphX)",
+    "Can differentiate DStreams (micro-batch) from Structured Streaming (incremental/unbounded table model)",
+    "Can compare Spark, Flink, Ray, and Dask on latency, processing model, and ideal use case",
+    "Can compare Snowflake, BigQuery, and Databricks on architecture (storage/compute separation), pricing, and best-fit use case",
+    "Can apply the 'time value of data' concept to decide whether a use case needs streaming or can use batch processing",
+    "Can explain how batch and streaming processing are combined across the ML lifecycle (training, batch inference, online training, real-time inference)",
+    "Can explain Lambda vs. Kappa architecture and when each is appropriate"
+  ];
+  var checklistGrid = document.getElementById("checklistGrid");
+  var checkSummary = document.getElementById("checkSummary");
+  var checkBarFill = document.getElementById("checkBarFill");
+  var STORE_KEY = "dsp_lab_checklist_v1";
+
+  function loadChecks(){
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch(e){ return {}; }
+  }
+  function saveChecks(state){
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
+  }
+  var checkState = loadChecks();
+
+  function refreshSummary(){
+    var done = Object.keys(checkState).filter(function(k){ return checkState[k]; }).length;
+    checkSummary.textContent = done + " / " + checklistItems.length + " checked";
+    checkBarFill.style.width = Math.round((done/checklistItems.length)*100) + "%";
+  }
+
+  checklistItems.forEach(function(text, idx){
+    var id = "chk_" + idx;
+    var row = document.createElement("label");
+    row.className = "check-item" + (checkState[id] ? " done" : "");
+    row.innerHTML = '<input type="checkbox" id="' + id + '"' + (checkState[id] ? " checked" : "") + '><span>' + text + '</span>';
+    var input = row.querySelector("input");
+    input.addEventListener("change", function(){
+      checkState[id] = input.checked;
+      row.classList.toggle("done", input.checked);
+      saveChecks(checkState);
+      refreshSummary();
+    });
+    checklistGrid.appendChild(row);
+  });
+  refreshSummary();
+
+})();
+</script>
