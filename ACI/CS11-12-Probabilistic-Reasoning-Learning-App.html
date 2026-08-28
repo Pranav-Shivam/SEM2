@@ -1,0 +1,1273 @@
+<meta charset="utf-8">
+<title>Probabilistic Reasoning Lab</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#F3F6F5;
+  --surface:#FFFFFF;
+  --surface-2:#E8EEEC;
+  --surface-3:#DEE7E4;
+  --border:#CBD6D2;
+  --text:#152220;
+  --text-muted:#546661;
+  --text-faint:#849691;
+  --accent:#0E7C74;
+  --accent-strong:#0A5A54;
+  --accent-soft:#DCEEEB;
+  --amber:#9A600B;
+  --amber-soft:#F3E4CB;
+  --green:#2E8B4F;
+  --green-soft:#DEF0E2;
+  --red:#B23A2E;
+  --red-soft:#F6E0DC;
+  --shadow: 0 1px 2px rgba(15,30,28,0.06), 0 8px 24px rgba(15,30,28,0.06);
+  --radius: 10px;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, Segoe UI, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1412;
+    --surface:#121C19;
+    --surface-2:#182420;
+    --surface-3:#213029;
+    --border:#2B3B35;
+    --text:#E7EEEC;
+    --text-muted:#93A5A0;
+    --text-faint:#5F7570;
+    --accent:#4FD8C4;
+    --accent-strong:#7CE6D6;
+    --accent-soft:#173430;
+    --amber:#E3A857;
+    --amber-soft:#33280F;
+    --green:#79D19B;
+    --green-soft:#163627;
+    --red:#E8776A;
+    --red-soft:#341F1B;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.45);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1412;
+  --surface:#121C19;
+  --surface-2:#182420;
+  --surface-3:#213029;
+  --border:#2B3B35;
+  --text:#E7EEEC;
+  --text-muted:#93A5A0;
+  --text-faint:#5F7570;
+  --accent:#4FD8C4;
+  --accent-strong:#7CE6D6;
+  --accent-soft:#173430;
+  --amber:#E3A857;
+  --amber-soft:#33280F;
+  --green:#79D19B;
+  --green-soft:#163627;
+  --red:#E8776A;
+  --red-soft:#341F1B;
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.45);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--font-mono);font-weight:600;text-wrap:balance;margin:0;color:var(--text);}
+p{margin:0 0 0.9em 0;max-width:66ch;color:var(--text);}
+a{color:var(--accent-strong);}
+::selection{background:var(--accent-soft);}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+.tabular{font-variant-numeric:tabular-nums;}
+code{font-family:var(--font-mono);font-size:0.92em;background:var(--surface-2);padding:1px 5px;border-radius:4px;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;scroll-behavior:auto !important;}
+}
+
+/* ============ APP SHELL ============ */
+.app{display:grid;grid-template-columns:272px 1fr;grid-template-rows:auto 1fr;min-height:100vh;}
+.topbar{
+  grid-column:1 / -1;
+  display:flex;align-items:center;gap:20px;
+  padding:12px 22px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:40;
+}
+.topbar .brand{display:flex;align-items:center;gap:10px;flex:0 0 auto;}
+.brand-mark{
+  width:30px;height:30px;border-radius:7px;
+  background:var(--accent);color:var(--surface);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;font-size:14px;
+  flex-shrink:0;
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.1;}
+.brand-text strong{font-family:var(--font-mono);font-size:14px;letter-spacing:0.01em;}
+.brand-text span{font-size:11px;color:var(--text-muted);font-family:var(--font-mono);}
+
+/* DAG progress strip */
+.dagstrip{display:flex;align-items:center;gap:3px;overflow-x:auto;flex:1 1 auto;padding:4px 0;}
+.dagstrip .node{
+  flex:1 1 0;min-width:16px;height:8px;border-radius:4px;
+  background:var(--surface-3);position:relative;cursor:pointer;border:none;padding:0;
+  transition:background 160ms ease;
+}
+.dagstrip .node[data-state="active"]{background:var(--accent);}
+.dagstrip .node[data-state="visited"]{background:var(--accent-soft);}
+.dagstrip .node:hover{background:var(--accent);}
+.dagstrip::-webkit-scrollbar{height:0;}
+.progress-label{font-family:var(--font-mono);font-size:11px;color:var(--text-muted);white-space:nowrap;flex:0 0 auto;}
+.theme-toggle{
+  display:flex;align-items:center;gap:6px;flex:0 0 auto;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.03em;text-transform:uppercase;
+  padding:6px 11px;border-radius:20px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text-muted);cursor:pointer;
+}
+.theme-toggle:hover{background:var(--surface-3);color:var(--text);}
+.theme-icon{font-size:13px;line-height:1;}
+
+/* ============ SIDEBAR ============ */
+.sidebar{
+  border-right:1px solid var(--border);
+  background:var(--surface);
+  padding:18px 12px 60px;
+  overflow-y:auto;
+  position:sticky;top:57px;
+  height:calc(100vh - 57px);
+}
+.taskgroup{margin-bottom:6px;}
+.taskgroup-head{
+  display:flex;align-items:center;gap:8px;width:100%;
+  background:none;border:none;text-align:left;cursor:pointer;
+  padding:8px 10px;border-radius:8px;color:var(--text-muted);
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.04em;text-transform:uppercase;
+}
+.taskgroup-head:hover{background:var(--surface-2);color:var(--text);}
+.taskgroup-head .caret{transition:transform 160ms ease;font-size:10px;}
+.taskgroup.collapsed .caret{transform:rotate(-90deg);}
+.taskgroup.collapsed .taskgroup-body{display:none;}
+.taskgroup-body{display:flex;flex-direction:column;gap:1px;padding:2px 0 8px 8px;}
+.navlink{
+  display:flex;align-items:baseline;gap:8px;
+  padding:7px 10px;border-radius:7px;color:var(--text);
+  text-decoration:none;font-size:13.5px;border-left:2px solid transparent;
+}
+.navlink:hover{background:var(--surface-2);}
+.navlink.active{background:var(--accent-soft);border-left-color:var(--accent);color:var(--accent-strong);font-weight:600;}
+.navlink .dot{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);}
+
+/* ============ MAIN ============ */
+main{padding:0;overflow-x:hidden;min-width:0;}
+.module{
+  padding:56px clamp(20px,5vw,64px) 40px;
+  border-bottom:1px solid var(--border);
+  scroll-margin-top:64px;
+}
+.module:last-of-type{border-bottom:none;}
+.module-head{max-width:76ch;margin-bottom:28px;}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--accent-strong);margin-bottom:10px;
+}
+.eyebrow .idx{
+  background:var(--accent-soft);color:var(--accent-strong);
+  padding:1px 7px;border-radius:5px;font-weight:700;
+}
+h2.title{font-size:clamp(24px,3vw,32px);letter-spacing:-0.01em;}
+.dek{color:var(--text-muted);font-size:16px;margin-top:8px;max-width:64ch;}
+
+.block{max-width:76ch;margin-bottom:26px;}
+.block h3{font-size:16.5px;margin-bottom:8px;color:var(--text);}
+.block h4{font-size:14px;font-family:var(--font-sans);font-weight:600;margin-bottom:6px;}
+
+.grid{display:grid;gap:16px;}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+@media (max-width:880px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);
+}
+.card h4{display:flex;align-items:center;gap:8px;}
+.card p:last-child{margin-bottom:0;}
+.card.compact{padding:14px 16px;}
+
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:11px;letter-spacing:0.03em;
+  padding:3px 9px;border-radius:20px;border:1px solid var(--border);
+  color:var(--text-muted);background:var(--surface-2);
+}
+.pill.good{color:var(--green);background:var(--green-soft);border-color:transparent;}
+.pill.bad{color:var(--red);background:var(--red-soft);border-color:transparent;}
+.pill.warn{color:var(--amber);background:var(--amber-soft);border-color:transparent;}
+.pill.accent{color:var(--accent-strong);background:var(--accent-soft);border-color:transparent;}
+
+/* field note aside */
+.fieldnote{
+  border-left:3px solid var(--accent);
+  background:var(--surface-2);
+  border-radius:0 8px 8px 0;
+  padding:14px 18px;margin:18px 0;max-width:72ch;
+}
+.fieldnote .fn-label{
+  font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--accent-strong);margin-bottom:6px;display:block;
+}
+.fieldnote p{margin:0;font-size:14.5px;color:var(--text);max-width:none;}
+.fieldnote p + p{margin-top:8px;}
+
+/* comparison table */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:16px 0;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:420px;}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+thead th{
+  font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.04em;
+  color:var(--text-muted);background:var(--surface-2);position:sticky;top:0;white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--surface-2);}
+td.hl{color:var(--accent-strong);font-weight:600;}
+td.num{font-family:var(--font-mono);}
+
+/* diagrams */
+figure.diagram{margin:18px 0;max-width:100%;}
+figure.diagram svg{max-width:100%;height:auto;display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);}
+figure.diagram figcaption{font-size:13px;color:var(--text-muted);margin-top:8px;max-width:66ch;}
+.diagram-row{display:flex;gap:18px;flex-wrap:wrap;}
+.diagram-row figure{flex:1 1 260px;}
+svg text{font-family:var(--font-mono);fill:currentColor;}
+
+/* formula block */
+.formula{
+  font-family:var(--font-mono);font-size:14.5px;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:14px 0;
+  max-width:64ch;color:var(--accent-strong);overflow-x:auto;white-space:pre;
+}
+
+/* flashcards */
+.flash-controls{display:flex;gap:10px;align-items:center;margin-bottom:18px;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);}
+.flash-controls button{
+  font-family:var(--font-sans);font-size:13px;padding:7px 14px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text);
+}
+.flash-controls button:hover{background:var(--surface-2);}
+.flash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.flashcard{
+  perspective:900px;height:150px;cursor:pointer;
+}
+.flashcard-inner{
+  position:relative;width:100%;height:100%;transition:transform 420ms cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;
+}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
+.flashcard-face{
+  position:absolute;inset:0;border-radius:var(--radius);border:1px solid var(--border);
+  backface-visibility:hidden;padding:16px;display:flex;flex-direction:column;
+  background:var(--surface);box-shadow:var(--shadow);
+}
+.flashcard-face.back{transform:rotateY(180deg);background:var(--accent-soft);border-color:transparent;}
+.flashcard-face .term{font-family:var(--font-mono);font-weight:600;font-size:14.5px;margin-bottom:8px;color:var(--accent-strong);}
+.flashcard-face .hint{font-size:12px;color:var(--text-muted);margin-top:auto;}
+.flashcard-face .def{font-size:13.5px;line-height:1.45;overflow-y:auto;color:var(--text);}
+
+/* quiz */
+.quiz-card{max-width:64ch;}
+.quiz-progress{font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+.quiz-q{font-size:16px;font-weight:600;margin-bottom:14px;font-family:var(--font-sans);}
+.quiz-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.quiz-opt{
+  text-align:left;padding:11px 14px;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface);cursor:pointer;font-size:14px;color:var(--text);
+}
+.quiz-opt:hover{background:var(--surface-2);}
+.quiz-opt.correct{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600;}
+.quiz-opt.incorrect{background:var(--red-soft);border-color:var(--red);color:var(--red);font-weight:600;}
+.quiz-opt[disabled]{cursor:default;}
+.quiz-explain{font-size:13.5px;color:var(--text-muted);background:var(--surface-2);border-radius:8px;padding:12px 14px;margin-bottom:14px;display:none;}
+.quiz-explain.show{display:block;}
+.quiz-actions{display:flex;gap:10px;align-items:center;}
+.btn{
+  font-family:var(--font-mono);font-size:13px;font-weight:600;
+  padding:9px 18px;border-radius:8px;border:1px solid var(--accent);
+  background:var(--accent);color:var(--surface);cursor:pointer;
+}
+.btn:hover{background:var(--accent-strong);border-color:var(--accent-strong);}
+.btn.ghost{background:transparent;color:var(--accent-strong);}
+.quiz-score{font-family:var(--font-mono);font-size:14px;color:var(--text-muted);}
+.quiz-result{display:none;text-align:center;padding:24px 0;}
+.quiz-result.show{display:block;}
+.quiz-result .big{font-family:var(--font-mono);font-size:42px;font-weight:700;color:var(--accent-strong);}
+
+/* checklist */
+.checklist{display:flex;flex-direction:column;gap:2px;max-width:70ch;}
+.check-item{
+  display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;
+}
+.check-item:hover{background:var(--surface-2);}
+.check-item input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;}
+.check-item span{font-size:14.5px;}
+.check-item.done span{color:var(--text-muted);text-decoration:line-through;}
+.check-summary{font-family:var(--font-mono);font-size:13px;color:var(--text-muted);margin-bottom:12px;}
+.check-bar{height:6px;border-radius:4px;background:var(--surface-3);overflow:hidden;margin-bottom:18px;max-width:70ch;}
+.check-bar-fill{height:100%;background:var(--accent);width:0%;transition:width 300ms ease;}
+
+footer{
+  padding:30px clamp(20px,5vw,64px) 50px;font-size:12.5px;color:var(--text-faint);
+  font-family:var(--font-mono);
+}
+footer a{color:var(--text-faint);}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);}
+  .taskgroup-body{padding-left:4px;}
+}
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div class="brand-text">
+        <strong>Probabilistic Reasoning Lab</strong>
+        <span>AIMLCZG557 &middot; CS#11-12</span>
+      </div>
+    </div>
+    <div class="dagstrip" id="dagstrip" role="img" aria-label="Study progress shown as a DAG run, one node per module"></div>
+    <span class="progress-label tabular" id="progressLabel">0/14 modules</span>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between light and dark theme">
+      <span class="theme-icon" aria-hidden="true">&#9680;</span><span id="themeToggleLabel">theme</span>
+    </button>
+  </header>
+
+  <nav class="sidebar" id="sidebar" aria-label="Section navigation"></nav>
+
+  <main id="main">
+
+<section class="module" id="uncertainty" data-title="Why Probability, Not Just Logic">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">01</span> Where this lecture starts</div>
+    <h2 class="title">Logic is brittle. The world isn't binary.</h2>
+    <p class="dek">Rules either fire or they don't &mdash; there's no way to say "usually true, but not always." Probability is the new foundation that lets an agent hold a belief that can bend without breaking.</p>
+  </div>
+
+  <div class="block">
+    <h3>Monotonic vs. non-monotonic reasoning</h3>
+    <p>Classical logic only ever <em>adds</em> to what you know &mdash; new facts never retract old conclusions. Real agents need the opposite: the ability to believe "birds fly," then retract that belief the moment they learn "this bird is a penguin."</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Monotonic</th><th>Non-Monotonic</th></tr></thead>
+      <tbody>
+        <tr><td>Consistent</td><td class="hl">Relaxed consistency</td></tr>
+        <tr><td>Complete knowledge</td><td class="hl">Incomplete knowledge</td></tr>
+        <tr><td>Static</td><td class="hl">Dynamic</td></tr>
+        <tr><td>Discrete</td><td class="hl">Continuous &amp; learning agent</td></tr>
+        <tr><td>Predicate logic</td><td class="hl">Probabilistic model</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note</span>
+    <p>Non-monotonic logics (default logic, circumscription) were built in AI in the late 1970s&ndash;80s specifically for the "penguin problem" &mdash; classical logic can't gracefully represent exceptions. Probability sidesteps the debate entirely: "flies" just gets a high probability for birds generally, and a low one once "penguin" is observed &mdash; updated smoothly, never retracted as a broken rule. (en.wikipedia.org/wiki/Judea_Pearl)</p>
+  </div>
+
+  <div class="block">
+    <h3>Why an agent needs uncertainty at all</h3>
+    <p>Sensors are noisy, actuators don't always do what they're told, and information is rarely complete. Logic can't encode exceptions or statistical properties &mdash; probability can, in a single number.</p>
+  </div>
+  <div class="grid grid-3">
+    <div class="card compact"><p class="pill accent">Partial observability</p><p>Chance nodes, sensor noise, actuator error &mdash; the agent never sees the whole board.</p></div>
+    <div class="card compact"><p class="pill warn">Brittle logic</p><p>Can't encode "usually true" or capture statistical regularities in a domain.</p></div>
+    <div class="card compact"><p class="pill good">Data-driven era</p><p>Massive data + statistics let the data do the work &mdash; the basis for most modern learning.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>Worked example: the Bangalore Airport route</h3>
+    <p>"You can reach the airport within 90 minutes via route A" hides real uncertainty &mdash; road blocks, festivals, weekends. Instead of enumerating every possible world as a hard logical fact, build a small joint distribution from 20 observed trips:</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Road Block</th><th>Festival</th><th>Weekend</th><th>Obs. (of 20)</th><th>Prob</th></tr></thead>
+      <tbody>
+        <tr><td>F</td><td>F</td><td>F</td><td class="num">12</td><td class="hl num">0.60</td></tr>
+        <tr><td>F</td><td>F</td><td>T</td><td class="num">3</td><td class="hl num">0.15</td></tr>
+        <tr><td>F</td><td>T</td><td>F</td><td class="num">2</td><td class="hl num">0.10</td></tr>
+        <tr><td>F</td><td>T</td><td>T</td><td class="num">2</td><td class="hl num">0.10</td></tr>
+        <tr><td>T</td><td>F</td><td>F</td><td class="num">0</td><td class="hl num">0</td></tr>
+        <tr><td>T</td><td>F</td><td>T</td><td class="num">0</td><td class="hl num">0</td></tr>
+        <tr><td>T</td><td>T</td><td>F</td><td class="num">1</td><td class="hl num">0.05</td></tr>
+        <tr><td>T</td><td>T</td><td>T</td><td class="num">0</td><td class="hl num">0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="formula">All 8 rows sum to exactly 1 &mdash; this is a joint probability distribution over 3 Boolean variables (2&sup3; = 8 rows)</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; why this matters later</span>
+    <p>This 8-row table is a miniature of the exact problem the rest of the lecture solves: a fully general joint table over <em>n</em> Boolean variables needs 2<sup>n</sup> rows. That combinatorial explosion (formalized on Module 3) is the entire reason Bayesian Networks exist &mdash; store only local relationships, not the whole table.</p>
+  </div>
+</section>
+
+<section class="module" id="foundations" data-title="Probability Foundations">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">02</span> Self-study refresher</div>
+    <h2 class="title">Sample spaces, axioms, conditioning, and the chain rule</h2>
+    <p class="dek">Four building blocks, all leading to one destination: the chain rule, which becomes the mathematical backbone of every Bayesian network in this deck.</p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h4><span class="pill accent">Sample space &amp; events</span></h4>
+      <p>The sample space <em>S</em> is every possible outcome (6 faces of a die). Each outcome is a sample point. An event is any subset you care about, e.g. "roll &lt; 4". A random variable just relabels outcomes &mdash; e.g. <em>Weather</em> maps each world to sunny/rain/cloudy/snow.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill accent">Types of random variables</span></h4>
+      <p><strong>Boolean</strong> &mdash; two values (Cavity: yes/no). <strong>Discrete</strong> &mdash; a fixed list of exhaustive, mutually exclusive values (Weather). <strong>Continuous</strong> &mdash; any value in a range (Temp = 21.6, or Temp &lt; 22.0).</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3>Kolmogorov's axioms</h3>
+  </div>
+  <div class="formula">0 &le; P(A) &le; 1        P(true) = 1        P(false) = 0
+P(A &or; B) = P(A) + P(B) &minus; P(A &and; B)   &larr; subtract the double-counted overlap</div>
+
+  <div class="block">
+    <h3>Conditional probability</h3>
+    <p>"Given that B is all I know, how likely is A?" &mdash; zoom into the world of B, then ask what fraction of it is also A.</p>
+  </div>
+  <div class="formula">P(A | B) = P(A &and; B) / P(B)
+
+P(cavity | toothache) = 0.8   &larr;   knowing only "toothache," 80% chance of cavity
+P(cavity | toothache, cavity) = 1        &larr;   already told the answer
+P(cavity | toothache, sunny) = P(cavity | toothache)  &larr;   irrelevant evidence changes nothing</div>
+
+  <div class="block">
+    <h3>The chain rule (product rule)</h3>
+    <p>Breaks one big, scary joint probability into a chain of small conditional steps &mdash; this single identity is what a Bayesian network is built to shortcut.</p>
+  </div>
+  <div class="formula">P(X&#8321;,&hellip;,X&#8345;) = P(X&#8345;|X&#8321;..X&#8345;&minus;&#8321;) &middot; P(X&#8345;&minus;&#8321;|X&#8321;..X&#8345;&minus;&#8322;) &middot; &hellip; &middot; P(X&#8321;)
+             = &prod;&#7522; P(X&#7522; | X&#8321;,&hellip;,X&#7522;&minus;&#8321;)</div>
+
+  <div class="block">
+    <h3>Independence</h3>
+    <p>Two events are independent when knowing one tells you nothing new about the other.</p>
+  </div>
+  <div class="formula">A &perp; B  &hArr;  P(A|B) = P(A)  &hArr;  P(A &and; B) = P(A)&middot;P(B)</div>
+</section>
+
+<section class="module" id="enumeration-joint" data-title="Inference by Enumeration">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">03</span> The dentist example</div>
+    <h2 class="title">Sum the joint table &mdash; then watch it explode</h2>
+    <p class="dek">Toothache, Cavity, Catch: three Boolean variables, one 8-cell joint table, and every question answerable by addition alone. The catch: this stops working past a few dozen variables.</p>
+  </div>
+
+  <div class="block">
+    <h3>The full joint distribution</h3>
+    <p>To answer any question, sum the atomic events where it's true: P(&phi;) = &sum;<sub>&omega;:&omega;&#8872;&phi;</sub> P(&omega;)</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th></th><th colspan="2">toothache</th><th colspan="2">&not;toothache</th></tr></thead>
+      <tbody>
+        <tr><th></th><th>catch</th><th>&not;catch</th><th>catch</th><th>&not;catch</th></tr>
+        <tr><td class="hl">cavity</td><td class="num">0.108</td><td class="num">0.012</td><td class="num">0.072</td><td class="num">0.008</td></tr>
+        <tr><td class="hl">&not;cavity</td><td class="num">0.016</td><td class="num">0.064</td><td class="num">0.144</td><td class="num">0.576</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-4">
+    <div class="card compact"><p class="pill accent">P(toothache)</p><p class="tabular">0.108+0.012+0.016+0.064 = <strong>0.20</strong></p></div>
+    <div class="card compact"><p class="pill accent">P(cavity)</p><p class="tabular">0.108+0.012+0.072+0.008 = <strong>0.20</strong></p></div>
+    <div class="card compact"><p class="pill accent">P(cavity &or; toothache)</p><p class="tabular">sum of 6 of 8 cells = <strong>0.28</strong></p></div>
+    <div class="card compact"><p class="pill good">P(cavity | toothache)</p><p class="tabular">0.12 / 0.20 = <strong>0.6</strong></p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; origin of this example</span>
+    <p>The Toothache/Cavity/Catch/Weather world comes directly from Russell &amp; Norvig's <em>Artificial Intelligence: A Modern Approach</em>, where it's the canonical teaching example for conditional probability and, later, conditional independence &mdash; small enough to hand-compute, rich enough to demonstrate every core idea. (cs.jmu.edu/molloykp/teaching/cs444)</p>
+  </div>
+
+  <div class="block">
+    <h3>The complexity problem</h3>
+    <p>This 3-variable table only needed 8 numbers. Real problems don't stay that small.</p>
+  </div>
+  <div class="formula">Time  = O(d&#8319;)     Space = O(d&#8319;)     d = max arity, n = # variables
+30 Boolean variables &rarr; 2&sup3;&#8304; &gt; 1 billion numbers &mdash; prohibitive</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; the curse, formalized</span>
+    <p>This exponential blow-up is a concrete "curse of dimensionality." It's also why, even after Bayesian networks compress the <em>representation</em>, exact inference on them remains NP-hard in the worst case &mdash; a result proven by Gregory Cooper in 1990 &mdash; which is the direct justification for the Approximate Inference module later in this app. (sciencedirect.com/science/article/pii/000437029090060D)</p>
+  </div>
+</section>
+
+<section class="module" id="bayes-bn" data-title="Bayes' Rule &amp; Bayesian Networks">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">04</span> Flip the conditional, then compress the table</div>
+    <h2 class="title">Bayes' Rule gets you the hard direction. Networks get you the small table.</h2>
+    <p class="dek">One formula lets you compute P(cause | effect) from the much-easier-to-measure P(effect | cause). One data structure turns an exponential table into a handful of small local ones.</p>
+  </div>
+
+  <div class="block">
+    <h3>Bayes' Rule</h3>
+  </div>
+  <div class="formula">P(A | B) = P(B | A) &middot; P(A) / P(B)</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; Thomas Bayes, and where this shows up today</span>
+    <p>Named for Rev. Thomas Bayes (1701&ndash;1761); his work was published posthumously in 1763. Modern uses are everywhere: Naive Bayes spam filters (Gmail's original filter was Bayesian at its core) compute P(spam | words) from the easier P(words | spam); medical diagnosis turns P(symptom | disease) into P(disease | symptom) &mdash; and combined with a low base-rate prior, this is exactly why rare-disease screening tests generate so many false positives. (en.wikipedia.org/wiki/Thomas_Bayes)</p>
+  </div>
+
+  <div class="block">
+    <h3>Bayesian Network &mdash; the syntax</h3>
+    <p>A graphical notation for conditional independence, and hence for compactly specifying a full joint distribution.</p>
+  </div>
+  <div class="grid grid-3">
+    <div class="card compact"><h4>Nodes</h4><p>One node per random variable.</p></div>
+    <div class="card compact"><h4>Edges</h4><p>A directed, acyclic graph (DAG) &mdash; an arrow means "directly influences."</p></div>
+    <div class="card compact"><h4>CPT</h4><p>Each node stores P(X&#7522; | Parents(X&#7522;)) &mdash; a small local table, not the whole joint.</p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; Judea Pearl, 1985</span>
+    <p>Judea Pearl introduced Bayesian networks in 1985, coining the term to emphasize the subjective nature of inputs, reliance on Bayesian conditioning, and the causal/evidential distinction. His work is credited with moving AI away from brittle 1970s&ndash;80s rule-based expert systems toward principled probabilistic reasoning &mdash; work that won him the 2011 ACM Turing Award. (amturing.acm.org/award_winners/pearl_2658896.cfm)</p>
+  </div>
+</section>
+
+<section class="module" id="example-nets-1" data-title="Example Networks I">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">05</span> Two textbook networks</div>
+    <h2 class="title">Toothache/Catch, and the most famous alarm in AI</h2>
+    <p class="dek">The first network shows plain conditional independence. The second &mdash; Burglary/Earthquake/Alarm/John/Mary &mdash; is the single most reused teaching example in Bayesian-network history.</p>
+  </div>
+
+  <div class="block">
+    <h3>Network #1 &mdash; Weather, Cavity, Toothache, Catch</h3>
+    <p>Cavity is the common cause of both Toothache and Catch. Once Cavity is known, Toothache and Catch tell you nothing more about each other &mdash; conditionally independent given Cavity. Weather sits off on its own, unconnected.</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 420 170" role="img" aria-label="Weather node standalone; Cavity node with arrows to Toothache and Catch.">
+      <defs><marker id="arrN1" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="11" text-anchor="middle">
+        <ellipse cx="60" cy="40" rx="46" ry="24" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="60" y="44">Weather</text>
+        <ellipse cx="230" cy="40" rx="46" ry="24" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/><text x="230" y="44" fill="var(--accent-strong)" font-weight="600">Cavity</text>
+        <ellipse cx="140" cy="130" rx="52" ry="26" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="140" y="134">Toothache</text>
+        <ellipse cx="320" cy="130" rx="46" ry="26" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="320" y="134">Catch</text>
+        <g stroke="var(--accent)" stroke-width="1.3" fill="none" marker-end="url(#arrN1)">
+          <path d="M210,58 L165,110"/>
+          <path d="M250,58 L300,110"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>P(Toothache, Catch | Cavity) = P(Toothache | Cavity) &middot; P(Catch | Cavity) &mdash; no arrow between Toothache and Catch.</figcaption>
+  </figure>
+
+  <div class="block">
+    <h3>Network #2 &mdash; The Burglary Alarm</h3>
+    <p>Two independent root causes (Burglary, Earthquake) can trigger the Alarm; the Alarm can cause two neighbors to call.</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 480 220" role="img" aria-label="Burglary and Earthquake both point to Alarm; Alarm points to JohnCalls and MaryCalls.">
+      <defs><marker id="arrN2" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="11" text-anchor="middle">
+        <ellipse cx="110" cy="34" rx="58" ry="26" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="110" y="30">Burglary</text><text x="110" y="43" fill="var(--text-muted)" font-size="9">P(B)=.001</text>
+        <ellipse cx="330" cy="34" rx="64" ry="26" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="330" y="30">Earthquake</text><text x="330" y="43" fill="var(--text-muted)" font-size="9">P(E)=.002</text>
+        <ellipse cx="220" cy="110" rx="46" ry="26" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/><text x="220" y="114" fill="var(--accent-strong)" font-weight="600">Alarm</text>
+        <ellipse cx="110" cy="188" rx="58" ry="26" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="110" y="184">JohnCalls</text><text x="110" y="197" fill="var(--text-muted)" font-size="9">P(J|A)=.90</text>
+        <ellipse cx="330" cy="188" rx="60" ry="26" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="330" y="184">MaryCalls</text><text x="330" y="197" fill="var(--text-muted)" font-size="9">P(M|A)=.70</text>
+        <g stroke="var(--accent)" stroke-width="1.3" fill="none" marker-end="url(#arrN2)">
+          <path d="M140,56 L200,90"/>
+          <path d="M300,56 L240,90"/>
+          <path d="M200,132 L140,164"/>
+          <path d="M240,132 L300,164"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>P(A|B,E)=.95 &middot; P(A|B,&not;E)=.94 &middot; P(A|&not;B,E)=.29 &middot; P(A|&not;B,&not;E)=.001 &mdash; earthquakes are less reliable triggers than burglars.</figcaption>
+  </figure>
+
+  <div class="block">
+    <h3>Worked joint probability</h3>
+    <p>"Alarm sounded, but neither burglary nor earthquake happened, and both John and Mary called":</p>
+  </div>
+  <div class="formula">P(j,m,a,&not;b,&not;e) = P(j|a)&middot;P(m|a)&middot;P(a|&not;b,&not;e)&middot;P(&not;b)&middot;P(&not;e)
+             = 0.90 &times; 0.70 &times; 0.001 &times; 0.999 &times; 0.998 &asymp; 0.000628</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; the most famous alarm in AI</span>
+    <p>This exact network (same CPT values) traces to Judea Pearl's original work and was popularized worldwide via Russell &amp; Norvig's AIMA, where it remains the flagship example for exact inference. It's small enough to compute by hand, yet demonstrates causal reasoning, diagnostic reasoning, <em>and</em> "explaining away" all at once &mdash; see Module 7. (people.cs.pitt.edu/~milos/courses/cs2740/Lectures/class19.pdf)</p>
+  </div>
+</section>
+
+<section class="module" id="example-nets-2" data-title="Example Networks II">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">06</span> Building a network from a word problem</div>
+    <h2 class="title">Traffic to the airport &mdash; growing a graph one cause at a time</h2>
+    <p class="dek">A home-grown example that shows the actual skill of Bayesian-network design: read a paragraph, find the variables, and decide which way the arrows point.</p>
+  </div>
+
+  <div class="block">
+    <h3>The scenario</h3>
+    <p>A festival or political rally causes a procession; a procession (plus weekend) causes a road block; a road block (plus weekend traffic) reroutes the car; rerouting makes the traveler late. Weather@BLR sits off to the side &mdash; it affects accommodation plans, not travel time, so it's not wired into the lateness chain at all.</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 620 260" role="img" aria-label="Festival and Political Rally both feed Procession; Procession and Weekend feed Road block; Road block and Weekend feed Cars routed; Weekend also feeds All bars are full; Cars routed feeds Late for BGLR airport and Identity Check at Toll; BBMP Work also feeds Road block; Weather at BLR is disconnected.">
+      <defs><marker id="arrN3" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="10" text-anchor="middle">
+        <ellipse cx="80" cy="26" rx="48" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="80" y="30">Festival</text>
+        <ellipse cx="220" cy="26" rx="62" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="220" y="30">Political Rally</text>
+        <ellipse cx="150" cy="88" rx="56" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="150" y="92">Procession</text>
+        <ellipse cx="30" cy="88" rx="55" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="30" y="92">BBMP Work</text>
+        <ellipse cx="150" cy="150" rx="56" ry="22" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><text x="150" y="154" fill="var(--accent-strong)" font-weight="600">Road block</text>
+        <ellipse cx="370" cy="88" rx="50" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="370" y="92">weekend</text>
+        <ellipse cx="500" cy="150" rx="60" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="500" y="154">All bars full</text>
+        <ellipse cx="300" cy="150" rx="58" ry="22" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><text x="300" y="154" fill="var(--accent-strong)" font-weight="600">Cars routed</text>
+        <ellipse cx="220" cy="220" rx="70" ry="24" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.5"/><text x="220" y="224" fill="var(--green)" font-weight="600">Late for airport</text>
+        <ellipse cx="410" cy="220" rx="68" ry="24" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="410" y="224">ID Check @ Toll</text>
+        <ellipse cx="560" cy="26" rx="56" ry="22" stroke-dasharray="3,3" fill="none" stroke="var(--text-faint)" stroke-width="1.1"/><text x="560" y="30" fill="var(--text-faint)">Weather@BLR</text>
+        <g stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrN3)">
+          <path d="M95,46 L135,68"/>
+          <path d="M205,46 L165,68"/>
+          <path d="M55,106 L110,132"/>
+          <path d="M150,110 L150,128"/>
+          <path d="M160,172 L260,178"/>
+          <path d="M355,106 L320,128"/>
+          <path d="M370,110 L370,140 L360,140"/>
+          <path d="M400,150 L460,150"/>
+          <path d="M290,172 L240,198"/>
+          <path d="M320,172 L390,198"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>Built incrementally across the source deck; Weather@BLR (dashed) is deliberately disconnected &mdash; it's irrelevant to lateness.</figcaption>
+  </figure>
+
+  <div class="block">
+    <h3>Two general independence rules (any Bayesian network)</h3>
+  </div>
+  <div class="grid grid-2">
+    <div class="card"><h4>Rule 1</h4><p>A node is conditionally independent of its <strong>non-descendants</strong>, given its parents.</p></div>
+    <div class="card"><h4>Rule 2 &mdash; Markov Blanket</h4><p>A node is conditionally independent of <strong>every other node</strong>, given its parents, children, and children's other parents.</p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; Markov blankets in practice</span>
+    <p>The Markov blanket defines the <em>minimal</em> set of nodes that fully insulates a variable from the rest of the network. It's used heavily for efficient inference and structure learning &mdash; some ML feature-selection algorithms use it directly to find the minimal "relevant" variable set for predicting a target, discarding everything else without losing predictive power. (en.wikipedia.org/wiki/Bayesian_network#Markov_blanket)</p>
+  </div>
+</section>
+
+<section class="module" id="inference-types" data-title="Four Inference Types">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">07</span> Same graph, four directions</div>
+    <h2 class="title">Diagnostic, causal, inter-causal, mixed</h2>
+    <p class="dek">The same network answers questions running with the arrows, against them, sideways through a shared effect, or all three tangled together.</p>
+  </div>
+
+  <div class="grid grid-4">
+    <div class="card compact"><h4><span class="pill warn">Diagnostic</span></h4><p>Effect &rarr; cause. "The alarm rang &mdash; was there a burglary?" Reasoning against the arrows.</p></div>
+    <div class="card compact"><h4><span class="pill good">Causal</span></h4><p>Cause &rarr; effect. "There's a burglary &mdash; will the alarm ring?" Reasoning with the arrows.</p></div>
+    <div class="card compact"><h4><span class="pill accent">Inter-causal</span></h4><p>Two causes, one shared effect. Learning about one changes belief in the other &mdash; "explaining away."</p></div>
+    <div class="card compact"><h4><span class="pill bad">Mixed</span></h4><p>Real questions often combine all three at once, using scattered evidence.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>Exercise &mdash; classify these three queries</h3>
+    <p>Using the Burglary/Earthquake/Alarm/JohnCalls/MaryCalls network:</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Query</th><th>Reasoning</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">P(J | B, &not;A)</td><td>Evidence (B, A) sits above the query J in the chain &mdash; reasoning with the arrows</td><td><span class="pill good">Causal</span></td></tr>
+        <tr><td class="hl">P(E | B, M)</td><td>M is a descendant (diagnostic), B is a co-parent sharing child Alarm (inter-causal)</td><td><span class="pill bad">Mixed</span></td></tr>
+        <tr><td class="hl">P(A | J)</td><td>Reasoning from effect J back up to its direct cause A</td><td><span class="pill warn">Diagnostic</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; explaining away</span>
+    <p>Two causes of a shared effect are marginally independent, but become <em>dependent</em> once you condition on the shared effect. Learning the alarm sounded raises suspicion of both burglary and earthquake; additionally learning an earthquake occurred then <em>lowers</em> the burglary probability back down &mdash; even though burglary and earthquake have no direct link. This is the signature phenomenon that makes Bayesian networks more powerful than naive rule chaining.</p>
+  </div>
+</section>
+
+<section class="module" id="exact-enumeration" data-title="Exact Inference by Enumeration">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">08</span> Marginalize the hidden variables</div>
+    <h2 class="title">P(Burglary | John &amp; Mary called) = 28.47%</h2>
+    <p class="dek">The full hand-cranked calculation: sum out the hidden variables (Alarm, Earthquake), then normalize.</p>
+  </div>
+
+  <div class="block">
+    <h3>The normalization trick</h3>
+    <p>Since P(B|JM) + P(&not;B|JM) = 1, you never need P(JM) directly &mdash; compute both unnormalized joint terms, then divide each by their sum.</p>
+  </div>
+  <div class="formula">P(B | J,M) = P(B,J,M) / [ P(B,J,M) + P(&not;B,J,M) ]     &larr;   &alpha; = normalizing constant</div>
+
+  <div class="block">
+    <h3>Marginalizing out Alarm and Earthquake</h3>
+    <p>A and E are hidden (neither query nor evidence) &mdash; sum over every combination of their values, applying the chain rule at each step:</p>
+  </div>
+  <div class="formula">P(B,J,M) = &sum;&#7529; &sum;&#7518; P(J|A)&middot;P(M|A)&middot;P(A|B,E)&middot;P(B)&middot;P(E)</div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h4><span class="pill accent">P(B,J,M)</span></h4>
+      <p class="tabular">0.000001197 + 0.00000000005 + 0.000592 + 0.0000002994<br><strong>&asymp; 0.0005935</strong></p>
+    </div>
+    <div class="card">
+      <h4><span class="pill accent">P(&not;B,J,M)</span></h4>
+      <p class="tabular">0.0003650346 + 0.00000070929 + 0.00062811126 + 0.000498002499<br><strong>&asymp; 0.001492</strong></p>
+    </div>
+  </div>
+  <div class="formula">P(B | J,M) = 0.0005935 / (0.0005935 + 0.001492) = <strong>0.2847</strong></div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; sanity check the result</span>
+    <p>28.47% is far above the raw prior P(Burglary)=0.001 (0.1%) &mdash; two phone calls are strong evidence &mdash; yet still under 50/50, because false alarms and false-positive calls remain plausible alternative explanations. Exercise: apply the same technique to compute P(JohnCalls | Earthquake), marginalizing out Burglary and Alarm instead.</p>
+  </div>
+</section>
+
+<section class="module" id="variable-elimination" data-title="Variable Elimination &amp; D-Separation">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">09</span> Skip what you can prove is irrelevant</div>
+    <h2 class="title">Read independence off the graph &mdash; before doing any arithmetic</h2>
+    <p class="dek">D-separation is a purely visual test. Variable Elimination uses it to decide which variables never need to be touched at all.</p>
+  </div>
+
+  <div class="block">
+    <h3>D-separation</h3>
+    <p>Two variables are d-separated if they are conditionally independent given some evidence &mdash; readable straight off the DAG, no arithmetic required.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>X</th><th>Y</th><th>Evidence Z</th><th>d-separated?</th></tr></thead>
+      <tbody>
+        <tr><td>Festival</td><td>Weather</td><td>Cars routed</td><td><span class="pill bad">No</span></td></tr>
+        <tr><td>Late</td><td>Weather</td><td>Road block</td><td><span class="pill bad">No</span></td></tr>
+        <tr><td class="hl">Road block</td><td class="hl">Late</td><td class="hl">Cars routed</td><td><span class="pill good">Yes</span></td></tr>
+        <tr><td>All bars full</td><td>Road block</td><td>Cars routed</td><td><span class="pill bad">No</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="formula">P(RoadBlock | Late, CarsRouted) = P(RoadBlock | Late)
+&rarr; once Cars-routed is known, Road block adds nothing more about Lateness</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; the formal rule</span>
+    <p>D-separation checks every path between two nodes: chains/forks are <em>blocked</em> if the middle node is in the evidence; colliders (v-structures) are blocked <em>unless</em> the middle node or a descendant is in the evidence &mdash; the opposite rule, and the reason "explaining away" works. It's proven sound and complete: whatever it says about independence is guaranteed true in every distribution the graph can represent. (helenedk.medium.com/bayesian-networks-d-separation)</p>
+  </div>
+
+  <div class="block">
+    <h3>Variable elimination &mdash; drop the irrelevant nodes</h3>
+    <p>"All bars are full" only actually depends on weekend &mdash; nothing else. Even in a 7-variable network, the query collapses instantly:</p>
+  </div>
+  <div class="formula">P(AllBarsFull) = &sum;&#8514;&sum;&#8321;&sum;&#119883;&sum;&#8322;&sum;&#8497; P(L,C,B,W,R,F)  =  P(B | W)
+&larr;  L, C, R, F are neither query, evidence, nor ancestors of (W,B) &mdash; eliminate them</div>
+
+  <div class="block">
+    <h3>Full worked elimination &mdash; the Fever network</h3>
+    <p>Viral&rarr;fLu&rarr;Fever&larr;foodPoison. Eliminate one variable at a time, keeping only small local factor tables.</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 380 130" role="img" aria-label="Viral points to fLu, fLu and foodPoison both point to Fever.">
+      <defs><marker id="arrN4" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="11" text-anchor="middle">
+        <ellipse cx="55" cy="40" rx="46" ry="24" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="55" y="44">Viral</text>
+        <ellipse cx="190" cy="40" rx="42" ry="24" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="190" y="44">fLu</text>
+        <ellipse cx="190" cy="105" rx="52" ry="22" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="190" y="109">foodPoison</text>
+        <ellipse cx="320" cy="72" rx="48" ry="24" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"/><text x="320" y="76" fill="var(--accent-strong)" font-weight="600">Fever</text>
+        <g stroke="var(--accent)" stroke-width="1.3" fill="none" marker-end="url(#arrN4)">
+          <path d="M101,40 L148,40"/>
+          <path d="M225,50 L285,64"/>
+          <path d="M232,95 L280,80"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>P(V)=0.6 &middot; P(L|V): 0.8/0.01 &middot; P(D)=0.1 &middot; P(F|L,D): 0.99 / 0.8 / 0.8 / 0.05</figcaption>
+  </figure>
+  <div class="grid grid-2">
+    <div class="card"><h4>Step 1 &mdash; eliminate V</h4><p>Multiply P(V) &times; P(L|V), sum out V &rarr; P(L=T) = 0.48+0.004 = <strong>0.484</strong>, P(L=F) = <strong>0.516</strong></p></div>
+    <div class="card"><h4>Step 2 &mdash; eliminate L, D</h4><p>Combine P(L), P(D), P(F|L,D) into an 8-row factor, sum out L and D &rarr; <strong>P(Fever=T) = 0.461</strong>, P(Fever=F) = 0.539</p></div>
+  </div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; why this beats plain enumeration</span>
+    <p>At no point does Variable Elimination build a table over all four variables at once &mdash; only 2- and 3-variable intermediate factors, one elimination at a time. Formalized by Zhang &amp; Poole (1994); worst-case complexity O(d<sup>r</sup>) where r is the largest intermediate factor size, and finding the <em>optimal</em> elimination order is itself NP-hard &mdash; so real systems use heuristics (min-degree, min-fill). (en.wikipedia.org/wiki/Variable_elimination)</p>
+  </div>
+</section>
+
+<section class="module" id="approximate-inference" data-title="Approximate Inference">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">10</span> When exact is too slow</div>
+    <h2 class="title">Prior Sampling &rarr; Rejection Sampling &rarr; Likelihood Weighting</h2>
+    <p class="dek">Three sampling methods, each fixing the previous one's weakness: from "count everything" to "don't waste a single sample."</p>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <h4><span class="pill accent">1 &middot; Prior Sampling</span></h4>
+      <p>Roll a random number against each node's CPT, in topological order (parents before children). Repeat thousands of times, then answer any query by <strong>counting</strong> matching sample rows &mdash; e.g. P(L)=3/8, P(L|F)=3/5.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill warn">2 &middot; Rejection Sampling</span></h4>
+      <p>Same generation process, but <strong>discard</strong> any sample that doesn't match the evidence before counting. Fixes nothing about wasted samples &mdash; if evidence is rare, most generated samples get thrown away. P(F|D) = 5/8 in the worked example.</p>
+    </div>
+    <div class="card">
+      <h4><span class="pill good">3 &middot; Likelihood Weighting</span></h4>
+      <p><strong>Fix</strong> evidence variables directly (never sample them), sample only the rest, and give every sample a <strong>weight</strong> = product of the evidence CPT probabilities. No sample is ever wasted.</p>
+    </div>
+  </div>
+
+  <div class="block">
+    <h3>Likelihood weighting, worked</h3>
+  </div>
+  <div class="formula">P(F | D,&not;V) = (0.04 + 0.04) / (4 &times; 0.04)     &larr;   V,D are root evidence: weight = P(&not;V)&middot;P(D) = 0.4&times;0.1 = 0.04, same for every sample
+
+P(F | D,&not;L) = (0.099 + 0.099) / (3&times;0.099 + 0.02)   &larr;   L depends on sampled V, so weight varies per sample (0.099 if V=F, 0.02 if V=T)</div>
+  <div class="formula">answer = ( &sum; weight of samples where query is TRUE ) / ( &sum; weight of ALL samples )</div>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; Monte Carlo, and why LW usually wins</span>
+    <p>This whole family &mdash; simulate, then estimate by counting/weighting &mdash; is Monte Carlo, first used systematically by Ulam and von Neumann at Los Alamos in the 1940s to simulate neutron diffusion. Likelihood Weighting is the most commonly implemented approximate-inference method in practice, since it never discards a sample and typically converges much faster than Rejection Sampling when evidence is rare &mdash; though it can still struggle when many evidence variables downstream of sampled ones make weights small and highly variable, which is what motivates further methods like MCMC/Gibbs sampling. (en.wikipedia.org/wiki/Monte_Carlo_method)</p>
+  </div>
+</section>
+
+<section class="module" id="build-your-own" data-title="Practice: Build Your Own Network">
+  <div class="module-head">
+    <div class="eyebrow"><span class="idx">11</span> The exercises</div>
+    <h2 class="title">Two paragraphs, two networks, one skill</h2>
+    <p class="dek">Turning a word problem into a DAG is the practical skill this whole lecture builds toward &mdash; here it is applied twice.</p>
+  </div>
+
+  <div class="block">
+    <h3>Exercise A &mdash; Viral / fLu / foodPoison / Fever / Dehydration</h3>
+    <p>Extends the Fever network from Module 9 with a Dehydration node caused by both Fever and foodPoison. Practice: exact inference for P(&not;Fever | Viral, Dehydration), then re-derive the same answer three ways &mdash; Prior Sampling, Rejection Sampling, Likelihood Weighting &mdash; using one shared random-number stream so all four answers can be compared directly.</p>
+  </div>
+
+  <div class="block">
+    <h3>Exercise B &mdash; The cricket/IPL network</h3>
+    <p>"Most WILP students are cricket fans; being a parent reduces watching; watching reduces next-day concentration; viral infection (common in rainy season) is a second cause of reduced concentration; reduced concentration raises stress (hurting work productivity) and lowers exam grades."</p>
+  </div>
+  <figure class="diagram">
+    <svg viewBox="0 0 560 190" role="img" aria-label="Fan and Parent both point to Watch; Watch and Viral both point to Concentration; Rainy Season points to Viral; Concentration points to Stress and Grades; Stress points to Productivity.">
+      <defs><marker id="arrN5" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/></marker></defs>
+      <g font-size="10.5" text-anchor="middle">
+        <ellipse cx="60" cy="30" rx="42" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="60" y="34">Fan</text>
+        <ellipse cx="180" cy="30" rx="46" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="180" y="34">Parent</text>
+        <ellipse cx="480" cy="30" rx="66" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="480" y="34">Rainy Season</text>
+        <ellipse cx="120" cy="95" rx="46" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="120" y="99">Watch</text>
+        <ellipse cx="400" cy="95" rx="42" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="400" y="99">Viral</text>
+        <ellipse cx="260" cy="95" rx="66" ry="22" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><text x="260" y="99" fill="var(--accent-strong)" font-weight="600">Concentration</text>
+        <ellipse cx="180" cy="160" rx="50" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="180" y="164">Stress</text>
+        <ellipse cx="60" cy="160" rx="58" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="60" y="164">Productivity</text>
+        <ellipse cx="330" cy="160" rx="50" ry="22" fill="none" stroke="currentColor" stroke-width="1.2"/><text x="330" y="164">Grades</text>
+        <g stroke="var(--accent)" stroke-width="1.2" fill="none" marker-end="url(#arrN5)">
+          <path d="M75,50 L105,75"/>
+          <path d="M165,50 L135,75"/>
+          <path d="M450,48 L410,75"/>
+          <path d="M155,105 L200,100"/>
+          <path d="M370,100 L320,100"/>
+          <path d="M240,115 L195,140"/>
+          <path d="M280,115 L320,140"/>
+          <path d="M150,180 L100,175"/>
+        </g>
+      </g>
+    </svg>
+    <figcaption>A suggested structure &mdash; read the causal chain out of the paragraph, then check it against your own answer.</figcaption>
+  </figure>
+  <div class="fieldnote">
+    <span class="fn-label">// field note &mdash; the d-separation trap in both exercises</span>
+    <p>Both exercises ask: is Grades independent of Stress, given only Viral infection is known? Trace the path Grades&larr;Concentration&rarr;Stress &mdash; it runs through Concentration, not Viral. Conditioning on a <em>different</em> upstream cause of Concentration does not block that path, so Grades and Stress remain d-connected. You'd need to condition on Concentration itself to separate them &mdash; a common trap when a network has more than one root cause feeding the same intermediate node.</p>
+  </div>
+</section>
+
+    <!-- 12 : FLASHCARDS -->
+    <section class="module" id="flashcards" data-title="Flashcards">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">12</span> Practice &middot; recall</div>
+        <h2 class="title">Flashcards</h2>
+        <p class="dek">Click a card to flip it. Reset shuffles nothing &mdash; it just flips everything face-up again.</p>
+      </div>
+      <div class="flash-controls">
+        <button id="flashReset">Flip all back</button>
+        <span id="flashCount"></span>
+      </div>
+      <div class="flash-grid" id="flashGrid"></div>
+    </section>
+
+    <!-- 13 : QUIZ -->
+    <section class="module" id="quiz" data-title="Quiz">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">13</span> Practice &middot; test</div>
+        <h2 class="title">Quick quiz</h2>
+        <p class="dek">Questions pulled from the topics this deck flags as frequently tested. Your best score is remembered on this device.</p>
+      </div>
+      <div class="card quiz-card" id="quizCard">
+        <div class="quiz-progress" id="quizProgress"></div>
+        <div class="quiz-q" id="quizQ"></div>
+        <div class="quiz-opts" id="quizOpts"></div>
+        <div class="quiz-explain" id="quizExplain"></div>
+        <div class="quiz-actions">
+          <button class="btn" id="quizNext">Next</button>
+          <span class="quiz-score tabular" id="quizScore"></span>
+        </div>
+        <div class="quiz-result" id="quizResult">
+          <div class="big tabular" id="quizFinalScore"></div>
+          <p id="quizFinalMsg" style="margin-top:6px;"></p>
+          <button class="btn ghost" id="quizRetake">Retake quiz</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14 : CHECKLIST -->
+    <section class="module" id="checklist" data-title="Revision Checklist">
+      <div class="module-head">
+        <div class="eyebrow"><span class="idx">14</span> Before the exam</div>
+        <h2 class="title">Revision checklist</h2>
+        <p class="dek">Checked items persist in this browser, so you can close the tab and pick up where you left off.</p>
+      </div>
+      <div class="check-summary tabular" id="checkSummary"></div>
+      <div class="check-bar"><div class="check-bar-fill" id="checkBarFill"></div></div>
+      <div class="checklist" id="checklistGrid"></div>
+    </section>
+
+    <footer>
+      <p>Built from "CS#11-12 &middot; Probabilistic Representation and Reasoning" study notes (AIMLCZG557, BITS Pilani WILP ACI Team). Sources cited within the app include Russell &amp; Norvig's AIMA (aimacode/aima-python), Judea Pearl's original Bayesian-network work, Wikipedia (Thomas Bayes, Judea Pearl, Variable Elimination, Monte Carlo Method, Markov Blanket), the ACM Turing Award archive, and course-lecture slide decks from CMU/Pitt/JMU/McGill/UWaterloo/UTK cited inline.</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- THEME TOGGLE ---------- */
+  var THEME_KEY = "aci_cs1112_theme";
+  var root = document.documentElement;
+  var themeBtn = document.getElementById("themeToggle");
+  var themeLabel = document.getElementById("themeToggleLabel");
+  var themeIcon = themeBtn.querySelector(".theme-icon");
+
+  function systemPrefersDark(){
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function getStoredTheme(){
+    try { return localStorage.getItem(THEME_KEY); } catch(e){ return null; }
+  }
+  function applyTheme(theme){
+    if(theme === "light" || theme === "dark"){
+      root.setAttribute("data-theme", theme);
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    var isDark = theme === "dark" || (theme !== "light" && systemPrefersDark());
+    themeIcon.textContent = isDark ? "☾" : "☀";
+    themeLabel.textContent = theme === "light" ? "light" : theme === "dark" ? "dark" : "auto";
+  }
+
+  var storedTheme = getStoredTheme();
+  applyTheme(storedTheme);
+
+  themeBtn.addEventListener("click", function(){
+    var current = getStoredTheme();
+    var isDarkNow = current === "dark" || (!current && systemPrefersDark());
+    var next = isDarkNow ? "light" : "dark";
+    try { localStorage.setItem(THEME_KEY, next); } catch(e){}
+    applyTheme(next);
+  });
+
+  /* ---------- NAV / TASKGROUPS ---------- */
+  var groups = [
+    { key:"g1", label:"uncertainty", items:[["uncertainty","Why Probability, Not Logic"]] },
+    { key:"g2", label:"foundations", items:[["foundations","Probability Foundations"]] },
+    { key:"g3", label:"enumeration_joint", items:[["enumeration-joint","Inference by Enumeration"]] },
+    { key:"g4", label:"bayes_bn", items:[["bayes-bn","Bayes' Rule & BN Syntax"]] },
+    { key:"g5", label:"example_nets_1", items:[["example-nets-1","Example Networks I"]] },
+    { key:"g6", label:"example_nets_2", items:[["example-nets-2","Example Networks II"]] },
+    { key:"g7", label:"inference_types", items:[["inference-types","Four Inference Types"]] },
+    { key:"g8", label:"exact_enumeration", items:[["exact-enumeration","Exact Inference by Enumeration"]] },
+    { key:"g9", label:"variable_elimination", items:[["variable-elimination","Variable Elimination & D-Sep"]] },
+    { key:"g10", label:"approximate_inference", items:[["approximate-inference","Approximate Inference"]] },
+    { key:"g11", label:"build_your_own", items:[["build-your-own","Practice: Build Your Own"]] },
+    { key:"g12", label:"practice", items:[["flashcards","Flashcards"],["quiz","Quiz"],["checklist","Revision Checklist"]] }
+  ];
+
+  var sidebar = document.getElementById("sidebar");
+  groups.forEach(function(g){
+    var wrap = document.createElement("div");
+    wrap.className = "taskgroup";
+    var head = document.createElement("button");
+    head.className = "taskgroup-head";
+    head.innerHTML = '<span class="caret">▾</span><span>' + g.label + '</span>';
+    head.addEventListener("click", function(){ wrap.classList.toggle("collapsed"); });
+    var body = document.createElement("div");
+    body.className = "taskgroup-body";
+    g.items.forEach(function(item){
+      var a = document.createElement("a");
+      a.className = "navlink";
+      a.href = "#" + item[0];
+      a.dataset.target = item[0];
+      a.innerHTML = '<span class="dot">&middot;</span>' + item[1];
+      body.appendChild(a);
+    });
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    sidebar.appendChild(wrap);
+  });
+
+  var navlinks = Array.prototype.slice.call(document.querySelectorAll(".navlink"));
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".module"));
+
+  /* ---------- DAG PROGRESS STRIP ---------- */
+  var strip = document.getElementById("dagstrip");
+  var progressLabel = document.getElementById("progressLabel");
+  var visited = {};
+  sections.forEach(function(sec){
+    var btn = document.createElement("button");
+    btn.className = "node";
+    btn.dataset.target = sec.id;
+    btn.title = sec.dataset.title;
+    btn.addEventListener("click", function(){
+      document.getElementById(sec.id).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    strip.appendChild(btn);
+  });
+  var stripNodes = Array.prototype.slice.call(strip.querySelectorAll(".node"));
+
+  function updateProgressLabel(){
+    var count = Object.keys(visited).length;
+    progressLabel.textContent = count + "/" + sections.length + " modules";
+  }
+
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var id = entry.target.id;
+      if(entry.isIntersecting){
+        visited[id] = true;
+        navlinks.forEach(function(l){ l.classList.toggle("active", l.dataset.target === id); });
+        stripNodes.forEach(function(n){
+          if(n.dataset.target === id) n.dataset.state = "active";
+          else if(visited[n.dataset.target]) n.dataset.state = "visited";
+        });
+        updateProgressLabel();
+      }
+    });
+  }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+  sections.forEach(function(s){ io.observe(s); });
+
+  navlinks.forEach(function(l){
+    l.addEventListener("click", function(e){
+      e.preventDefault();
+      document.getElementById(l.dataset.target).scrollIntoView({behavior:"smooth", block:"start"});
+    });
+  });
+
+  /* ---------- FLASHCARDS ---------- */
+  var terms = [
+    ["Sample space", "The set S of every possible outcome — e.g. the 6 faces of a die. Each outcome is a sample point / possible world / atomic event."],
+    ["Random variable", "A function from sample points to some range (reals, Booleans) — e.g. Weather maps each world to sunny/rain/cloudy/snow."],
+    ["Conditional probability", "P(A|B) = P(A∧B)/P(B) — restrict to the world where B is true, then ask what fraction of it is also A."],
+    ["Chain rule (product rule)", "P(X₁,…,Xₙ) = ∏ᵢ P(Xᵢ | X₁,…,Xᵢ₋₁) — decomposes a joint probability into a product of conditionals; the backbone of Bayesian networks."],
+    ["Independence", "A ⟂ B iff P(A|B)=P(A) iff P(A∧B)=P(A)·P(B) — knowing one tells you nothing new about the other."],
+    ["Bayes' Rule", "P(A|B) = P(B|A)·P(A)/P(B) — flips a conditional probability, turning an easy-to-measure direction into the hard-to-measure one you actually want."],
+    ["Bayesian Network", "A DAG (one node per variable) plus one CPT per node, P(Xᵢ|Parents(Xᵢ)), compactly encoding a full joint distribution."],
+    ["CPT", "Conditional Probability Table — the distribution over a node's values for every combination of its parents' values."],
+    ["Complexity of full enumeration", "O(dⁿ) time and space, d=max arity, n=#variables — exponential, and the reason Bayesian networks exist."],
+    ["Cooper's NP-hardness result (1990)", "Exact inference in Bayesian networks is NP-hard in the worst case — the theoretical justification for approximate/sampling-based inference."],
+    ["Marginalization", "Summing a hidden variable's contribution out of a joint expression, e.g. P(B,J,M) = Σ_A Σ_E P(J,M,A,B,E)."],
+    ["Normalization constant (α)", "Compute unnormalized joint terms for each value of the query variable, then divide each by their sum to get a valid conditional probability."],
+    ["Diagnostic inference", "Effect → cause reasoning, against the arrows — e.g. 'the alarm rang, was there a burglary?'"],
+    ["Causal inference", "Cause → effect reasoning, with the arrows — e.g. 'there's a burglary, will the alarm ring?'"],
+    ["Inter-causal inference / explaining away", "Two causes share an effect; conditioning on the effect makes the causes dependent even with no direct link between them."],
+    ["Mixed inference", "A single query combining causal, diagnostic, and/or inter-causal reasoning at once, using scattered evidence."],
+    ["D-separation", "A purely graphical test: two nodes are d-separated (conditionally independent) given evidence Z if every path between them is 'blocked' by Z."],
+    ["Blocked chain/fork", "A non-collider path is blocked when its middle node is in the evidence set."],
+    ["Blocked collider (v-structure)", "A collider path is blocked UNLESS the middle node or one of its descendants is in the evidence — the rule behind explaining-away."],
+    ["Markov blanket", "A node's parents, children, and children's other parents — the minimal set that makes the node independent of every other node in the network."],
+    ["Variable Elimination", "Exact inference that sums out irrelevant/hidden variables one at a time, building only small local factor tables instead of the full joint."],
+    ["Prior Sampling", "Simulate the network top-down (parents before children) using random numbers against each CPT; estimate probabilities by counting sample rows."],
+    ["Rejection Sampling", "Prior Sampling that discards any generated sample inconsistent with the evidence before counting — wasteful when evidence is rare."],
+    ["Likelihood Weighting", "Fix evidence variables directly (never sample them), sample the rest, and weight each sample by the product of the evidence variables' CPT probabilities; no sample is ever wasted."],
+    ["Monte Carlo method", "The general family of 'simulate with randomness, then estimate by counting/averaging' techniques underlying all three sampling-based inference methods."],
+    ["Toothache/Cavity/Catch network", "The classic AIMA teaching example for conditional independence: Cavity causes both Toothache and Catch, which are independent given Cavity."],
+    ["Burglary/Earthquake/Alarm network", "The most reused Bayesian-network teaching example: two independent causes (Burglary, Earthquake) trigger Alarm, which triggers John/Mary's calls."],
+    ["Non-monotonic reasoning", "Reasoning where new evidence can retract earlier conclusions (unlike classical logic) — exactly what probability enables via smooth belief updates."]
+  ];
+  var flashGrid = document.getElementById("flashGrid");
+  terms.forEach(function(t){
+    var card = document.createElement("div");
+    card.className = "flashcard";
+    card.innerHTML =
+      '<div class="flashcard-inner">' +
+        '<div class="flashcard-face front"><div class="term">' + t[0] + '</div><div class="hint">click to reveal</div></div>' +
+        '<div class="flashcard-face back"><div class="def">' + t[1] + '</div></div>' +
+      '</div>';
+    card.addEventListener("click", function(){ card.classList.toggle("flipped"); });
+    flashGrid.appendChild(card);
+  });
+  document.getElementById("flashCount").textContent = terms.length + " terms";
+  document.getElementById("flashReset").addEventListener("click", function(){
+    Array.prototype.slice.call(flashGrid.children).forEach(function(c){ c.classList.remove("flipped"); });
+  });
+
+  /* ---------- QUIZ ---------- */
+  var quizData = [
+    { q:"Why does classical (monotonic) logic struggle with real-world uncertainty?", opts:["It runs too slowly on modern computers","New facts can only add to knowledge, never retract a conclusion — it can't express 'usually true, but not always'","It cannot represent Boolean variables","It requires too much memory"], correct:1, exp:"Non-monotonic reasoning (and probability) allow a belief like 'birds fly' to be retracted once 'penguin' is learned; classical logic cannot." },
+    { q:"What does the joint probability table's O(dⁿ) complexity mean in practice?", opts:["It only applies to continuous variables","Storing/enumerating a full joint table grows exponentially with the number of variables — quickly becomes prohibitive","It is always fast for Boolean variables","It refers to the number of edges in a Bayesian network"], correct:1, exp:"With just 30 Boolean variables, 2³⁰ exceeds a billion entries — this is exactly why Bayesian networks exist." },
+    { q:"In the Toothache/Cavity/Catch example, why are Toothache and Catch conditionally independent given Cavity?", opts:["They are never related at all","Cavity is their common cause; once Cavity is known, learning one tells you nothing more about the other","Catch always implies Toothache","Weather explains the relationship"], correct:1, exp:"P(Toothache,Catch|Cavity) = P(Toothache|Cavity)·P(Catch|Cavity) — the defining property of conditional independence." },
+    { q:"What does Bayes' Rule let you compute that's otherwise hard to measure directly?", opts:["The prior probability of any event","A conditional probability in the 'reverse' direction, e.g. P(disease|symptom) from the easier P(symptom|disease)","The joint probability of independent events only","The variance of a random variable"], correct:1, exp:"P(A|B) = P(B|A)P(A)/P(B) flips the easy-to-measure direction into the one you actually want." },
+    { q:"What are the three syntactic components of a Bayesian Network?", opts:["Nodes, a directed acyclic graph, and a CPT per node given its parents","Nodes, an undirected graph, and a single global joint table","Only nodes and edges, with no probability tables","A sample space and an event set"], correct:0, exp:"One node per variable, arrows meaning 'directly influences,' and a small local CPT per node — never one giant joint table." },
+    { q:"In the Burglary/Earthquake/Alarm network, why is P(Alarm|Burglary,Earthquake)=0.95 higher than P(Alarm|Burglary,¬Earthquake)=0.94?", opts:["It isn't — they're equal","Both a burglary and an earthquake occurring simultaneously makes the alarm even more likely to trigger than burglary alone","Earthquakes always trigger the alarm","The numbers are unrelated to causation"], correct:1, exp:"Two independent triggering causes acting together slightly raises the alarm probability above either alone." },
+    { q:"Diagnostic inference reasons in which direction through a Bayesian network?", opts:["From cause to effect, with the arrows","From effect to cause, against the arrows","Sideways, through a shared child","In no particular direction"], correct:1, exp:"E.g. 'the alarm rang — was there a burglary?' reasons from an observed effect back up to an unknown cause." },
+    { q:"What is 'explaining away'?", opts:["Two independent causes of a shared effect become dependent once you condition on that effect","A method for deleting irrelevant nodes from a network","A synonym for d-separation","A technique only used in causal reasoning, never inter-causal"], correct:0, exp:"Learning an earthquake occurred can lower suspicion of burglary, even though burglary and earthquake are marginally independent — they're both plausible explanations for the same alarm." },
+    { q:"In the P(Burglary|John&Mary called) calculation, why are Alarm and Earthquake summed out (marginalized)?", opts:["Because they are the query variables","Because they are hidden variables — neither the query nor the evidence — so every value they could take must be accounted for", "Because they have no CPTs", "Because the network has no other variables"], correct:1, exp:"Marginalization sums over every combination of a hidden variable's values, weighted by the chain-rule product of its own CPT entry." },
+    { q:"What is the normalization trick (α) used for in exact inference?", opts:["Rounding probabilities to two decimal places","Computing two unnormalized joint terms (P(B,evidence) and P(¬B,evidence)) and dividing each by their sum, avoiding the need to compute P(evidence) directly","Converting discrete variables into continuous ones","Eliminating the need for a Bayesian network entirely"], correct:1, exp:"Since P(B|e)+P(¬B|e)=1, computing both joint terms and normalizing sidesteps ever calculating P(evidence) directly." },
+    { q:"What does d-separation let you determine?", opts:["The exact numeric value of a conditional probability","Whether two variables are conditionally independent given some evidence, just by inspecting the graph — no arithmetic required","The optimal variable elimination order","The number of parents a node has"], correct:1, exp:"D-separation is a purely graphical, sound-and-complete test for reading conditional independence directly off a DAG's structure." },
+    { q:"When is a 'collider' (v-structure) path considered blocked in d-separation?", opts:["It is always blocked","It is blocked unless the middle node or one of its descendants is in the evidence set","It is blocked only if the middle node is NOT in the evidence set","Colliders are never relevant to d-separation"], correct:1, exp:"This is the opposite rule from chains/forks, and it's exactly what makes 'explaining away' possible." },
+    { q:"What is a node's Markov blanket?", opts:["Only its direct parents","Its parents, its children, and its children's other parents — the minimal set that makes it independent of every other node","Every ancestor in the network","A synonym for a conditional probability table"], correct:1, exp:"Once you know a node's Markov blanket, no other node in the network provides any additional information about it." },
+    { q:"What is the core idea of Variable Elimination, versus brute-force enumeration?", opts:["It ignores evidence entirely","It sums out hidden variables one at a time, keeping only small local factor tables instead of ever building the full joint distribution","It requires a continuous-variable network","It only works on trees, never general DAGs"], correct:1, exp:"By eliminating one variable at a time, VE avoids ever materializing the full exponential joint table." },
+    { q:"Why is exact inference in Bayesian networks worst-case NP-hard?", opts:["Because CPTs cannot be stored efficiently","Cooper (1990) proved it formally — the same underlying combinatorial explosion that makes full joint enumeration exponential", "Because Bayesian networks cannot represent cycles", "It is not NP-hard; it always runs in polynomial time"], correct:1, exp:"This result is the direct theoretical justification for approximate (sampling-based) inference methods." },
+    { q:"In Prior Sampling, in what order must variables be generated?", opts:["Any random order works equally well","Topological order — parents before children — so each node's CPT row (conditioned on already-sampled parent values) is well-defined","Alphabetical order","Reverse causal order, children before parents"], correct:1, exp:"A child's CPT is conditioned on its parents' values, so parents must be sampled first for the CPT lookup to make sense." },
+    { q:"What is the key weakness of Rejection Sampling that Likelihood Weighting fixes?", opts:["Rejection Sampling is biased; Likelihood Weighting is not","Rejection Sampling discards any sample that doesn't match the evidence, wasting huge amounts of computation when evidence is rare","Rejection Sampling cannot handle Boolean variables","Rejection Sampling requires more memory than exact inference"], correct:1, exp:"Likelihood Weighting fixes evidence variables directly instead of sampling and possibly rejecting them — no sample is ever thrown away." },
+    { q:"In Likelihood Weighting, how is each sample's final answer computed?", opts:["By simple majority vote across samples","(sum of weights of samples where the query is true) ÷ (sum of weights of all samples)","By discarding low-weight samples before counting","By multiplying all sample weights together"], correct:1, exp:"Unlike Rejection Sampling's simple count, Likelihood Weighting requires a weighted sum, since samples are no longer equally 'valid.'" },
+    { q:"Why can two samples in a Likelihood Weighting run have different weights, even with the same fixed evidence?", opts:["Weights are always identical across samples","If evidence depends on a randomly-sampled parent, that parent's sampled value changes the evidence's CPT probability, and hence the weight","Weights are randomly assigned regardless of the network","Only the query variable affects the weight"], correct:1, exp:"E.g. P(¬L|V) differs depending on whether V was sampled True or False, so a sample's weight varies accordingly." },
+    { q:"What general technique family do Prior/Rejection/Likelihood-Weighted sampling all belong to?", opts:["Dynamic programming","Monte Carlo methods — simulate with randomness, then estimate a probability by counting or weighting the results","Gradient descent","Breadth-first search"], correct:1, exp:"This traces back to Ulam and von Neumann's 1940s work simulating neutron diffusion at Los Alamos." },
+    { q:"Which inference type does the query P(Earthquake | Burglary, MaryCalls) represent?", opts:["Purely causal","Purely diagnostic","Mixed — MaryCalls is diagnostic evidence (a descendant), Burglary is inter-causal evidence (a co-parent sharing the Alarm child)","Not answerable from a Bayesian network"], correct:2, exp:"Combining a descendant observation with a co-parent observation about a shared effect is a textbook 'mixed' inference query." },
+    { q:"Who is credited with inventing Bayesian Networks, and when?", opts:["Thomas Bayes, in 1763","Judea Pearl, in 1985","Claude Shannon, in 1948","Alan Turing, in 1950"], correct:1, exp:"Judea Pearl coined the term 'Bayesian networks' in 1985; he won the 2011 ACM Turing Award for this and related work." },
+    { q:"What historical use case is most associated with Bayes' Rule in modern software?", opts:["Compiling programming languages","Naive Bayes spam filtering — computing P(spam|words) from the easier-to-estimate P(words|spam)","Rendering 3D graphics","Sorting algorithms"], correct:1, exp:"Early spam filters, including Gmail's original implementation, used exactly this application of Bayes' Rule." },
+    { q:"In the traffic/airport-lateness network, why is Weather@BLR left disconnected from the lateness chain?", opts:["Because weather has no effect on anything in the scenario","Because it affects accommodation planning, not travel time — it's simply irrelevant to whether the traveler arrives late","Because disconnected nodes are not allowed in a DAG","Because weather is always independent of every variable in every network"], correct:1, exp:"A Bayesian network should only include an edge where a genuine direct influence exists — Weather@BLR has none on lateness here." },
+    { q:"Why does exact inference remain hard even after a Bayesian network compresses the full joint distribution?", opts:["Because the network still must be converted back into a full joint table before any query","Because the underlying inference problem (summing over hidden variables) is still worst-case NP-hard, regardless of the compact representation","Because networks cannot have more than 5 nodes","Because CPTs are always continuous"], correct:1, exp:"Compression helps enormously in practice on sparse networks, but the worst-case complexity result (Cooper, 1990) still holds in general." }
+  ];
+  var qIdx = 0, qScore = 0, qAnswered = false;
+  var quizProgress = document.getElementById("quizProgress");
+  var quizQ = document.getElementById("quizQ");
+  var quizOpts = document.getElementById("quizOpts");
+  var quizExplain = document.getElementById("quizExplain");
+  var quizNext = document.getElementById("quizNext");
+  var quizScore = document.getElementById("quizScore");
+  var quizCard = document.getElementById("quizCard");
+  var quizResult = document.getElementById("quizResult");
+
+  function bestScore(){
+    try { return parseInt(localStorage.getItem("aci_cs1112_best_score") || "0", 10); } catch(e){ return 0; }
+  }
+  function saveBest(score){
+    try { if(score > bestScore()) localStorage.setItem("aci_cs1112_best_score", String(score)); } catch(e){}
+  }
+
+  function renderQuestion(){
+    qAnswered = false;
+    var item = quizData[qIdx];
+    quizProgress.textContent = "Question " + (qIdx+1) + " / " + quizData.length;
+    quizQ.textContent = item.q;
+    quizOpts.innerHTML = "";
+    quizExplain.classList.remove("show");
+    quizExplain.textContent = "";
+    quizNext.textContent = (qIdx === quizData.length - 1) ? "Finish" : "Next";
+    item.opts.forEach(function(opt, i){
+      var b = document.createElement("button");
+      b.className = "quiz-opt";
+      b.textContent = opt;
+      b.addEventListener("click", function(){
+        if(qAnswered) return;
+        qAnswered = true;
+        var buttons = Array.prototype.slice.call(quizOpts.children);
+        buttons.forEach(function(bb, bi){
+          bb.setAttribute("disabled","true");
+          if(bi === item.correct) bb.classList.add("correct");
+          else if(bi === i) bb.classList.add("incorrect");
+        });
+        if(i === item.correct) qScore++;
+        quizExplain.textContent = item.exp;
+        quizExplain.classList.add("show");
+        quizScore.textContent = "score " + qScore + "/" + quizData.length;
+      });
+      quizOpts.appendChild(b);
+    });
+    quizScore.textContent = "score " + qScore + "/" + quizData.length;
+  }
+
+  quizNext.addEventListener("click", function(){
+    if(!qAnswered) return;
+    if(qIdx < quizData.length - 1){
+      qIdx++;
+      renderQuestion();
+    } else {
+      saveBest(qScore);
+      quizCard.querySelectorAll(".quiz-progress,.quiz-q,.quiz-opts,.quiz-explain,.quiz-actions").forEach(function(el){ el.style.display = "none"; });
+      document.getElementById("quizFinalScore").textContent = qScore + "/" + quizData.length;
+      var pct = Math.round((qScore/quizData.length)*100);
+      var msg = pct === 100 ? "Perfect run." : pct >= 75 ? "Solid — revisit the misses above." : "Worth another pass through the deck.";
+      document.getElementById("quizFinalMsg").textContent = msg + " Best on this device: " + Math.max(qScore, bestScore()) + "/" + quizData.length + ".";
+      quizResult.classList.add("show");
+    }
+  });
+  document.getElementById("quizRetake").addEventListener("click", function(){
+    qIdx = 0; qScore = 0;
+    quizResult.classList.remove("show");
+    quizCard.querySelectorAll(".quiz-progress,.quiz-q,.quiz-opts,.quiz-explain,.quiz-actions").forEach(function(el){ el.style.display = ""; });
+    renderQuestion();
+  });
+  renderQuestion();
+
+  /* ---------- CHECKLIST ---------- */
+  var checklistItems = [
+    "Can state why monotonic (logic-based) reasoning fails under real-world uncertainty, and how probability fixes it",
+    "Can define sample space, event, random variable, and state Kolmogorov's three axioms",
+    "Can compute a conditional probability from a joint table by restricting and re-normalizing",
+    "Can apply the chain rule to decompose an n-variable joint probability into a product of conditionals",
+    "Can state and apply the definition of independence, and derive P(A∧B)=P(A)P(B)",
+    "Can state Bayes' Rule from memory and explain when/why you'd want to 'flip' a conditional probability",
+    "Can draw a Bayesian network (DAG + CPTs) from a word-problem description, correctly identifying cause→effect arrow directions",
+    "Can explain why the size of a full joint table is O(dⁿ) and why that's 'prohibitive' for real problems",
+    "Can classify a query as diagnostic, causal, inter-causal, or mixed inference",
+    "Can explain 'explaining away' using the Burglary/Earthquake/Alarm network",
+    "Can perform inference by enumeration on a small network, including marginalizing out hidden variables",
+    "Can apply the d-separation rule (including the collider exception) to determine conditional independence directly from a graph, without computing any probabilities",
+    "Can perform Variable Elimination by hand: identify eliminable/irrelevant variables, build small factor tables, sum out one variable at a time",
+    "Can explain the difference between Prior Sampling, Rejection Sampling, and Likelihood Weighting, and state the core weakness each successive method fixes",
+    "Can compute a query probability from a table of generated samples (plain counting for prior/rejection sampling; weighted sums for likelihood weighting)",
+    "Can explain why exact inference is worst-case NP-hard, and why that motivates approximate/sampling-based inference for large real-world networks"
+  ];
+  var checklistGrid = document.getElementById("checklistGrid");
+  var checkSummary = document.getElementById("checkSummary");
+  var checkBarFill = document.getElementById("checkBarFill");
+  var STORE_KEY = "aci_cs1112_checklist_v1";
+
+  function loadChecks(){
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); } catch(e){ return {}; }
+  }
+  function saveChecks(state){
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch(e){}
+  }
+  var checkState = loadChecks();
+
+  function refreshSummary(){
+    var done = Object.keys(checkState).filter(function(k){ return checkState[k]; }).length;
+    checkSummary.textContent = done + " / " + checklistItems.length + " checked";
+    checkBarFill.style.width = Math.round((done/checklistItems.length)*100) + "%";
+  }
+
+  checklistItems.forEach(function(text, idx){
+    var id = "chk_" + idx;
+    var row = document.createElement("label");
+    row.className = "check-item" + (checkState[id] ? " done" : "");
+    row.innerHTML = '<input type="checkbox" id="' + id + '"' + (checkState[id] ? " checked" : "") + '><span>' + text + '</span>';
+    var input = row.querySelector("input");
+    input.addEventListener("change", function(){
+      checkState[id] = input.checked;
+      row.classList.toggle("done", input.checked);
+      saveChecks(checkState);
+      refreshSummary();
+    });
+    checklistGrid.appendChild(row);
+  });
+  refreshSummary();
+
+})();
+</script>
