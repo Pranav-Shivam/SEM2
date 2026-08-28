@@ -575,6 +575,14 @@ P(cavity | toothache, sunny) = P(cavity | toothache)  &larr;   irrelevant eviden
   </figure>
 
   <div class="block">
+    <h3>Exercise &mdash; P(good weather, &not;toothache, &not;cavity, catch)</h3>
+    <p>The network structure collapses the chain rule down to just 4 small terms &mdash; no 16-row joint table needed:</p>
+  </div>
+  <div class="formula">P(Weather, &not;Toothache, &not;Cavity, Catch)
+  = P(Weather) &middot; P(&not;Cavity) &middot; P(&not;Toothache | &not;Cavity) &middot; P(Catch | &not;Cavity)
+&larr;  Weather's own prior &times; Cavity's own prior &times; Toothache/Catch each conditioned only on Cavity</div>
+
+  <div class="block">
     <h3>Network #2 &mdash; The Burglary Alarm</h3>
     <p>Two independent root causes (Burglary, Earthquake) can trigger the Alarm; the Alarm can cause two neighbors to call.</p>
   </div>
@@ -663,6 +671,21 @@ P(cavity | toothache, sunny) = P(cavity | toothache)  &larr;   irrelevant eviden
   <div class="fieldnote">
     <span class="fn-label">// field note &mdash; Markov blankets in practice</span>
     <p>The Markov blanket defines the <em>minimal</em> set of nodes that fully insulates a variable from the rest of the network. It's used heavily for efficient inference and structure learning &mdash; some ML feature-selection algorithms use it directly to find the minimal "relevant" variable set for predicting a target, discarding everything else without losing predictive power. (en.wikipedia.org/wiki/Bayesian_network#Markov_blanket)</p>
+  </div>
+
+  <div class="block">
+    <h3>Exercise &mdash; classify these traffic-network queries</h3>
+    <p>A joint query pins every variable to a value at once; a conditional query asks for one variable given another is already known &mdash; computed as a ratio, P(A|B) = P(A&and;B)/P(B).</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Query</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">P(Late, Weekend, &not;RoadBlock, &not;Festival, &not;CarsRouted)</td><td><span class="pill accent">Joint</span></td></tr>
+        <tr><td class="hl">P(Festival | CarsRouted)</td><td><span class="pill accent">Conditional</span></td></tr>
+        <tr><td class="hl">P(Late | Festival)</td><td><span class="pill accent">Conditional</span></td></tr>
+      </tbody>
+    </table>
   </div>
 </section>
 
@@ -848,10 +871,15 @@ P(F | D,&not;L) = (0.099 + 0.099) / (3&times;0.099 + 0.02)   &larr;   L depends 
     <h3>Exercise A &mdash; Viral / fLu / foodPoison / Fever / Dehydration</h3>
     <p>Extends the Fever network from Module 9 with a Dehydration node caused by both Fever and foodPoison. Practice: exact inference for P(&not;Fever | Viral, Dehydration), then re-derive the same answer three ways &mdash; Prior Sampling, Rejection Sampling, Likelihood Weighting &mdash; using one shared random-number stream so all four answers can be compared directly.</p>
   </div>
+  <div class="formula">P(V)=0.4     P(&not;L|V): T&rarr;0.3, F&rarr;0.7     P(D)=0.2
+P(F|L,D): all 4 combos (TT,TF,FT,FF) = 0.25 each     P(&not;H|F,D): all 4 combos (TT,TF,FT,FF) = 0.25 each</div>
+  <div class="formula">Shared random-number stream (use in this order for every method):
+0.3, 0.6, 0.2, 0.1, 0.7, 0.5, 0.5, 0.25, 0.45, 0.85, 0.35, 0.9, 0.15, 0.65, 0.51, 0.2, 0.7, 0.10, 0.6, 0.8</div>
 
   <div class="block">
     <h3>Exercise B &mdash; The cricket/IPL network</h3>
     <p>"Most WILP students are cricket fans; being a parent reduces watching; watching reduces next-day concentration; viral infection (common in rainy season) is a second cause of reduced concentration; reduced concentration raises stress (hurting work productivity) and lowers exam grades."</p>
+    <p>Two variants of this word problem appear in the source deck, same network, one flipped premise: variant 1 asks about a student <em>not</em> affected by viral infection, variant 2 asks about one who <em>is</em> affected. Both pose the same three tasks: (1) construct the network, (2) compute the full joint probability for the stated combination of values, (3) check whether Grades &perp; Stress given only Viral holds &mdash; via d-separation.</p>
   </div>
   <figure class="diagram">
     <svg viewBox="0 0 560 190" role="img" aria-label="Fan and Parent both point to Watch; Watch and Viral both point to Concentration; Rainy Season points to Viral; Concentration points to Stress and Grades; Stress points to Productivity.">
