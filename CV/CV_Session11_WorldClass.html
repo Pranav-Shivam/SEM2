@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Session 11 — Image Segmentation · Gestalt, Thresholding, K-Means, GMM/EM, Mean-Shift</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px;
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .nav-link .prev-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--violet); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV11'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-transcript { color:var(--sky); background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .src-preview { color:var(--violet); background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:42px; height:42px; display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .flip-card { perspective:1000px; height:130px; cursor:pointer; }
+  .flip-card-inner { position:relative; width:100%; height:100%; transition:transform 0.5s; transform-style:preserve-3d; }
+  .flip-card.flipped .flip-card-inner { transform:rotateY(180deg); }
+  .flip-card-face { position:absolute; inset:0; backface-visibility:hidden; border-radius:8px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; text-align:center; padding:1rem; font-family:var(--font-code); font-size:13px; }
+  .flip-card-front { background:var(--bg3); color:var(--gold); font-weight:600; }
+  .flip-card-back { background:var(--bg4); color:var(--text2); transform:rotateY(180deg); font-family:var(--font-body); font-size:14px; line-height:1.5; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") {
+    root.setAttribute("data-theme", saved);
+  }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 11 — Image Segmentation</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Grounded in CV11 Materials</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Segmentation Taxonomy</a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Gestalt Psychology &amp; Grouping</a>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Top-Down vs Bottom-Up</a>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Histograms &amp; Thresholding</a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · K-Means Clustering</a>
+  <a href="#s6" class="nav-link" data-section="s6">06 · GMM &amp; Expectation-Maximization</a>
+  <a href="#s7" class="nav-link" data-section="s7">07 · Mean-Shift Segmentation</a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s8" class="nav-link" data-section="s8">Revision &amp; Exam Quiz (12 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 11 · S2-25</span>
+    <h1>Image Segmentation<br><span>Gestalt to Mean-Shift</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">From perceptual grouping laws to classical clustering algorithms — how an image becomes meaningful regions before a single neural net gets involved.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Session</strong>#11</div>
+      <div class="hero-meta-item"><strong>Prof</strong>Dhruba Adhikary</div>
+      <div class="hero-meta-item"><strong>Source deck</strong>47 slides (CV11.pdf / CV11 Image Segmentation.pptx)</div>
+      <div class="hero-meta-item"><strong>Slide credit</strong>EECS 442 – David Fouhey; mean-shift figures by Y. Ukrainitz &amp; B. Sarel</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Semantic/Instance/Panoptic</span>
+      <span class="topic-chip">Gestalt Grouping Laws</span>
+      <span class="topic-chip">Top-Down vs Bottom-Up</span>
+      <span class="topic-chip">Histogram Thresholding</span>
+      <span class="topic-chip">K-Means</span>
+      <span class="topic-chip">GMM + EM</span>
+      <span class="topic-chip">Mean-Shift</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide — source honesty</h3>
+      <p>This guide is built directly from the CV11 slide deck (47 slides), extracted slide-by-slide from the source PowerPoint since the exported PDF interleaves overlapping text boxes unreliably. Each section is tagged with the slide range it comes from:</p>
+      <p><span class="src-badge src-slides">Slides N–M</span> &nbsp;= extracted from <code>CV11 Image Segmentation.pptx</code> (Dhruba Adhikary; slide materials adapted from EECS 442 – David Fouhey). &nbsp; <span class="src-badge src-lab">Researched</span> &nbsp;= additional context beyond the slides, added for revision depth.</p>
+      <p style="color:var(--text2);font-size:14px;"><strong style="color:var(--rose)">Reality check:</strong> this session is entirely classical/pre-deep-learning segmentation (Gestalt psychology, thresholding, K-means, GMM/EM, mean-shift) — none of it uses a neural network. Session 12 picks up FCN/U-Net-style learned segmentation from here.</p>
+    </div>
+
+    <div class="callout-weight">
+      <div class="weight-card"><div class="wpct" style="color:var(--gold)">30%</div><div class="wlbl">Mid-Sem<br>Closed Book</div></div>
+      <div class="weight-card"><div class="wpct" style="color:var(--teal)">20%</div><div class="wlbl">Lab<br>Hands-on</div></div>
+      <div class="weight-card"><div class="wpct" style="color:var(--sky)">40%</div><div class="wlbl">Comprehensive<br>Open Book</div></div>
+    </div>
+
+    <!-- ============ SECTION 01 ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Segmentation Taxonomy</h2>
+        <span class="src-badge src-slides">Slides 2–3</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>What segmentation actually asks</h3>
+        <p>A digital photo is just a grid of numbers — the computer has no built-in notion of "cat" or "grass." Image segmentation is the process of sorting pixels into meaningful groups, like filling in a paint-by-numbers picture: every pixel belonging to the same object or region gets grouped together (Slide 2). The question it answers is narrower and harder than it sounds: not "what's in this picture?" and not "roughly where is it?", but <strong>"which exact pixels make up this thing?"</strong></p>
+        <p>The classic CS231n-style cat/dog panel (Slide 2) lines up four related-but-distinct vision tasks along a spectrum of increasing pixel-level precision:</p>
+      </div>
+
+      <table class="he-table">
+        <thead><tr><th>Task</th><th>What it outputs</th><th>Knows individual instances?</th></tr></thead>
+        <tbody>
+          <tr><td>Classification + Localization</td><td>One label + one bounding box ("CAT")</td><td>N/A — single object assumed</td></tr>
+          <tr><td>Object Detection</td><td>A bounding box + label per object ("DOG, DOG, CAT")</td><td>Yes, but only a box, not an outline</td></tr>
+          <tr><td>Semantic Segmentation</td><td>Every pixel labeled by class (GRASS, CAT, TREE, SKY)</td><td><strong>No</strong> — "cat" pixels, not "cat #1" pixels</td></tr>
+          <tr><td>Instance Segmentation</td><td>Pixel-precise mask per object instance</td><td><strong>Yes</strong> — two dogs get two different-colored masks</td></tr>
+        </tbody>
+      </table>
+
+      <div class="theory-block">
+        <h3>Six flavors of segmentation (Slide 3)</h3>
+        <p>Slide 3 widens the taxonomy to six categories that roughly track the field's historical evolution — from cheap classical image processing to modern learned, semantic-aware methods:</p>
+      </div>
+
+      <table class="he-table">
+        <thead><tr><th>Type</th><th>Core idea</th><th>Era / typical method</th></tr></thead>
+        <tbody>
+          <tr><td>Thresholding</td><td>Pick a brightness cutoff — darker = object, lighter = background</td><td>Classical (Otsu's method, 1979)</td></tr>
+          <tr><td>Edge-based</td><td>Find boundaries via sharp intensity gradients</td><td>Classical (Sobel, Canny 1986)</td></tr>
+          <tr><td>Region-based</td><td>Grow a region outward from a seed pixel while neighbors stay similar</td><td>Classical (region growing, watershed)</td></tr>
+          <tr><td>Semantic Segmentation</td><td>Label every pixel by class, no instance count</td><td>Deep learning (FCN 2015, U-Net)</td></tr>
+          <tr><td>Instance Segmentation</td><td>Semantic + separates individual objects of the same class</td><td>Deep learning (Mask R-CNN, 2017)</td></tr>
+          <tr><td>Panoptic Segmentation</td><td>"Stuff" (background classes) + "things" (countable instances), unified</td><td>Deep learning (Panoptic FPN, 2019)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="key-insight">
+        <div class="ki-label">Key insight</div>
+        <p>Panoptic segmentation isn't "yet another type" — it's the merger that closes the gap semantic segmentation leaves open. It labels the uncountable background ("stuff": sky, road, grass) <em>and</em> separately masks each countable object ("things": each car, each person) in one unified task.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Source note</div>
+        <p>"More advanced" doesn't mean "always better" — thresholding remains the right, cheap, fast choice for simple controlled scenarios like barcode or document scanning (Slide 3, Researched Context). Real deployments pick the cheapest technique that meets the accuracy bar, not the fanciest one.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>Panoptic segmentation was formalized by Kirillov et al. (2019, Facebook AI Research) specifically to unify per-pixel category labels ("stuff") with per-instance masks ("things") into one task and one metric — Panoptic Quality (PQ). Self-driving stacks need exactly this: semantic labels for drivable road/lane surface plus individually-tracked masks for every pedestrian and vehicle, in real time.</p>
+        <cite>Kirillov et al. 2019; PyImageSearch, Ultralytics, Labellerr (via slide Researched Context)</cite>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Alert</span><h4>Semantic vs. instance vs. panoptic — the classic mix-up</h4></div>
+        <ul class="exam-list">
+          <li>Semantic segmentation labels <em>what class</em> a pixel is, but two adjacent objects of the same class merge into one blob — it cannot count "how many cats."</li>
+          <li>Instance segmentation adds object identity: same class, but each individual object gets its own mask (dog #1 vs. dog #2).</li>
+          <li>Panoptic segmentation = semantic (for "stuff": sky, road, grass — uncountable) + instance (for "things": cars, people — countable), scored with a single metric, Panoptic Quality (PQ).</li>
+          <li>Do not confuse instance segmentation with object detection — detection only draws a box; instance segmentation traces the exact pixel outline.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Gestalt Psychology &amp; Perceptual Grouping</h2>
+        <span class="src-badge src-slides">Slides 4–6</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>"The whole is different from the sum of its parts"</h3>
+        <p>Before any lecture on algorithms, the course pauses on <strong>Gestalt psychology</strong> (Wertheimer, Köhler, Koffka — early-20th-century Germany), because it names the exact problem segmentation has to solve. Slide 4's claim: <em>"we perceive objects in their entirety before their individual parts."</em> Human vision doesn't build a dog out of edges one at a time — it locks onto the whole shape almost instantly, using both raw pixels (bottom-up) and prior knowledge (top-down).</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Slide 4 — verbatim</div>
+        <p>"We perceive objects in its entirety before their individual parts"</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The hidden Dalmatian: figure-ground segregation</h3>
+        <p>Slide 4's speckled black-and-white image — the famous <strong>R. C. James Dalmatian photograph</strong> — looks like pure noise at first glance. The moment you're told "there's a dog sniffing the ground in there," your brain locks onto the whole dog shape and you can never unsee it again, even though not a single pixel changed. That flip is a textbook demonstration of <strong>top-down processing</strong>: prior knowledge changes what you consciously perceive from identical raw input, and of <strong>figure-ground segregation</strong> — separating an object ("figure") from its surrounding context ("ground").</p>
+        <p>This maps directly onto why segmentation is hard for machines: a model looking at raw pixel intensities has no built-in "aha" moment. Getting scattered, disconnected pixel patches recognized as one coherent "dog" is functionally the same challenge, minus the human shortcut.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Illusory contours, occlusion, familiar configuration</h3>
+        <p>Slide 5 (referencing a Stanford CS231-style tutorial) stacks three more Gestalt cues that force the brain to see one unified whole out of separate, incomplete fragments:</p>
+      </div>
+
+      <ol class="pipeline">
+        <li><strong>Illusory / subjective contours (Kanizsa triangle)</strong>
+          <p>Three "Pac-Man" disks with aligned wedge cutouts make the brain perceive a bright triangle floating on top — edges that physically don't exist. First described by Gaetano Kanizsa (1955); the illusory triangle is even perceived as brighter than the background.</p></li>
+        <li><strong>Occlusion</strong>
+          <p>Two blob shapes positioned so one appears to continue behind the other — the same principle that lets a self-driving car treat a pedestrian partly hidden behind a parked car as one continuous person, not two fragments.</p></li>
+        <li><strong>Familiar configuration</strong>
+          <p>A ring of disconnected spike shapes, or separate curved segments, snap into a recognizable whole once the pattern is known — meaningless in isolation, obvious together.</p></li>
+      </ol>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>Kanizsa figures are still active research tools for studying "amodal completion" — including recent work testing whether CNNs and vision transformers reproduce the illusion. Most don't, without explicit training, exposing a real gap between human and machine perceptual grouping.</p>
+        <cite>"Finding Closure: A Closer Look at the Gestalt Law of Closure in CNNs," arXiv 2408.12460 (via slide Researched Context)</cite>
+      </div>
+
+      <div class="theory-block">
+        <h3>The Gestalt grouping laws (Slide 6)</h3>
+        <p>Slide 6 is the "cheat sheet" — the specific rules the brain uses to decide which separate marks belong together. Flip each card below for the one-line definition.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin:1.5rem 0;">
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Proximity</div>
+            <div class="flip-card-face flip-card-back">Elements placed close together are perceived as one group, even if otherwise identical to elements spaced further apart.</div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Similarity</div>
+            <div class="flip-card-face flip-card-back">Elements that look alike (shape, color, orientation) are grouped together even when scattered across the scene.</div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Common Fate</div>
+            <div class="flip-card-face flip-card-back">Elements moving in the same direction are perceived as one group — a flock of birds veering together reads as "one flock."</div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Common Region</div>
+            <div class="flip-card-face flip-card-back">Elements enclosed by the same boundary (e.g. an oval outline) are perceived as belonging together.</div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Closure</div>
+            <div class="flip-card-face flip-card-back">The brain perceptually "closes the gap" on an incomplete outline, seeing a whole shape even where lines are missing.</div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Continuity</div>
+            <div class="flip-card-face flip-card-back">The eye follows the smoothest path through a crossing point, grouping curves as continuing lines rather than sharp turns.</div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Symmetry</div>
+            <div class="flip-card-face flip-card-back">Mirror-symmetric shapes or curve-pairs are perceived as belonging to the same object.</div>
+          </div>
+        </div>
+        <div class="flip-card" onclick="flipCard(this)">
+          <div class="flip-card-inner">
+            <div class="flip-card-face flip-card-front">Parallelism</div>
+            <div class="flip-card-face flip-card-back">Lines or curves running in the same direction (e.g. wavy parallel curves) are perceived as grouped.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key insight</div>
+        <p>None of these groupings are automatic for a computer. A human sees a flock and instantly groups it via common fate; an algorithm must be explicitly told to compute motion vectors and cluster by similarity. That gap — effortless for us, hard to formalize for algorithms — is exactly the segmentation problem this lecture builds toward (Slides 6–7).</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>These aren't just design heuristics borrowed for UI work — they originated as, and remain, testable psychological theories (Wertheimer 1923; Köhler and Koffka extended them). They fed directly into classical computer vision: proximity/similarity motivate clustering-based segmentation (k-means on pixel color/position), common fate motivates optical-flow-based motion segmentation, and closure/continuity motivate contour-completion and edge-linking algorithms. They also underpin why datasets like the Berkeley Segmentation Dataset exist — human-drawn segment boundaries are themselves Gestalt-grouping judgments, and different annotators disagree, showing "what defines an object" is inherently fuzzy even for people.</p>
+        <cite>Wikipedia, Principles of Grouping; Scholarpedia, Gestalt principles; ScienceDirect, "The collaboration of grouping laws in vision"</cite>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Alert</span><h4>Why Gestalt shows up in a CV course</h4></div>
+        <ul class="exam-list">
+          <li>Be ready to name the specific law behind a given visual example (Kanizsa triangle = illusory contours; occluded blobs = occlusion; radial spikes = familiar configuration).</li>
+          <li>Gestalt grouping laws are the psychological ancestor of bottom-up segmentation algorithms: proximity/similarity to clustering, common fate to optical-flow grouping, closure/continuity to contour completion.</li>
+          <li>Don't dismiss these as pure "optical tricks" — examiners flag this as a common misconception; they are the conceptual justification for why bottom-up pixel-grouping segmentation works at all.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Top-Down vs Bottom-Up Strategies</h2>
+        <span class="src-badge src-slides">Slides 7–8</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>From images to objects</h3>
+        <p>A camera gives you a grid of numbers. A person looking at the same grid says "tiger on a riverbank." Segmentation is the machinery that closes that gap: take the tiger photo, and instead of a flat pixel array, produce a small number of meaningful regions — grass, water, sand, tiger — each internally consistent and distinct from its neighbors. The classic teaching example (BSDS: a tiger walking beside a blue river) shows the raw photo next to a hand-segmented version where grass becomes a green texture, water a blue band, sand a dotted region, and the tiger a hatched silhouette.</p>
+        <p>The uncomfortable question hiding underneath: <em>what actually counts as "one object"?</em> Is the tiger's shadow part of the tiger? Its reflection in the water? There is no single hard rule — "object" is a subjective, perceptually-defined boundary, not a physical one. That's exactly why Gestalt laws (proximity, similarity, continuation, closure, common fate) get invoked here: they're the closest thing psychology has to a formal account of how humans draw these boundaries.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>The tiger image is from the <strong>Berkeley Segmentation Dataset (BSDS)</strong>, built by Martin, Fowlkes, Tal &amp; Malik at UC Berkeley (ICCV 2001). Many human volunteers segmented the same photos by hand, and the annotators disagreed substantially on where object boundaries belonged. That disagreement is the point: it's direct evidence that "ground truth" segmentation is inherently fuzzy even for humans, not a fixed target algorithms are failing to hit. BSDS became the standard benchmark for scoring algorithm boundaries against human-drawn ones for two decades.</p>
+        <cite>Martin, Fowlkes, Tal &amp; Malik, ICCV 2001 — The Berkeley Segmentation Dataset and Benchmark</cite>
+      </div>
+
+      <div class="theory-block">
+        <h3>Two opposite ways to attack the same problem</h3>
+        <p>Once you accept segmentation is genuinely hard for a machine ("intuitive to us, hard to translate to algorithms"), there are two fundamentally different starting points:</p>
+      </div>
+
+      <div class="cnn-flow">
+        <div class="cnn-flow-node"><div class="cnn-flow-box b1">Have a prior model of<br>the object (shape, class)</div><div class="cnn-flow-label">Top-down</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box output-box">Pixels grouped because<br>they belong to that object</div></div>
+      </div>
+      <div class="cnn-flow">
+        <div class="cnn-flow-node"><div class="cnn-flow-box b2">Compare pixels by<br>color / texture / intensity</div><div class="cnn-flow-label">Bottom-up</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box output-box">Pixels grouped because<br>they look similar</div></div>
+      </div>
+
+      <ol class="pipeline">
+        <li><strong>Start: Image Segmentation is intuitive for humans, hard for algorithms.</strong><p>A computer has no innate notion of "object" — only numeric pixel values. The two strategies below are the two ways to bolt a notion of grouping onto that raw signal.</p></li>
+        <li><strong>Top-down branch.</strong><p>Assume object/semantic knowledge first — a prior model of what the target looks like (shape, class, template) — then decide which pixels are consistent with that model. Like a detective who already has a suspect and gathers evidence to fit the theory.</p></li>
+        <li><strong>Bottom-up branch.</strong><p>Ignore what the object "is"; just measure local similarity — color, texture, intensity — and merge pixels that look alike into growing regions. Like sorting a pile of mixed candy purely by color, with no idea what brand each piece is.</p></li>
+        <li><strong>Reality: most systems blend both.</strong><p>Bottom-up similarity supplies the raw grouping signal; top-down object knowledge resolves the ambiguous cases bottom-up alone gets wrong (e.g., camouflage, where object pixels genuinely resemble the background).</p></li>
+      </ol>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Alert</span><h4>Classic algorithms, sorted by strategy</h4></div>
+        <ul class="exam-list">
+          <li><strong>Bottom-up</strong> (similarity-driven): region growing, watershed, normalized cuts (Shi &amp; Malik, 2000), SLIC superpixels — all group pixels using local color/texture/intensity, no object model required.</li>
+          <li><strong>Top-down</strong> (model-driven): Active Shape Models, Active Contours / "snakes," template-based segmentation — all require a prior expectation of object shape before fitting to the image.</li>
+          <li>Deep CNNs (U-Net, Mask R-CNN, DeepLab) blur the line: early filters act as learned bottom-up similarity detectors, while learned category knowledge acts as a top-down prior — both trained jointly.</li>
+          <li>Trap: "bottom-up is obsolete" is false — SLIC-style bottom-up superpixels are still a common fast preprocessing step inside modern deep pipelines.</li>
+          <li>Trap: pure bottom-up reliably fails on camouflage — object pixels statistically <em>do</em> resemble the background, so only top-down/object-level knowledge can still separate them.</li>
+        </ul>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key insight</div>
+        <p>Top-down and bottom-up are not "old vs new" — they're two orthogonal information sources (prior knowledge vs. local similarity). Every practical segmentation method, classical or deep, is really a decision about how much weight to put on each.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Histograms &amp; Thresholding</h2>
+        <span class="src-badge src-slides">Slides 9–12</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>What is an image histogram?</h3>
+        <p>Motivating question: "How many orange pixels are in this tiger photo?" Rather than staring at the image and guessing, sort every pixel into a bucket by its color/intensity value and count each bucket. That tally sheet is the histogram — exactly like a teacher tallying how many students scored an A, a B, a C, and so on. It answers "how many," but it throws away "where": two very different-looking images can share an identical histogram, because all spatial information is discarded.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Histogram definition</div>
+        <span class="formula-line"><span class="f-dim">per-color count:</span> <span class="f-gold">H<sub>f</sub>[c] = |{(x,y) : f[x,y] = c}|</span></span>
+        <span class="formula-line"><span class="f-dim">equivalent sum over N pixels I₁..I_N:</span> <span class="f-teal">H(v) = Σᵢ 𝟙[Iᵢ = v]</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Histogram modes: the theoretical basis for thresholding</h3>
+        <p>A "mode" is a hump in the histogram — an intensity value shared by many pixels. In the classic beads-on-background example, the histogram shows two humps: a tall, narrow spike for the dark bead pixels and a broader, lower hump for the lighter background pixels. "Easy to see, hard to compute" — a human glances at the plot and instantly says "two humps," but a reliable mode-counting algorithm on a noisy, jagged real-world histogram is genuinely tricky, since noise creates spurious tiny bumps.</p>
+        <p>Why this matters: a clean <strong>bimodal</strong> histogram is exactly the signal that foreground and background are separable by intensity alone. If the two humps are far apart with a clear valley between them, you can draw one dividing line (a threshold) and cleanly split the image into two classes. This is the entire theoretical justification for thresholding as a segmentation method — no thresholding algorithm can do better than the separability the histogram itself already shows.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Histogram-based / K-color segmentation</h3>
+        <p>Reframe mode-finding as segmentation: the goal is to break the image into K regions by reducing the full range of colors down to K representative colors, then repainting every pixel with whichever of the K colors it's closest to. This is precisely what Photoshop's "Posterize"/"Indexed Color" does — sort a box of crayons into just K bins and re-color the drawing using only those crayons. With K=2 on the beads photo, one representative color sits inside the dark-bead peak and the other inside the light-background peak; every pixel becomes black or white depending on which side of the threshold it falls on.</p>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Failure case: the beads speckle artifact</div>
+        <p>Run K=2 on the beads photo and the big dark spheres become clean black blobs — they sit solidly inside the dark peak, far from the threshold. But the background, though it looks visually smooth, actually spans a range of intensities, and many of its pixels sit close to the dividing line. Those borderline pixels flip unpredictably to black or white, producing a "salt speckle" dithered look across what should be a flat background. Analogy: draw one line down the middle of a room — people far from the line are unambiguous, but people milling near the line get randomly split into teams even though they're really one crowd.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>This is a textbook demonstration of global thresholding, formalized by <strong>Otsu's method (1979)</strong>, which picks the threshold that maximizes between-class variance for a bimodal histogram. Otsu (and global thresholding generally) works great only when the two classes' intensities are cleanly separated; it degrades wherever local variation — uneven illumination, texture — makes background pixels straddle the global cutoff. Production pipelines (ImageJ/Fiji particle analysis, industrial droplet counting) fix this speckle problem with morphological opening/closing or local/adaptive thresholding rather than a single global cutoff.</p>
+        <cite>Otsu, 1979 — "A Threshold Selection Method from Gray-Level Histograms"; see also LearnOpenCV, "Otsu Thresholding with OpenCV"</cite>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key insight</div>
+        <p>The speckle artifact is not a bug in Otsu's method — it's a direct consequence of picking colors by histogram value alone, with zero use of spatial position. Two pixels can have identical intensity while one is deep inside the object and the other is a noisy background outlier; a 1D histogram threshold can't tell them apart. This limitation is exactly what motivates moving to K-means / clustering in color space next — clustering is also intensity-driven, but it's the natural stepping stone toward incorporating additional features (position, texture) that a single global threshold cannot use.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Alert</span><h4>Common traps</h4></div>
+        <ul class="exam-list">
+          <li>A histogram counts occurrences per color/intensity value — it stores no spatial information. Two structurally different images can produce identical histograms.</li>
+          <li>Bimodality is a necessary condition for simple thresholding to work well, not a guarantee — Otsu specifically struggles when a histogram has more than two real peaks or very unequal class variances.</li>
+          <li>"K-color segmentation" here is color quantization: choosing K representative colors and mapping each pixel to its nearest one — mathematically the same objective as K-means (minimize summed squared distance to nearest center), just applied in 1D intensity space instead of full color space.</li>
+          <li>The speckle/salt-noise artifact under global thresholding is the standard exam example for "why do we need adaptive thresholding or clustering instead of one global cutoff."</li>
+        </ul>
+      </div>
+
+      <div class="interactive-demo" id="htDemo">
+        <h4>⊞ Interactive · Histogram Threshold Explorer</h4>
+        <div class="demo-sub">Drag the threshold across a synthetic bimodal image (dark blobs + noisy background) to see clean segmentation collapse into speckle.</div>
+        <div class="slider-row">
+          <span class="slider-label">Threshold</span>
+          <input type="range" id="htSlider" min="0" max="255" value="128" oninput="htUpdate(this.value)">
+          <span class="slider-val" id="htVal">128</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="htCanvas" width="220" height="160"></canvas>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="htExplain"></div></div>
+        </div>
+      </div>
+      <script>
+      (function(){
+        var htCols = 44, htRows = 32;
+        var htBlockW, htBlockH;
+        var htImg = new Array(htCols * htRows);
+
+        (function htBuildImage(){
+          var centers = [
+            {cx: 13, cy: 12, r: 7},
+            {cx: 30, cy: 20, r: 8}
+          ];
+          for (var y = 0; y < htRows; y++) {
+            for (var x = 0; x < htCols; x++) {
+              var idx = y * htCols + x;
+              var inBead = false;
+              for (var k = 0; k < centers.length; k++) {
+                var c = centers[k];
+                var dx = x - c.cx, dy = y - c.cy;
+                if (dx*dx + dy*dy <= c.r*c.r) { inBead = true; break; }
+              }
+              var val;
+              if (inBead) {
+                val = 30 + (Math.sin(x*12.9898 + y*78.233) * 43758.5453 % 1) * 12;
+              } else {
+                var n = (Math.sin(x*37.1 + y*91.7) * 43758.5453);
+                n = n - Math.floor(n);
+                val = 140 + n * 55;
+              }
+              val = Math.max(0, Math.min(255, val));
+              htImg[idx] = Math.round(val);
+            }
+          }
+        })();
+
+        function htDraw(threshold){
+          var canvas = document.getElementById('htCanvas');
+          var ctx = canvas.getContext('2d');
+          htBlockW = canvas.width / htCols;
+          htBlockH = canvas.height / htRows;
+          var above = 0;
+          for (var y = 0; y < htRows; y++) {
+            for (var x = 0; x < htCols; x++) {
+              var v = htImg[y * htCols + x];
+              var isFg = v < threshold;
+              if (isFg) above++;
+              ctx.fillStyle = isFg ? '#1a1a1a' : '#f2ead8';
+              ctx.fillRect(x * htBlockW, y * htBlockH, htBlockW + 0.5, htBlockH + 0.5);
+            }
+          }
+          return above;
+        }
+
+        window.htUpdate = function(val){
+          var threshold = parseInt(val, 10);
+          document.getElementById('htVal').textContent = threshold;
+          var fgCount = htDraw(threshold);
+          var total = htCols * htRows;
+          var pct = ((fgCount/total)*100).toFixed(1);
+          var msg;
+          if (threshold < 60) {
+            msg = 'Threshold is below the bead peak (~30-42): almost nothing is classified as foreground. Beads themselves start disappearing.';
+          } else if (threshold >= 60 && threshold < 130) {
+            msg = 'Threshold sits in the valley between the two modes: beads render as clean solid blobs, background stays a clean flat class. This is the "good" Otsu-like cutoff.';
+          } else if (threshold >= 130 && threshold < 200) {
+            msg = 'Threshold has moved into the broad background peak (~140-195): background pixels straddle the cutoff and start flickering between classes -- the speckle/salt-noise artifact from the slides.';
+          } else {
+            msg = 'Threshold is above nearly everything: background is entirely absorbed into "foreground," destroying the separation the histogram gave you.';
+          }
+          document.getElementById('htExplain').innerHTML =
+            '<strong>' + fgCount + ' / ' + total + ' pixels</strong> classified as foreground (' + pct + '%).<br>' + msg;
+        };
+
+        htUpdate(128);
+      })();
+      </script>
+    </section>
+
+    <!-- ============ SECTION 05 ============ -->
+    <section class="section" id="s5">
+      <div class="section-header"><span class="section-num">05</span><h2 class="section-title">K-Means Clustering</h2><span class="src-badge src-slides">Slides 13–17</span></div>
+
+      <div class="theory-block">
+        <h3>From "pick representative colors" to a clustering problem</h3>
+        <p>Slide 13 poses a concrete question left over from histogram thresholding: if we want to repaint an image using only <em>K</em> representative colors, how do we choose them? Plot every pixel as a point in a color space (the slide uses the Red–Green plane) and the answer becomes visual — pick a handful of "center" colors <strong>c<sub>i</sub></strong> such that every point sits as close as possible to its nearest center. That is exactly a <strong>clustering</strong> problem, and minimizing squared distance to the nearest center is K-means' entire objective.</p>
+        <p>Formally: assign every point to one of <em>K</em> clusters, and choose the <em>K</em> centers so that the total squared distance from each point to its own cluster's center is as small as possible.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">K-means objective</div>
+        <span class="formula-line"><span class="f-gold">J &nbsp;= &nbsp;Σ<sub>i</sub> &nbsp;Σ<sub>p ∈ cluster i</sub> &nbsp;‖p − c<sub>i</sub>‖²</span> <span class="f-dim">— sum, over every cluster i, of the squared distance from each of its points p to that cluster's center c_i</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The chicken-and-egg problem — and how it breaks in half</h3>
+        <p>You can't find good centers without knowing which points belong to them, and you can't assign points without already knowing the centers. Slide 14 splits this deadlock into two questions that are each trivial <em>on their own</em>:</p>
+        <p><strong>If you know the centers</strong> → assigning points is easy: for each point p, measure distance to every c<sub>i</sub> and pick the closest.<br><strong>If you know the assignment</strong> → finding the best center is easy: the mean of a cluster's points minimizes total squared distance to them.</p>
+        <div class="annotation">
+          <div class="annotation-label">Source note</div>
+          <p>The deck labels this "break it down into subproblems" without naming the technique — it's a textbook case of <em>alternating optimization</em> (block coordinate descent): freeze one unknown, solve the other exactly, swap, repeat. The exact same pattern reappears one section later as EM's E-step/M-step loop.</p>
+        </div>
+      </div>
+
+      <ol class="pipeline">
+        <li><strong>Initialize</strong><p>Randomly place K cluster centers c₁ … c_K anywhere in feature space (e.g. the R–G plane).</p></li>
+        <li><strong>Assign</strong><p>For every point p, compute its distance to each c_i and put p into the cluster of the closest one — a hard, all-or-nothing decision.</p></li>
+        <li><strong>Update</strong><p>Recompute each c_i as the mean of every point currently assigned to cluster i.</p></li>
+        <li><strong>Repeat</strong><p>If any c_i moved, go back to step 2 and re-assign under the new centers. Stop once nothing changes.</p></li>
+      </ol>
+
+      <div class="theory-block">
+        <h3>Convergence: guaranteed, but only locally</h3>
+        <p>Every assign/update round can only decrease or hold steady the objective J — it never increases — so the loop always settles somewhere. But "somewhere" can be a <strong>local minimum</strong>: a stable arrangement that's better than any nearby alternative yet not the globally best grouping of the data. Because the very first step is a random guess, different starting centers can converge to visibly different final clusterings. The picture-strip on slide 17 makes this concrete — decision boundaries are the straight, convex edges of a Voronoi diagram, and the whole four-panel loop (init → assign → recompute → repeat) is exactly the pipeline above, run to convergence on 3 basket colors.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>What the slides call "K-means" is technically <strong>Lloyd's algorithm</strong> — proposed by Stuart Lloyd at Bell Labs in 1957 (published 1982) for pulse-code modulation; the "K-means" name itself comes from James MacQueen's 1967 paper. The non-increasing-objective guarantee is real and provable, but it is a guarantee of <em>a</em> local minimum, never the global one.</p>
+        <p>A frequent exam misconception: K-means does <em>not</em> discover the "true" number of clusters — K must be chosen in advance (elbow method, silhouette score), and a poor K or an unlucky random start can visibly change the result. The standard mitigation for bad starts is <strong>K-means++</strong>, which seeds initial centers spread out (probabilistically favoring points far from existing centers) instead of picking them uniformly at random. In vision, K-means underlies color quantization, visual bag-of-words codebooks, and — as the next section shows — initializing Gaussian Mixture Models.</p>
+        <cite>Lloyd's algorithm, Wikipedia · MacQueen 1967 · scikit-learn K-means docs</cite>
+      </div>
+
+      <div class="theory-block">
+        <h3>What K-means can't tell you</h3>
+        <p>K-means always assumes roughly spherical, similarly-sized clusters, because "nearest center by Euclidean distance" carves feature space into convex, straight-edged Voronoi cells — it structurally cannot bend a boundary around an elongated or tilted cluster. It also only ever answers "which one cluster does this point belong to" with total, 100% confidence, even for a point sitting exactly on a boundary between two equally plausible clusters. Both limitations — rigid cluster shape and hard, unhedged assignment — are exactly what the probabilistic approach in the next section is built to fix.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Alert</span><h4>K-means traps to watch for</h4></div>
+        <ul class="exam-list">
+          <li>K-means is <strong>guaranteed to converge</strong> (the objective never increases) but is <strong>not guaranteed to find the global minimum</strong> — only a local one.</li>
+          <li>K (the number of clusters) is a required <strong>input</strong>, not something the algorithm discovers — chosen via elbow/silhouette methods or domain knowledge.</li>
+          <li>Sensitive to random initialization — mitigated in practice by running multiple restarts and keeping the lowest-J result, or by smarter seeding (K-means++).</li>
+          <li>Implicitly assumes <strong>spherical, similar-sized clusters</strong> with hard (Voronoi) boundaries — fails on elongated, overlapping, or very different-sized clusters.</li>
+          <li>Produces only a single hard label per point — no notion of confidence or "partial membership."</li>
+        </ul>
+      </div>
+
+      <div class="interactive-demo" id="kmDemo">
+        <h4>⊞ Interactive · K-Means Step-Through</h4>
+        <div class="demo-sub">Click Assign / Update to watch 3 centroids — deliberately started in poor positions — converge on a fixed 2D point set over a few iterations.</div>
+        <div style="margin-bottom:1rem;">
+          <button class="demo-btn" id="kmAssignBtn" onclick="kmStep('assign')">Assign Points</button>
+          <button class="demo-btn" id="kmUpdateBtn" onclick="kmStep('update')" disabled>Update Centroids</button>
+          <button class="demo-btn" onclick="kmReset()">Reset</button>
+          <span id="kmIterLabel" style="font-family:var(--font-code);font-size:12px;color:var(--gold);margin-left:0.75rem;"></span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="kmCanvas" width="320" height="240"></canvas>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="kmExplain"></div></div>
+        </div>
+      </div>
+      <script>
+      (function(){
+        var kmColors = ['#d4a853','#4ec9b0','#7dd3fc'];
+        var kmColorsRGB = [[212,168,83],[78,201,176],[125,211,252]];
+        var kmPointsInit = [
+          {x:50,y:50},{x:70,y:40},{x:60,y:70},{x:40,y:80},{x:80,y:60},{x:55,y:90},{x:90,y:45},
+          {x:250,y:50},{x:270,y:40},{x:260,y:70},{x:290,y:60},{x:240,y:80},{x:275,y:90},{x:255,y:35},
+          {x:150,y:190},{x:170,y:200},{x:130,y:210},{x:160,y:170},{x:140,y:220},{x:180,y:190},{x:155,y:205}
+        ];
+        var kmCentroidsInit = [{x:130,y:90},{x:190,y:140},{x:110,y:160}];
+        var kmPoints = [], kmCentroids = [], kmIter = 0, kmHasAssigned = false;
+        var kmCanvas = document.getElementById('kmCanvas');
+        var kmCtx = kmCanvas ? kmCanvas.getContext('2d') : null;
+
+        function kmClone(){
+          kmPoints = kmPointsInit.map(function(p){ return {x:p.x,y:p.y,cluster:null}; });
+          kmCentroids = kmCentroidsInit.map(function(c){ return {x:c.x,y:c.y}; });
+        }
+
+        function kmDist2(ax,ay,bx,by){ var dx=ax-bx, dy=ay-by; return dx*dx+dy*dy; }
+
+        function kmNearest(x,y){
+          var best=0, bd=Infinity;
+          for(var i=0;i<kmCentroids.length;i++){
+            var d = kmDist2(x,y,kmCentroids[i].x,kmCentroids[i].y);
+            if(d<bd){ bd=d; best=i; }
+          }
+          return best;
+        }
+
+        function kmDraw(){
+          if(!kmCtx) return;
+          var w = kmCanvas.width, h = kmCanvas.height;
+          kmCtx.clearRect(0,0,w,h);
+          if(kmHasAssigned){
+            var cell = 8;
+            for(var gx=0; gx<w; gx+=cell){
+              for(var gy=0; gy<h; gy+=cell){
+                var idx = kmNearest(gx+cell/2, gy+cell/2);
+                var rgb = kmColorsRGB[idx];
+                kmCtx.fillStyle = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.10)';
+                kmCtx.fillRect(gx,gy,cell,cell);
+              }
+            }
+          }
+          for(var i=0;i<kmPoints.length;i++){
+            var p = kmPoints[i];
+            kmCtx.beginPath();
+            kmCtx.arc(p.x,p.y,5,0,Math.PI*2);
+            kmCtx.fillStyle = (p.cluster===null) ? '#6b6878' : kmColors[p.cluster];
+            kmCtx.fill();
+            kmCtx.strokeStyle = 'rgba(0,0,0,0.35)';
+            kmCtx.lineWidth = 1;
+            kmCtx.stroke();
+          }
+          for(var c=0;c<kmCentroids.length;c++){
+            var ct = kmCentroids[c];
+            kmCtx.beginPath();
+            kmCtx.arc(ct.x,ct.y,9,0,Math.PI*2);
+            kmCtx.fillStyle = kmColors[c];
+            kmCtx.fill();
+            kmCtx.lineWidth = 2;
+            kmCtx.strokeStyle = '#0c0c0f';
+            kmCtx.stroke();
+            kmCtx.fillStyle = '#0c0c0f';
+            kmCtx.font = 'bold 10px monospace';
+            kmCtx.textAlign = 'center';
+            kmCtx.textBaseline = 'middle';
+            kmCtx.fillText(String.fromCharCode(65+c), ct.x, ct.y);
+          }
+        }
+
+        function kmSetExplain(html){
+          var el = document.getElementById('kmExplain');
+          if(el) el.innerHTML = html;
+        }
+
+        function kmSetButtons(assignEnabled, updateEnabled){
+          var ab = document.getElementById('kmAssignBtn'), ub = document.getElementById('kmUpdateBtn');
+          if(ab) ab.disabled = !assignEnabled;
+          if(ub) ub.disabled = !updateEnabled;
+        }
+
+        function kmSetIterLabel(){
+          var el = document.getElementById('kmIterLabel');
+          if(el) el.textContent = 'Iteration: ' + kmIter;
+        }
+
+        window.kmStep = function(kind){
+          if(kind==='assign'){
+            var counts=[0,0,0];
+            for(var i=0;i<kmPoints.length;i++){
+              var p = kmPoints[i];
+              var idx = kmNearest(p.x,p.y);
+              p.cluster = idx;
+              counts[idx]++;
+            }
+            kmHasAssigned = true;
+            kmDraw();
+            kmSetExplain(
+              '<strong style="color:var(--gold)">Assign step</strong> — every point measured its squared distance to all 3 centroids and joined the closest one (hard, winner-take-all).<br><br>' +
+              'Cluster A: ' + counts[0] + ' pts &nbsp; Cluster B: ' + counts[1] + ' pts &nbsp; Cluster C: ' + counts[2] + ' pts<br><br>' +
+              'Centroids used (not yet moved): A(' + kmCentroids[0].x.toFixed(0) + ',' + kmCentroids[0].y.toFixed(0) + ') B(' + kmCentroids[1].x.toFixed(0) + ',' + kmCentroids[1].y.toFixed(0) + ') C(' + kmCentroids[2].x.toFixed(0) + ',' + kmCentroids[2].y.toFixed(0) + ')<br><br>' +
+              'Click <em>Update Centroids</em> to recompute each center as the mean of its new members.'
+            );
+            kmSetButtons(false, true);
+          } else if(kind==='update'){
+            var sums = [{x:0,y:0,n:0},{x:0,y:0,n:0},{x:0,y:0,n:0}];
+            for(var j=0;j<kmPoints.length;j++){
+              var p2 = kmPoints[j];
+              if(p2.cluster===null) continue;
+              sums[p2.cluster].x += p2.x;
+              sums[p2.cluster].y += p2.y;
+              sums[p2.cluster].n += 1;
+            }
+            var moves = [];
+            for(var k=0;k<3;k++){
+              var old = {x:kmCentroids[k].x, y:kmCentroids[k].y};
+              if(sums[k].n>0){
+                kmCentroids[k].x = sums[k].x/sums[k].n;
+                kmCentroids[k].y = sums[k].y/sums[k].n;
+              }
+              var dx = kmCentroids[k].x-old.x, dy = kmCentroids[k].y-old.y;
+              moves.push(Math.sqrt(dx*dx+dy*dy));
+            }
+            kmIter++;
+            kmDraw();
+            kmSetIterLabel();
+            var maxMove = Math.max.apply(null, moves);
+            kmSetExplain(
+              '<strong style="color:var(--teal)">Update step</strong> — each centroid jumped to the mean position of the points now assigned to it.<br><br>' +
+              'New centroids: A(' + kmCentroids[0].x.toFixed(0) + ',' + kmCentroids[0].y.toFixed(0) + ') moved ' + moves[0].toFixed(1) + 'px &nbsp;|&nbsp; ' +
+              'B(' + kmCentroids[1].x.toFixed(0) + ',' + kmCentroids[1].y.toFixed(0) + ') moved ' + moves[1].toFixed(1) + 'px &nbsp;|&nbsp; ' +
+              'C(' + kmCentroids[2].x.toFixed(0) + ',' + kmCentroids[2].y.toFixed(0) + ') moved ' + moves[2].toFixed(1) + 'px<br><br>' +
+              (maxMove < 1 ?
+                '<span style="color:var(--lime)">Movement ≈ 0 — K-means has converged to a (local) minimum.</span>' :
+                'Click <em>Assign Points</em> again to re-assign under these new centroids.')
+            );
+            kmSetButtons(true, false);
+          }
+        };
+
+        window.kmReset = function(){
+          kmClone();
+          kmIter = 0;
+          kmHasAssigned = false;
+          kmDraw();
+          kmSetIterLabel();
+          kmSetExplain('Fresh start: 3 centroids dropped at deliberately poor positions <span style="color:var(--text3)">(gray points not yet assigned)</span>. Click <strong>Assign Points</strong> to begin iteration 1.');
+          kmSetButtons(true, false);
+        };
+
+        kmClone();
+        kmDraw();
+        kmSetIterLabel();
+        kmSetExplain('Fresh start: 3 centroids dropped at deliberately poor positions <span style="color:var(--text3)">(gray points not yet assigned)</span>. Click <strong>Assign Points</strong> to begin iteration 1.');
+      })();
+      </script>
+    </section>
+
+    <!-- ============ SECTION 06 ============ -->
+    <section class="section" id="s6">
+      <div class="section-header"><span class="section-num">06</span><h2 class="section-title">GMM &amp; Expectation-Maximization</h2><span class="src-badge src-slides">Slides 18–24</span></div>
+
+      <div class="theory-block">
+        <h3>Two questions K-means can't answer</h3>
+        <p>Slide 18 puts K-means on trial: <em>what's the probability that point x is in cluster m?</em> and <em>what shape is each cluster?</em> K-means has no answer to either — it hands back one hard label per point and implicitly treats every cluster as an equally-sized circular blob. The fix is a change of mindset: instead of "here is a pile of dots I need to sort," assume the data was <strong>generated</strong> by some underlying random process — a <strong>generative model</strong>, whose settings are collectively called <strong>θ</strong>. Once data is framed as "sampled from a distribution," precise probability questions become answerable.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Mixture of Gaussians: K fuzzy, tiltable blobs</h3>
+        <p>A <strong>Mixture of Gaussians (MOG / GMM)</strong> says the dataset was produced by picking one of K Gaussian "blobs" at random — blob b chosen with probability (mixing coefficient) α_b — then dropping a point somewhere inside it, more likely near its center μ_b, with spread and tilt set by covariance matrix V_b. Unlike K-means' rigid circles, a covariance matrix can stretch and rotate a cluster into any ellipse.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Single Gaussian component density</div>
+        <span class="formula-line"><span class="f-teal">P(x | μ_b, V_b) &nbsp;= &nbsp;1 / √((2π)<sup>d</sup>|V_b|) &nbsp;·&nbsp; e<sup>−½(x−μ_b)ᵀ V_b<sup>−1</sup>(x−μ_b)</sup></span></span>
+        <div class="formula-label" style="margin-top:1rem;">Overall mixture likelihood</div>
+        <span class="formula-line"><span class="f-gold">P(x | θ) &nbsp;= &nbsp;Σ<sub>b=1</sub><sup>K</sup> α_b · P(x | μ_b, V_b)</span> &nbsp; <span class="f-dim">subject to Σ α_b = 1</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>EM's goal: parameters that make the data most likely</h3>
+        <p>Given the mixture form above, the natural question is: which θ = [μ<sub>1..K</sub>, V<sub>1..K</sub>, α<sub>1..K</sub>] makes the observed data as likely as possible under the model — maximizing the product of every point's individual likelihood?</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Data likelihood to maximize</div>
+        <span class="formula-line"><span class="f-gold">P(data | θ) &nbsp;= &nbsp;Π<sub>x</sub> P(x | θ)</span> <span class="f-dim">— product of per-point likelihoods over all data points x</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Expectation-Maximization: the soft cousin of K-means' loop</h3>
+        <p>We don't know in advance which blob generated which point — the same chicken-and-egg problem as slide 14, now in probabilistic form. <strong>EM</strong> breaks it exactly the way K-means did: freeze one unknown, solve the other, alternate.</p>
+      </div>
+
+      <ol class="pipeline">
+        <li><strong>Initialize θ</strong><p>Pick K, then initialize μ_b, V_b, α_b for every blob — commonly seeded from a K-means run on the same data.</p></li>
+        <li><strong>E-step — compute ownership</strong><p>Freeze θ. For every point x_i, compute its soft "responsibility" — the probability it belongs to blob b — via Bayes' rule, given every other blob's current guess too.</p></li>
+        <li><strong>M-step — refit the blobs</strong><p>Freeze the responsibilities. Re-estimate each blob's mean, covariance, and mixing weight as a responsibility-weighted average over all points.</p></li>
+        <li><strong>Repeat</strong><p>Log-likelihood is guaranteed to never decrease each round; stop once θ (and the likelihood) stop changing.</p></li>
+      </ol>
+
+      <div class="formula-block">
+        <div class="formula-label">E-step — responsibility (Bayes' rule)</div>
+        <span class="formula-line"><span class="f-sky">P(b | x_i, μ_b, V_b) &nbsp;= &nbsp;α_b · P(x_i | μ_b, V_b) &nbsp;/&nbsp; Σ<sub>k=1</sub><sup>K</sup> α_k · P(x_i | μ_k, V_k)</span></span>
+        <div class="formula-label" style="margin-top:1rem;">M-step — weighted re-estimation</div>
+        <span class="formula-line"><span class="f-lime">μ_b<sup>new</sup> &nbsp;= &nbsp;Σ<sub>i</sub> x_i · P(b|x_i) &nbsp;/&nbsp; Σ<sub>i</sub> P(b|x_i)</span></span>
+        <span class="formula-line"><span class="f-violet">V_b<sup>new</sup> &nbsp;= &nbsp;Σ<sub>i</sub> (x_i − μ_b<sup>new</sup>)(x_i − μ_b<sup>new</sup>)ᵀ · P(b|x_i) &nbsp;/&nbsp; Σ<sub>i</sub> P(b|x_i)</span></span>
+        <span class="formula-line"><span class="f-gold">α_b<sup>new</sup> &nbsp;= &nbsp;(1/N) &nbsp;Σ<sub>i</sub> P(b|x_i)</span> <span class="f-dim">— new mixing weight = average responsibility blob b holds across all N points</span></span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Source note</div>
+        <p>The extracted deck recovers the E-step responsibility and covariance-update formulas directly, but the mean-update and mixing-weight images did not survive PDF extraction on this slide; they're reconstructed above in the standard GMM-EM form, consistent with the surrounding labels ("mean of blob b", "N data points", "probability blob b is selected").</p>
+      </div>
+
+      <div class="key-insight">
+        <div class="ki-label">Key insight</div>
+        <p>EM is literally the probabilistic generalization of the K-means loop: "assign hard label → recompute mean → repeat" becomes "assign soft responsibility → recompute weighted mean/covariance/popularity → repeat." Where K-means says a point is 100% cluster 2, EM says it might be 70% blob 1, 30% blob 2 — and that soft ownership is exactly what lets overlapping regions get sensible, non-degenerate probability under both blobs.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why bother — applications of EM</h3>
+        <p>Slide 23's list is deliberately broad, because EM is a general recipe for "observed data + a hidden variable + a probabilistic model," not just a clustering trick: any clustering problem, general model estimation, missing-data imputation, outlier detection (points with low probability under every component), color-based segmentation, motion segmentation, and foreground/background separation.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>EM was formalized in the landmark 1977 Dempster–Laird–Rubin paper ("Maximum Likelihood from Incomplete Data via the EM Algorithm," JRSS), generalizing special cases that existed earlier. Real production systems lean on exactly this GMM-EM machinery: <strong>Stauffer &amp; Grimson's 1999 per-pixel background subtraction</strong> (shipped today as OpenCV's <code>cv2.createBackgroundSubtractorMOG2</code>) models each pixel's color history as a mixture of Gaussians updated online; <strong>GrabCut</strong> fits a small GMM (typically 5 components) to foreground/background pixel colors and iteratively refines it with EM-like re-estimation; and GMM-HMM systems were the industry-standard acoustic model in speech recognition for decades before deep learning.</p>
+        <cite>Dempster, Laird &amp; Rubin, 1977, JRSS · Stauffer &amp; Grimson, 1999 · OpenCV GrabCut/MOG2 docs</cite>
+      </div>
+
+      <div class="theory-block">
+        <h3>Where EM falls short</h3>
+        <p><strong>Local minima</strong> — each EM round never decreases the log-likelihood, but "never decreasing" only guarantees a stationary point, not the global maximum; the starting guess matters, so EM is typically run several times (or seeded from K-means) and the best result kept. <strong>Choosing K</strong> — the number of blobs must be fixed in advance, just like K-means' K; too few merges genuine groups, too many splits one true group or creates degenerate near-empty components, so K is usually chosen via BIC/AIC or domain knowledge. <strong>Model mismatch</strong> — EM assumes each cluster really is (approximately) Gaussian/elliptical; fitting a mixture of Gaussians to two interleaving crescent-shaped ("moon") clusters fails badly no matter how it's initialized, because no ellipse can represent a crescent — exactly the counterexample that motivates non-parametric alternatives like mean-shift.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Alert</span><h4>GMM / EM traps to watch for</h4></div>
+        <ul class="exam-list">
+          <li>E-step computes <strong>soft responsibilities</strong> via Bayes' rule (fixed θ); M-step re-estimates <strong>μ, V, α</strong> as responsibility-weighted statistics (fixed responsibilities) — don't swap which step does which.</li>
+          <li>EM guarantees <strong>monotonically non-decreasing log-likelihood</strong>, converging to a local maximum (or saddle point) — never guaranteed to be the global optimum.</li>
+          <li>GMM/EM is typically <strong>initialized from a K-means run</strong> — the two algorithms are complementary, not competitors.</li>
+          <li>K (number of components) and the choice of Gaussian as the generative shape are both <strong>assumptions you supply</strong>, not things EM discovers.</li>
+          <li>Mixture models exhibit <strong>label-switching</strong>: which component is called "blob 1" vs "blob 2" is arbitrary and can permute across runs — the clustering is the same, only the labeling differs.</li>
+        </ul>
+      </div>
+
+      <table class="he-table">
+        <thead><tr><th>Aspect</th><th>K-Means</th><th>GMM (EM)</th></tr></thead>
+        <tbody>
+          <tr><td>Assignment</td><td>Hard — one cluster, 100% confidence</td><td>Soft — responsibility spread across all clusters</td></tr>
+          <tr><td>Cluster shape</td><td>Spherical, similar size (Voronoi cells)</td><td>Elliptical, any orientation/size (full covariance)</td></tr>
+          <tr><td>Parameters learned</td><td>Centroids c_i only</td><td>Means μ_b, covariances V_b, mixing weights α_b</td></tr>
+          <tr><td>Objective</td><td>Minimize sum-squared distance</td><td>Maximize data log-likelihood</td></tr>
+          <tr><td>Convergence guarantee</td><td>Objective non-increasing → local minimum</td><td>Log-likelihood non-decreasing → local maximum</td></tr>
+          <tr><td>Sensitivity to init</td><td>High (mitigated by K-means++)</td><td>High (often seeded from K-means output)</td></tr>
+          <tr><td>Choosing K</td><td>Fixed in advance (elbow / silhouette)</td><td>Fixed in advance (BIC / AIC)</td></tr>
+          <tr><td>Typical CV use</td><td>Color quantization, bag-of-visual-words codebooks</td><td>Background subtraction (MOG2), GrabCut, soft color segmentation</td></tr>
+        </tbody>
+      </table>
+
+      <div class="interactive-demo" id="gmmDemo">
+        <h4>⊞ Interactive · Hard vs Soft Cluster Assignment</h4>
+        <div class="demo-sub">Toggle between K-means' hard boundaries and GMM's soft (probabilistic) responsibility coloring on the same points — watch the overlap zone between the gold and teal blobs.</div>
+        <div style="margin-bottom:1rem;">
+          <button class="demo-btn" id="gmmHardBtn" onclick="gmmToggle('hard')">K-Means (hard)</button>
+          <button class="demo-btn" id="gmmSoftBtn" onclick="gmmToggle('soft')">GMM (soft)</button>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="gmmCanvas" width="320" height="240"></canvas>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="gmmExplain"></div></div>
+        </div>
+      </div>
+      <script>
+      (function(){
+        var gmmColorsRGB = [[212,168,83],[78,201,176],[125,211,252]];
+        var gmmCentroids = [{x:68,y:92},{x:168,y:108},{x:236,y:184}];
+        var gmmPoints = [
+          {x:55,y:80},{x:75,y:70},{x:65,y:100},{x:45,y:95},{x:85,y:85},{x:60,y:115},
+          {x:105,y:95},{x:118,y:100},{x:95,y:110},{x:112,y:115},
+          {x:150,y:90},{x:175,y:95},{x:160,y:115},{x:185,y:105},{x:155,y:125},{x:180,y:120},
+          {x:220,y:170},{x:245,y:175},{x:230,y:195},{x:255,y:185},{x:215,y:200},{x:240,y:205},{x:250,y:160}
+        ];
+        var gmmMode = 'hard';
+        var gmmCanvas = document.getElementById('gmmCanvas');
+        var gmmCtx = gmmCanvas ? gmmCanvas.getContext('2d') : null;
+
+        function gmmDist2(ax,ay,bx,by){ var dx=ax-bx, dy=ay-by; return dx*dx+dy*dy; }
+
+        function gmmResponsibilities(x,y){
+          var w = [], sum = 0;
+          for(var i=0;i<gmmCentroids.length;i++){
+            var d2 = gmmDist2(x,y,gmmCentroids[i].x,gmmCentroids[i].y) + 25;
+            var val = 1/d2;
+            w.push(val);
+            sum += val;
+          }
+          for(var j=0;j<w.length;j++) w[j] /= sum;
+          return w;
+        }
+
+        function gmmBlendRGB(w){
+          var r=0,g=0,b=0;
+          for(var i=0;i<w.length;i++){
+            r += w[i]*gmmColorsRGB[i][0];
+            g += w[i]*gmmColorsRGB[i][1];
+            b += w[i]*gmmColorsRGB[i][2];
+          }
+          return [Math.round(r),Math.round(g),Math.round(b)];
+        }
+
+        function gmmHardestIdx(w){
+          var best=0;
+          for(var i=1;i<w.length;i++) if(w[i]>w[best]) best=i;
+          return best;
+        }
+
+        function gmmDraw(){
+          if(!gmmCtx) return;
+          var w = gmmCanvas.width, h = gmmCanvas.height;
+          gmmCtx.clearRect(0,0,w,h);
+          var cell = 8;
+          for(var gx=0; gx<w; gx+=cell){
+            for(var gy=0; gy<h; gy+=cell){
+              var resp = gmmResponsibilities(gx+cell/2, gy+cell/2);
+              var rgb;
+              if(gmmMode==='hard'){
+                rgb = gmmColorsRGB[gmmHardestIdx(resp)];
+                gmmCtx.fillStyle = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.10)';
+              } else {
+                rgb = gmmBlendRGB(resp);
+                gmmCtx.fillStyle = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.16)';
+              }
+              gmmCtx.fillRect(gx,gy,cell,cell);
+            }
+          }
+          for(var p=0;p<gmmPoints.length;p++){
+            var pt = gmmPoints[p];
+            var respP = gmmResponsibilities(pt.x,pt.y);
+            var fillRGB = (gmmMode==='hard') ? gmmColorsRGB[gmmHardestIdx(respP)] : gmmBlendRGB(respP);
+            gmmCtx.beginPath();
+            gmmCtx.arc(pt.x,pt.y,5,0,Math.PI*2);
+            gmmCtx.fillStyle = 'rgb('+fillRGB.join(',')+')';
+            gmmCtx.fill();
+            gmmCtx.strokeStyle = 'rgba(0,0,0,0.35)';
+            gmmCtx.lineWidth = 1;
+            gmmCtx.stroke();
+          }
+          for(var c=0;c<gmmCentroids.length;c++){
+            var ct = gmmCentroids[c];
+            gmmCtx.beginPath();
+            gmmCtx.arc(ct.x,ct.y,8,0,Math.PI*2);
+            gmmCtx.fillStyle = 'rgb('+gmmColorsRGB[c].join(',')+')';
+            gmmCtx.fill();
+            gmmCtx.lineWidth = 2;
+            gmmCtx.strokeStyle = '#0c0c0f';
+            gmmCtx.stroke();
+            gmmCtx.fillStyle = '#0c0c0f';
+            gmmCtx.font = 'bold 10px monospace';
+            gmmCtx.textAlign = 'center';
+            gmmCtx.textBaseline = 'middle';
+            gmmCtx.fillText(String.fromCharCode(65+c), ct.x, ct.y);
+          }
+        }
+
+        function gmmSetExplain(){
+          var el = document.getElementById('gmmExplain');
+          if(!el) return;
+          if(gmmMode==='hard'){
+            el.innerHTML =
+              '<strong style="color:var(--gold)">K-means view</strong> — every point (and every background cell) is colored by whichever centroid is nearest, full stop. Straight Voronoi-style boundaries cut cleanly through the overlap zone between blobs A and B: a point 0.1px on either side of the line gets a completely different, 100%-confident label. There is no way to express "this point is genuinely ambiguous."';
+          } else {
+            el.innerHTML =
+              '<strong style="color:var(--teal)">GMM view</strong> — color = a blend of A/B/C weighted by an inverse-squared-distance stand-in for the Gaussian responsibility P(b|x). Points deep inside a blob stay a pure color (responsibility ≈ 1 for one component); points in the A/B overlap zone render as a visibly muddied gold-teal blend — the model is honestly reporting "I\'m genuinely unsure, roughly half A / half B" instead of forcing a coin-flip label.';
+          }
+        }
+
+        function gmmSetActiveButtons(){
+          var hb = document.getElementById('gmmHardBtn'), sb = document.getElementById('gmmSoftBtn');
+          if(hb){
+            if(gmmMode==='hard'){ hb.style.color='var(--gold)'; hb.style.borderColor='rgba(212,168,83,0.5)'; hb.style.background='var(--gold-glow)'; }
+            else { hb.style.color=''; hb.style.borderColor=''; hb.style.background=''; }
+          }
+          if(sb){
+            if(gmmMode==='soft'){ sb.style.color='var(--teal)'; sb.style.borderColor='rgba(78,201,176,0.5)'; sb.style.background='rgba(78,201,176,0.08)'; }
+            else { sb.style.color=''; sb.style.borderColor=''; sb.style.background=''; }
+          }
+        }
+
+        window.gmmToggle = function(mode){
+          gmmMode = mode;
+          gmmSetActiveButtons();
+          gmmDraw();
+          gmmSetExplain();
+        };
+
+        gmmSetActiveButtons();
+        gmmDraw();
+        gmmSetExplain();
+      })();
+      </script>
+    </section>
+
+    <!-- ============ SECTION 07 ============ -->
+    <section class="section" id="s7">
+      <div class="section-header"><span class="section-num">07</span><h2 class="section-title">Mean-Shift Segmentation</h2><span class="src-badge src-slides">Slides 25–47</span></div>
+
+      <div class="theory-block">
+        <h3>The core idea: climbing uphill on a density landscape</h3>
+        <p>Every other clustering method in this session forces a choice up front — K-means demands a fixed <span class="f-gold">K</span>, GMM/EM demands a fixed number of Gaussian components. Mean-shift refuses to make that demand. Picture every data point as a location on a hilly terrain, where "altitude" is how densely packed nearby points are. Mean-shift drops a small window on a point, looks at everyone caught inside it, walks to their average position, and repeats — a hiker who keeps stepping toward the local crowd until there's no denser direction left to climb. Where the hiker stops is a <strong>mode</strong> (a local density peak). Every point's hike ends somewhere, and points that end at the same peak become one cluster. The number of clusters is never chosen — it falls out of however many peaks the data actually has.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why (R, G, B, x, y) instead of just (R, G, B)</h3>
+        <p>Plain color clustering (k-means on RGB, or mean-shift on RGB alone) has a blind spot: two unrelated red patches on opposite corners of an image look identical in color space and get lumped into the same cluster, even though they're not remotely the same "region." Comaniciu &amp; Meer's fix (ICCV 1999) is to fold the pixel's spatial coordinates into the feature vector — each pixel becomes a point in a <strong>joint 5-D space</strong>: three color coordinates plus (x, y). Now two pixels only end up in the same segment if they're close <em>in color and in the image</em>. This joint-domain trick is also the conceptual ancestor of edge-preserving smoothing (bilateral filtering) and modern superpixel algorithms like SLIC.</p>
+        <p>One detail worth pinning down: the color coordinates used are almost always <strong>L*u*v* (CIELUV)</strong>, not raw RGB. Euclidean distance in RGB doesn't track how different two colors actually look to the eye; L*u*v*/L*a*b* are designed so Euclidean distance approximates perceptual color difference, which is exactly what a distance-based mean-shift kernel needs to behave sensibly.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Kernel density estimate (KDE) — the "terrain" mean-shift climbs</div>
+        <span class="formula-line"><span class="f-teal">f̂ₕ(x) = (1 / n·h) · Σᵢ K((x − xᵢ) / h)</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Kernel density estimation, in one sentence</h3>
+        <p>KDE guesses the shape of a distribution without assuming it's a neat bell curve: drop a small "bump" (kernel — usually Gaussian) on every data point, then sum all the bumps. Where points cluster, bumps overlap and stack into a tall pile — a density mode. The <strong>bandwidth h</strong> is the width of each bump: too small and every point becomes its own spike (over-segmentation); too large and distinct peaks blur into one blob (under-segmentation). This single knob does almost all the work bandwidth-tuning does across the whole KDE/mean-shift family.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>The mean-shift vector was first derived by Fukunaga &amp; Hostetler in 1975: they proved the vector from a kernel window's center to the local weighted mean of the points inside it is proportional to the <em>gradient</em> of the KDE surface — which is exactly why repeatedly shifting toward that mean is gradient ascent on density. The idea lay dormant until Cheng (1995) generalized it, and Comaniciu &amp; Meer's 2002 PAMI paper ("Mean Shift: A Robust Approach Toward Feature Space Analysis") proved its convergence properties and turned it into a standard vision tool — it remains one of the most-cited papers in the field.</p>
+        <cite>Fukunaga &amp; Hostetler, IEEE Trans. Information Theory 21(1), 1975; Comaniciu &amp; Meer, IEEE PAMI 2002</cite>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Mean-shift vector</div>
+        <span class="formula-line"><span class="f-gold">m(x) = [ Σᵢ xᵢ·g(‖(x − xᵢ)/h‖²) ⁄ Σᵢ g(‖(x − xᵢ)/h‖²) ] − x</span></span>
+        <span class="formula-line"><span class="f-dim">where g = −k′ (g is the negative derivative of the kernel profile k, giving nearby points more weight than distant ones)</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Reading the formula</h3>
+        <p>The bracketed fraction is nothing exotic — it's the <strong>weighted centroid ("center of mass")</strong> of the points currently inside the window, with closer points weighted more heavily via <span class="f-sky">g</span>. Subtracting the window's current position <span class="f-sky">x</span> gives <span class="f-sky">m(x)</span>: a displacement vector pointing from "where I am" to "where the crowd actually is." The entire algorithm is: compute this vector, move the window by it, repeat.</p>
+      </div>
+
+      <ol class="pipeline">
+        <li><strong>Initialize</strong><p>Drop a window (radius = bandwidth h) on a data point or seed location in the joint feature space.</p></li>
+        <li><strong>Compute the center of mass</strong><p>Average the positions of all points currently captured by the window (optionally weighted by the kernel).</p></li>
+        <li><strong>Compute the mean-shift vector m(x)</strong><p>Subtract the window's current center from that weighted average.</p></li>
+        <li><strong>Translate the window by m(x)</strong><p>Re-center the window exactly on the computed centroid.</p></li>
+        <li><strong>Repeat until convergence</strong><p>Stop once ‖m(x)‖ falls below a small threshold ε (or a max-iteration cap) — the window has settled on a mode.</p></li>
+      </ol>
+
+      <div class="theory-block">
+        <h3>Attraction basins: how "cluster" gets defined without a K</h3>
+        <p>Every starting point runs this same climb independently. The region of feature space from which <em>all</em> trajectories converge to the same mode is called its <strong>attraction basin</strong> — the mean-shift analogue of a watershed, where every raindrop landing inside a basin eventually flows to the same river mouth. Rather than rendering the region-of-interest/center-of-mass diagram as a static picture, it helps to read it as the following causal chain (this is the logic behind the "Slide by Y. Ukrainitz &amp; B. Sarel" attraction-basin figure):</p>
+      </div>
+
+      <ol class="pipeline">
+        <li><strong>Many starting points, one feature space</strong><p>Every data point begins its own independent mean-shift trajectory (its own "hike").</p></li>
+        <li><strong>Each trajectory climbs the local density gradient</strong><p>Step by step, each point's window translates toward denser neighboring territory.</p></li>
+        <li><strong>Trajectories converge</strong><p>Multiple, differently-started trajectories bend inward and terminate at the same peak (mode) — visually, curved paths radiating outward but collapsing to one center.</p></li>
+        <li><strong>Basin = the set of all points sharing that terminus</strong><p>Everything whose trajectory ends at the same mode belongs to one attraction basin.</p></li>
+        <li><strong>Cluster = basin</strong><p>Each basin becomes one segment/cluster — the count of segments is simply the count of basins actually discovered, never a number chosen in advance.</p></li>
+      </ol>
+
+      <div class="key-insight">
+        <div class="ki-label">Key insight</div>
+        <p>Convergence is visually obvious in the animated slide sequence: the mean-shift vector arrow shrinks with each iteration and eventually disappears once the window's center exactly coincides with the center of mass of the points inside it — that resting point is the mode, and it is fully determined by the data and the bandwidth, not by any random initialization of cluster centers (unlike K-means, mean-shift has no local-minima issue in this sense).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Making it fast: speedups</h3>
+        <p>Naive mean-shift is roughly <span class="f-rose">O(T·n²)</span> (T iterations, n points), because every point's neighborhood search compares against every other point — the practical bottleneck on full-resolution images. The classic fixes:</p>
+        <p><strong>Binned estimation</strong> — coarse-grid the space and estimate density from bins instead of exact pairwise distances, cutting cost by 1–2 orders of magnitude with near-identical results. <strong>Fast neighbor search (KD-trees / ball-trees)</strong> — replace brute-force distance checks with a spatial index, the same principle scikit-learn's <code>MeanShift</code> uses internally. <strong>Update all windows per iteration in parallel</strong>, plus <strong>adaptive window sizing via k-NN</strong> where local density varies a lot. The reference EDISON implementation (Comaniciu &amp; Meer's group) combines tessellation, parallel per-cell mode search, and pruning of near-duplicate mode candidates.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Researched</span>
+        <p>Modern successors push this much further: <strong>MeanShift++</strong> (CVPR 2021) alternates grid-based mode-finding with cluster-assignment merging and reports speedups exceeding 10,000× over classic mean-shift at competitive clustering quality; a follow-up α-MeanShift++ runs another 4–7× faster while improving segmentation quality. GPU-accelerated variants apply the same philosophy for real-time microscopy cell segmentation and tracking.</p>
+        <cite>Jang &amp; Jiang, "MeanShift++: Extremely Fast Mode-Seeking," CVPR 2021 (arXiv:2104.00303)</cite>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Alert</span><h4>Traps this topic sets</h4></div>
+        <ul class="exam-list">
+          <li>Mean-shift is a <strong>mode-seeking</strong> algorithm, not a fixed-K partitioning algorithm like K-means — the number of segments emerges from however many density modes/basins exist.</li>
+          <li>"No K needed" does <strong>not</strong> mean "no tuning needed" — bandwidth h plays the same practical role K plays in K-means: too small over-segments, too large under-segments/merges distinct modes.</li>
+          <li>The mean-shift vector is gradient ascent on the <strong>estimated KDE density in feature space</strong>, not an image-intensity gradient (don't confuse it with Sobel/Canny edge gradients).</li>
+          <li>Convergence criterion is ‖m(x)‖ &lt; ε (vector shrinks to ~0), not a fixed iteration count.</li>
+          <li>Naive mean-shift is O(n²) per iteration — that cost, not accuracy, is the main practical objection, and it's solved with KD-trees/binning, not with a different algorithm.</li>
+        </ul>
+      </div>
+
+      <table class="he-table">
+        <thead><tr><th>Pros</th><th>Cons</th></tr></thead>
+        <tbody>
+          <tr><td>Good general-practice segmentation; solid out-of-the-box performance</td><td>Kernel size (bandwidth h) must be chosen in advance</td></tr>
+          <tr><td>Flexible in the number <em>and</em> shape of regions — no assumption of blob-shaped clusters</td><td>Not suitable for high-dimensional features (curse of dimensionality breaks density estimation)</td></tr>
+          <tr><td>Robust to outliers — driven by where data is dense, not by an average outliers can skew</td><td>Naively O(n²) per iteration (mitigated by KD-trees / binning / MeanShift++)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="theory-block">
+        <h3>When to reach for it</h3>
+        <p>Deliberate <strong>oversegmentation</strong> as a preprocessing step before graph-based merging; generating <strong>multiple candidate segmentations</strong>; and <strong>tracking, clustering, and edge-preserving filtering</strong> applications — most visibly as OpenCV's <code>cv2.meanShift</code> / <code>cv2.CamShift</code> for object tracking. Compared to K-means it's more flexible but slower per step and more sensitive to its one hyperparameter; compared to GMM/EM, both are density-based, but GMM assumes a parametric (Gaussian) shape while mean-shift is fully nonparametric, at higher computational cost.</p>
+      </div>
+
+      <div class="interactive-demo" id="msDemo">
+        <h4>⊞ Interactive · Mean-Shift Playground</h4>
+        <div class="demo-sub">Adjust bandwidth, then click "Step" to watch the search window climb toward a density mode on a fixed 2D point cloud.</div>
+        <div class="slider-row">
+          <span class="slider-label">Bandwidth (h)</span>
+          <input type="range" id="msBandwidth" min="20" max="100" value="50" oninput="msSetBandwidth(this.value)">
+          <span class="slider-val" id="msBandwidthVal">50</span>
+        </div>
+        <div style="margin-bottom:1rem;">
+          <button class="demo-btn" onclick="msStep()">Step ›</button>
+          <button class="demo-btn" onclick="msReset()">Reset window</button>
+          <span id="msIterLabel" style="font-family:var(--font-code);font-size:12px;color:var(--gold);margin-left:0.75rem;"></span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="msCanvas" width="320" height="240"></canvas>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="msExplain"></div></div>
+        </div>
+      </div>
+      <script>
+      (function(){
+        var msCanvas = document.getElementById('msCanvas');
+        var msCtx = msCanvas.getContext('2d');
+        var msW = msCanvas.width, msH = msCanvas.height;
+
+        function mulberry32(a){
+          return function(){
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            var t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+          };
+        }
+        var msRand = mulberry32(1234567);
+        function msGauss(mx, my, sx, sy){
+          var u1 = Math.max(msRand(), 1e-6), u2 = msRand();
+          var mag = Math.sqrt(-2 * Math.log(u1));
+          var z0 = mag * Math.cos(2 * Math.PI * u2);
+          var z1 = mag * Math.sin(2 * Math.PI * u2);
+          return [mx + z0 * sx, my + z1 * sy];
+        }
+
+        var msPoints = [];
+        for (var i = 0; i < 28; i++) {
+          var p = msGauss(95, 165, 24, 20);
+          msPoints.push({ x: p[0], y: p[1] });
+        }
+        for (var j = 0; j < 22; j++) {
+          var q = msGauss(228, 80, 20, 17);
+          msPoints.push({ x: q[0], y: q[1] });
+        }
+        msPoints.forEach(function(pt){
+          pt.x = Math.min(msW - 10, Math.max(10, pt.x));
+          pt.y = Math.min(msH - 10, Math.max(10, pt.y));
+        });
+
+        var msStart = { x: 175, y: 200 };
+        var msCenter = { x: msStart.x, y: msStart.y };
+        var msBandwidth = 50;
+        var msIter = 0;
+        var msLastVecLen = null;
+        var msArrow = null;
+
+        function msPointsInWindow(c, r){
+          return msPoints.filter(function(pt){
+            var dx = pt.x - c.x, dy = pt.y - c.y;
+            return Math.sqrt(dx * dx + dy * dy) <= r;
+          });
+        }
+
+        function msDraw(){
+          msCtx.clearRect(0, 0, msW, msH);
+          msCtx.fillStyle = '#10141d';
+          msCtx.fillRect(0, 0, msW, msH);
+
+          var inside = msPointsInWindow(msCenter, msBandwidth);
+          var insideSet = new Set(inside);
+
+          msPoints.forEach(function(pt){
+            msCtx.beginPath();
+            msCtx.arc(pt.x, pt.y, 3.2, 0, Math.PI * 2);
+            msCtx.fillStyle = insideSet.has(pt) ? '#f2c14e' : '#5b6b88';
+            msCtx.fill();
+          });
+
+          msCtx.beginPath();
+          msCtx.arc(msCenter.x, msCenter.y, msBandwidth, 0, Math.PI * 2);
+          msCtx.strokeStyle = 'rgba(242,193,78,0.85)';
+          msCtx.lineWidth = 1.5;
+          msCtx.stroke();
+
+          msCtx.beginPath();
+          msCtx.arc(msCenter.x, msCenter.y, 4, 0, Math.PI * 2);
+          msCtx.fillStyle = '#ef4444';
+          msCtx.fill();
+
+          if (msArrow) {
+            msCtx.beginPath();
+            msCtx.moveTo(msArrow.x1, msArrow.y1);
+            msCtx.lineTo(msArrow.x2, msArrow.y2);
+            msCtx.strokeStyle = '#2dd4bf';
+            msCtx.lineWidth = 2;
+            msCtx.stroke();
+            var ang = Math.atan2(msArrow.y2 - msArrow.y1, msArrow.x2 - msArrow.x1);
+            msCtx.beginPath();
+            msCtx.moveTo(msArrow.x2, msArrow.y2);
+            msCtx.lineTo(msArrow.x2 - 8 * Math.cos(ang - 0.4), msArrow.y2 - 8 * Math.sin(ang - 0.4));
+            msCtx.lineTo(msArrow.x2 - 8 * Math.cos(ang + 0.4), msArrow.y2 - 8 * Math.sin(ang + 0.4));
+            msCtx.closePath();
+            msCtx.fillStyle = '#2dd4bf';
+            msCtx.fill();
+          }
+        }
+
+        function msUpdateExplain(){
+          var el = document.getElementById('msExplain');
+          var lab = document.getElementById('msIterLabel');
+          if (lab) lab.textContent = 'iterations: ' + msIter;
+          if (!el) return;
+          if (msIter === 0) {
+            el.textContent = 'Window centered at (' + msCenter.x.toFixed(0) + ', ' + msCenter.y.toFixed(0) +
+              ') with bandwidth h=' + msBandwidth + '. Click "Step" to compute the mean-shift vector: the ' +
+              'weighted centroid of points inside the window, minus the current center.';
+          } else {
+            var msg = 'Iteration ' + msIter + ' — shift vector length ' + msLastVecLen.toFixed(1) +
+              'px. New center (' + msCenter.x.toFixed(1) + ', ' + msCenter.y.toFixed(1) + ').';
+            msg += (msLastVecLen < 1.2)
+              ? ' Vector ≈ 0 → converged to a density mode.'
+              : ' Still climbing uphill toward denser territory.';
+            el.textContent = msg;
+          }
+        }
+
+        window.msStep = function(){
+          var inside = msPointsInWindow(msCenter, msBandwidth);
+          if (inside.length === 0) {
+            var el = document.getElementById('msExplain');
+            if (el) el.textContent = 'No points inside the window at this bandwidth — widen h or reset.';
+            return;
+          }
+          var mx = 0, my = 0;
+          inside.forEach(function(pt){ mx += pt.x; my += pt.y; });
+          mx /= inside.length; my /= inside.length;
+          var vx = mx - msCenter.x, vy = my - msCenter.y;
+          var len = Math.sqrt(vx * vx + vy * vy);
+          msArrow = { x1: msCenter.x, y1: msCenter.y, x2: mx, y2: my };
+          msCenter = { x: mx, y: my };
+          msIter += 1;
+          msLastVecLen = len;
+          msDraw();
+          msUpdateExplain();
+        };
+
+        window.msSetBandwidth = function(val){
+          msBandwidth = parseInt(val, 10);
+          var lab = document.getElementById('msBandwidthVal');
+          if (lab) lab.textContent = val;
+          msDraw();
+          msUpdateExplain();
+        };
+
+        window.msReset = function(){
+          msCenter = { x: msStart.x, y: msStart.y };
+          msIter = 0;
+          msLastVecLen = null;
+          msArrow = null;
+          msDraw();
+          msUpdateExplain();
+        };
+
+        msDraw();
+        msUpdateExplain();
+      })();
+      </script>
+    </section>
+
+    <!-- ============ SECTION 08 ============ -->
+    <section class="section" id="s8">
+      <div class="section-header"><span class="section-num">08</span><h2 class="section-title">Document Summary &amp; Session Quiz</h2><span class="src-badge src-slides">Full Session Review</span></div>
+
+      <div class="theory-block">
+        <h3>Tying the whole session together</h3>
+        <p>Session 11 moves from "what even is an object?" to a working toolbox: the segmentation taxonomy (semantic / instance / panoptic / thresholding / edge-based / region-based), the Gestalt psychology that explains why grouping pixels feels effortless to humans but isn't to algorithms, histogram-based thresholding as the simplest algorithmic answer, and three increasingly sophisticated clustering engines — K-means (hard assignment), GMM/EM (soft, probabilistic assignment), and mean-shift (nonparametric, mode-seeking, no K required). The quiz below samples across all of it, weighted toward the ideas the source material's own "Frequently Tested Topics" and "Revision Checklist" flag most.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Revision checklist</h3>
+        <ul>
+          <li>State the definitions of semantic, instance, panoptic, thresholding, edge-based, and region-based segmentation.</li>
+          <li>Explain the Gestalt grouping laws (proximity, similarity, common fate, common region, closure, continuity) and why they motivate segmentation.</li>
+          <li>Write the histogram formula H_f[c] and explain why histograms discard all spatial information.</li>
+          <li>Write out the K-means algorithm and explain its "chicken-and-egg" (alternating optimization) framing.</li>
+          <li>Explain why K-means converges only to a local minimum, and what k-means++ fixes.</li>
+          <li>Write the Mixture-of-Gaussians density formula and explain each parameter (μ_b, V_b, α_b).</li>
+          <li>Derive/explain the EM E-step (responsibility) and M-step (weighted re-estimation) formulas.</li>
+          <li>List at least three practical applications of EM beyond clustering (e.g. missing-data imputation, outlier detection, motion/background segmentation).</li>
+          <li>Explain kernel density estimation and the role of bandwidth h.</li>
+          <li>Write the mean-shift vector formula and explain the "hill climbing toward density modes" intuition.</li>
+          <li>Explain the concept of an attraction basin and how it defines a cluster without a pre-specified K.</li>
+          <li>List mean-shift's pros/cons and compare it against K-means and GMM/EM.</li>
+          <li>Name a production use of each technique: K-means → color quantization; GMM → background subtraction (MOG2); mean-shift → object tracking (CamShift).</li>
+        </ul>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Taxonomy</span>
+          <div class="quiz-q-text">Which segmentation type assigns a label to every pixel but does NOT distinguish between individual object instances of the same class?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Instance segmentation</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Semantic segmentation</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Panoptic segmentation</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Object detection</li>
+        </ul>
+        <div class="quiz-reveal">Semantic segmentation labels every pixel by class ("cat," "road," "sky") but treats all pixels of one class identically, regardless of which specific object they belong to. Instance segmentation additionally separates individual objects of the same class; panoptic segmentation combines both; object detection uses bounding boxes, not per-pixel labels, so it doesn't trace exact outlines at all.<span class="mistake">Common mistake</span>Assuming "pixel-level" automatically means instance-aware — semantic segmentation is pixel-level but explicitly instance-blind; that's precisely why panoptic segmentation had to be invented to unify the two.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Taxonomy</span>
+          <div class="quiz-q-text">In panoptic segmentation terminology, amorphous background regions like sky and road that cannot be individually counted are called:</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Things</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Stuff</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Instances</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Classes</li>
+        </ul>
+        <div class="quiz-reveal">"Stuff" refers to uncountable background regions (sky, road, grass) labeled semantically; "things" refers to countable objects (cars, people) that get individual instance masks. Panoptic segmentation (Kirillov et al., 2019) unifies per-pixel stuff labels with per-instance thing masks into one task, scored with the Panoptic Quality (PQ) metric.<span class="mistake">Common mistake</span>Reading "stuff" as a casual/informal word for unimportant background — it's a precise, formal taxonomy term from the panoptic segmentation literature, not slang.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Gestalt</span>
+          <div class="quiz-q-text">In the Kanizsa-style figure (three "Pac-Man" disks with aligned wedge cutouts), viewers perceive a bright triangle with edges that don't physically exist anywhere in the image. This demonstrates:</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Common fate</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Illusory (subjective) contours</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Common region</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Symmetry</li>
+        </ul>
+        <div class="quiz-reveal">Illusory/subjective contours are edges the brain "fills in" between aligned cues even though no line is drawn — the classic Kanizsa triangle (Kanizsa, 1955). Common fate groups things moving together; common region groups things enclosed by a shared boundary; symmetry groups mirror-image shapes — none of these apply to fabricating an entirely new, physically absent edge.<span class="mistake">Common mistake</span>Mislabeling this "closure." Closure is the brain completing a nearly-finished outline of one shape with gaps in it; illusory contours create a whole new shape/edge from cues that don't draw it at all.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Gestalt</span>
+          <div class="quiz-q-text">Which strategy describes grouping pixels because they are believed to come from the same known object (e.g., active shape models using prior object knowledge), as opposed to grouping pixels purely because they look alike?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Bottom-up</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Top-down</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Region growing</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Watershed</li>
+        </ul>
+        <div class="quiz-reveal">Top-down segmentation starts from object/semantic knowledge and works backward to explain the pixels; bottom-up groups pixels purely from local similarity (color/texture/intensity) with no object knowledge. Region growing and watershed are classic bottom-up techniques, not the top-down category itself.<span class="mistake">Common mistake</span>Assuming bottom-up is the more "basic," fully-superseded approach. Camouflage defeats pure bottom-up methods precisely because the pixels genuinely do look similar to the background — only top-down object knowledge resolves that case, and bottom-up superpixel methods (SLIC) remain a standard fast preprocessing step even in modern deep pipelines.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Thresholding</span>
+          <div class="quiz-q-text">A bimodal grayscale histogram (dark beads on a lighter background) is thresholded globally at K=2. Why does the background of the result look speckled/noisy rather than uniformly white?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>The camera sensor introduced random noise unrelated to thresholding</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Background pixels near the global threshold value get inconsistently assigned to either side of it</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>K-means was used, and K-means never converges on 1-D data</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>The image needs edge detection instead of thresholding</li>
+        </ul>
+        <div class="quiz-reveal">Even a visually "smooth" background spans a range of intensities. Pixels whose brightness straddles the single global cutoff flip unpredictably between the two classes, producing salt-and-pepper speckle — a textbook limitation of global (Otsu-style) thresholding, typically fixed in practice with adaptive/local thresholding or morphological opening/closing.<span class="mistake">Common mistake</span>Blaming sensor noise. The speckle is a direct mathematical consequence of a single hard global cutoff applied to a continuous range of background intensities, not a hardware artifact.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Thresholding</span>
+          <div class="quiz-q-text">Two structurally very different images can share an identical intensity histogram. What property does the histogram formula H_f[c] = |{(x,y) : f[x,y]=c}| discard by construction?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Color depth (bit precision)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>The spatial location of pixels</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Total pixel count</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Number of unique colors present</li>
+        </ul>
+        <div class="quiz-reveal">The histogram only counts how many pixels take each value — it keeps no record of where those pixels sit. You could shuffle every pixel in an image arbitrarily and the histogram would be unchanged. This is exactly why pure histogram-based thresholding cannot capture shape, texture, or connectivity the way edge- or region-based methods can.<span class="mistake">Common mistake</span>Thinking color depth or the count of unique colors is what's lost — the histogram actually preserves an exact count per value; what's discarded is purely spatial arrangement.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">K-Means</span>
+          <div class="quiz-q-text">After the cluster centers are initialized, what is the correct order of steps in one iteration of K-means (Lloyd's algorithm)?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Update centers to cluster means, then assign points to the nearest center</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Assign each point to its nearest center, then update each center to the mean of its assigned points</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Assign points randomly, then discard centers with too few points</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Compute a kernel density estimate, then shift each center uphill toward a mode</li>
+        </ul>
+        <div class="quiz-reveal">This is the "chicken-and-egg" alternating optimization: given centers, assignment is easy (nearest center wins); given assignments, the best center is the mean of its members. Repeat assign → update until centers stop moving.<span class="mistake">Common mistake</span>Reversing the order, or confusing option D (density-gradient ascent) with K-means — that description is mean-shift, a different algorithm entirely.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">K-Means</span>
+          <div class="quiz-q-text">K-means is guaranteed to converge, yet different random initializations can produce different final clusterings. Why?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Because K-means uses a stochastic kernel bandwidth</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>The squared-distance objective has multiple local minima, and K-means only guarantees convergence to a minimum, not the global one</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Because K-means silently recomputes K after every iteration</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Because K-means requires a joint spatial-color feature space</li>
+        </ul>
+        <div class="quiz-reveal">K-means never increases the total squared-distance objective on any step, so it always settles somewhere — but where it settles depends on the starting centers and can be a local, not global, minimum. This is exactly why practitioners run multiple random restarts and keep the best result, or use k-means++ seeding to pick better starting centers.<span class="mistake">Common mistake</span>Equating "guaranteed to converge" with "guaranteed to find the best answer" — convergence and global optimality are different, unrelated guarantees.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">GMM/EM</span>
+          <div class="quiz-q-text">In the E-step of GMM-EM, what does the computed responsibility P(b | x, μ_b, V_b) represent?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>The hard, binary decision that point x belongs exclusively to blob b</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>The soft probability that point x was generated by blob b, given the current parameter estimates</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>The newly re-estimated mean of blob b</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>The mixing weight α_b to be used in the next iteration</li>
+        </ul>
+        <div class="quiz-reveal">The E-step computes a soft, fractional "ownership" for every point under the current guess of the blob parameters (e.g., 70% blob A / 30% blob B) — unlike K-means's hard 0/1 assignment. It's the M-step, not the E-step, that then uses these responsibilities to re-estimate means, covariances, and mixing weights.<span class="mistake">Common mistake</span>Describing GMM/EM assignment as hard/binary like K-means — soft assignment via responsibilities is precisely what distinguishes EM from K-means.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">GMM/EM</span>
+          <div class="quiz-q-text">What convergence guarantee does the EM algorithm actually provide?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>It always finds the global maximum of the data likelihood</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>The log-likelihood is monotonically non-decreasing across iterations, converging only to a local optimum</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>It converges in exactly K iterations, where K is the number of mixture components</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>It guarantees an identical result regardless of initialization</li>
+        </ul>
+        <div class="quiz-reveal">Each E/M round is proven to never decrease the overall likelihood, so the algorithm always settles somewhere — but, exactly like K-means, that resting point can be a local maximum (or saddle point). This is why EM is typically restarted from multiple initializations or seeded from K-means output.<span class="mistake">Common mistake</span>Reading "likelihood never decreases" as "EM finds the best possible fit" — non-decreasing likelihood is a much weaker guarantee than global optimality.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q11</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Mean-Shift</span>
+          <div class="quiz-q-text">In m(x) = [weighted centroid of points near x] − x, what does the mean-shift vector m(x) geometrically represent?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>The gradient of raw image intensity at pixel x (like a Sobel/Canny edge gradient)</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>The displacement from the search window's current center to the weighted mean ("center of mass") of the points it currently encloses</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>The Euclidean distance between two arbitrary data points</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>The total number of pixels inside the search window</li>
+        </ul>
+        <div class="quiz-reveal">m(x) is literally "where the local weighted average sits, minus where the window currently is" — a vector pointing toward denser territory. Iteratively translating the window by m(x) performs gradient ascent on the underlying KDE surface; convergence is reached once ‖m(x)‖ shrinks to ~0.<span class="mistake">Common mistake</span>Confusing m(x) with an image-gradient edge operator — mean-shift's "gradient ascent" happens on the estimated density in feature space, not on raw pixel intensity.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q12</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Mean-Shift</span>
+          <div class="quiz-q-text">Which statement correctly contrasts mean-shift with K-means and GMM/EM?</div></div>
+        <ul class="quiz-options" data-correct="1">
+          <li onclick="pickOpt(this)"><span class="opt-letter">A</span>Mean-shift requires specifying the number of clusters K in advance, just like K-means, but is more robust to outliers</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">B</span>Mean-shift automatically determines the number of clusters as however many attraction basins exist, but its result is still highly sensitive to the choice of bandwidth h</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">C</span>Mean-shift is a parametric method that assumes Gaussian-shaped clusters, exactly like GMM</li>
+          <li onclick="pickOpt(this)"><span class="opt-letter">D</span>Mean-shift has no hyperparameters at all, unlike K-means (K) or GMM/EM (number of components)</li>
+        </ul>
+        <div class="quiz-reveal">Mean-shift is mode-seeking, not fixed-K partitioning — the number of segments emerges from however many basins of attraction the density landscape has. But it is not hyperparameter-free: bandwidth h plays a role analogous to K, where too small over-segments and too large under-segments/merges distinct modes.<span class="mistake">Common mistake</span>The classic exam trap: "mean-shift needs no K, therefore mean-shift needs no tuning at all." Bandwidth selection is mean-shift's own critical, K-like hyperparameter — the sensitivity just moved, it didn't disappear.</div>
+        <button class="reveal-btn" onclick="toggleReveal(this)">Show Explanation</button>
+      </div>
+
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('easy')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('medium')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Flip cards ---------- */
+function flipCard(el){ el.classList.toggle('flipped'); }
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+    const b = reveal.nextElementSibling;
+    if(b && b.classList.contains('reveal-btn')) b.textContent='Hide Explanation';
+  }
+}
+function toggleReveal(btn, id){
+  const reveal = id ? document.getElementById(id) : btn.previousElementSibling;
+  if(!reveal) return;
+  const shown = reveal.classList.toggle('shown');
+  if(id){ reveal.style.display = shown ? 'block' : 'none'; }
+  btn.textContent = shown ? 'Hide Explanation' : 'Show Explanation';
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO SCRIPTS INSERTED BELOW BY CONTENT AGENTS ================= */
+
+</script>
+</body>
+</html>
