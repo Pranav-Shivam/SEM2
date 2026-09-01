@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Session 13-14 — Object Detection · R-CNN Family &amp; YOLO</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px; --radius-lg: 22px; --radius-md: 16px; --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV13'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; min-width:120px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  input[type="number"] { width:70px; background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:13px; border-radius:6px; padding:5px 8px; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:10px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; cursor:pointer; }
+  .mgrid .cell:hover { border-color:var(--gold); }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; text-align:center; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .toggle-row { display:flex; align-items:center; gap:0.6rem; font-family:var(--font-code); font-size:12px; color:var(--text2); }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") { root.setAttribute("data-theme", saved); }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 13-14 — Object Detection</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Two-Stage Detectors</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Detection Landscape</a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · R-CNN Family</a>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Speed vs Accuracy<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">One-Stage Detector — YOLO</span>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Grid, Boxes, Confidence<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · Training Assignment</a>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Non-Max Suppression<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Evaluation Metrics</span>
+  <a href="#s7" class="nav-link" data-section="s7">07 · IoU &amp; Dice<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s8" class="nav-link" data-section="s8">08 · Precision, Recall, mAP<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Generalization</span>
+  <a href="#s9" class="nav-link" data-section="s9">09 · Dataset Bias &amp; COCO</a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s10" class="nav-link" data-section="s10">Conceptual Deep Dives</a>
+  <a href="#s11" class="nav-link" data-section="s11">Exam Quiz (10 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 13-14 · Object Detection</span>
+    <h1>Object Detection<br><span>R-CNN Family · YOLO</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">From "propose then classify" to "look once" — how detection went from 20 seconds per image to real time, and how we actually score whether a box is any good.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Source</strong>CV13.pdf</div>
+      <div class="hero-meta-item"><strong>Prof</strong>Dhruba Adhikary</div>
+      <div class="hero-meta-item"><strong>Layout</strong>18 pages · 4-up handout</div>
+      <div class="hero-meta-item"><strong>Covers</strong>Sessions 13 &amp; 14 combined</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Selective Search</span>
+      <span class="topic-chip">RoI Pooling</span>
+      <span class="topic-chip">RPN</span>
+      <span class="topic-chip">YOLO Grid Cells</span>
+      <span class="topic-chip">Non-Max Suppression</span>
+      <span class="topic-chip">IoU</span>
+      <span class="topic-chip">Dice</span>
+      <span class="topic-chip">mAP</span>
+      <span class="topic-chip">COCO</span>
+      <span class="topic-chip">Dataset Bias</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide — the page-number mapping</h3>
+      <p>The source deck (<code>CV13.pdf</code>) is titled <em>"Session #13-14: Object Detection (with introduction to RCNN, YOLO)"</em> — it deliberately bundles <strong>two lecture sessions into one file</strong>. It's also exported as a <strong>4-slides-per-page handout</strong> (a 2×2 grid on every PDF page), so "Page 1" of the PDF actually contains 4 original slides, and the full deck spans roughly 70+ original slides across 18 printed pages.</p>
+      <p>This guide re-organizes that content by <em>topic</em> rather than by raw page order, so the two-stage lineage (R-CNN family) and the one-stage lineage (YOLO) each get a clean, connected narrative — with every number below traced back to the deck's own worked examples, not invented for this page.</p>
+    </div>
+
+    <!-- ============ SECTION 01 — DETECTION LANDSCAPE ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">The Object Detection Landscape</h2>
+        <span class="src-badge src-slides">Slides 1-2, 47-49</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — detection is a family of related questions</h3>
+        <p>"Object detection" is really an umbrella. <strong>Generic object detection</strong> finds any of many trained categories and draws a box (bounding-box regression). <strong>Salient object detection</strong> instead asks "what's the single most visually important region?" — no fixed categories, just a soft attention mask (local contrast segmentation). <strong>Face detection</strong> and <strong>pedestrian detection</strong> are narrower, specialized versions of generic detection: faces and upright walking people have much more regular, predictable shapes than "any object," so they get extra tricks (multi-scale pyramids for faces of many sizes; boosted/part-based classifiers for pedestrians).</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Taxonomy (from Slide 1's mind-map)</div>
+<span class="formula-line"><span class="f-gold">Object detection</span></span>
+<span class="formula-line">  ├─ <span class="f-teal">Generic object detection</span>   <span class="f-dim">(bounding-box regression)</span></span>
+<span class="formula-line">  │    └─ <span class="f-sky">Face detection</span>   <span class="f-dim">(multi-scale adaption)</span></span>
+<span class="formula-line">  └─ <span class="f-violet">Salient object detection</span>   <span class="f-dim">(local contrast segmentation)</span></span>
+<span class="formula-line">       └─ <span class="f-rose">Pedestrian detection</span>   <span class="f-dim">(multi-feature / boosting forest)</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The "big idea" — attach any head to a CNN feature map</h3>
+        <p>Once a CNN produces a feature map over an image, you aren't limited to "is there an object + where." At any spatial location in that feature map you can attach <em>any</em> prediction head — a class score, a box, a segmentation mask, even a 3D plane equation — as long as you have paired training data for it.</p>
+      </div>
+
+      <div class="cnn-flow">
+        <div class="cnn-flow-node"><div class="cnn-flow-box input-box">Input<br>Image</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b1">ConvNet</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b2">Feature Map<br>6×8×256</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b3">Pooled crop<br>(red / blue loc.)</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box output-box">??? head<br>class / bbox / mask / plane</div></div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>PlaneRCNN (NVIDIA, CVPR 2019)</strong> is exactly this idea in practice: it reuses a Mask R-CNN-style detector but swaps the class-label head for four new heads on a boxed region — Plane/No-Plane, Mask, Surface Normal, and Offset (distance from camera) — letting it reconstruct a room's 3D layout from one RGB photo. <strong>PlaneFormers (2022)</strong> extends this further: given a handful of sparse-view photos of the same room, it uses a Transformer to stitch each photo's independently-detected planes into one shared 3D coordinate system.</p>
+        <p><cite>Liu et al., PlaneRCNN, CVPR 2019 · Agarwala, Jin, Rockwell, Fouhey, PlaneFormers, 2022</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 — R-CNN FAMILY ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">The R-CNN Family — Two-Stage Detectors</h2>
+        <span class="src-badge src-slides">Slides 1, 5-6, 48, 67</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — propose, then classify</h3>
+        <p>DPM, sliding-window classifiers, and R-CNN are all the same family of idea: <strong>propose candidate regions/windows, then run a classifier on each one.</strong> DPM (Deformable Parts Model, Felzenszwalb 2008) does this with hand-crafted HOG-like filters — a coarse "root" template for the whole object plus smaller "part" templates that can shift slightly, combined into a response heatmap. R-CNN modernizes this by swapping the hand-crafted classifier for a deep CNN.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>R-CNN's 4-step pipeline</h3>
+        <ol class="pipeline">
+          <li><strong>Input image</strong>
+            <p>A raw photo — no pre-processing beyond the usual normalization.</p></li>
+          <li><strong>Extract region proposals (~2,000)</strong>
+            <p>Selective Search generates ~2,000 candidate boxes per image — a classical, non-neural algorithm.</p></li>
+          <li><strong>Compute CNN features</strong>
+            <p>Each proposal is warped to a fixed square and run through its own full CNN forward pass — extremely slow, since there's no shared computation across the ~2,000 proposals.</p></li>
+          <li><strong>Classify regions</strong>
+            <p>Each region's CNN feature vector is classified independently: "aeroplane? no. … person? yes. … tvmonitor? no."</p></li>
+        </ol>
+      </div>
+
+      <div class="theory-block">
+        <h3>Key Differences — four generations, four bottleneck fixes</h3>
+        <table class="he-table">
+          <thead><tr><th>Feature</th><th>R-CNN</th><th>Fast R-CNN</th><th>Faster R-CNN</th><th>Mask R-CNN</th></tr></thead>
+          <tbody>
+            <tr><td>Region Proposal</td><td>External (Selective Search)</td><td>External (Selective Search)</td><td>Integrated RPN</td><td>Integrated RPN + mask</td></tr>
+            <tr><td>Speed</td><td>Slow</td><td>Faster than R-CNN</td><td>Faster than Fast R-CNN</td><td>Slightly slower than Faster R-CNN</td></tr>
+            <tr><td>Architecture</td><td>Multi-stage</td><td>End-to-end w/ external proposals</td><td>Fully end-to-end, shared features</td><td>+ mask branch, shared features</td></tr>
+            <tr><td>Output</td><td>Bounding boxes</td><td>Bounding boxes</td><td>Bounding boxes</td><td>Boxes + segmentation masks</td></tr>
+            <tr><td>Training Complexity</td><td>High</td><td>Lower than R-CNN</td><td>Single unified model</td><td>~Faster R-CNN + mask training</td></tr>
+            <tr><td>Use Case</td><td>Basic detection</td><td>Faster detection</td><td>Real-time detection</td><td>Detection + instance segmentation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — one bottleneck fixed per generation</div>
+        <p><strong>R-CNN → Fast R-CNN:</strong> stop re-running the CNN per proposal — run it once on the whole image, then <strong>RoI-pool</strong> each proposal's features from the shared feature map. <strong>Fast R-CNN → Faster R-CNN:</strong> replace Selective Search (external, CPU, slow) with a small trainable <strong>Region Proposal Network</strong> that shares the same convolutional features — the whole pipeline becomes one neural net. <strong>Faster R-CNN → Mask R-CNN:</strong> add one more output branch for a pixel-level mask (instance segmentation), swapping RoIPool for <strong>RoIAlign</strong> to remove quantization misalignment.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Ross Girshick authored R-CNN (2014) and Fast R-CNN (2015), then co-authored Faster R-CNN (2015, with Ren, He, Sun) and Mask R-CNN (2017, with He et al. — ICCV 2017 Marr Prize / Best Paper). Fast R-CNN's RoI Pooling gave roughly a <strong>200× test-time speedup</strong> over plain R-CNN by sharing one CNN pass across all proposals. A common misconception: "R-CNN" is often used loosely as a synonym for "any two-stage detector," but the original R-CNN used classical Selective Search for proposals, not a neural network — the "fully neural, fully end-to-end" property only arrived with Faster R-CNN.</p>
+        <p><cite>Girshick, "Rich feature hierarchies…", CVPR 2014 · Girshick, "Fast R-CNN", ICCV 2015 · Ren, He, Girshick, Sun, "Faster R-CNN", NeurIPS 2015</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 — SPEED VS ACCURACY (INTERACTIVE) ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Why Accuracy Isn't Enough — Speed vs Accuracy</h2>
+        <span class="src-badge src-slides">Slides 3-4, 14</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — a car doesn't pause the world while a network thinks</h3>
+        <p>This is the single most memorable slide in the deck. Imagine a self-driving car that can only "see" once per detector run — how far would it blindly drive while waiting for one image to finish processing? Every distance below uses the same assumption: <strong>60 mph = 88 feet/second</strong>, multiplied by each detector's own measured latency (distance = speed × time).</p>
+      </div>
+
+      <div class="interactive-demo" id="speedDemo">
+        <h4>⊞ Interactive · The Self-Driving-Car Blind-Distance Slider</h4>
+        <div class="demo-sub">Drag through the five detectors from the deck's PASCAL VOC 2007 comparison table. Watch mAP climb, latency drop, and the "blind travel distance" collapse from a third of a mile down to about two feet.</div>
+        <div class="slider-row">
+          <span class="slider-label">Detector</span>
+          <input type="range" id="speedSlider" min="0" max="4" value="0" oninput="speedRender()">
+          <span class="slider-val" id="speedName">DPM v5</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <div style="flex:1;min-width:220px;">
+            <div class="bar-chart" id="speedBars"></div>
+          </div>
+          <div style="flex:1;min-width:260px;"><div class="demo-output" id="speedOut"></div></div>
+        </div>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">PASCAL VOC 2007 — mAP, speed, and the arithmetic behind it</div>
+<span class="formula-line"><span class="f-dim">DPM v5        </span> <span class="f-gold">33.7 mAP</span>  ·  .07 FPS  ·  14 s/img    → 14×88 = <span class="f-lime">1232 ft</span></span>
+<span class="formula-line"><span class="f-dim">R-CNN         </span> <span class="f-gold">66.0 mAP</span>  ·  .05 FPS  ·  20 s/img    → 20×88 = <span class="f-lime">1760 ft ≈ ⅓ mile</span></span>
+<span class="formula-line"><span class="f-dim">Fast R-CNN    </span> <span class="f-gold">70.0 mAP</span>  ·  .5 FPS   ·  2 s/img     → 2×88 = <span class="f-lime">176 ft</span></span>
+<span class="formula-line"><span class="f-dim">Faster R-CNN  </span> <span class="f-gold">73.2 mAP</span>  ·  7 FPS    ·  140 ms/img  → 0.14×88 = <span class="f-lime">12.3 ft</span></span>
+<span class="formula-line"><span class="f-dim">YOLO          </span> <span class="f-gold">69.0 mAP</span>  ·  45 FPS   ·  22 ms/img   → 0.022×88 = <span class="f-lime">1.9 ft ≈ 2 ft</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">(YOLO's original figure was 63.4 — the slide shows it hand-corrected to 69.0 in a later paper revision)</span></span>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>This "blind travel distance" framing is a famous pedagogical device popularized in Stanford CS231n's object-detection lecture and widely reused across CV courses. The underlying numbers are the actual reported figures from each paper on PASCAL VOC 2007, still commonly reproduced as the canonical speed-vs-accuracy table for the 2008-2016 detector transition. In real autonomous-driving stacks this exact scenario doesn't happen quite so starkly (multiple sensors, pipelined models, temporal tracking cover the gaps) — but the lesson generalizes directly: any perception latency in a moving system translates straight into a "blind travel distance," which is precisely why the entire single-stage detector lineage (YOLO, SSD, RetinaNet) exists — trading a few points of mAP for a 10-100× cut in per-frame latency.</p>
+        <p><cite>Redmon, Divvala, Girshick, Farhadi, "You Only Look Once", CVPR 2016</cite></p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Speed vs Accuracy — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Know the arithmetic pattern (distance = speed × time at 88 ft/s), not just the memorized numbers — a variant with a different mph is a common twist.</li>
+          <li>Know WHY R-CNN is slower than DPM despite being far more accurate: it runs a full CNN separately per proposal, no shared computation.</li>
+          <li>Common mistake: assuming "more accurate is always better" — for latency-critical robotics, a slightly-less-accurate-but-far-faster model is the objectively better system-level choice.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 — YOLO GRID/BOXES/CONFIDENCE (INTERACTIVE) ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">YOLO — Grid Cells, Boxes &amp; Confidence</h2>
+        <span class="src-badge src-slides">Slides 6-9</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — you only look once</h3>
+        <p>YOLO stops treating detection as "first guess where objects might be, then classify each guess" and instead directly divides the image into a coarse <strong>S×S grid</strong> and, for every cell, directly outputs a class score and up to <strong>B</strong> candidate boxes for whatever object is centered there — all in a single forward pass through one ConvNet. Three steps: (1) resize the image, (2) run one convolutional network, (3) threshold detections.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Per-box confidence and the fixed-size output tensor</div>
+<span class="formula-line"><span class="f-dim">Per-box confidence:</span>  <span class="f-gold">confidence = Pr(Object) × IOU<sub>pred</sub><sup>truth</sup></span></span>
+<span class="formula-line"><span class="f-dim">  If no object in the cell → ideal confidence = 0.  If an object exists → ideal confidence = IoU(pred, truth).</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Class-specific confidence:</span></span>
+<span class="formula-line">  <span class="f-teal">Pr(Class<sub>i</sub>|Object) × Pr(Object) × IOU<sub>pred</sub><sup>truth</sup> = Pr(Class<sub>i</sub>) × IOU<sub>pred</sub><sup>truth</sup></span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Output tensor size, for Pascal VOC (S=7, B=2, C=20):</span></span>
+<span class="formula-line">  <span class="f-lime">7 × 7 × (2×5 + 20) = 7 × 7 × 30 = 1470 outputs</span></span>
+<span class="formula-line">  <span class="f-dim">Each box = 5 numbers (x, y, w, h, confidence); (x,y) relative to the cell, (w,h) relative to the whole image.</span></span>
+      </div>
+
+      <div class="interactive-demo" id="gridDemo">
+        <h4>⊞ Interactive · Click a Grid Cell</h4>
+        <div class="demo-sub">A simplified 5×5 illustration of YOLO's S×S grid (the real deck uses 7×7). Click any cell to make it "responsible" — see the class it would predict and a plausible confidence score. Only one cell can be responsible at a time, mirroring how each object is owned by exactly one cell.</div>
+        <div class="demo-canvas-wrap">
+          <div class="mgrid" id="gridDemoGrid" style="grid-template-columns:repeat(5,38px);"></div>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="gridDemoOut">Click a cell to see its prediction.</div></div>
+        </div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>YOLO (Redmon, Divvala, Girshick, Farhadi, CVPR 2016) ran at 45 FPS (155 FPS for the smaller "Fast YOLO"), the first detector that felt genuinely real-time for video. A classic misconception: "one look" doesn't mean the network only sees a few pixels — it means only <em>one forward pass through one network</em> is needed per image, versus running a classifier separately over thousands of proposed sub-images (R-CNN) or sliding-window crops (DPM/HOG).</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 — TRAINING ASSIGNMENT ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Training YOLO — Responsible Cell &amp; Predictor</h2>
+        <span class="src-badge src-slides">Slides 10-12</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The assignment rule, step by step</h3>
+        <ol class="pipeline">
+          <li><strong>Find the responsible cell</strong>
+            <p>During training, locate the ground-truth object's box center. Whichever of the S×S cells that center falls inside becomes "responsible" for that object — all other cells are not blamed for missing it.</p></li>
+          <li><strong>Pick the responsible predictor</strong>
+            <p>That cell predicted B boxes (B=2 for Pascal VOC). Compare each to the ground truth via IoU; whichever has the <em>highest</em> IoU is declared the "responsible predictor" for this object.</p></li>
+          <li><strong>Adjust the winner</strong>
+            <p>The winning box's coordinates are nudged toward the ground truth, and its confidence is pushed up toward 1 (or the actual IoU).</p></li>
+          <li><strong>Suppress the loser</strong>
+            <p>The other (losing) box in that same cell is NOT trained to match this object — its confidence is instead pushed toward 0, since it did not represent the object as well as the winner.</p></li>
+          <li><strong>Empty cells → confidence to zero</strong>
+            <p>Cells with no ground-truth object at all have nothing to compute coordinate/class loss against — only their confidence is pushed toward 0.</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Why λ<sub>noobj</sub> exists</div>
+<span class="formula-line"><span class="f-dim">Most of a typical image's cells are empty (background).</span></span>
+<span class="formula-line"><span class="f-dim">Without down-weighting, the sheer count of "no object" cells would overwhelm training</span></span>
+<span class="formula-line"><span class="f-dim">— the network would trivially minimize loss by predicting zero confidence everywhere.</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line">  <span class="f-gold">λ<sub>coord</sub> = 5</span>   <span class="f-dim">(boost coordinate loss for object-containing cells)</span></span>
+<span class="formula-line">  <span class="f-rose">λ<sub>noobj</sub> = 0.5</span>  <span class="f-dim">(down-weight confidence loss for empty cells)</span></span>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>This "one predictor wins, encourage specialization" design is a form of hard assignment (similar in spirit to hard-EM) — empirically, one box "slot" per cell tends to learn wide-aspect boxes while the other learns tall ones. It directly foreshadows anchor-box matching in every detector since: YOLOv2 assigns objects to specific anchor boxes rather than an unconstrained predictor pair, and this "cell-owns-one-object" bottleneck (which struggles with small, clustered objects like a flock of birds) was itself a major motivation for anchor boxes and YOLOv3's three-scale detection. The foreground/background imbalance λ<sub>noobj</sub> hand-tunes here is the same fundamental issue that later motivated Focal Loss in RetinaNet (Lin et al., 2017), solved in a more principled, adaptive way.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 — NMS (INTERACTIVE) ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Non-Max Suppression</h2>
+        <span class="src-badge src-slides">Slides 9, 13</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — cleaning up the raw swarm</h3>
+        <p>Every cell in the grid proposes its own candidate boxes simultaneously — for one real object, several neighboring cells often all guess overlapping boxes. NMS's job: sort all candidates by confidence, keep the highest, and suppress (zero out, or discard) any remaining box whose IoU with it exceeds a threshold <em>and</em> which predicts the same class. Crucially, NMS only touches the confidence score / survival of a box — it doesn't "judge correctness," it only removes duplicate detections of an object that's already been found.</p>
+      </div>
+
+      <div class="interactive-demo" id="nmsDemo">
+        <h4>⊞ Interactive · Non-Max Suppression Threshold</h4>
+        <div class="demo-sub">Five overlapping candidate boxes around one dog. Drag the IoU threshold — boxes whose overlap with the highest-confidence box exceeds the threshold get suppressed (faded, dashed); the rest survive.</div>
+        <div class="slider-row">
+          <span class="slider-label">IoU threshold</span>
+          <input type="range" id="nmsSlider" min="10" max="90" value="50" oninput="nmsRender()">
+          <span class="slider-val" id="nmsThreshVal">0.50</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="nmsCanvas" width="320" height="240"></canvas>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="nmsOut"></div></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>NMS — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>NMS operates <strong>per class</strong> — two overlapping boxes of different classes are never suppressed against each other.</li>
+          <li>Common mistake: thinking NMS "removes wrong detections." It only removes duplicates of an already-found object; a legitimate second object nearby can wrongly get suppressed too (why Soft-NMS exists).</li>
+          <li>Sequence to memorize: sort by confidence → keep top → suppress same-class boxes above the IoU threshold → repeat on what remains.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 — IoU & DICE (INTERACTIVE) ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Evaluation Metrics — IoU &amp; Dice</h2>
+        <span class="src-badge src-slides">Slides 17-18</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The deck's exact worked example</h3>
+        <p>GT box corners: <code>(50,50)</code> bottom-left, <code>(250,200)</code> top-right. Predicted box corners: <code>(70,80)</code> bottom-left, <code>(280,220)</code> top-right.</p>
+        <ol class="step-list">
+          <li><p>GT area = height × width = (200−50) × (250−50) = 150 × 200 = <strong>30000</strong>.</p></li>
+          <li><p>Pred area = (220−80) × (280−70) = 140 × 210 = <strong>29400</strong>.</p></li>
+          <li><p>Intersection bottom-left = (max(50,70), max(50,80)) = <strong>(70,80)</strong>. Intersection top-right = (min(250,280), min(200,220)) = <strong>(250,200)</strong>.</p></li>
+          <li><p>Intersection area = (200−80) × (250−70) = 120 × 180 = <strong>21600</strong>.</p></li>
+          <li><p>Union area = 30000 + 29400 − 21600 = <strong>37800</strong>.</p></li>
+          <li><p>IoU = 21600 / 37800 ≈ <strong style="color:var(--lime)">0.57</strong>.</p></li>
+          <li><p>Dice = 2×21600 / (30000+29400) = 43200 / 59400 ≈ <strong style="color:var(--lime)">0.7272</strong>.</p></li>
+        </ol>
+        <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">IoU ≈ 0.57, Dice ≈ 0.7272. Dice always reports higher than IoU for the same two shapes: Dice = 2·IoU/(1+IoU).</span></div>
+      </div>
+
+      <div class="interactive-demo" id="iouDemo">
+        <h4>⊞ Interactive · Live IoU / Dice Calculator</h4>
+        <div class="demo-sub">GT box is fixed at (50,50)-(250,200), matching the deck. Drag the Pred box's corners and watch IoU/Dice recompute live — try dragging Pred until it exactly matches GT (IoU→1) or moves fully away (IoU→0).</div>
+        <div class="slider-row"><span class="slider-label">Pred x1</span><input type="range" id="iouX1" min="0" max="300" value="70" oninput="iouRender()"><span class="slider-val" id="iouX1v">70</span></div>
+        <div class="slider-row"><span class="slider-label">Pred y1</span><input type="range" id="iouY1" min="0" max="300" value="80" oninput="iouRender()"><span class="slider-val" id="iouY1v">80</span></div>
+        <div class="slider-row"><span class="slider-label">Pred x2</span><input type="range" id="iouX2" min="0" max="300" value="280" oninput="iouRender()"><span class="slider-val" id="iouX2v">280</span></div>
+        <div class="slider-row"><span class="slider-label">Pred y2</span><input type="range" id="iouY2" min="0" max="300" value="220" oninput="iouRender()"><span class="slider-val" id="iouY2v">220</span></div>
+        <div class="demo-canvas-wrap">
+          <canvas id="iouCanvas" width="300" height="300"></canvas>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="iouOut"></div></div>
+        </div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>IoU = intersection/union; Dice = 2·intersection/(sum of areas). Because Dice puts a factor of 2 on the intersection and divides by the sum of areas (not the union), Dice ≥ IoU always, related by Dice = 2·IoU/(1+IoU). IoU (as "mean IoU") is the standard metric for semantic segmentation and detection box-matching, while Dice dominates medical image segmentation (tumor/organ boundaries) because it's comparatively more forgiving on small structures.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 — PRECISION/RECALL/mAP (INTERACTIVE) ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Evaluation Metrics — Precision, Recall &amp; mAP</h2>
+        <span class="src-badge src-slides">Slide 18</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Setup — the deck's exact example</h3>
+        <p>Ground truth has <strong>5 cars</strong> in the image. The model fires <strong>10</strong> candidate boxes, sorted by descending confidence. IoU threshold for a match = 0.5. Precision P = TP/(TP+FP). A guess only counts as TP if (a) its IoU with some GT car clears 0.5, <strong>and</strong> (b) that GT car hasn't already been claimed by an earlier, higher-confidence guess — the second condition is the deck's explicit "duplicate detection" caveat at rank 10 (IoU=0.55 clears the threshold, but that car was already matched by an earlier detection, so it's still FP).</p>
+        <table class="he-table">
+          <thead><tr><th>Rank</th><th>Confidence</th><th>IoU</th><th>TP/FP</th><th>Cumulative Precision</th><th>Recall</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>0.98</td><td>0.92</td><td style="color:var(--lime)">TP</td><td>1/1 = 1.00</td><td>1/5 = 0.20</td></tr>
+            <tr><td>2</td><td>0.95</td><td>0.85</td><td style="color:var(--lime)">TP</td><td>2/2 = 1.00</td><td>2/5 = 0.40</td></tr>
+            <tr><td>3</td><td>0.91</td><td>0.40</td><td style="color:var(--rose)">FP</td><td>2/3 = 0.67</td><td>2/5 = 0.40</td></tr>
+            <tr><td>4</td><td>0.88</td><td>0.78</td><td style="color:var(--lime)">TP</td><td>3/4 = 0.75</td><td>3/5 = 0.60</td></tr>
+            <tr><td>5</td><td>0.82</td><td>0.35</td><td style="color:var(--rose)">FP</td><td>3/5 = 0.60</td><td>3/5 = 0.60</td></tr>
+            <tr><td>6</td><td>0.79</td><td>0.81</td><td style="color:var(--lime)">TP</td><td>4/6 = 0.67</td><td>4/5 = 0.80</td></tr>
+            <tr><td>7</td><td>0.75</td><td>0.72</td><td style="color:var(--lime)">TP</td><td>5/7 = 0.71</td><td>5/5 = 1.00</td></tr>
+            <tr><td>8</td><td>0.71</td><td>0.20</td><td style="color:var(--rose)">FP</td><td>5/8 = 0.63</td><td>5/5 = 1.00</td></tr>
+            <tr><td>9</td><td>0.65</td><td>0.15</td><td style="color:var(--rose)">FP</td><td>5/9 = 0.56</td><td>5/5 = 1.00</td></tr>
+            <tr><td>10</td><td>0.60</td><td>0.55</td><td style="color:var(--rose)">FP*</td><td>5/10 = 0.50</td><td>5/5 = 1.00</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text3);font-size:13px;">*Rank 10's IoU (0.55) clears 0.5, but its GT car was already claimed at rank 2 — duplicate detection, scored FP.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>From the PR curve to one number — interpolated AP</h3>
+        <div class="formula-block" style="margin-top:0;">
+<span class="formula-line"><span class="f-dim">Interpolated precision:</span>  <span class="f-gold">P<sub>inter</sub>(r) = max<sub>r'≥r</sub> P(r')</span></span>
+<span class="formula-line"><span class="f-dim">At recall 0.1…0.9 (9 points):</span>  <span class="f-teal">1, 1, 1, 1, 0.75, 0.75, 0.71, 0.71, 0.71</span></span>
+<span class="formula-line"><span class="f-dim">9-point AP =</span>  <span class="f-lime">(1+1+1+1+0.75+0.75+0.71+0.71+0.71) / 9 ≈ 0.8</span></span>
+        </div>
+      </div>
+
+      <div class="interactive-demo" id="mapDemo">
+        <h4>⊞ Interactive · Toggle TP/FP, Watch mAP Recompute</h4>
+        <div class="demo-sub">6 ranked detections, 4 ground-truth cars. Click any row to flip it between TP and FP — cumulative precision/recall and the interpolated AP below update live. Try flipping row 3 to TP and see what happens to precision.</div>
+        <div class="demo-canvas-wrap">
+          <div style="flex:1;min-width:260px;">
+            <table class="he-table" id="mapTable"></table>
+          </div>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="mapOut"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 — DATASET BIAS & COCO ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Generalization &amp; Dataset Bias</h2>
+        <span class="src-badge src-slides">Slides 14-16</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>YOLO generalizes to artwork</h3>
+        <p>Surprisingly, YOLO — trained only on photos — also detects people in paintings (Picasso portraits, Munch's "The Scream") reasonably well, even though it never saw a painting during training.</p>
+        <table class="he-table">
+          <thead><tr><th>Method</th><th>VOC 2007 AP</th><th>Picasso AP</th><th>People-Art AP</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">YOLO</td><td>59.2</td><td>53.3</td><td>45</td></tr>
+            <tr><td>R-CNN</td><td>54.2</td><td>10.4</td><td>26</td></tr>
+            <tr><td>DPM</td><td>43.2</td><td>37.8</td><td>32</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text2);">R-CNN's AP collapses on art (54.2 → 10.4) while YOLO barely drops (59.2 → 53.3) — YOLO reasons holistically about the whole image, while R-CNN's region-proposal pipeline leans on photograph-specific local statistics.</p>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">From the deck — "A Few Caveats"</div>
+        <p>"Flickr images come from a really weird process: (1) user takes a picture, (2) user decides to upload it, (3) user decides to write something like 'refrigerator' somewhere in the description, (4) a vision person stumbles on it while searching Flickr for refrigerators for a dataset." — followed by a grid of photos captioned "Who takes photos of open refrigerators?????"</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Dataset bias, in three flavors</h3>
+        <p><strong>Selection bias (Flickr fridges):</strong> nobody photographs a closed, boring fridge and tags it "refrigerator" — only unusual, camera-conscious shots get tagged that way, so a Flickr-built "refrigerator" dataset is quietly non-representative.</p>
+        <p><strong>Curation bias ("Kitchens from Googling"):</strong> Googling "kitchen" surfaces staged, magazine-style photos, not messy real ones — a model trained on this fails on ordinary kitchen photos.</p>
+        <p><strong>Texture bias:</strong> a >90%-confidence detection on a close-up of leopard-print fabric, misclassified as one of Person/Giraffe/Bicycle — a model can latch onto a superficial texture cue rather than true object structure, and "99% precision on the original dataset" doesn't protect against this on out-of-distribution inputs.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>COCO vs PASCAL VOC</h3>
+        <p>COCO (2014) has <strong>80 "thing" categories</strong> + 91 "stuff" categories, ~330K images, ~1.5 million instances — versus VOC's 20 categories. COCO also averages mAP over IoU thresholds <strong>0.5 to 0.95</strong> ("AP@[.5:.95]") rather than VOC's single IoU=0.5 threshold, which is why COCO AP numbers (often 28-38) look much lower than VOC mAP numbers (60-80) for comparably strong models — it's measuring a stricter task, not a worse model.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — beyond cars and pedestrians</div>
+        <p>The Fouhey Lab (University of Michigan) used deep instance segmentation to automatically locate and measure individual bones in photographs of museum bird skeletons — skull, femur, etc. — cutting measurement time roughly 15× versus manual calipers, and enabling trait databases spanning 2,000+ bird species. Same underlying technology as detecting "person" or "bicycle" — pointed at a scientific measurement problem instead.</p>
+        <p><cite>Zhou, Hassena, Weeks, Fouhey, "Quantifying Bird Skeletons", CVPR Workshops 2021</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — CONCEPTUAL DEEP DIVES ============ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Conceptual Deep Dives</h2>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Compare &amp; Contrast</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s10-a', this, 's10-ex')">Two-Stage vs One-Stage</button>
+          <button class="tab-btn" onclick="showTab('s10-b', this, 's10-ex')">Grid Bottleneck</button>
+          <button class="tab-btn" onclick="showTab('s10-c', this, 's10-ex')">IoU vs Dice</button>
+        </div>
+
+        <div class="tab-panel active" id="s10-a" data-tab-group="s10-ex">
+          <div class="example-q">Why does the accuracy/speed trade-off between R-CNN and YOLO exist structurally, not just as an implementation detail?</div>
+          <ol class="step-list">
+            <li><p>R-CNN-family detectors spend a whole separate stage generating and scoring class-agnostic region proposals before classification — that extra stage gives them a chance to refine localization multiple times, at a real compute cost.</p></li>
+            <li><p>YOLO collapses proposal + classification into one regression pass over a fixed grid — no per-region refinement stage — which is exactly what removes the bottleneck but also removes a source of localization accuracy.</p></li>
+            <li><p>So the trade-off isn't a bug in either design — it's the direct consequence of "one stage that always predicts a fixed number of boxes" vs "however many regions a slower proposal step decides to examine."</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Every later architecture (SSD, RetinaNet, YOLOv3+) is really an attempt to close this gap from the one-stage side — multi-scale grids, anchor boxes, focal loss — rather than abandoning the single-pass idea.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s10-b" data-tab-group="s10-ex">
+          <div class="example-q">Why can't more training iterations fix YOLOv1's struggle with small, clustered objects (e.g. a flock of birds)?</div>
+          <ol class="step-list">
+            <li><p>YOLOv1's assignment rule hard-codes "one cell owns at most one object" (Section 05). If two objects' centers land in the same or adjacent cells, one is structurally unrepresentable — no amount of extra training data or epochs changes that geometric constraint.</p></li>
+            <li><p>This mirrors RANSAC's degeneracy problem: more iterations only help you <em>find</em> a good sample/fit within a correct model — they can't fix a model that is structurally the wrong shape for the data.</p></li>
+            <li><p>The actual fix was architectural: anchor boxes (YOLOv2) and multi-scale grids (YOLOv3) loosen the one-object-per-cell bottleneck by giving each location multiple, differently-shaped "slots."</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>A capacity/data problem is fixed by more training; a structural/representational bottleneck needs an architecture change. Learn to tell them apart.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s10-c" data-tab-group="s10-ex">
+          <div class="example-q">IoU and Dice measure "the same" overlap — when do they diverge, and why does medical imaging prefer Dice?</div>
+          <ol class="step-list">
+            <li><p>Dice = 2·IoU/(1+IoU) is a monotonic function of IoU, so they never disagree on ranking — but Dice is always numerically higher for the same shapes, and the gap is largest at low overlap (e.g. IoU=0.33 → Dice=0.5).</p></li>
+            <li><p>For small structures (a tumor a few pixels wide), a 1-2 pixel boundary error is a much bigger fraction of the union than of the sum-of-areas — so IoU punishes small-object boundary noise harder than Dice does.</p></li>
+            <li><p>Medical segmentation targets are frequently small relative to the image, so Dice's comparative forgiveness on small-structure boundary noise makes it the more stable training/reporting metric there, while detection/segmentation on natural images (COCO, VOC) standardizes on IoU.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Same ranking, different sensitivity — pick the metric whose forgiveness profile matches your object sizes.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 11 — EXAM QUIZ ============ -->
+    <section class="section" id="s11">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Exam Quiz — 10 Questions</h2>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">YOLOv1 tensor</span>
+          <div class="quiz-q-text">For Pascal VOC with S=7, B=2, C=20, YOLOv1's output tensor has how many values per cell?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>20</li>
+          <li><span class="opt-letter">B</span>10</li>
+          <li><span class="opt-letter">C</span>30</li>
+          <li><span class="opt-letter">D</span>1470</li>
+        </ul>
+        <div class="quiz-reveal">Per cell: B×5 + C = 2×5 + 20 = <strong>30</strong>. <strong>A (20)</strong> is just the class count. <strong>B (10)</strong> is just the box values (2×5). <strong>D (1470)</strong> is the TOTAL over all 49 cells (7×7×30), not per-cell.<span class="mistake">Common mistake</span>Confusing per-cell size (30) with the whole-image total (1470) — know both, but they answer different questions.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">IoU vs Dice</span>
+          <div class="quiz-q-text">If two boxes have IoU = 0.5, what is their Dice coefficient?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>0.5</li>
+          <li><span class="opt-letter">B</span>0.667</li>
+          <li><span class="opt-letter">C</span>0.25</li>
+          <li><span class="opt-letter">D</span>1.0</li>
+        </ul>
+        <div class="quiz-reveal">Dice = 2·IoU/(1+IoU) = 2×0.5/1.5 = 1/1.5 ≈ <strong>0.667</strong>. <strong>A</strong> forgets Dice is always ≥ IoU for the same shapes. <strong>C</strong> squares instead of applying the correct ratio. <strong>D</strong> would require IoU=1 (perfect overlap).<span class="mistake">Common mistake</span>Assuming IoU and Dice are the same number — they agree only at IoU=0 and IoU=1.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">R-CNN lineage</span>
+          <div class="quiz-q-text">What specific bottleneck did Fast R-CNN fix relative to plain R-CNN?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Running a separate CNN forward pass per region proposal</li>
+          <li><span class="opt-letter">B</span>Using Selective Search instead of a learned RPN</li>
+          <li><span class="opt-letter">C</span>Lack of a mask-prediction branch</li>
+          <li><span class="opt-letter">D</span>Using hand-crafted HOG features</li>
+        </ul>
+        <div class="quiz-reveal">Fast R-CNN shares one CNN pass across the whole image and RoI-pools per-region features from it, fixing R-CNN's "~2000 separate CNN passes" problem. <strong>B</strong> is the Faster R-CNN fix (RPN replaces Selective Search) — Fast R-CNN still used Selective Search. <strong>C</strong> is the Mask R-CNN addition. <strong>D</strong> describes DPM, not R-CNN (R-CNN already used CNN features).<span class="mistake">Common mistake</span>Mixing up which generation fixed which bottleneck — memorize the ordered chain, not just the four names.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Confidence formula</span>
+          <div class="quiz-q-text">A cell has Pr(Object)=0.9 and its best box has IoU=0.6 with the ground truth. What should its confidence score be trained toward?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>0.9</li>
+          <li><span class="opt-letter">B</span>0.54</li>
+          <li><span class="opt-letter">C</span>0.6</li>
+          <li><span class="opt-letter">D</span>1.0</li>
+        </ul>
+        <div class="quiz-reveal">confidence = Pr(Object) × IoU = 0.9 × 0.6 = <strong>0.54</strong>. <strong>A</strong> ignores the IoU factor. <strong>C</strong> ignores the Pr(Object) factor. <strong>D</strong> would only apply for a perfect, certain detection.<span class="mistake">Common mistake</span>Treating confidence as just Pr(Object) alone — it always folds in localization quality too.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Training assignment</span>
+          <div class="quiz-q-text">A cell responsible for a dog predicts 2 boxes: Box A (IoU=0.7) and Box B (IoU=0.3). What happens to Box B during training?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Its coordinates are also nudged toward the dog's ground truth</li>
+          <li><span class="opt-letter">B</span>It is deleted from the output tensor</li>
+          <li><span class="opt-letter">C</span>Its class probabilities are zeroed</li>
+          <li><span class="opt-letter">D</span>Only its confidence is pushed toward 0; coordinates are left alone</li>
+        </ul>
+        <div class="quiz-reveal">Only the highest-IoU box (A) is the "responsible predictor" and gets its coordinates adjusted; Box B is simply pushed toward zero confidence. <strong>A</strong> wrongly trains both boxes toward the same object. <strong>B</strong> is impossible — the tensor size is fixed (always B boxes per cell). <strong>C</strong> confuses per-cell class probabilities (shared across boxes) with per-box confidence.<span class="mistake">Common mistake</span>Thinking every predicted box in a cell is trained toward the ground truth — only the winner is.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">NMS</span>
+          <div class="quiz-q-text">After sorting by confidence, NMS keeps the top box and suppresses other boxes when:</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Same predicted class AND IoU with the kept box exceeds the threshold</li>
+          <li><span class="opt-letter">B</span>Any box with confidence below 0.5</li>
+          <li><span class="opt-letter">C</span>Any box overlapping the kept box at all, regardless of class</li>
+          <li><span class="opt-letter">D</span>Boxes are never suppressed — thresholding alone removes weak boxes</li>
+        </ul>
+        <div class="quiz-reveal">NMS suppresses same-class boxes above the IoU threshold relative to the higher-confidence box. <strong>B</strong> describes confidence thresholding, a separate step (page 6's "3. Threshold detections") done before or alongside NMS. <strong>C</strong> is wrong — cross-class overlap is untouched by NMS. <strong>D</strong> ignores NMS entirely.<span class="mistake">Common mistake</span>Forgetting the "same class" condition — a person box and a dog box can overlap heavily and both survive.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">λ<sub>noobj</sub></span>
+          <div class="quiz-q-text">Why does YOLOv1's loss use λ<sub>noobj</sub>=0.5 (down-weighting empty-cell confidence loss) instead of weighting it equally to object-containing cells?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>To speed up backpropagation computation</li>
+          <li><span class="opt-letter">B</span>Because empty cells don't produce any confidence prediction</li>
+          <li><span class="opt-letter">C</span>Because most cells are empty — unweighted, that majority would drown out the learning signal from rare object-containing cells</li>
+          <li><span class="opt-letter">D</span>To compensate for using B=2 boxes per cell instead of 1</li>
+        </ul>
+        <div class="quiz-reveal">A typical image has far more background cells than object cells; without down-weighting, the network could trivially minimize loss by predicting zero confidence everywhere. <strong>A</strong> is false — it's about loss balance, not compute speed. <strong>B</strong> is false — every cell (empty or not) still predicts confidence for its B boxes. <strong>D</strong> is unrelated to B.<span class="mistake">Common mistake</span>Confusing this with a regularization trick — it's specifically a foreground/background class-imbalance fix, the same family of problem Focal Loss later addressed.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">mAP duplicate rule</span>
+          <div class="quiz-q-text">A rank-6 detection has IoU=0.65 (clears the 0.5 threshold) with a GT car that was already matched by the rank-1 detection. How is rank-6 scored?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>TP, because its IoU clears the threshold</li>
+          <li><span class="opt-letter">B</span>FP, because that ground-truth car was already claimed</li>
+          <li><span class="opt-letter">C</span>It is excluded from the ranking entirely</li>
+          <li><span class="opt-letter">D</span>TN, since no new object was found</li>
+        </ul>
+        <div class="quiz-reveal">Only the first (highest-confidence) match to a given ground-truth box counts as TP; every later detection touching that same already-matched box is FP — exactly the deck's rank-10 caveat. <strong>A</strong> ignores the "one match per ground truth" rule. <strong>C</strong> is wrong — it's still scored, just as FP. <strong>D</strong> — TN doesn't apply in single-class detection scoring (there's no "correctly predicted absence" box).<span class="mistake">Common mistake</span>Forgetting the duplicate-detection rule and letting redundant high-IoU boxes inflate the true-positive count — exactly what NMS is meant to prevent before scoring.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">COCO vs VOC</span>
+          <div class="quiz-q-text">A model scores 36 "COCO AP" and 78 "VOC mAP." What's the most accurate interpretation?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>The model is much worse on COCO than on VOC</li>
+          <li><span class="opt-letter">B</span>The two numbers are directly comparable and can be averaged</li>
+          <li><span class="opt-letter">C</span>COCO has fewer categories so its AP should be numerically higher</li>
+          <li><span class="opt-letter">D</span>COCO AP is a stricter metric (averaged over IoU 0.5-0.95, 80 categories) so a lower raw number doesn't imply a worse model</li>
+        </ul>
+        <div class="quiz-reveal">COCO's AP@[.5:.95] averages over ten stricter IoU thresholds and spans 80 categories vs VOC's single IoU=0.5 threshold and 20 categories — the numbers are measuring different, non-comparable tasks. <strong>A</strong> and <strong>B</strong> both wrongly treat the numbers as apples-to-apples. <strong>C</strong> has the category-count fact backwards (COCO has MORE categories, 80 vs 20).<span class="mistake">Common mistake</span>Comparing AP/mAP numbers across benchmarks without checking the IoU-averaging convention and category count first.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Self-driving-car example</span>
+          <div class="quiz-q-text">Using the deck's assumption (60 mph = 88 ft/s), how far would a car travel during Faster R-CNN's 140 ms/img latency?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>≈ 12.3 feet</li>
+          <li><span class="opt-letter">B</span>≈ 176 feet</li>
+          <li><span class="opt-letter">C</span>≈ 1.9 feet</li>
+          <li><span class="opt-letter">D</span>≈ 1760 feet</li>
+        </ul>
+        <div class="quiz-reveal">distance = speed × time = 88 ft/s × 0.14 s = <strong>12.32 ft</strong>, matching the deck's "12 feet" label. <strong>B (176 ft)</strong> is Fast R-CNN's number (2 s/img). <strong>C (1.9 ft)</strong> is YOLO's (22 ms/img). <strong>D (1760 ft)</strong> is R-CNN's (20 s/img).<span class="mistake">Common mistake</span>Mixing up which detector's latency you're plugging in — always convert the img-time to seconds first (140 ms = 0.14 s), then multiply by 88.</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('a')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('b')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  if(!li) return;
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+  }
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO · Speed vs Accuracy slider ================= */
+const speedData = [
+  {name:'DPM v5', map:33.7, sec:14},
+  {name:'R-CNN', map:66.0, sec:20},
+  {name:'Fast R-CNN', map:70.0, sec:2},
+  {name:'Faster R-CNN', map:73.2, sec:0.14},
+  {name:'YOLO', map:69.0, sec:0.022}
+];
+function speedRender(){
+  const idx = +document.getElementById('speedSlider').value;
+  const d = speedData[idx];
+  document.getElementById('speedName').textContent = d.name;
+  const bc = document.getElementById('speedBars'); bc.innerHTML='';
+  const maxMap = 80;
+  speedData.forEach((row,i)=>{
+    const col=document.createElement('div'); col.className='bar-col';
+    const hl = i===idx ? 'var(--gold)' : 'rgba(212,168,83,0.35)';
+    col.innerHTML='<div class="bar-fill" style="height:'+(row.map/maxMap*100)+'%;background:'+hl+'"></div><div class="bar-label">'+row.name.replace(' ','<br>')+'<br>'+row.map+'</div>';
+    bc.appendChild(col);
+  });
+  const dist = d.sec*88;
+  let distStr = dist>=528 ? (dist/5280).toFixed(2)+' mi ('+Math.round(dist)+' ft)' : dist.toFixed(1)+' ft';
+  const fps = (1/d.sec).toFixed(d.sec<1?0:2);
+  document.getElementById('speedOut').innerHTML =
+    '<strong style="color:var(--gold)">'+d.name+'</strong><br>'+
+    'mAP: <strong>'+d.map+'</strong> &nbsp;|&nbsp; Speed: <strong>'+fps+' FPS</strong> (' + (d.sec>=1 ? d.sec+' s/img' : Math.round(d.sec*1000)+' ms/img') + ')<br><br>'+
+    'Blind travel @ 60mph (88 ft/s):<br>'+
+    '<span style="color:var(--lime);font-size:16px;">88 × '+d.sec+' = '+distStr+'</span><br><br>'+
+    '<span style="color:var(--text3)">'+(idx===4 ? 'YOLO: the car barely moves before the next detection.' : idx===1 ? "R-CNN: the car travels a third of a mile blind." : 'Drag the slider to compare every detector.')+'</span>';
+}
+
+/* ================= DEMO · YOLO grid-cell click ================= */
+const gridClasses = ['Bicycle','Car','Dog','Dining Table','Person','Background','Bird','Cat'];
+const gridColors = ['#c084fc','#f0a848','#a3e635','#7dd3fc','#f87171','#6b6878','#4ec9b0','#d4a853'];
+let gridActive = -1;
+function gridSeed(i){ let x = Math.sin(i*999)*10000; return x - Math.floor(x); }
+function gridBuild(){
+  const g = document.getElementById('gridDemoGrid'); g.innerHTML='';
+  for(let i=0;i<25;i++){
+    const d=document.createElement('div'); d.className='cell'; d.dataset.i=i;
+    d.onclick=()=>{ gridActive = i; gridBuild(); gridReport(i); };
+    if(i===gridActive){ d.classList.add('hot'); d.textContent='●'; }
+    g.appendChild(d);
+  }
+}
+function gridReport(i){
+  const cls = gridClasses[Math.floor(gridSeed(i)*gridClasses.length)];
+  const conf = (0.4 + gridSeed(i+50)*0.58).toFixed(2);
+  document.getElementById('gridDemoOut').innerHTML =
+    'Cell #'+i+' is now <strong style="color:var(--gold)">responsible</strong>.<br><br>'+
+    'Predicted class: <strong style="color:var(--teal)">'+cls+'</strong><br>'+
+    'Pr(Class|Object): <strong>'+(0.5+gridSeed(i+20)*0.49).toFixed(2)+'</strong><br>'+
+    'Box confidence = Pr(Object)×IoU ≈ <strong style="color:var(--lime)">'+conf+'</strong><br><br>'+
+    '<span style="color:var(--text3)">Only one cell can be responsible for one ground-truth object — clicking a new cell releases the old one, mirroring the training assignment rule (Section 05).</span>';
+}
+
+/* ================= DEMO · Non-Max Suppression ================= */
+const nmsBoxes = [
+  {x:60, y:60, w:140, h:110, conf:0.95},
+  {x:75, y:70, w:130, h:105, conf:0.81},
+  {x:50, y:80, w:150, h:95, conf:0.63},
+  {x:180, y:120, w:90, h:80, conf:0.58},
+  {x:70, y:55, w:120, h:120, conf:0.40}
+];
+function boxIoU(a,b){
+  const ax2=a.x+a.w, ay2=a.y+a.h, bx2=b.x+b.w, by2=b.y+b.h;
+  const ix1=Math.max(a.x,b.x), iy1=Math.max(a.y,b.y), ix2=Math.min(ax2,bx2), iy2=Math.min(ay2,by2);
+  const iw=Math.max(0,ix2-ix1), ih=Math.max(0,iy2-iy1);
+  const inter=iw*ih, uni=a.w*a.h + b.w*b.h - inter;
+  return uni>0 ? inter/uni : 0;
+}
+function nmsRender(){
+  const thresh = (+document.getElementById('nmsSlider').value)/100;
+  document.getElementById('nmsThreshVal').textContent = thresh.toFixed(2);
+  const sorted = [...nmsBoxes].sort((a,b)=>b.conf-a.conf);
+  const keep = []; const suppressed = new Set();
+  sorted.forEach((box,i)=>{
+    if(suppressed.has(box)) return;
+    keep.push(box);
+    sorted.forEach(other=>{
+      if(other!==box && !suppressed.has(other) && !keep.includes(other)){
+        if(boxIoU(box,other) > thresh) suppressed.add(other);
+      }
+    });
+  });
+  const cv=document.getElementById('nmsCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  sorted.forEach(box=>{
+    const isKept = keep.includes(box);
+    g.setLineDash(isKept ? [] : [5,4]);
+    g.strokeStyle = isKept ? 'rgba(163,230,53,0.95)' : 'rgba(248,113,113,0.55)';
+    g.lineWidth = isKept ? 3 : 1.5;
+    g.strokeRect(box.x, box.y, box.w, box.h);
+    g.setLineDash([]);
+    g.fillStyle = isKept ? 'rgba(163,230,53,0.95)' : 'rgba(248,113,113,0.6)';
+    g.font = '11px monospace';
+    g.fillText(box.conf.toFixed(2), box.x+4, box.y+14);
+  });
+  document.getElementById('nmsOut').innerHTML =
+    'Threshold: <strong style="color:var(--gold)">'+thresh.toFixed(2)+'</strong><br><br>'+
+    'Kept (lime, solid): <strong style="color:var(--lime)">'+keep.map(b=>b.conf.toFixed(2)).join(', ')+'</strong><br>'+
+    'Suppressed (rose, dashed): <strong style="color:var(--rose)">'+(sorted.length-keep.length)+' box(es)</strong><br><br>'+
+    '<span style="color:var(--text3)">Lower the threshold → more boxes get suppressed as "too similar" to a higher-confidence box. Raise it → more near-duplicates survive.</span>';
+}
+
+/* ================= DEMO · IoU / Dice live calculator ================= */
+const gtBox = {x1:50, y1:50, x2:250, y2:200};
+function iouRender(){
+  const px1 = +document.getElementById('iouX1').value, py1 = +document.getElementById('iouY1').value;
+  const px2 = +document.getElementById('iouX2').value, py2 = +document.getElementById('iouY2').value;
+  document.getElementById('iouX1v').textContent=px1; document.getElementById('iouY1v').textContent=py1;
+  document.getElementById('iouX2v').textContent=px2; document.getElementById('iouY2v').textContent=py2;
+  const gtArea = Math.max(0,gtBox.x2-gtBox.x1)*Math.max(0,gtBox.y2-gtBox.y1);
+  const predArea = Math.max(0,px2-px1)*Math.max(0,py2-py1);
+  const ix1=Math.max(gtBox.x1,px1), iy1=Math.max(gtBox.y1,py1);
+  const ix2=Math.min(gtBox.x2,px2), iy2=Math.min(gtBox.y2,py2);
+  const iw=Math.max(0,ix2-ix1), ih=Math.max(0,iy2-iy1);
+  const inter=iw*ih;
+  const union=gtArea+predArea-inter;
+  const iou = union>0 ? inter/union : 0;
+  const dice = (gtArea+predArea)>0 ? (2*inter)/(gtArea+predArea) : 0;
+  const cv=document.getElementById('iouCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const flip = y => cv.height - y;
+  if(iw>0 && ih>0){
+    g.fillStyle='rgba(212,168,83,0.25)';
+    g.fillRect(ix1, flip(iy2), iw, ih);
+  }
+  g.strokeStyle='rgba(163,230,53,0.9)'; g.lineWidth=2;
+  g.strokeRect(gtBox.x1, flip(gtBox.y2), gtBox.x2-gtBox.x1, gtBox.y2-gtBox.y1);
+  g.fillStyle='rgba(163,230,53,0.9)'; g.font='11px monospace'; g.fillText('GT', gtBox.x1+3, flip(gtBox.y2)+12);
+  g.strokeStyle='rgba(248,113,113,0.9)'; g.lineWidth=2;
+  g.strokeRect(Math.min(px1,px2), flip(Math.max(py1,py2)), Math.abs(px2-px1), Math.abs(py2-py1));
+  g.fillStyle='rgba(248,113,113,0.9)'; g.fillText('Pred', Math.min(px1,px2)+3, flip(Math.max(py1,py2))+12);
+  document.getElementById('iouOut').innerHTML =
+    'GT area = <strong>'+gtArea.toFixed(0)+'</strong> &nbsp;|&nbsp; Pred area = <strong>'+predArea.toFixed(0)+'</strong><br>'+
+    'Intersection = <strong>'+inter.toFixed(0)+'</strong> &nbsp;|&nbsp; Union = <strong>'+union.toFixed(0)+'</strong><br><br>'+
+    'IoU = <strong style="color:var(--lime);font-size:16px;">'+iou.toFixed(3)+'</strong><br>'+
+    'Dice = <strong style="color:var(--sky);font-size:16px;">'+dice.toFixed(3)+'</strong><br><br>'+
+    '<span style="color:var(--text3)">Default sliders reproduce the deck\'s worked example exactly: IoU≈0.57, Dice≈0.7272.</span>';
+}
+
+/* ================= DEMO · mAP row toggle ================= */
+let mapRows = [
+  {conf:0.95, tp:true}, {conf:0.88, tp:true}, {conf:0.79, tp:false},
+  {conf:0.71, tp:true}, {conf:0.65, tp:false}, {conf:0.55, tp:false}
+];
+const MAP_GT_TOTAL = 4;
+function mapBuild(){
+  const t = document.getElementById('mapTable');
+  let html = '<thead><tr><th>Rank</th><th>Conf</th><th>TP/FP</th><th>Cum. Precision</th><th>Recall</th></tr></thead><tbody>';
+  let cumTP=0;
+  mapRows.forEach((r,i)=>{
+    if(r.tp) cumTP++;
+    const prec = (cumTP/(i+1)).toFixed(2);
+    const rec = (cumTP/MAP_GT_TOTAL).toFixed(2);
+    html += '<tr style="cursor:pointer" onclick="mapToggle('+i+')"><td>'+(i+1)+'</td><td>'+r.conf.toFixed(2)+'</td>'+
+      '<td style="color:'+(r.tp?'var(--lime)':'var(--rose)')+'">'+(r.tp?'TP':'FP')+'</td>'+
+      '<td>'+prec+'</td><td>'+rec+'</td></tr>';
+  });
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+function mapToggle(i){
+  mapRows[i].tp = !mapRows[i].tp;
+  mapBuild();
+  mapReport();
+}
+function mapReport(){
+  let cumTP=0; const precisions=[]; const recalls=[];
+  mapRows.forEach((r,i)=>{
+    if(r.tp) cumTP++;
+    precisions.push(cumTP/(i+1));
+    recalls.push(cumTP/MAP_GT_TOTAL);
+  });
+  // interpolated precision at recall checkpoints 0.25,0.5,0.75,1.0 (4-point, since GT total=4)
+  const checkpoints = [0.25,0.5,0.75,1.0];
+  const interp = checkpoints.map(r=>{
+    let best=0;
+    recalls.forEach((rc,i)=>{ if(rc>=r) best=Math.max(best,precisions[i]); });
+    return best;
+  });
+  const ap = interp.reduce((a,b)=>a+b,0)/interp.length;
+  document.getElementById('mapOut').innerHTML =
+    'Click any row above to flip TP⇄FP.<br><br>'+
+    'Interpolated precision @ r=[0.25,0.5,0.75,1.0]:<br><strong style="color:var(--teal)">'+interp.map(v=>v.toFixed(2)).join(', ')+'</strong><br><br>'+
+    '4-point AP = <strong style="color:var(--lime);font-size:16px;">'+ap.toFixed(3)+'</strong><br><br>'+
+    '<span style="color:var(--text3)">Flipping an early high-confidence row to FP crashes precision hard — flipping a late low-confidence row barely moves it. That asymmetry is exactly why rank matters so much in AP.</span>';
+}
+
+/* ---------- init all demos ---------- */
+speedRender(); gridBuild(); nmsRender(); iouRender(); mapBuild(); mapReport();
+</script>
+
+</body>
+</html>
