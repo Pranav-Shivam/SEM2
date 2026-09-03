@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Session 14-15 — Object Tracking &amp; Performance Metrics</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px; --radius-lg: 22px; --radius-md: 16px; --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV15'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; min-width:120px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  input[type="number"] { width:70px; background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:13px; border-radius:6px; padding:5px 8px; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:10px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; cursor:pointer; }
+  .mgrid .cell:hover { border-color:var(--gold); }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; text-align:center; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .toggle-row { display:flex; align-items:center; gap:0.6rem; font-family:var(--font-code); font-size:12px; color:var(--text2); }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") { root.setAttribute("data-theme", saved); }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 14-15 — Object Tracking</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Motion &amp; Association</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Motion Detection vs Tracking</a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Tracking-by-Detection</a>
+  <span class="nav-group-label">Optical Flow</span>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Aperture Problem &amp; Corners<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Lucas-Kanade &amp; Pyramids<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Appearance &amp; Probabilistic Tracking</span>
+  <a href="#s5" class="nav-link" data-section="s5">05 · Mean-Shift &amp; Camshift<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Kalman Filters<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s7" class="nav-link" data-section="s7">07 · DNN-Based Trackers</a>
+  <span class="nav-group-label">Applications</span>
+  <a href="#s8" class="nav-link" data-section="s8">08 · Beyond Tracking</a>
+  <span class="nav-group-label">Evaluation Metrics</span>
+  <a href="#s9" class="nav-link" data-section="s9">09 · Confusion Matrix &amp; mAP<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s10" class="nav-link" data-section="s10">10 · ROC Analysis &amp; AUC<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s11" class="nav-link" data-section="s11">11 · Course Recap &amp; Weightage</a>
+  <a href="#s12" class="nav-link" data-section="s12">12 · Exam Quiz (10 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 14-15 · Object Tracking &amp; Metrics</span>
+    <h1>Object Tracking<br><span>Optical Flow · Kalman · Performance Metrics</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">From "where is it in this frame" to "where is it going" — how tracking keeps identity across time using pixel motion, appearance modes, and probabilistic filters, and how the whole course gets scored: mAP, ROC, AUC.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Source</strong>CV14-15.pdf</div>
+      <div class="hero-meta-item"><strong>Prof</strong>BITS WILP Faculty</div>
+      <div class="hero-meta-item"><strong>Layout</strong>38 pages · CV15 + CV16 bundled</div>
+      <div class="hero-meta-item"><strong>Covers</strong>Sessions 15 &amp; 16 combined</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Optical Flow</span>
+      <span class="topic-chip">Lucas-Kanade</span>
+      <span class="topic-chip">Horn-Schunck</span>
+      <span class="topic-chip">Mean-Shift</span>
+      <span class="topic-chip">Camshift</span>
+      <span class="topic-chip">Kalman Filter</span>
+      <span class="topic-chip">DeepSORT</span>
+      <span class="topic-chip">Confusion Matrix</span>
+      <span class="topic-chip">mAP</span>
+      <span class="topic-chip">ROC / AUC</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide — the page-number mapping</h3>
+      <p>The source deck (<code>CV14-15.pdf</code>) bundles the course's <strong>final two lecture decks into one file</strong>: <em>CV 15 — Object Tracking Techniques and Applications</em> (pages 1-28) and <em>CV 16 — Note on Performance Metrics and Course Summary</em> (pages 29-38). Both are covered in full below.</p>
+      <p>This guide re-organizes that content by <em>topic</em> rather than raw page order — the association-then-flow-then-probabilistic tracking lineage gets a clean narrative, followed by the evaluation lineage (confusion matrix → mAP → ROC/AUC). A handful of the deck's slides were pure visual demos or animation-build duplicates with no separately extractable text — those are noted as such rather than invented.</p>
+    </div>
+
+    <!-- ============ SECTION 01 — MOTION DETECTION VS TRACKING ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Motion Detection vs Object Tracking</h2>
+        <span class="src-badge src-slides">CV15 Pages 1-2</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — following an ant, not just spotting one</h3>
+        <p>Object tracking is the process of <strong>locating moving objects in a video over time</strong> — the follow-up problem to detection. Detection finds "what and where" in a single frame; tracking keeps that same object's <em>identity</em> continuous as it moves across many frames, like keeping your finger on a specific ant as it walks across a table rather than just spotting "there is an ant" in one photo. Applications: autonomous vehicles (predicting where a pedestrian will be next), surveillance (following a person across camera frames), and augmented reality (keeping a virtual object glued to a real surface as the camera moves).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Key difference — sensor trigger vs algorithmic identity</h3>
+        <table class="he-table">
+          <thead><tr><th></th><th>Motion Detection</th><th>Object Tracking</th></tr></thead>
+          <tbody>
+            <tr><td>Mechanism</td><td>Sensors (infrared, microwave) or pixel differencing</td><td>Algorithms over a video sequence</td></tr>
+            <tr><td>Answers</td><td>"Something moved" (a trigger)</td><td>"This object is here, moving this way"</td></tr>
+            <tr><td>Identity</td><td>None — no notion of <em>which</em> object</td><td>Maintained across frames</td></tr>
+            <tr><td>Example use</td><td>Auto-doors, security lights</td><td>Traffic camera reporting "car #42, 65 km/h northbound"</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="theory-block">
+        <h3>Two classic camera-based motion cues</h3>
+        <ol class="pipeline">
+          <li><strong>Frame differencing</strong>
+            <p>Subtract the current frame from the previous one, pixel by pixel — large difference = motion. Cheap, but very sensitive to noise and lighting flicker; fails on slow or uniformly-colored objects.</p></li>
+          <li><strong>Background subtraction (GMM)</strong>
+            <p>Model the static background per-pixel as a mixture of Gaussians (allowing for swaying leaves, lighting flicker), then flag any pixel that doesn't fit the model as foreground. More robust than frame differencing.</p></li>
+        </ol>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Motion detection — challenges &amp; gotchas</h4></div>
+        <ul class="exam-list">
+          <li>Both methods share the same weaknesses: noise/lighting changes create false "motion," and a moving camera makes the <em>entire</em> frame appear to change — they assume a mostly-static background.</li>
+          <li>Common mistake: treating "detection" and "tracking" as interchangeable — detection alone re-identifies objects independently every frame with zero identity continuity.</li>
+          <li>"Background subtraction" is a family of techniques (running average, GMM/MoG, adaptive GMM, deep FgSegNet), not one fixed algorithm.</li>
+        </ul>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>GMM background subtraction traces to <strong>Stauffer &amp; Grimson (MIT, 1999)</strong>, "Adaptive background mixture models for real-time tracking" — models each pixel's intensity over time as a mixture of Gaussians. It's a direct ancestor of OpenCV's <code>BackgroundSubtractorMOG2</code>, still used today in traffic-flow monitoring and video surveillance. PTZ/drone cameras can't use naive background subtraction since the background itself shifts every frame — production systems compensate with camera-motion (ego-motion) registration first. <strong>Kwak, Lim, Nam, Han &amp; Han (ICCV 2011)</strong> generalize the basic GMM model further with belief propagation and Bayesian filtering, handling the harder case where the camera itself moves slightly or the background's appearance drifts over time.</p>
+        <p><cite>Stauffer, Grimson, "Adaptive background mixture models for real-time tracking," CVPR 1999 · Kwak, Lim, Nam, Han, Han, "Generalized background subtraction based on hybrid inference by belief propagation and Bayesian filtering," ICCV 2011</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 — TRACKING BY DETECTION ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Tracking-by-Detection &amp; Its Challenges</h2>
+        <span class="src-badge src-slides">CV15 Page 3</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — detect every frame, then link the dots</h3>
+        <p>The dominant, most intuitive tracking strategy: run an <strong>object detector</strong> (YOLO, SSD) independently on every single frame, then solve a matching problem — "which detection in frame 2 corresponds to which detection in frame 1?" — using a similarity metric (position/size closeness, visual similarity, or both). Like a security guard glancing at 30 photographs taken a second apart, circling every person in each, then figuring out which circle in photo 5 is the same person circled in photo 4.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Pipeline</h3>
+        <ol class="pipeline">
+          <li><strong>Detect</strong>
+            <p>Run a detector (YOLO / SSD) on every frame independently — no memory of previous frames yet.</p></li>
+          <li><strong>Predict</strong>
+            <p>Estimate where each existing track should be this frame (constant-velocity motion model, or a Kalman filter — Section 06).</p></li>
+          <li><strong>Match</strong>
+            <p>Solve the association problem between predicted track positions and new detections, typically via a similarity metric and bipartite matching (the Hungarian algorithm).</p></li>
+          <li><strong>Update / spawn / drop</strong>
+            <p>Matched tracks get their state updated; unmatched detections spawn new tracks; unmatched tracks age out (or wait, to survive brief occlusion).</p></li>
+        </ol>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>The three classic failure modes</h4></div>
+        <ul class="exam-list">
+          <li><strong>Occlusion</strong> — an object briefly hidden behind a pole isn't detected for a few frames, breaking the chain; the tracker must "remember" and re-associate on reappearance.</li>
+          <li><strong>Fast-moving objects</strong> — large frame-to-frame displacement defeats a naive "nearest position" similarity metric.</li>
+          <li><strong>Distractors</strong> — rain, snow, camera shake, illumination changes create spurious detections/movements that confuse both detection and linking.</li>
+        </ul>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>SORT</strong> (Simple Online and Realtime Tracking, 2016) links detections purely by motion — a Kalman filter predicts the next position, boxes matched by IoU — fast, but struggles badly with occlusion since a motion-only metric has nothing to match against once a detection vanishes. <strong>DeepSORT</strong> (2017) adds a learned appearance embedding (CNN re-identification features) as a second similarity cue, substantially cutting identity switches during brief occlusions at some cost to speed. Both remain the reference pipeline for modern multi-object tracking (MOT): detect → predict → match (Hungarian algorithm) → update.</p>
+        <p><cite>Bewley et al., "Simple Online and Realtime Tracking," ICIP 2016 · Wojke, Bewley, Paulus, "Simple Online and Realtime Tracking with a Deep Association Metric," ICIP 2017</cite></p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — a different, complementary idea is coming</div>
+        <p>Tracking-by-detection works at the level of whole boxes. <strong>Optical flow</strong>, next, is a different idea entirely: instead of detecting a whole object and matching boxes, it looks at raw pixel-level motion between two consecutive frames — "how did each little patch of the image move?" That raw motion feeds motion detection, tracking, and scene understanding alike.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 — APERTURE PROBLEM & CORNERS (INTERACTIVE) ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Optical Flow &amp; the Aperture Problem</h2>
+        <span class="src-badge src-slides">CV15 Pages 9-13</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — a vector field of "where did this brightness go?"</h3>
+        <p>Optical flow is the <strong>apparent motion of brightness patterns</strong> in the image — a vector field: at every pixel, an arrow showing how far and in what direction that patch's brightness appears to have moved. The word "apparent" matters: <strong>apparent motion can be caused by lighting changes without any actual motion</strong> (a moving shadow, a rotating barber pole showing only vertical apparent motion) — optical flow measures brightness motion, not guaranteed physical motion.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Three named methods — global, local, dense</h3>
+        <p>The deck names three classical optical-flow algorithms and explicitly frames them by scope, a frequently-tested comparison:</p>
+        <table class="he-table">
+          <thead><tr><th>Method</th><th>Scope</th><th>Idea</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Horn-Schunck</td><td>Global</td><td>Assumes motion changes smoothly across the <em>whole</em> image — solves for flow everywhere via a global smoothness constraint. Good at complete, smooth fields; can blur across true motion boundaries.</td></tr>
+            <tr><td style="color:var(--teal)">Lucas-Kanade</td><td>Local</td><td>Assumes motion is constant within a small window (Section 04) — fast, great for tracking distinctive corner points; doesn't naturally give flow everywhere.</td></tr>
+            <tr><td style="color:var(--sky)">Farneback</td><td>Dense</td><td>Estimates a flow vector for <em>every</em> pixel using local polynomial approximations — OpenCV's <code>cv2.calcOpticalFlowFarneback</code>.</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text2);">These aren't really competitors — Bruhn, Weickert &amp; Schnörr's "Lucas/Kanade Meets Horn/Schunck" (2005) shows combining the local method's robustness with the global method's density can outperform either alone. They're different points on the same local-vs-global, sparse-vs-dense spectrum.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Brightness constancy → the optical flow constraint equation</div>
+<span class="formula-line"><span class="f-dim">Brightness of a tracked point stays constant as it moves by (u,v) over δt=1:</span></span>
+<span class="formula-line">  <span class="f-gold">I(x, y, t−1) = I(x+u, y+v, t)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Taylor-linearize the right side, cancel I(x,y,t−1) from both sides:</span></span>
+<span class="formula-line">  <span class="f-teal">I<sub>x</sub>u + I<sub>y</sub>v + I<sub>t</sub> ≈ 0</span>   <span class="f-dim">≡  ∇I·[u v]<sup>T</sup> + I<sub>t</sub> = 0</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Assumptions baked in: brightness constancy, small motion (justifies Taylor expansion), spatial coherence.</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The aperture problem — one equation, two unknowns</h3>
+        <p>The constraint equation is a single scalar equation in two unknowns (u, v) — underdetermined at one pixel, like solving "3 = a + b" for both a and b: infinitely many solutions lie along a line in (u,v) space. Viewing a moving edge through a tiny peephole, you can tell how fast it slides <em>perpendicular</em> to itself, but not whether it's also sliding <em>along</em> its own length — that ambiguity is the aperture problem, classically demonstrated by the barber-pole illusion.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Escaping the aperture problem — classify the neighborhood first</h3>
+        <p>Whether a point is even trackable depends on its local structure. Build the 2nd-moment matrix M = Σ[[I<sub>x</sub>², I<sub>x</sub>I<sub>y</sub>],[I<sub>x</sub>I<sub>y</sub>, I<sub>y</sub>²]] over a small window (same matrix used by the Harris corner detector) and look at its eigenvalues λ₁, λ₂:</p>
+        <table class="he-table">
+          <thead><tr><th>Eigenvalues</th><th>Local structure</th><th>Trackable?</th></tr></thead>
+          <tbody>
+            <tr><td>Both large, comparable</td><td style="color:var(--lime)">Corner</td><td>Yes — motion fully determined in both directions</td></tr>
+            <tr><td>One large, one small</td><td style="color:var(--gold)">Edge</td><td>Only perpendicular to the edge (aperture problem)</td></tr>
+            <tr><td>Both small</td><td style="color:var(--text3)">Flat region</td><td>No — no gradient information at all</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text2);">Shi-Tomasi (1994) criterion for a "good feature to track": <strong>min(λ₁, λ₂)</strong> is large — exactly what OpenCV's <code>cv2.goodFeaturesToTrack</code> computes.</p>
+      </div>
+
+      <div class="interactive-demo" id="eigDemo">
+        <h4>⊞ Interactive · Click a Patch — Corner, Edge, or Flat?</h4>
+        <div class="demo-sub">A 5×5 grid of image patches, each with its own (deterministic, seeded) eigenvalue pair. Click any cell to see λ₁, λ₂ and its classification — and what that means for whether local motion is fully recoverable.</div>
+        <div class="demo-canvas-wrap">
+          <div class="mgrid" id="eigGrid" style="grid-template-columns:repeat(5,38px);"></div>
+          <div style="flex:1;min-width:240px;"><div class="demo-output" id="eigOut">Click a patch to classify it.</div></div>
+        </div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>Shi &amp; Tomasi, "Good Features to Track," CVPR 1994</strong> reframed the Harris corner detector's response function directly in terms of eigenvalues, showing min(λ₁,λ₂) is a more reliable trackability criterion than Harris's original combined score. This single idea underlies the "detect corners, then track them" pattern used throughout classical computer vision, feeding directly into the Lucas-Kanade / KLT tracker (Section 04).</p>
+        <p><cite>Shi, Tomasi, "Good Features to Track," CVPR 1994</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 — LUCAS-KANADE & PYRAMIDS (INTERACTIVE) ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Lucas-Kanade — Windowed Least Squares &amp; Pyramids</h2>
+        <span class="src-badge src-slides">CV15 Pages 4, 11-16</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — borrow equations from your neighbors</h3>
+        <p>Lucas &amp; Kanade's fix for the aperture problem: assume a small window of neighboring pixels shares the <em>same</em> (u,v) — the spatial coherence assumption. A 5×5 window gives 25 stacked copies of the brightness-constancy equation, all sharing two unknowns: an overconstrained system solvable by least squares.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Overconstrained system → least-squares solution</div>
+<span class="formula-line"><span class="f-dim">Stack the constraint for every pixel p<sub>i</sub> in a K×K window:</span>  <span class="f-gold">A d = b</span></span>
+<span class="formula-line">  <span class="f-teal">A = [I<sub>x</sub>(p<sub>i</sub>), I<sub>y</sub>(p<sub>i</sub>)]</span>  (K²×2)   <span class="f-teal">d = [u, v]<sup>T</sup></span>   <span class="f-teal">b = −I<sub>t</sub>(p<sub>i</sub>)</span>  (K²×1)</span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Least-squares solution (this IS the 2nd-moment matrix M from Section 03):</span></span>
+<span class="formula-line">  <span class="f-lime">d = (A<sup>T</sup>A)<sup>−1</sup> A<sup>T</sup>b</span>   <span class="f-dim">— solvable exactly when A<sup>T</sup>A is well-conditioned, i.e. at a corner.</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Pyramidal (coarse-to-fine) Lucas-Kanade</h3>
+        <p>LK's "small motion" assumption usually breaks — real motion is often several pixels, not a fraction of one. Fix: build a Gaussian pyramid of both frames, run LK at the <strong>coarsest</strong> level first (where the same physical motion looks smaller), scale the estimate ×2 as a warm-start for the next finer level, and repeat down to full resolution.</p>
+      </div>
+
+      <div class="interactive-demo" id="pyrDemo">
+        <h4>⊞ Interactive · Pyramidal LK Convergence</h4>
+        <div class="demo-sub">A true 10px motion at full resolution looks like only 1.25px at the coarsest pyramid level. Step through the levels and watch the estimate refine: 1.25 → 2.5 → 5 → 10.</div>
+        <div class="slider-row">
+          <span class="slider-label">Pyramid level</span>
+          <input type="range" id="pyrSlider" min="0" max="3" value="0" oninput="pyrRender()">
+          <span class="slider-val" id="pyrLevelVal">3 (coarsest)</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="pyrCanvas" width="320" height="140"></canvas>
+          <div style="flex:1;min-width:240px;"><div class="demo-output" id="pyrOut"></div></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Lucas-Kanade — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Three assumptions to name on demand: brightness constancy, small motion, spatial coherence.</li>
+          <li>Why LK needs a window at all: 1 equation / 2 unknowns per pixel (aperture problem) → K² equations / 2 unknowns per window (solvable).</li>
+          <li>Pyramidal LK doesn't change the per-level math — it only changes what counts as "small motion" by working at a downsampled scale first.</li>
+        </ul>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Lucas &amp; Kanade, IJCAI 1981, remains the basis of OpenCV's <code>cv2.calcOpticalFlowPyrLK</code> (pyramidal formulation from Bouguet's tech report) — still the standard sparse, feature-point tracker used in visual SLAM and AR today. <strong>FlowNet (2015)</strong> was the first deep-learned dense optical flow network, trained on the synthetic "Flying Chairs" dataset since real dense-flow ground truth is nearly impossible to collect; successors PWC-Net and RAFT now dominate flow benchmarks, but the classical LK pyramid is still preferred when speed and interpretability matter more than raw accuracy.</p>
+        <p><cite>Lucas, Kanade, "An iterative image registration technique...," IJCAI 1981 · Bouguet, "Pyramidal Implementation of the Lucas Kanade Feature Tracker," Intel Tech Report</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 — MEAN-SHIFT & CAMSHIFT (INTERACTIVE) ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Mean-Shift &amp; Camshift Tracking</h2>
+        <span class="src-badge src-slides">CV15 Pages 7, 17-22</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — feel around for the warmest spot</h3>
+        <p>Mean-shift gives up on a rigid motion model and tracks <strong>appearance</strong> instead — typically a color histogram. It's a mode-seeking algorithm: like feeling around in the dark for the warmest spot on a table and always taking a small step in the warmer direction until you settle on the hottest point. Non-parametric — no assumed distribution shape — and works in any feature space (color, texture, scale), which is what makes it reusable well beyond tracking.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The mean-shift procedure</h3>
+        <ol class="pipeline">
+          <li><strong>Place a window</strong>
+            <p>Start the search window at the object's last known location.</p></li>
+          <li><strong>Compute the center of mass</strong>
+            <p>Weight every pixel inside the window by how well it matches the target's color histogram (via back-projection); compute the weighted center of mass.</p></li>
+          <li><strong>Form the mean-shift vector</strong>
+            <p>vector = center-of-mass − window-center. This always points toward denser data — an estimate of the local density gradient (Fukunaga-Hostetler, 1975).</p></li>
+          <li><strong>Shift the window</strong>
+            <p>Move the window to the center of mass.</p></li>
+          <li><strong>Repeat until convergence</strong>
+            <p>Iterate 2-4 until the vector shrinks to ~zero — that's the mode (the best match for this frame).</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Color histogram quantization &amp; illumination invariance</div>
+<span class="formula-line"><span class="f-dim">Joint histogram (correlated channels), n-bit quantization per channel:</span>  <span class="f-gold">(2<sup>8−n</sup>)<sup>3</sup> bins</span>  <span class="f-dim">(4-bit → 4096 bins)</span></span>
+<span class="formula-line"><span class="f-dim">Marginal histogram (3 separate 1-D):</span>  <span class="f-teal">3 × 2<sup>8−n</sup> bins</span>  <span class="f-dim">(4-bit → 48 bins — compact, less discriminative)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Normalized (chromaticity) color — illumination-invariant:</span>  <span class="f-lime">(r′,g′,b′) = (r,g,b) / (r+g+b)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Localization similarity — Bhattacharyya coefficient between target (q̂) &amp; candidate (p̂) histograms:</span></span>
+<span class="formula-line">  <span class="f-violet">ρ̂(y) = Σ<sub>u</sub> √(p̂<sub>u</sub>(y) · q̂<sub>u</sub>)</span>   <span class="f-dim">— higher ρ̂ = better color match; maximized over y to relocalize each frame.</span></span>
+      </div>
+
+      <div class="interactive-demo" id="msDemo">
+        <h4>⊞ Interactive · Mean-Shift Mode-Seeking</h4>
+        <div class="demo-sub">A cluster of "colored" points simulates a density blob. Click anywhere to drop the search window, then hit Step to watch it climb toward the density peak — repeat until the shift vector collapses to ~zero.</div>
+        <div class="demo-canvas-wrap">
+          <canvas id="msCanvas" width="300" height="220"></canvas>
+          <div style="flex:1;min-width:220px;">
+            <div class="demo-output" id="msOut">Click the canvas to place a search window.</div>
+            <button class="demo-btn" onclick="msStep()">Step</button>
+            <button class="demo-btn" onclick="msReset()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-block">
+        <h3>Adaptive scale &amp; Camshift</h3>
+        <p>Plain mean-shift uses a fixed window size; to handle an object growing/shrinking, run localization at ~3 kernel sizes (h, smaller, larger) and keep whichever gives the best similarity score. <strong>Camshift</strong> ("Continuously Adaptive Mean-Shift") bakes this in — it lets the window resize and rotate as the tracked face gets closer/farther or tilts, rather than staying a fixed box. It's the algorithm behind OpenCV's classic face-tracking demo.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Mean-shift — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Robust to partial occlusion and motion blur — fails on drastic appearance change (the model never updates what "the object" looks like).</li>
+          <li>Reported results (Comaniciu, Ramesh, Meer 2003): 16×16×16 quantized RGB, ~4 mean-shift iterations per frame to converge.</li>
+          <li>Common mistake: confusing mean-shift (appearance/histogram mode-seeking) with Lucas-Kanade (pixel-gradient motion) — they solve different problems and can be combined.</li>
+        </ul>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Camshift was introduced by <strong>Gary Bradski at Intel, 1998</strong> ("Computer Vision Face Tracking for Use in a Perceptual User Interface") — one of OpenCV's earliest, most iconic demos precisely because it's fast, needs no training, and ran in real time on modest late-90s hardware. It's since been superseded in production by deep-learning re-identification trackers far more robust to occlusion and clutter, but remains a staple teaching example for exactly that reason.</p>
+        <p><cite>Bradski, "Computer Vision Face Tracking for Use in a Perceptual User Interface," Intel Technology Journal, 1998 · Comaniciu, Ramesh, Meer, "Kernel-Based Object Tracking," IEEE TPAMI 2003</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 — KALMAN FILTERS (INTERACTIVE) ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Kalman Filters — Predict / Correct</h2>
+        <span class="src-badge src-slides">CV15 Pages 23-27</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — trust, but verify, every single frame</h3>
+        <p>A Kalman filter is a recursive estimator: it predicts where an object should be next using a motion model, then corrects that prediction using a noisy measurement — weighting each source by how much it trusts it. Classic scenarios: a bird flitting through a forest, a radar tracking missile blips, or predicting a planet's next position. 1D constant-velocity model: <code>x<sub>k</sub> = x<sub>k−1</sub> + ẋ<sub>k−1</sub>·Δt + noise</code>.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">The 5-step predict/correct cycle — memorize this order</div>
+<span class="formula-line"><span class="f-gold">1. Predict state:</span>       x<sub>p</sub> = F·x<sub>k−1</sub>   <span class="f-dim">(+ B·u, control term, often dropped)</span></span>
+<span class="formula-line"><span class="f-gold">2. Predict covariance:</span>  P<sub>p</sub> = F·P<sub>k−1</sub>·F<sup>T</sup> + Q</span>
+<span class="formula-line"><span class="f-teal">3. Innovation:</span>          y = z<sub>k</sub> − H·x<sub>p</sub>   <span class="f-dim">(measurement minus prediction, in measurement space)</span></span>
+<span class="formula-line"><span class="f-teal">4. Kalman gain:</span>         K = P<sub>p</sub>·H<sup>T</sup>·(H·P<sub>p</sub>·H<sup>T</sup> + R)<sup>−1</sup></span>
+<span class="formula-line"><span class="f-lime">5. Update:</span>              x<sub>k</sub> = x<sub>p</sub> + K·(z<sub>k</sub> − H·x<sub>p</sub>)   ;   P<sub>k</sub> = P<sub>p</sub> − K·H·P<sub>p</sub></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Symbol table</h3>
+        <table class="he-table">
+          <thead><tr><th>Symbol</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>x, P</td><td>State estimate, error covariance</td></tr>
+            <tr><td>F</td><td>State transition / motion model</td></tr>
+            <tr><td>H</td><td>Measurement matrix (state → measurement space)</td></tr>
+            <tr><td>Q, R</td><td>Process noise, measurement noise (covariances)</td></tr>
+            <tr><td>K</td><td>Kalman gain — how much to trust the new measurement</td></tr>
+            <tr><td>z</td><td>Measurement; subscript p = predicted, k = corrected</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="interactive-demo" id="kfDemo">
+        <h4>⊞ Interactive · Step Through Predict/Correct</h4>
+        <div class="demo-sub">A true path (lime), noisy measurements (rose dots), and the Kalman estimate (gold) building up one step at a time. Higher R = trust the motion model more; higher Q = trust new measurements more.</div>
+        <div class="slider-row"><span class="slider-label">Process noise Q</span><input type="range" id="kfQ" min="1" max="100" value="10" oninput="kfParamChange()"><span class="slider-val" id="kfQv">0.10</span></div>
+        <div class="slider-row"><span class="slider-label">Measurement noise R</span><input type="range" id="kfR" min="1" max="200" value="80" oninput="kfParamChange()"><span class="slider-val" id="kfRv">8.0</span></div>
+        <div class="demo-canvas-wrap">
+          <canvas id="kfCanvas" width="320" height="180"></canvas>
+          <div style="flex:1;min-width:240px;">
+            <div class="demo-output" id="kfOut"></div>
+            <button class="demo-btn" onclick="kfStep()">Next measurement</button>
+            <button class="demo-btn" onclick="kfReset()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Kalman gain — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>R large (noisy sensor) → K shrinks → filter trusts the <strong>prediction</strong> more. Q large (unpredictable motion) → K grows → filter trusts the new <strong>measurement</strong> more.</li>
+          <li>Order matters: predict state → predict covariance → innovation → gain → update. A common exam trap swaps steps 1 and 2.</li>
+          <li>Plain Kalman filters assume linear motion + Gaussian noise — nonlinear cases need the Extended or Unscented Kalman Filter.</li>
+        </ul>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Rudolf Kálmán published the filter in 1960; it flew on the <strong>Apollo Guidance Computer</strong> (championed by Stanley Schmidt at NASA Ames) to fuse noisy sensor readings into a real-time spacecraft trajectory estimate — one of the filter's first and most famous production deployments. Today it's the default state estimator wherever you have a predictable motion model and noisy sensors: GPS navigation, radar tracking, and — directly relevant here — as the motion-prediction core inside SORT and DeepSORT (Section 07).</p>
+        <p><cite>Kálmán, "A New Approach to Linear Filtering and Prediction Problems," Journal of Basic Engineering, 1960</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 — DNN-BASED TRACKERS ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">DNN-Based Trackers</h2>
+        <span class="src-badge src-slides">CV15 Pages 27-28</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Three modern approaches — and why they're hybrids, not replacements</h3>
+        <p><strong>DeepSORT</strong> extends SORT with a learned appearance re-identification embedding, giving it a second similarity cue beyond IoU/motion — but it still runs a Kalman filter internally for motion prediction, so it's a hybrid, not a wholesale replacement of the classical pipeline. <strong>FairMOT</strong> goes further, using a single network (CenterNet-based) to jointly produce detections and re-ID embeddings in one forward pass, rather than running a separate detector and a separate re-ID network. <strong>Siamese trackers</strong> (SiamFC, SiamRPN) learn a general patch-similarity function offline, then track online purely by searching each new frame for the best-matching patch to the target's first appearance.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Traditional vs DNN-based trackers</h3>
+        <table class="he-table">
+          <thead><tr><th></th><th>Traditional (Mean-Shift, KLT)</th><th>DNN-based (DeepSORT, Siamese)</th></tr></thead>
+          <tbody>
+            <tr><td>Features</td><td>Handcrafted (color histogram, gradients)</td><td>Learned (CNN embeddings)</td></tr>
+            <tr><td>Occlusion handling</td><td>Poor — no memory of appearance change</td><td>Good — re-ID embedding survives brief occlusion</td></tr>
+            <tr><td>Speed / hardware</td><td>Fast, CPU-friendly</td><td>Slower, typically needs a GPU</td></tr>
+            <tr><td>Training</td><td>None required</td><td>Requires labeled tracking/re-ID data</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>DeepSORT (Wojke, Bewley, Paulus, ICIP 2017) is the workhorse baseline in most modern multi-object-tracking pipelines specifically because it's a minimal, well-understood addition to SORT rather than a ground-up redesign — a good illustration of how production CV systems tend to evolve incrementally, layering a learned component onto a proven classical core (a Kalman filter) rather than discarding it.</p>
+        <p><cite>Wojke, Bewley, Paulus, "Simple Online and Realtime Tracking with a Deep Association Metric," ICIP 2017</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 — APPLICATIONS BEYOND TRACKING ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Applications Beyond Tracking</h2>
+        <span class="src-badge src-slides">CV15 Pages 4-8</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Motion feeds more than tracking</h3>
+        <p>Once you can estimate motion, several other applications fall out for free: <strong>video quality</strong> (motion stabilization, multi-frame super-resolution), <strong>motion-based segmentation</strong> (group pixels that move together), and <strong>event/activity recognition</strong> (what's happening, not just what's there). A video is really a function of space <em>and</em> time, (x, y, t) — every technique on this page is a different way of analyzing how that function changes along the time axis.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Visual SLAM &amp; multi-frame super-resolution</h3>
+        <p><strong>Visual SLAM</strong> (Simultaneous Localization And Mapping) solves a chicken-and-egg problem with only a camera: track visual features frame-to-frame to estimate how the camera moved, while simultaneously using those same points to build a 3D map — better mapping helps localization and vice versa. The deck's demo is credited to <strong>Jean-Yves Bouguet</strong> (Caltech Vision Lab). <strong>Multi-frame super-resolution</strong> combines several slightly-shifted, low-resolution frames of the same scene into one sharper image via a 4-step pipeline: <strong>register</strong> (find pixel correspondences) → <strong>warp</strong> (align to one reference frame) → <strong>fuse</strong> (combine) → <strong>deblur</strong> (optional sharpen). Each low-res frame contributes a slightly different sub-pixel sample of the true scene.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Motion segmentation, 3D localization, body parts &amp; activity recognition</h3>
+        <p><strong>Motion segmentation</strong> splits a video into groups of pixels that move coherently — the car's pixels form one group, a pedestrian's another; Pundlik &amp; Birchfield's "Motion Segmentation at Any Speed" (BMVC 2006) specifically handles objects moving at very different speeds in the same scene. <strong>Joint tracking + 3D localization</strong> (Choi &amp; Savarese) upgrades a 2D box on screen to an estimated real-world position from a single, minimally-calibrated camera, solving tracking and 3D placement together since each helps disambiguate the other. <strong>Body-part tracking</strong> follows the articulated skeleton (head, torso, limbs) using a coarse-to-fine cascade — cheap detectors first narrow the search, expensive ones refine it, the same philosophy behind the Viola-Jones face detector and modern pose networks. <strong>Activity recognition</strong> represents a video clip as a "bag" of recurring motion-and-appearance patterns and can discover action categories (walking, running) without hand-labeled examples; <strong>group activity recognition</strong> (Choi &amp; Savarese) goes further, labeling what a whole cluster of people is doing together using a short activity-label vocabulary — <strong>X</strong>=Crossing, <strong>S</strong>=Waiting, <strong>Q</strong>=Queuing, <strong>W</strong>=Walking, <strong>T</strong>=Talking, <strong>D</strong>=Dancing — e.g. a group's label sequence might read "Crossing – Talking – Queuing – Dancing – jogging" across a clip.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>SIFT-based object tracking</h3>
+        <p>For tracking a <strong>flat/planar object</strong> (a book cover, a poster) as it moves, rotates, or is seen from a new angle, SIFT (Scale Invariant Feature Transform) keypoints — distinctive points that survive scale and rotation change — get re-detected and matched frame to frame. Del Bimbo &amp; Pernici's "Object Tracking by Oversampling Local Features" (TPAMI 2014, the "ALIEN" project) collects many overlapping keypoint descriptors over time rather than relying on one snapshot, then combines matches via a RANSAC voting scheme for robustness — like recognizing a landmark from many previously-seen angles rather than just one reference photo.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Multi-frame super-resolution traces to Irani &amp; Peleg (1990) and was made practical for real video by Farsiu, Robinson, Elad &amp; Milanfar (2004) — the same underlying idea behind Google's "Super Res Zoom" on Pixel phones, which fuses natural hand-tremor shifts between burst shots. It cannot invent detail that was never captured across any frame, despite the "enhance and zoom into the reflection" trope. Cascaded pose estimation (Sapp, Toshev, Taskar, ECCV 2010) prefigures the coarse-to-fine strategies in OpenPose and stacked-hourglass networks; unsupervised activity recognition (Niebles, Wang, Fei-Fei, BMVC 2006) borrowed topic-modeling techniques (pLSA/LDA) straight from NLP, treating motion patterns as "visual words." Bouguet later led computer vision at Magic Leap, working on visual-inertial odometry — a direct commercial descendant of visual SLAM now powering AR headsets.</p>
+        <p><cite>Irani, Peleg, "Super Resolution From Image Sequences," ICPR 1990 · Sapp, Toshev, Taskar, "Cascaded Models for Articulated Pose Estimation," ECCV 2010 · Niebles, Wang, Fei-Fei, "Unsupervised Learning of Human Action Categories," BMVC 2006 · Pundlik, Birchfield, "Motion Segmentation at Any Speed," BMVC 2006 · Choi, Savarese, "A Unified Framework for Multi-Target Tracking and Collective Activity Recognition," ECCV 2012 · Del Bimbo, Pernici, "Object Tracking by Oversampling Local Features," IEEE TPAMI 2014</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 — CONFUSION MATRIX & mAP (INTERACTIVE) ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Confusion Matrix &amp; mAP — Worked Setup</h2>
+        <span class="src-badge src-slides">CV16 Pages 29-34</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The recap — confusion matrix, precision, recall, IoU</h3>
+        <p>Every detection scoring pipeline starts from the confusion matrix: TP, FP, FN, TN. <strong>Precision</strong> = TP/(TP+FP) — "of what I retrieved, how much was relevant." <strong>Recall</strong> = TP/(TP+FN) — "of what was relevant, how much did I retrieve." A box counts as a match only if <strong>IoU ≥ 0.5</strong> (the PASCAL VOC convention) — COCO instead averages over IoU thresholds 0.5 to 0.95.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The deck's mAP setup</h3>
+        <p>The deck's worked example uses <strong>24 ROI proposals against 15 ground-truth objects</strong>. Its per-row TP/FP table was rendered as an image in the source slide, not machine-readable text — so rather than invent specific numbers, here is the exact methodology it applies (matching Section 08 of the previous session's detection guide):</p>
+        <ol class="step-list">
+          <li><p>Sort all detections by confidence, descending.</p></li>
+          <li><p>Walk down the list; for each detection, greedily match it to the highest-IoU unclaimed ground-truth box if IoU ≥ 0.5.</p></li>
+          <li><p>A detection matching an <em>already-claimed</em> ground-truth box (a duplicate) is scored FP, even if its own IoU clears the threshold.</p></li>
+          <li><p>At each rank, compute cumulative precision = TP/(TP+FP) and recall = TP/(total GT).</p></li>
+          <li><p>Interpolate the precision-recall curve and average it into one Average Precision number — 11-point interpolation (VOC2007) or all-point interpolation (VOC2010+, COCO).</p></li>
+        </ol>
+      </div>
+
+      <div class="interactive-demo" id="tpfpDemo">
+        <h4>⊞ Interactive · Toggle TP/FP, Watch AP Recompute</h4>
+        <div class="demo-sub">A smaller illustrative example (8 ranked detections, 5 ground-truth objects) applying the exact methodology above. Click any row to flip TP⇄FP — cumulative precision/recall and interpolated AP update live.</div>
+        <div class="demo-canvas-wrap">
+          <div style="flex:1;min-width:260px;">
+            <table class="he-table" id="tpfpTable"></table>
+          </div>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="tpfpOut"></div></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>mAP — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Remember the duplicate-detection rule — only the first (highest-confidence) match to a GT box counts as TP; later matches to the same box are FP.</li>
+          <li>COCO's lower-looking AP numbers vs VOC's mAP reflect a stricter IoU-averaging convention, not a worse model.</li>
+          <li>mAP = mean of per-class AP — "m" is doing real work; a single-class AP alone isn't mAP.</li>
+        </ul>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>The 11-point vs all-point interpolation distinction matters historically: PASCAL VOC used 11-point interpolation through 2007, then switched to all-point (every unique recall value) from VOC2010 onward for a more exact area-under-curve estimate — COCO's evaluation protocol inherits the all-point convention, plus its signature IoU-threshold averaging.</p>
+        <p><cite>Everingham et al., "The PASCAL Visual Object Classes Challenge: A Retrospective," IJCV 2015</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — ROC ANALYSIS & AUC (INTERACTIVE) ============ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">ROC Analysis &amp; AUC</h2>
+        <span class="src-badge src-slides">CV16 Pages 34-37</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — a curve, not a single number</h3>
+        <p>A ROC (Receiver Operating Characteristic) curve plots <strong>True Positive Rate</strong> against <strong>False Positive Rate</strong> as the decision threshold sweeps from strict to lenient — showing the full trade-off a single accuracy number hides. The diagonal (TPR = FPR at every threshold) is the <strong>random-guess baseline</strong>: a coin flip.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">TPR / FPR and the landmark points</div>
+<span class="formula-line"><span class="f-gold">TPR (y-axis)</span> = TP / (TP+FN) = TP / P   <span class="f-dim">— fraction of actual positives caught</span></span>
+<span class="formula-line"><span class="f-rose">FPR (x-axis)</span> = FP / (FP+TN) = FP / N   <span class="f-dim">— fraction of actual negatives wrongly flagged</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line">(0,0) = <span class="f-dim">never predicts positive</span> &nbsp;·&nbsp; (1,1) = <span class="f-dim">always predicts positive</span> &nbsp;·&nbsp; (0,1) = <span class="f-lime">perfect classifier</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Reading the curve — the northwest rule</h3>
+        <p>Point A is better than point B if A sits up-and-to-the-left of B (higher TPR and/or lower FPR) — the "northwest rule." Classifiers operating near the x-axis are <strong>conservative</strong> (need strong evidence, few false positives, but also catch fewer true positives); near the top-right they're <strong>liberal</strong> (weak evidence is enough, catch most true positives, but at the cost of more false positives). A <strong>discrete</strong> classifier (a decision tree) yields a single ROC point; a <strong>scoring</strong> classifier (Naive Bayes, a neural net) sweeps a threshold to trace out a full curve.</p>
+      </div>
+
+      <div class="interactive-demo" id="rocDemo">
+        <h4>⊞ Interactive · Build the ROC Curve, One Instance at a Time</h4>
+        <div class="demo-sub">12 instances, pre-sorted by score descending. Step through them one at a time — positives push the curve up, negatives push it right. Watch the running AUC estimate converge.</div>
+        <div class="demo-canvas-wrap">
+          <canvas id="rocCanvas" width="240" height="240"></canvas>
+          <div style="flex:1;min-width:240px;">
+            <div class="demo-output" id="rocOut"></div>
+            <button class="demo-btn" onclick="rocStep()">Next instance</button>
+            <button class="demo-btn" onclick="rocReset()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="theory-block">
+        <h3>The linear-scan algorithm behind the curve</h3>
+        <p>Sort all instances by score, descending. Walk down the list once: on a true positive, step up (increment TP); on a true negative, step right (increment FP); plot (FP/N, TP/P) after each step. This exploits the fact that the curve is monotonic in threshold, giving an O(n log n) algorithm (dominated by the sort) instead of re-evaluating the whole dataset at every possible threshold.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — AUC as a single number</div>
+        <p><strong>AUC</strong> (Area Under the Curve) equals the probability that the classifier ranks a randomly chosen positive instance above a randomly chosen negative one — the Mann-Whitney U statistic in disguise (Hanley &amp; McNeil, 1982). Bigger AUC = better ranking ability, computable from the same linear scan via trapezoid-area accumulation, no separate pass required.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Nearly all of this ROC material follows Tom Fawcett's widely-cited tutorial, "An Introduction to ROC Analysis" (2006) — still the standard reference for practitioners. ROC analysis originated in WWII signal-detection theory (distinguishing radar echoes from noise) and was adopted by medicine (diagnostic test evaluation) well before machine learning; the AUC-as-ranking-probability interpretation is what makes it the metric of choice whenever class imbalance makes raw accuracy misleading — unlike accuracy, ROC/AUC don't change if the ratio of positives to negatives shifts.</p>
+        <p><cite>Fawcett, "An Introduction to ROC Analysis," Pattern Recognition Letters, 2006 · Hanley, McNeil, "The Meaning and Use of the Area under a ROC Curve," Radiology, 1982</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 11 — COURSE RECAP ============ -->
+    <section class="section" id="s11">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Course Recap &amp; Exam Weightage</h2>
+        <span class="src-badge src-slides">CV16 Pages 29, 37-38</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The course arc, in one line</h3>
+        <p>Single-frame detection (R-CNN family, YOLO — the previous session) → keeping identity across time (tracking-by-detection, optical flow, mean-shift, Kalman filters, DNN trackers — this session) → how we actually score all of it (IoU, Dice, precision/recall, mAP, ROC/AUC). Every technique in the course fits one of those three buckets: find it, follow it, or measure how well you did.</p>
+      </div>
+
+      <div class="callout-weight">
+        <div class="weight-card"><div class="wpct" style="color:var(--gold)">40%</div><div class="wlbl">of final grade</div></div>
+        <div class="weight-card"><div class="wpct" style="color:var(--teal)">5-6</div><div class="wlbl">questions</div></div>
+        <div class="weight-card"><div class="wpct" style="color:var(--sky)">6-7</div><div class="wlbl">marks each</div></div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Final exam — as stated in the deck</h4></div>
+        <ul class="exam-list">
+          <li>Coverage spans the <strong>full course</strong>, not just this final session — expect questions reaching back to detection, segmentation, and CNN fundamentals.</li>
+          <li>The deck's own slide gives an internally inconsistent split between pre- and post-midterm weighting (both portions independently labeled "20%" against different question counts) — reproduced here as-is rather than silently corrected, since it's worth knowing the source material itself has this ambiguity.</li>
+          <li>Given the 40% weighting, prioritize sections with an <span class="lab-dot" title="Interactive" style="display:inline-block;position:relative;top:-1px;"></span> interactive demo above — they mark the deck's own worked examples and highest-yield formulas.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 12 — EXAM QUIZ ============ -->
+    <section class="section" id="s12">
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <h2 class="section-title">Exam Quiz — 10 Questions</h2>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Motion vs tracking</span>
+          <div class="quiz-q-text">A PIR sensor flips on a porch light when someone walks by. Is this object tracking?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Yes — it detected motion, which is the first step of tracking</li>
+          <li><span class="opt-letter">B</span>No — it has no notion of object identity across time, just a motion trigger</li>
+          <li><span class="opt-letter">C</span>Yes — infrared sensing is equivalent to a Kalman filter's measurement step</li>
+          <li><span class="opt-letter">D</span>No — tracking requires a camera, and PIR sensors don't use one</li>
+        </ul>
+        <div class="quiz-reveal">Motion detection is a trigger with no identity continuity; tracking explicitly maintains "this is the same object" across frames. <strong>A</strong> conflates the two. <strong>C</strong> misapplies Kalman terminology. <strong>D</strong> is close but wrong for the reason — some tracking is camera-based, but the defining difference is identity, not sensor type.<span class="mistake">Common mistake</span>Treating "detected something moved" as equivalent to "tracking an object."</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Aperture problem</span>
+          <div class="quiz-q-text">At a single pixel, the optical flow constraint equation I<sub>x</sub>u + I<sub>y</sub>v + I<sub>t</sub> = 0 has how many equations and unknowns?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>1 equation, 2 unknowns</li>
+          <li><span class="opt-letter">B</span>2 equations, 2 unknowns</li>
+          <li><span class="opt-letter">C</span>1 equation, 1 unknown</li>
+          <li><span class="opt-letter">D</span>2 equations, 1 unknown</li>
+        </ul>
+        <div class="quiz-reveal">One scalar equation, two unknowns (u, v) — underdetermined, exactly the aperture problem. <strong>B</strong> and <strong>D</strong> wrongly assume two constraint equations exist per pixel. <strong>C</strong> forgets flow has both a u and a v component.<span class="mistake">Common mistake</span>Forgetting that "solvable" requires a second constraint (spatial coherence, Section 04) — a single pixel alone never determines (u,v).</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Shi-Tomasi corners</span>
+          <div class="quiz-q-text">Per the Shi-Tomasi criterion, which eigenvalue condition of the 2nd-moment matrix M marks a good feature to track?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>max(λ₁, λ₂) is large</li>
+          <li><span class="opt-letter">B</span>λ₁ and λ₂ have opposite signs</li>
+          <li><span class="opt-letter">C</span>min(λ₁, λ₂) is large</li>
+          <li><span class="opt-letter">D</span>Both eigenvalues equal zero</li>
+        </ul>
+        <div class="quiz-reveal">min(λ₁,λ₂) large means BOTH directions have strong gradient information — a corner, fully trackable. <strong>A</strong> would also flag edges (one large eigenvalue is enough), which are only partially trackable. <strong>D</strong> describes a flat, untrackable region.<span class="mistake">Common mistake</span>Using max() instead of min() — an edge has one large eigenvalue too, but is still aperture-problem-limited.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Pyramidal LK</span>
+          <div class="quiz-q-text">Why does pyramidal Lucas-Kanade process the coarsest pyramid level first, rather than starting at full resolution?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Coarse levels have more corners to track</li>
+          <li><span class="opt-letter">B</span>The same physical motion looks smaller (in pixels) at a downsampled scale, satisfying LK's small-motion assumption</li>
+          <li><span class="opt-letter">C</span>It reduces the number of unknowns from 2 to 1</li>
+          <li><span class="opt-letter">D</span>Coarse levels have higher signal-to-noise ratio</li>
+        </ul>
+        <div class="quiz-reveal">A 10px full-res motion looks like ~1.25px at the coarsest level — small enough for LK's linearization to hold; the estimate is then upscaled ×2 as a warm-start into each finer level. <strong>C</strong> is false — still (u,v), two unknowns, at every level.<span class="mistake">Common mistake</span>Thinking the pyramid changes the underlying math — it only changes what motion magnitude "counts as small" at each scale.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Mean-shift vector</span>
+          <div class="quiz-q-text">In mean-shift tracking, what does the mean-shift vector (window center → center of mass) approximate?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>The local density gradient — it points toward denser data</li>
+          <li><span class="opt-letter">B</span>The optical flow field at the window center</li>
+          <li><span class="opt-letter">C</span>The Kalman gain for this frame</li>
+          <li><span class="opt-letter">D</span>The camera's ego-motion between frames</li>
+        </ul>
+        <div class="quiz-reveal">The mean-shift vector estimates the density gradient direction (Fukunaga-Hostetler, 1975) — repeatedly stepping along it converges to a local mode (density peak). <strong>B</strong> confuses two unrelated tracking paradigms. <strong>C</strong>, <strong>D</strong> are unrelated concepts from other sections.<span class="mistake">Common mistake</span>Assuming mean-shift uses pixel-gradient motion like Lucas-Kanade — it uses appearance/histogram density, not brightness gradients.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Kalman order</span>
+          <div class="quiz-q-text">In the Kalman filter's 5-step cycle, what must be computed immediately before the Kalman gain K?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>The corrected state x<sub>k</sub></li>
+          <li><span class="opt-letter">B</span>The corrected covariance P<sub>k</sub></li>
+          <li><span class="opt-letter">C</span>The predicted state x<sub>p</sub> only</li>
+          <li><span class="opt-letter">D</span>The predicted covariance P<sub>p</sub> and the innovation y = z<sub>k</sub> − H·x<sub>p</sub></li>
+        </ul>
+        <div class="quiz-reveal">Order: predict state → predict covariance → innovation → gain (needs P<sub>p</sub>) → update. K = P<sub>p</sub>·H<sup>T</sup>·(H·P<sub>p</sub>·H<sup>T</sup>+R)<sup>−1</sup> directly requires P<sub>p</sub>. <strong>A</strong>, <strong>B</strong> are computed AFTER K, in the update step. <strong>C</strong> is necessary but not sufficient — P<sub>p</sub> is also required.<span class="mistake">Common mistake</span>Trying to compute K before predicting covariance — a common exam trap is swapping steps 2 and 4.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">SORT vs DeepSORT</span>
+          <div class="quiz-q-text">What specifically does DeepSORT add on top of SORT, and what problem does it solve?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>A Kalman filter — SORT had no motion model at all</li>
+          <li><span class="opt-letter">B</span>Selective Search region proposals</li>
+          <li><span class="opt-letter">C</span>A learned appearance re-identification embedding, cutting identity switches during brief occlusion</li>
+          <li><span class="opt-letter">D</span>Replacing IoU matching with pixel-level optical flow</li>
+        </ul>
+        <div class="quiz-reveal">SORT already runs a Kalman filter (motion-only matching via IoU); DeepSORT adds a second similarity cue — a learned appearance embedding — specifically to survive brief occlusions where motion alone loses the track. <strong>A</strong> is false, SORT already has a Kalman filter. <strong>B</strong>, <strong>D</strong> describe unrelated techniques.<span class="mistake">Common mistake</span>Assuming DeepSORT replaces the Kalman filter rather than augmenting it — it's still a hybrid, motion + appearance.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">ROC northwest rule</span>
+          <div class="quiz-q-text">Classifier A sits at (FPR=0.1, TPR=0.6); Classifier B sits at (FPR=0.3, TPR=0.6) on the same ROC plot. Which is better, and why?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>A — same TPR as B, but a lower FPR (fewer false alarms)</li>
+          <li><span class="opt-letter">B</span>B — a higher FPR means it's more willing to flag positives</li>
+          <li><span class="opt-letter">C</span>They're equal — TPR is the only metric that matters</li>
+          <li><span class="opt-letter">D</span>Cannot compare without knowing AUC</li>
+        </ul>
+        <div class="quiz-reveal">The northwest rule: same or better TPR at a lower FPR is strictly better — A sits up-and-left of B. <strong>B</strong> gets the direction backwards; a higher FPR is worse, not a virtue. <strong>C</strong> ignores FPR entirely. <strong>D</strong> is unnecessary — a direct northwest comparison between two specific points doesn't require the full-curve AUC.<span class="mistake">Common mistake</span>Comparing only TPR (or only FPR) and ignoring that ROC evaluates the trade-off between both.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">AUC meaning</span>
+          <div class="quiz-q-text">A classifier has AUC = 0.85. What does this number literally mean?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>85% of predictions are correct</li>
+          <li><span class="opt-letter">B</span>85% probability the classifier ranks a random positive instance above a random negative instance</li>
+          <li><span class="opt-letter">C</span>85% of the ROC curve lies above the diagonal</li>
+          <li><span class="opt-letter">D</span>The classifier's precision is 0.85 at every threshold</li>
+        </ul>
+        <div class="quiz-reveal">AUC = P(score(random positive) &gt; score(random negative)) — the Mann-Whitney U interpretation (Hanley &amp; McNeil, 1982). <strong>A</strong> confuses AUC with accuracy, a threshold-dependent metric AUC deliberately avoids. <strong>C</strong> and <strong>D</strong> aren't what AUC measures at all.<span class="mistake">Common mistake</span>Treating AUC as "average accuracy" — it's a ranking-quality probability, independent of any single threshold.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Kalman noise trust</span>
+          <div class="quiz-q-text">If measurement noise R is very large relative to process noise Q, what happens to the Kalman gain K, and what does that mean practically?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>K → 1; the filter ignores the motion model entirely</li>
+          <li><span class="opt-letter">B</span>K stays constant; R and Q don't affect gain, only covariance</li>
+          <li><span class="opt-letter">C</span>K → 0; the filter trusts its motion-model prediction over the noisy measurement</li>
+          <li><span class="opt-letter">D</span>K → ∞; the filter becomes unstable</li>
+        </ul>
+        <div class="quiz-reveal">Large R inflates the denominator of K = P<sub>p</sub>H<sup>T</sup>(HP<sub>p</sub>H<sup>T</sup>+R)<sup>−1</sup>, shrinking K toward 0 — the update term K·(z−Hx<sub>p</sub>) shrinks, so the corrected estimate stays close to the prediction. <strong>A</strong> and <strong>D</strong> describe the opposite regime (small R, or R→0). <strong>B</strong> is false — K is a direct function of both Q (via P<sub>p</sub>) and R.<span class="mistake">Common mistake</span>Mixing up which noise term should be large to trust which source — trace it through the K formula rather than memorizing the conclusion.</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('a')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('b')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  if(!li) return;
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+  }
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO · Eigenvalue corner/edge/flat classifier ================= */
+function eigSeed(i,off){ let x = Math.sin((i+off)*777.7)*10000; return x - Math.floor(x); }
+let eigActive = -1;
+function eigClass(i){
+  const l1 = 0.15 + eigSeed(i,1)*0.85;
+  const l2 = 0.15 + eigSeed(i,2)*0.85;
+  const lo = Math.min(l1,l2), hi = Math.max(l1,l2);
+  let cls, css, note;
+  if(lo > 0.5){ cls='Corner'; css='strong'; note='Both directions well-constrained — fully trackable.'; }
+  else if(hi > 0.5){ cls='Edge'; css='weak'; note='Only motion perpendicular to the edge is recoverable — the aperture problem.'; }
+  else { cls='Flat'; css='none'; note='No gradient information in either direction — untrackable.'; }
+  return {l1,l2,cls,css,note};
+}
+function eigBuild(){
+  const g = document.getElementById('eigGrid'); g.innerHTML='';
+  for(let i=0;i<25;i++){
+    const info = eigClass(i);
+    const d=document.createElement('div'); d.className='cell '+info.css; d.dataset.i=i;
+    if(i===eigActive) d.style.outline='2px solid var(--gold)';
+    d.onclick=()=>{ eigActive=i; eigBuild(); eigReport(i); };
+    g.appendChild(d);
+  }
+}
+function eigReport(i){
+  const info = eigClass(i);
+  document.getElementById('eigOut').innerHTML =
+    'Patch #'+i+': λ₁ = <strong>'+info.l1.toFixed(2)+'</strong>, λ₂ = <strong>'+info.l2.toFixed(2)+'</strong><br><br>'+
+    'Classification: <strong style="color:var(--gold)">'+info.cls+'</strong><br><br>'+
+    '<span style="color:var(--text3)">'+info.note+'</span>';
+}
+
+/* ================= DEMO · Pyramidal Lucas-Kanade convergence ================= */
+const pyrLevels = ['Level 3 (coarsest, 1/8 scale)','Level 2 (1/4 scale)','Level 1 (1/2 scale)','Level 0 (finest, full-res)'];
+const pyrEstimates = [1.25, 2.5, 5, 10];
+function pyrRender(){
+  const idx = +document.getElementById('pyrSlider').value;
+  document.getElementById('pyrLevelVal').textContent = pyrLevels[idx];
+  const est = pyrEstimates[idx];
+  const cv = document.getElementById('pyrCanvas'), g = cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const baseX=20, baseY=70, scale=26;
+  g.strokeStyle='rgba(255,255,255,0.15)'; g.lineWidth=1;
+  g.beginPath(); g.moveTo(baseX,baseY); g.lineTo(baseX+10*scale,baseY); g.stroke();
+  const len = est*scale;
+  g.strokeStyle='var(--gold)'; g.lineWidth=4;
+  g.beginPath(); g.moveTo(baseX,baseY); g.lineTo(baseX+len,baseY); g.stroke();
+  g.fillStyle='var(--gold)';
+  g.beginPath(); g.moveTo(baseX+len,baseY); g.lineTo(baseX+len-10,baseY-6); g.lineTo(baseX+len-10,baseY+6); g.closePath(); g.fill();
+  g.font='12px monospace'; g.fillStyle='var(--text)';
+  g.fillText(est+' px apparent motion', baseX, baseY-16);
+  const warmStart = idx < 3 ? (est*2)+' px warm-start → next finer level' : 'Full-resolution estimate reached.';
+  document.getElementById('pyrOut').innerHTML =
+    '<strong style="color:var(--gold)">'+pyrLevels[idx]+'</strong><br><br>'+
+    'Apparent motion at this level ≈ <strong style="color:var(--lime)">'+est+'px</strong> — small enough for LK\'s linear approximation.<br><br>'+
+    '<span style="color:var(--text3)">'+warmStart+'</span>';
+}
+
+/* ================= DEMO · Mean-shift mode-seeking ================= */
+function msSeed(i,off){ let x = Math.sin((i+off)*333.3)*10000; return x - Math.floor(x); }
+const msPoints = Array.from({length:60}, (_,i)=>({
+  x: 200 + (msSeed(i,1)-0.5)*90,
+  y: 95 + (msSeed(i,2)-0.5)*70
+}));
+const msRadius = 45;
+let msWindow = null, msIter = 0;
+function msDraw(){
+  const cv=document.getElementById('msCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  g.fillStyle='rgba(212,168,83,0.55)';
+  msPoints.forEach(p=>{ g.beginPath(); g.arc(p.x,p.y,2.5,0,Math.PI*2); g.fill(); });
+  if(msWindow){
+    g.strokeStyle='rgba(163,230,53,0.9)'; g.lineWidth=2;
+    g.beginPath(); g.arc(msWindow.x, msWindow.y, msRadius, 0, Math.PI*2); g.stroke();
+    g.fillStyle='var(--lime)';
+    g.beginPath(); g.arc(msWindow.x, msWindow.y, 4, 0, Math.PI*2); g.fill();
+  }
+}
+function msCanvasClick(e){
+  const cv=document.getElementById('msCanvas');
+  const rect = cv.getBoundingClientRect();
+  msWindow = {x: e.clientX-rect.left, y: e.clientY-rect.top};
+  msIter = 0;
+  msDraw();
+  document.getElementById('msOut').innerHTML = 'Window placed. Click <strong>Step</strong> to iterate mean-shift.';
+}
+function msStep(){
+  if(!msWindow){ document.getElementById('msOut').innerHTML = 'Click the canvas first to place a search window.'; return; }
+  let sx=0, sy=0, cnt=0;
+  msPoints.forEach(p=>{
+    const dx=p.x-msWindow.x, dy=p.y-msWindow.y;
+    if(dx*dx+dy*dy <= msRadius*msRadius){ sx+=p.x; sy+=p.y; cnt++; }
+  });
+  if(cnt===0){ document.getElementById('msOut').innerHTML = 'No points inside the window — nothing to shift toward. Click Reset.'; return; }
+  const comx=sx/cnt, comy=sy/cnt;
+  const vx=comx-msWindow.x, vy=comy-msWindow.y;
+  const mag=Math.sqrt(vx*vx+vy*vy);
+  msWindow = {x:comx, y:comy};
+  msIter++;
+  msDraw();
+  const converged = mag < 1.5;
+  document.getElementById('msOut').innerHTML =
+    'Iteration '+msIter+': shift vector magnitude ≈ <strong>'+mag.toFixed(2)+'px</strong><br><br>'+
+    (converged ? '<strong style="color:var(--lime)">Converged — mode found.</strong>' : '<span style="color:var(--text3)">Not yet converged — click Step again.</span>');
+}
+function msReset(){
+  msWindow = null; msIter = 0;
+  msDraw();
+  document.getElementById('msOut').innerHTML = 'Click the canvas to place a search window.';
+}
+
+/* ================= DEMO · Kalman filter predict/correct stepper ================= */
+function kfSeed(i,off){ let x = Math.sin((i+off)*555.5)*10000; return x - Math.floor(x); }
+const kfTrue = Array.from({length:12}, (_,k)=>20+6*k);
+const kfMeas = kfTrue.map((t,k)=>t + (kfSeed(k,9)-0.5)*14);
+const Fk = [[1,1],[0,1]];
+function matMul2(A,B){ return [[A[0][0]*B[0][0]+A[0][1]*B[1][0], A[0][0]*B[0][1]+A[0][1]*B[1][1]],[A[1][0]*B[0][0]+A[1][1]*B[1][0], A[1][0]*B[0][1]+A[1][1]*B[1][1]]]; }
+function matAdd2(A,B){ return [[A[0][0]+B[0][0],A[0][1]+B[0][1]],[A[1][0]+B[1][0],A[1][1]+B[1][1]]]; }
+function matSub2(A,B){ return [[A[0][0]-B[0][0],A[0][1]-B[0][1]],[A[1][0]-B[1][0],A[1][1]-B[1][1]]]; }
+function transpose2(A){ return [[A[0][0],A[1][0]],[A[0][1],A[1][1]]]; }
+let kfState = null, kfEstHistory = [], kfStepIdx = 0;
+function kfCurrentQR(){
+  const q = (+document.getElementById('kfQ').value)/100;
+  const r = (+document.getElementById('kfR').value)/10;
+  document.getElementById('kfQv').textContent = q.toFixed(2);
+  document.getElementById('kfRv').textContent = r.toFixed(1);
+  return {q,r};
+}
+function kfParamChange(){ kfCurrentQR(); kfReset(); }
+function kfReset(){
+  kfState = {x:[kfMeas[0],0], P:[[5,0],[0,5]]};
+  kfEstHistory = [kfMeas[0]];
+  kfStepIdx = 1;
+  kfDraw();
+  document.getElementById('kfOut').innerHTML = 'Initialized from the first measurement. Click <strong>Next measurement</strong> to run the predict/correct cycle.';
+}
+function kfStep(){
+  if(kfStepIdx >= kfTrue.length){ document.getElementById('kfOut').innerHTML = 'Sequence complete. Click Reset to run again.'; return; }
+  const {q,r} = kfCurrentQR();
+  const Qm = [[q,0],[0,q]];
+  const xp = [kfState.x[0]+kfState.x[1], kfState.x[1]];
+  const FP = matMul2(Fk, kfState.P);
+  const Pp = matAdd2(matMul2(FP, transpose2(Fk)), Qm);
+  const z = kfMeas[kfStepIdx];
+  const S = Pp[0][0] + r;
+  const K = [Pp[0][0]/S, Pp[1][0]/S];
+  const y = z - xp[0];
+  const xk = [xp[0]+K[0]*y, xp[1]+K[1]*y];
+  const KH = [[K[0],0],[K[1],0]];
+  const Pk = matSub2(Pp, matMul2(KH, Pp));
+  kfState = {x:xk, P:Pk};
+  kfEstHistory.push(xk[0]);
+  document.getElementById('kfOut').innerHTML =
+    'Step '+kfStepIdx+': predicted x = <strong>'+xp[0].toFixed(1)+'</strong>, measured z = <strong>'+z.toFixed(1)+'</strong><br>'+
+    'Kalman gain K = <strong style="color:var(--gold)">'+K[0].toFixed(2)+'</strong><br>'+
+    'Corrected x = <strong style="color:var(--lime)">'+xk[0].toFixed(1)+'</strong><br><br>'+
+    '<span style="color:var(--text3)">'+(K[0]>0.5 ? 'High gain — trusting the new measurement.' : 'Low gain — trusting the motion-model prediction.')+'</span>';
+  kfStepIdx++;
+  kfDraw();
+}
+function kfDraw(){
+  const cv=document.getElementById('kfCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const xPix = k => 20 + k*24;
+  const yPix = pos => 160 - pos*1.4;
+  g.strokeStyle='rgba(163,230,53,0.5)'; g.lineWidth=2;
+  g.beginPath();
+  kfTrue.forEach((t,k)=>{ const px=xPix(k), py=yPix(t); if(k===0) g.moveTo(px,py); else g.lineTo(px,py); });
+  g.stroke();
+  g.fillStyle='rgba(248,113,113,0.85)';
+  for(let k=0;k<kfStepIdx;k++){ const px=xPix(k), py=yPix(kfMeas[k]); g.beginPath(); g.arc(px,py,3,0,Math.PI*2); g.fill(); }
+  g.strokeStyle='var(--gold)'; g.lineWidth=2.5;
+  g.beginPath();
+  kfEstHistory.forEach((e,k)=>{ const px=xPix(k), py=yPix(e); if(k===0) g.moveTo(px,py); else g.lineTo(px,py); });
+  g.stroke();
+  if(kfEstHistory.length){
+    const lastK = kfEstHistory.length-1;
+    g.fillStyle='var(--gold)';
+    g.beginPath(); g.arc(xPix(lastK), yPix(kfEstHistory[lastK]), 4, 0, Math.PI*2); g.fill();
+  }
+}
+
+/* ================= DEMO · Confusion matrix / AP row toggle ================= */
+let tpfpRows = [
+  {conf:0.97, tp:true}, {conf:0.93, tp:true}, {conf:0.88, tp:false},
+  {conf:0.84, tp:true}, {conf:0.77, tp:false}, {conf:0.69, tp:true},
+  {conf:0.61, tp:false}, {conf:0.55, tp:false}
+];
+const TPFP_GT_TOTAL = 5;
+function tpfpBuild(){
+  const t = document.getElementById('tpfpTable');
+  let html = '<thead><tr><th>Rank</th><th>Conf</th><th>TP/FP</th><th>Cum. Precision</th><th>Recall</th></tr></thead><tbody>';
+  let cumTP=0;
+  tpfpRows.forEach((r,i)=>{
+    if(r.tp) cumTP++;
+    const prec=(cumTP/(i+1)).toFixed(2), rec=(cumTP/TPFP_GT_TOTAL).toFixed(2);
+    html += '<tr style="cursor:pointer" onclick="tpfpToggle('+i+')"><td>'+(i+1)+'</td><td>'+r.conf.toFixed(2)+'</td>'+
+      '<td style="color:'+(r.tp?'var(--lime)':'var(--rose)')+'">'+(r.tp?'TP':'FP')+'</td>'+
+      '<td>'+prec+'</td><td>'+rec+'</td></tr>';
+  });
+  html += '</tbody>';
+  t.innerHTML = html;
+}
+function tpfpToggle(i){ tpfpRows[i].tp = !tpfpRows[i].tp; tpfpBuild(); tpfpReport(); }
+function tpfpReport(){
+  let cumTP=0; const precisions=[], recalls=[];
+  tpfpRows.forEach((r,i)=>{
+    if(r.tp) cumTP++;
+    precisions.push(cumTP/(i+1));
+    recalls.push(cumTP/TPFP_GT_TOTAL);
+  });
+  const checkpoints=[0.2,0.4,0.6,0.8,1.0];
+  const interp = checkpoints.map(rc=>{
+    let best=0;
+    recalls.forEach((r,i)=>{ if(r>=rc) best=Math.max(best,precisions[i]); });
+    return best;
+  });
+  const ap = interp.reduce((a,b)=>a+b,0)/interp.length;
+  document.getElementById('tpfpOut').innerHTML =
+    'Click any row above to flip TP⇄FP.<br><br>'+
+    'Interpolated precision @ r=[0.2,0.4,0.6,0.8,1.0]:<br><strong style="color:var(--teal)">'+interp.map(v=>v.toFixed(2)).join(', ')+'</strong><br><br>'+
+    '5-point AP = <strong style="color:var(--lime);font-size:16px;">'+ap.toFixed(3)+'</strong><br><br>'+
+    '<span style="color:var(--text3)">Flipping an early high-confidence row to FP crashes precision hard — flipping a late low-confidence row barely moves it.</span>';
+}
+
+/* ================= DEMO · ROC linear-scan builder ================= */
+const rocData = [
+  {score:0.95,label:1},{score:0.91,label:1},{score:0.88,label:0},
+  {score:0.84,label:1},{score:0.78,label:1},{score:0.75,label:0},
+  {score:0.69,label:1},{score:0.62,label:0},{score:0.55,label:0},
+  {score:0.48,label:1},{score:0.31,label:0},{score:0.12,label:0}
+];
+const ROC_P = rocData.filter(d=>d.label===1).length;
+const ROC_N = rocData.filter(d=>d.label===0).length;
+let rocStepIdx=0, rocTP=0, rocFP=0, rocPoints=[{x:0,y:0}];
+function rocDraw(){
+  const cv=document.getElementById('rocCanvas'), g=cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const m=20, size=200;
+  const px = x => m + x*size, py = y => m+size - y*size;
+  g.strokeStyle='rgba(255,255,255,0.18)'; g.setLineDash([4,4]); g.lineWidth=1;
+  g.beginPath(); g.moveTo(px(0),py(0)); g.lineTo(px(1),py(1)); g.stroke(); g.setLineDash([]);
+  g.strokeStyle='rgba(255,255,255,0.12)'; g.strokeRect(px(0),py(1),size,size);
+  g.strokeStyle='var(--gold)'; g.lineWidth=2.5;
+  g.beginPath();
+  rocPoints.forEach((p,i)=>{ if(i===0) g.moveTo(px(p.x),py(p.y)); else g.lineTo(px(p.x),py(p.y)); });
+  g.stroke();
+  const last = rocPoints[rocPoints.length-1];
+  g.fillStyle='var(--gold)';
+  g.beginPath(); g.arc(px(last.x),py(last.y),4,0,Math.PI*2); g.fill();
+}
+function rocAUC(){
+  let auc=0;
+  for(let i=1;i<rocPoints.length;i++){ auc += (rocPoints[i].x-rocPoints[i-1].x)*(rocPoints[i].y+rocPoints[i-1].y)/2; }
+  return auc;
+}
+function rocStep(){
+  if(rocStepIdx >= rocData.length){ document.getElementById('rocOut').innerHTML = 'All instances processed. Final AUC = <strong style="color:var(--lime)">'+rocAUC().toFixed(3)+'</strong>. Click Reset to replay.'; return; }
+  const inst = rocData[rocStepIdx];
+  if(inst.label===1) rocTP++; else rocFP++;
+  const fpr = rocFP/ROC_N, tpr = rocTP/ROC_P;
+  rocPoints.push({x:fpr,y:tpr});
+  rocStepIdx++;
+  rocDraw();
+  document.getElementById('rocOut').innerHTML =
+    'Instance '+rocStepIdx+': score='+inst.score.toFixed(2)+', label='+(inst.label?'positive':'negative')+'<br><br>'+
+    'TPR = <strong style="color:var(--lime)">'+tpr.toFixed(2)+'</strong> &nbsp;|&nbsp; FPR = <strong style="color:var(--rose)">'+fpr.toFixed(2)+'</strong><br><br>'+
+    'Running AUC ≈ <strong style="color:var(--gold)">'+rocAUC().toFixed(3)+'</strong>';
+}
+function rocReset(){
+  rocStepIdx=0; rocTP=0; rocFP=0; rocPoints=[{x:0,y:0}];
+  rocDraw();
+  document.getElementById('rocOut').innerHTML = 'Click "Next instance" to start the linear scan.';
+}
+
+/* ---------- init all demos ---------- */
+eigBuild();
+pyrRender();
+msDraw();
+document.getElementById('msCanvas').addEventListener('click', msCanvasClick);
+kfReset();
+tpfpBuild(); tpfpReport();
+rocDraw();
+</script>
+
+</body>
+</html>
