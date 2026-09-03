@@ -470,7 +470,12 @@
 
       <div class="theory-block">
         <h3>Intuition first — a vector field of "where did this brightness go?"</h3>
-        <p>Optical flow is the <strong>apparent motion of brightness patterns</strong> in the image — a vector field: at every pixel, an arrow showing how far and in what direction that patch's brightness appears to have moved. The word "apparent" matters: <strong>apparent motion can be caused by lighting changes without any actual motion</strong> (a moving shadow, a rotating barber pole showing only vertical apparent motion) — optical flow measures brightness motion, not guaranteed physical motion.</p>
+        <p>Optical flow is the <strong>apparent motion of brightness patterns</strong> in the image — a vector field: at every pixel, an arrow showing how far and in what direction that patch's brightness appears to have moved. The word "apparent" matters: <strong>apparent motion can be caused by lighting changes without any actual motion</strong> — a rotating barber pole shows only vertical apparent motion despite rotating around its own axis, and a stationary shiny sphere under a moving light source shows apparent flow ("moving highlights") with zero actual physical motion. Optical flow measures brightness motion, not guaranteed physical motion.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Two broad ways to recover motion</h3>
+        <p><strong>Optical flow</strong> is dense — estimate a motion vector at every single pixel. <strong>Feature-tracking</strong> is sparse — find a handful of distinctive points (Shi-Tomasi corners, Section 03's eigenvalue test) and follow only those across frames (Lucas-Kanade, Section 04). Dense is complete but expensive; sparse is fast but only as good as its chosen points.</p>
       </div>
 
       <div class="theory-block">
@@ -585,7 +590,7 @@
 
       <div class="research-insight">
         <span class="ri-badge">Research Enhanced</span>
-        <p>Lucas &amp; Kanade, IJCAI 1981, remains the basis of OpenCV's <code>cv2.calcOpticalFlowPyrLK</code> (pyramidal formulation from Bouguet's tech report) — still the standard sparse, feature-point tracker used in visual SLAM and AR today. <strong>FlowNet (2015)</strong> was the first deep-learned dense optical flow network, trained on the synthetic "Flying Chairs" dataset since real dense-flow ground truth is nearly impossible to collect; successors PWC-Net and RAFT now dominate flow benchmarks, but the classical LK pyramid is still preferred when speed and interpretability matter more than raw accuracy.</p>
+        <p>Lucas &amp; Kanade, IJCAI 1981, remains the basis of OpenCV's <code>cv2.calcOpticalFlowPyrLK</code> (pyramidal formulation from Bouguet's tech report) — still the standard sparse, feature-point tracker used in visual SLAM and AR today. <strong>FlowNet (2015)</strong> was the first deep-learned dense optical flow network, trained on the synthetic "Flying Chairs" dataset since real dense-flow ground truth is nearly impossible to collect; successors PWC-Net and RAFT now dominate flow benchmarks and feed applications like autonomous driving (motion cues for obstacle prediction) and medical imaging (tissue motion analysis), but the classical LK pyramid is still preferred when speed and interpretability matter more than raw accuracy.</p>
         <p><cite>Lucas, Kanade, "An iterative image registration technique...," IJCAI 1981 · Bouguet, "Pyramidal Implementation of the Lucas Kanade Feature Tracker," Intel Tech Report</cite></p>
       </div>
     </section>
@@ -600,11 +605,23 @@
 
       <div class="theory-block">
         <h3>Intuition first — feel around for the warmest spot</h3>
-        <p>Mean-shift gives up on a rigid motion model and tracks <strong>appearance</strong> instead — typically a color histogram. It's a mode-seeking algorithm: like feeling around in the dark for the warmest spot on a table and always taking a small step in the warmer direction until you settle on the hottest point. Non-parametric — no assumed distribution shape — and works in any feature space (color, texture, scale), which is what makes it reusable well beyond tracking.</p>
+        <p>Mean-shift gives up on a rigid motion model and tracks <strong>appearance</strong> instead — typically a color histogram. It's a mode-seeking algorithm: like feeling around in the dark for the warmest spot on a table and always taking a small step in the warmer direction until you settle on the hottest point. Non-parametric — no assumed distribution shape — and works in any feature space (color, texture, scale), which is what makes it reusable well beyond tracking. <span style="color:var(--text3);font-size:14px;">(Framework per R. Collins, CSE598G, Penn State, building on Comaniciu, Ramesh &amp; Meer.)</span></p>
       </div>
 
       <div class="theory-block">
-        <h3>The mean-shift procedure</h3>
+        <h3>The general appearance-tracking framework — two pipelines</h3>
+        <p>The deck splits appearance-based tracking into two separate pipelines, then plugs mean-shift into the second one as just <em>one</em> of three interchangeable mode-seeking choices:</p>
+        <ol class="pipeline">
+          <li><strong>Target Representation (build the model, once)</strong>
+            <p>Choose a reference target → choose a feature space (e.g. quantized color) → represent that target as a probability distribution (PDF) in that feature space.</p></li>
+          <li><strong>Target Localization (repeat every frame)</strong>
+            <p>Start at the last known position → search the neighborhood → find the candidate that maximizes similarity to the reference PDF → repeat next frame.</p></li>
+        </ol>
+        <p style="color:var(--text2);">The "mode-seeking" step inside Target Localization can be any of three algorithms — <strong>mean-shift</strong>, <strong>Lucas-Kanade</strong>, or a <strong>particle filter</strong> — all solving "find the best-matching neighborhood location," just with different search strategies. This guide covers mean-shift here and Lucas-Kanade in Section 04.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The mean-shift iteration, step by step</h3>
         <ol class="pipeline">
           <li><strong>Place a window</strong>
             <p>Start the search window at the object's last known location.</p></li>
@@ -630,6 +647,8 @@
 <span class="formula-line">  <span class="f-violet">ρ̂(y) = Σ<sub>u</sub> √(p̂<sub>u</sub>(y) · q̂<sub>u</sub>)</span>   <span class="f-dim">— higher ρ̂ = better color match; maximized over y to relocalize each frame.</span></span>
       </div>
 
+      <p style="color:var(--text2);margin:-0.5rem 0 1rem;">Comaniciu, Ramesh &amp; Meer weight pixels with an <strong>Epanechnikov kernel</strong> (a parabolic profile) rather than counting them equally — pixels near the window's edge are down-weighted, since they're more likely to belong to background or an occluder than pixels near the center.</p>
+
       <div class="interactive-demo" id="msDemo">
         <h4>⊞ Interactive · Mean-Shift Mode-Seeking</h4>
         <div class="demo-sub">A cluster of "colored" points simulates a density blob. Click anywhere to drop the search window, then hit Step to watch it climb toward the density peak — repeat until the shift vector collapses to ~zero.</div>
@@ -651,7 +670,7 @@
       <div class="exam-alert">
         <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Mean-shift — exam radar</h4></div>
         <ul class="exam-list">
-          <li>Robust to partial occlusion and motion blur — fails on drastic appearance change (the model never updates what "the object" looks like).</li>
+          <li>Robust to partial occlusion, motion blur, and mild distraction (a similarly-colored nearby object) — fails on drastic appearance change (the model never updates what "the object" looks like).</li>
           <li>Reported results (Comaniciu, Ramesh, Meer 2003): 16×16×16 quantized RGB, ~4 mean-shift iterations per frame to converge.</li>
           <li>Common mistake: confusing mean-shift (appearance/histogram mode-seeking) with Lucas-Kanade (pixel-gradient motion) — they solve different problems and can be combined.</li>
         </ul>
