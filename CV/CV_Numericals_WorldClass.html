@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Numericals — Transcript, EC3 Exam &amp; Practice Sets</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:280px; --radius:10px;
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px; --radius-lg: 22px; --radius-md: 16px; --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.4rem 1.25rem; font-family:var(--font-body); font-size:12.5px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'Σ'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:780px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:960px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.75rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-verified { color:var(--lime); background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); }
+  .src-transcript { color:var(--sky); background:rgba(125,211,252,0.08); border:1px solid rgba(125,211,252,0.3); }
+  .src-new { color:var(--violet); background:rgba(192,132,252,0.08); border:1px solid rgba(192,132,252,0.3); }
+  .src-exam { color:var(--rose); background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:44px; height:34px; display:flex; align-items:center; justify-content:center; font-size:12px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.18); color:var(--gold); border-color:rgba(212,168,83,0.4); }
+  .mgrid .cell.c1 { background:rgba(248,113,113,0.12); color:var(--rose); border-color:rgba(248,113,113,0.3); }
+  .mgrid .cell.c2 { background:rgba(212,168,83,0.15); color:var(--gold); border-color:rgba(212,168,83,0.3); }
+  .mgrid .cell.c3 { background:rgba(78,201,176,0.14); color:var(--teal); border-color:rgba(78,201,176,0.3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .legend-row { display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1rem; }
+  .set-divider { margin:4.5rem 0 2.5rem; text-align:center; position:relative; }
+  .set-divider::before { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:var(--border); }
+  .set-divider span { position:relative; background:var(--bg); padding:0 1.5rem; font-family:var(--font-code); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); }
+  .marks-tag { font-family:var(--font-code); font-size:10px; color:var(--rose); background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.25); padding:2px 8px; border-radius:4px; }
+  .theory-only-row td { color:var(--text3) !important; font-style:italic; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") { root.setAttribute("data-theme", saved); }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Numericals — 3 Sets</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Set A · Transcript (9)</span>
+  <a href="#a1" class="nav-link" data-section="a1">A1 · Conv Output Size</a>
+  <a href="#a2" class="nav-link" data-section="a2">A2 · Transpose Convolution</a>
+  <a href="#a3" class="nav-link" data-section="a3">A3 · IoU by Box Area</a>
+  <a href="#a4" class="nav-link" data-section="a4">A4 · 9-pt AP (6 GT)</a>
+  <a href="#a5" class="nav-link" data-section="a5">A5 · IoU by Corners</a>
+  <a href="#a6" class="nav-link" data-section="a6">A6 · 9-pt AP (4 GT)</a>
+  <a href="#a7" class="nav-link" data-section="a7">A7 · Lucas–Kanade</a>
+  <a href="#a8" class="nav-link" data-section="a8">A8 · Mean-Shift 1-D</a>
+  <a href="#a9" class="nav-link" data-section="a9">A9 · 11-pt mAP + Duplicate</a>
+  <span class="nav-group-label">Set B · EC3 Exam (Feb 2026)</span>
+  <a href="#b1" class="nav-link" data-section="b1">B1 · LK Normal Flow</a>
+  <a href="#b2" class="nav-link" data-section="b2">B2 · IoU from Figure</a>
+  <a href="#b3" class="nav-link" data-section="b3">B3 · K-Means Patch</a>
+  <a href="#b4" class="nav-link" data-section="b4">B4 · Gaussian Kernel σ=2</a>
+  <a href="#b5" class="nav-link" data-section="b5">B5 · Zero-Crossings</a>
+  <a href="#b6" class="nav-link" data-section="b6">B6 · Identify the Filter</a>
+  <a href="#b7" class="nav-link" data-section="b7">B7 · Theory-Only (ref.)</a>
+  <span class="nav-group-label">Set C · New Practice (S9–15)</span>
+  <a href="#c1" class="nav-link" data-section="c1">C1 · Histogram Equalization</a>
+  <a href="#c2" class="nav-link" data-section="c2">C2 · Harris Corner Eigenvalues</a>
+  <a href="#c3" class="nav-link" data-section="c3">C3 · 9-pt AP (5 GT / 7 det)</a>
+  <a href="#c4" class="nav-link" data-section="c4">C4 · Non-Max Suppression</a>
+  <a href="#c5" class="nav-link" data-section="c5">C5 · Confidence &amp; Dice Quick-Fire</a>
+</div>
+
+<div class="main">
+  <div class="hero">
+    <span class="hero-tag">Comprehensive Exam Prep · Numericals Only</span>
+    <h1>CV Numericals — <span>Transcript, EC3 Paper &amp; New Practice</span></h1>
+    <p style="color:var(--text2);font-size:1.05rem;max-width:700px;margin-top:0.75rem;">Three sets, one page. Set A is the 9 numericals reconstructed from the post-midsem recordings (reordered into correct syllabus sequence — Lucas-Kanade before mean-shift, not after). Set B extracts and fully solves every numerical from the actual EC3 comprehensive paper (28-02-2026). Set C fills the gaps — new numericals in the same exam-question style, on topics named as examinable but never worked in class: histogram equalization and corner detection.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Set A</strong>9 numericals · sessions D/E/G/H</div>
+      <div class="hero-meta-item"><strong>Set B</strong>6 numericals · EC3, 28-02-2026, AN</div>
+      <div class="hero-meta-item"><strong>Set C</strong>5 numericals · authored, EC3-style</div>
+      <div class="hero-meta-item"><strong>Total</strong>20 worked numericals</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Convolution / Transpose-Conv</span>
+      <span class="topic-chip">IoU / Precision / Recall / AP / mAP</span>
+      <span class="topic-chip">Lucas-Kanade</span>
+      <span class="topic-chip">Mean-Shift</span>
+      <span class="topic-chip">K-Means</span>
+      <span class="topic-chip">Histogram Equalization</span>
+      <span class="topic-chip">Harris Corners</span>
+      <span class="topic-chip">NMS</span>
+    </div>
+    <div class="legend-row">
+      <span class="src-badge src-verified">Source-verified in repo HTML</span>
+      <span class="src-badge src-transcript">Transcript-only (board work)</span>
+      <span class="src-badge src-exam">EC3 exam, extracted</span>
+      <span class="src-badge src-new">New — authored for this set</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="set-divider"><span>Set A — Transcript Numericals (Corrected Order)</span></div>
+
+    <section class="section" id="a1">
+      <div class="section-header">
+        <span class="section-num">A1</span>
+        <h2 class="section-title">Convolution Output Size</h2>
+        <span class="src-badge src-verified">Verified · Session D / CV12 §02</span>
+      </div>
+      <div class="theory-block">
+        <h3>Session D · U-Net encoder · 00:50:43</h3>
+        <p>Given: input N=7 (7×7), kernel K=3, padding P=0 (valid), stride S=1.</p>
+      </div>
+      <div class="formula-block">
+        <div class="formula-label">Output-size formula</div>
+<span class="formula-line"><span class="f-gold">O = ⌊(N − K + 2P) / S⌋ + 1</span></span>
+<span class="formula-line"><span class="f-teal">= ⌊(7 − 3 + 0) / 1⌋ + 1 = 4 + 1 = 5</span></span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">5×5 feature map. Both spatial axes shrink identically.</span></div>
+      <div class="research-insight">
+        <span class="ri-badge">Cross-check</span>
+        <p>Same formula is stated verbatim in <code>CV_Session12_WorldClass.html:447-448</code>: "Convolution output size (used throughout this session)" — <code>O = ⌊(W − K + 2P) / S⌋ + 1</code>. The 7×7→5×5 numbers themselves are the professor's own board example (00:53:26): "7 minus 3, 4, 4 by 1 is 4, 4 plus 1 is 5."</p>
+      </div>
+    </section>
+
+    <section class="section" id="a2">
+      <div class="section-header">
+        <span class="section-num">A2</span>
+        <h2 class="section-title">Transpose Convolution — 3×3 → 5×5</h2>
+        <span class="src-badge src-transcript">Transcript · Session D · 01:03:12</span>
+      </div>
+      <div class="theory-block">
+        <h3>Part A — solve for stride and padding</h3>
+        <p>Input i=3, kernel K=3, target output O=5. Formula: <code>O = (i−1)·S − 2P + K</code>.</p>
+      </div>
+      <div class="formula-block">
+<span class="formula-line"><span class="f-gold">5 = (3−1)S − 2P + 3  →  2 = 2S − 2P  →  S − P = 1</span></span>
+<span class="formula-line"><span class="f-teal">Pick P=0 ("padding introduces data that does not exist") → S=1</span></span>
+<span class="formula-line"><span class="f-dim">Verify: (3−1)×1 − 0 + 3 = 5 ✓</span></span>
+      </div>
+      <div class="theory-block">
+        <h3>Part B — stamp-and-sum mechanics</h3>
+        <p>Input <code>[[1,2,3],[4,5,6],[7,8,9]]</code>, kernel <code>[[1,0,1],[0,1,0],[1,0,1]]</code>. Each input element stamps a weighted copy of the whole kernel into a 5×5 accumulator, offset by stride 1; overlaps sum.</p>
+      </div>
+      <div class="formula-block">
+        <div class="formula-label">Completed 5×5 output (all 9 stamps summed)</div>
+<span class="formula-line f-lime">1   2   4   2   3
+4   6  12   8   6
+8  14  25  16  12
+4  12  18  14   6
+7   8  16   8   9</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Check</span><span class="answer-val">Σoutput = 225 = Σinput(45) × Σkernel(5) ✓</span></div>
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Flag</span><h4>Board work vs. transcript</h4></div>
+        <ul class="exam-list">
+          <li>Professor stamped only the first two elements on the board and generalized the rule — the completed matrix above applies that rule to the remaining seven, done here since it wasn't spoken.</li>
+          <li>He mis-speaks the first stamp as "1 1 1"; a student corrects it to "1 0 1" at 01:08:23 — the matrix above uses the corrected kernel.</li>
+          <li><code>CV_Session12_WorldClass.html:500-502</code> works a <em>different</em> numeric case for the same formula (I=5,S=1,K=3,P=0→O=7, and solving O=7,I=5,K=3,P=0→S=1) — same method, different numbers. Its stamp-and-sum demo (§03, 2×2 input, 3×3 kernel, stride 2) is interactive-only, no digits spelled out — this worked matrix is the only fully-numeric version.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="a3">
+      <div class="section-header">
+        <span class="section-num">A3</span>
+        <h2 class="section-title">IoU by Box Area</h2>
+        <span class="src-badge src-verified">Verified · Session D · CV13 §07</span>
+      </div>
+      <div class="theory-block">
+        <h3>Session D · 01:33:04 — resolved against repo source</h3>
+        <p>GT (green): corners (50,50)–(250,200). Prediction (red): corners (70,80)–(280,220) — recovered exactly from <code>CV_Session13_WorldClass.html:645-655</code>, which was garbled in the recording.</p>
+      </div>
+      <div class="step-list">
+        <li><p>GT area = (200−50)×(250−50) = 150×200 = <strong>30,000</strong>.</p></li>
+        <li><p>Pred area = (220−80)×(280−70) = 140×210 = <strong>29,400</strong>.</p></li>
+        <li><p>Intersection corners: bottom-left (max(50,70),max(50,80))=(70,80); top-right (min(250,280),min(200,220))=(250,200).</p></li>
+        <li><p>Intersection area = (200−80)×(250−70) = 120×180 = <strong>21,600</strong>.</p></li>
+        <li><p>Union = 30,000 + 29,400 − 21,600 = <strong>37,800</strong>.</p></li>
+        <li><p>IoU = 21,600 / 37,800 ≈ <strong style="color:var(--lime)">0.571</strong>.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">IoU ≈ 0.57. Above the 0.5 accept threshold, but professor calls it unsatisfactory — wants overlap "close to 0.95."</span></div>
+      <div class="research-insight">
+        <span class="ri-badge">Deferred promise, kept</span>
+        <p>Professor mentions Dice here and defers it — "we'll come to that later." <code>CV_Session13_WorldClass.html:653</code> completes it with the identical box numbers: Dice = 2×21,600/(30,000+29,400) = 43,200/59,400 ≈ <strong>0.7272</strong>. Dice = 2·IoU/(1+IoU) always ≥ IoU for the same shapes.</p>
+      </div>
+    </section>
+
+    <section class="section" id="a4">
+      <div class="section-header">
+        <span class="section-num">A4</span>
+        <h2 class="section-title">9-Point AP — Six Ground Truths</h2>
+        <span class="src-badge src-transcript">Transcript · Session D · 01:46:41</span>
+      </div>
+      <div class="theory-block"><p>6 ground truths, 9 detections ranked by confidence, IoU threshold 0.5.</p></div>
+      <table class="he-table">
+        <thead><tr><th>Rank</th><th>Verdict</th><th>ΣTP</th><th>ΣFP</th><th>Precision</th><th>Recall</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td style="color:var(--lime)">TP</td><td>1</td><td>0</td><td>1.000</td><td>0.17</td></tr>
+          <tr><td>2</td><td style="color:var(--rose)">FP</td><td>1</td><td>1</td><td>0.500</td><td>0.17</td></tr>
+          <tr><td>3</td><td style="color:var(--rose)">FP</td><td>1</td><td>2</td><td>0.333</td><td>0.17</td></tr>
+          <tr><td>4</td><td style="color:var(--lime)">TP</td><td>2</td><td>2</td><td>0.500</td><td>0.33</td></tr>
+          <tr><td>5</td><td style="color:var(--lime)">TP</td><td>3</td><td>2</td><td>0.600</td><td>0.50</td></tr>
+          <tr><td>6</td><td style="color:var(--lime)">TP</td><td>4</td><td>2</td><td>0.667</td><td>0.67</td></tr>
+          <tr><td>7</td><td style="color:var(--rose)">FP</td><td>4</td><td>3</td><td>0.571</td><td>0.67</td></tr>
+          <tr><td>8</td><td style="color:var(--rose)">FP*</td><td>4</td><td>4</td><td>0.500</td><td>0.67</td></tr>
+          <tr><td>9</td><td style="color:var(--lime)">TP</td><td>5</td><td>4</td><td>0.556</td><td>0.83</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text3);font-size:13px;">*Rank 8's IoU (0.53) clears 0.5, but its ground truth was already claimed by a higher-confidence detection — duplicate, scored FP. 5 TPs against 6 GTs leaves FN=1.</p>
+      <div class="formula-block">
+        <div class="formula-label">9-point interpolation (r = 0.1 … 0.9)</div>
+<span class="formula-line f-teal">1.000, 0.667, 0.667, 0.667, 0.667, 0.667, 0.600, 0.600, 0.600</span>
+<span class="formula-line f-lime">AP = 6.1333 / 9 ≈ 0.6815</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">AP = mAP ≈ 0.68 (single class)</span></div>
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Flag</span><h4>Not reproduced in repo HTML</h4></div>
+        <ul class="exam-list">
+          <li>Professor first says 5 ground truths, corrects to 6 at 01:48:32.</li>
+          <li>States F1 = PR/(P+R) at 01:44:11 — missing the factor of 2; correct F1 = 2PR/(P+R).</li>
+          <li>Self-corrects the r=0.7–0.9 interpolated value from "0.55" to "0.6" at 01:59:29 — used here since it drives his own 6.1333 sum, even though the derived precision column's true tail max is 0.571.</li>
+          <li>This exact 6-GT/9-det numeric case is <strong>not</strong> in any local session HTML — <code>CV_Session13_WorldClass.html</code>'s own canonical AP worked example uses different numbers entirely (5 GT / 10 detections, AP≈0.8 — see B2's sibling table, or the fresh C3 variant below).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="a5">
+      <div class="section-header">
+        <span class="section-num">A5</span>
+        <h2 class="section-title">IoU from Corner Coordinates</h2>
+        <span class="src-badge src-transcript">Transcript · Session E · 00:38:33</span>
+      </div>
+      <div class="theory-block"><p>GT: bottom-left (1,1), top-right (6,5). Prediction: bottom-left (2,2), top-right (8,7). Accept threshold IoU &gt; 0.5.</p></div>
+      <div class="step-list">
+        <li><p>Intersection: x from max(1,2)=2 to min(6,8)=6; y from max(1,2)=2 to min(5,7)=5 → (6−2)×(5−2) = 4×3 = <strong>12</strong>.</p></li>
+        <li><p>GT area = (6−1)×(5−1) = 5×4 = <strong>20</strong>.</p></li>
+        <li><p>Pred area = (8−2)×(7−2) = 6×5 = <strong>30</strong>.</p></li>
+        <li><p>Union = 20 + 30 − 12 = <strong>38</strong>.</p></li>
+        <li><p>IoU = 12/38 ≈ <strong style="color:var(--rose)">0.316</strong>.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">IoU ≈ 0.32 — below 0.5, detection rejected as False Positive.</span></div>
+      <div class="key-insight"><div class="ki-label">Same method as B2</div><p>Identical corner-to-area-to-IoU pipeline as the EC3 exam's own bounding-box question (Set B2) and the box-area method confirmed in A3 — this is the one technique to drill for every IoU question regardless of how the box is given (corners vs. area).</p></div>
+    </section>
+
+    <section class="section" id="a6">
+      <div class="section-header">
+        <span class="section-num">A6</span>
+        <h2 class="section-title">9-Point AP — Four Ground Truths</h2>
+        <span class="src-badge src-transcript">Transcript · Session E · 00:47:10</span>
+      </div>
+      <div class="theory-block"><p>4 ground truths, predictions P1–P6 ranked by confidence, IoU per prediction: 0.91, 0.93, 0.42, 0.76, 0.00, 0.69.</p></div>
+      <table class="he-table">
+        <thead><tr><th>Rank</th><th>IoU</th><th>Verdict</th><th>Precision</th><th>Recall</th></tr></thead>
+        <tbody>
+          <tr><td>P1</td><td>0.91</td><td style="color:var(--lime)">TP</td><td>1.000</td><td>0.25</td></tr>
+          <tr><td>P2</td><td>0.93</td><td style="color:var(--lime)">TP</td><td>1.000</td><td>0.50</td></tr>
+          <tr><td>P3</td><td>0.42</td><td style="color:var(--rose)">FP</td><td>0.667</td><td>0.50</td></tr>
+          <tr><td>P4</td><td>0.76</td><td style="color:var(--lime)">TP</td><td>0.750</td><td>0.75</td></tr>
+          <tr><td>P5</td><td>0.00</td><td style="color:var(--rose)">FP</td><td>0.600</td><td>0.75</td></tr>
+          <tr><td>P6</td><td>0.69</td><td style="color:var(--lime)">TP</td><td>0.667</td><td>1.00</td></tr>
+        </tbody>
+      </table>
+      <div class="formula-block">
+        <div class="formula-label">9-point interpolation (r = 0.1 … 0.9)</div>
+<span class="formula-line f-teal">1.000, 1.000, 1.000, 1.000, 1.000, 0.750, 0.750, 0.667, 0.667</span>
+<span class="formula-line f-lime">AP = 7.833 / 9 ≈ 0.8704</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">AP ≈ 0.87</span></div>
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Flag</span><h4>Not reproduced in repo HTML</h4></div>
+        <ul class="exam-list">
+          <li>Professor misspeaks P6's precision as 4/5; corrected to 4/6 at 00:50:08 (used above).</li>
+          <li>A hypothetical P7 (confidence 0.59, IoU exactly 0.5, all 4 GTs already matched → FP) is floated then explicitly excluded: "we will not consider this for the numerical" (00:52:58).</li>
+          <li>Like A4, this specific 4-GT/6-det case isn't in local HTML — <code>CV_Session13_WorldClass.html</code>'s canonical worked case is 5 GT / 10 detections (AP≈0.8).</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="a7">
+      <div class="section-header">
+        <span class="section-num">A7</span>
+        <h2 class="section-title">Lucas–Kanade Least Squares</h2>
+        <span class="src-badge src-verified">Verified · Session G · CV14-15 §03-04</span>
+      </div>
+      <div class="theory-block">
+        <h3>Session G · 01:16:03</h3>
+        <p>Constraint equation I<sub>x</sub>u + I<sub>y</sub>v + I<sub>t</sub> = 0 — one equation, two unknowns (aperture problem). Assume a K×K window shares the same (u,v).</p>
+      </div>
+      <div class="step-list">
+        <li><p>5×5 window → 25 equations, 2 unknowns → stack as <code>A·d = b</code>.</p></li>
+        <li><p>Over-determined, no exact solution → least-squares normal equations: <code>AᵀA·d = Aᵀb</code>.</p></li>
+        <li><p>AᵀA = 2nd-moment matrix = <code>[[ΣIx², ΣIxIy],[ΣIxIy, ΣIy²]]</code> — identical to the Harris corner matrix.</p></li>
+        <li><p>Solvable only when AᵀA is invertible and both eigenvalues are large.</p></li>
+      </div>
+      <table class="he-table">
+        <thead><tr><th>λ₁, λ₂</th><th>Region</th><th>Flow</th></tr></thead>
+        <tbody>
+          <tr><td>Both small</td><td>Flat</td><td>Untrackable — no gradient information</td></tr>
+          <tr><td>One large, one small</td><td>Edge</td><td>Aperture problem — only normal flow</td></tr>
+          <tr><td>Both large</td><td>Corner</td><td>Trackable — good feature to track</td></tr>
+        </tbody>
+      </table>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">d = (AᵀA)⁻¹Aᵀb, valid at corners only — hence Harris / Shi-Tomasi "good features to track" precede LK, rather than tracking random pixels.</span></div>
+      <div class="research-insight">
+        <span class="ri-badge">Exact match</span>
+        <p><code>CV_Session14-15_WorldClass.html:507-518</code> states this identically: "assume a small window of neighboring pixels shares the same (u,v)... M = Σ[[Ix²,IxIy],[IxIy,Iy²]]... same matrix used by the Harris corner detector," with the identical three-way eigenvalue classification table.</p>
+      </div>
+    </section>
+
+    <section class="section" id="a8">
+      <div class="section-header">
+        <span class="section-num">A8</span>
+        <h2 class="section-title">Mean-Shift Mode Seeking, 1-D</h2>
+        <span class="src-badge src-transcript">Transcript · Session H · 00:14:51</span>
+      </div>
+      <div class="theory-block"><p>Data points {20, 22, 27}. Bandwidth h=6 (fixed). Seed X₀=20. Window = [X−h, X+h].</p></div>
+      <div class="step-list">
+        <li><p>Iter 1: window [14,26] around X₀=20 → captures {20,22}, 27 falls outside. X₁ = (20+22)/2 = <strong>21</strong>.</p></li>
+        <li><p>Iter 2: window [15,27] around X₁=21 → captures {20,22,27}. X₂ = 69/3 = <strong>23</strong>.</p></li>
+        <li><p>Iter 3: window [17,29] around X₂=23 → still {20,22,27}. X₃ = 69/3 = <strong>23</strong>. X₃ = X₂ → converged.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Mode = 23, reached after 3 iterations. Converged point is the region-of-interest centroid used as next frame's tracked window.</span></div>
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Flag</span><h4>Transcription slip</h4></div>
+        <ul class="exam-list">
+          <li>Recording renders iteration 3 as "20+22+23÷3" — that's a slip (would give 21.67). Correct sum is 20+22+27=69, giving the 23 the class agrees on.</li>
+          <li>Numbers not reproduced in local HTML; <code>CV_Session14-15_WorldClass.html §05</code> confirms the identical algorithm (place window → weighted centroid → shift → iterate to ~zero, Epanechnikov-kernel weighting) but as an interactive canvas demo, not this numeric drill.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="a9">
+      <div class="section-header">
+        <span class="section-num">A9</span>
+        <h2 class="section-title">11-Point mAP with a Duplicate Detection</h2>
+        <span class="src-badge src-transcript">Transcript · Session H · 01:04:10</span>
+      </div>
+      <div class="theory-block"><p>3 ground truths (corrected down from 4 mid-walkthrough). Detections A,C,F,D,B,E ranked by confidence, IoU threshold 0.5, judged visually.</p></div>
+      <table class="he-table">
+        <thead><tr><th>Rank</th><th>Det</th><th>Verdict</th><th>Reason</th><th>Precision</th><th>Recall</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>A</td><td style="color:var(--lime)">TP</td><td>Overlap well above 0.5</td><td>1.000</td><td>0.333</td></tr>
+          <tr><td>2</td><td>C</td><td style="color:var(--rose)">FP</td><td>No GT box under it</td><td>0.500</td><td>0.333</td></tr>
+          <tr><td>3</td><td>F</td><td style="color:var(--rose)">FP</td><td>Zero overlap</td><td>0.333</td><td>0.333</td></tr>
+          <tr><td>4</td><td>D</td><td style="color:var(--lime)">TP</td><td>Higher overlap</td><td>0.500</td><td>0.667</td></tr>
+          <tr><td>5</td><td>B</td><td style="color:var(--lime)">TP</td><td>~70% overlap</td><td>0.600</td><td>1.000</td></tr>
+          <tr><td>6</td><td>E</td><td style="color:var(--rose)">FP</td><td>IoU&gt;0.5 but D already claimed this GT</td><td>0.500</td><td>1.000</td></tr>
+        </tbody>
+      </table>
+      <div class="formula-block">
+        <div class="formula-label">11-point interpolation (r = 0.0 … 1.0)</div>
+<span class="formula-line f-teal">1.0, 1.0, 1.0, 1.0, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6</span>
+<span class="formula-line f-lime">AP = 8.2 / 11 ≈ 0.745</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">AP = mAP ≈ 0.745 (single class)</span></div>
+      <div class="prof-quote">
+        <div class="prof-quote-label">Session H · 01:07:22</div>
+        <p>"Still it will turn out to be a false positive. Why? Because D, which already had a higher confidence score, was already tagged as a true positive... that's why the first step is arrange everything in descending order of the confidence score."</p>
+      </div>
+      <div class="research-insight">
+        <span class="ri-badge">Rule confirmed</span>
+        <p><code>CV_Session14-15_WorldClass.html:841,861</code>: "A detection matching an already-claimed ground-truth box is scored FP, even if its own IoU clears the threshold... only the first (highest-confidence) match to a GT box counts as TP." §09 also confirms 11-point (VOC2007) vs all-point (VOC2010+/COCO) is a real historical distinction, not a professor slip.</p>
+      </div>
+    </section>
+
+    <div class="set-divider"><span>Set B — EC3 Comprehensive Exam, 28-02-2026 (AN), Extracted &amp; Solved</span></div>
+    <div class="theory-block">
+      <h3>Source</h3>
+      <p><code>PastQuestionPapers(2025-2026 SEM 1)\2025-2026_SEM_1_AIML_AA05__AB05_1-2024_AIMLCZG525_COMPUTER_VISION_EC3_REGULAR_28-02-2026_AN.docx</code> — Open Book, 40% weightage, 2 hours, 6 questions across 2 pages. Every numerical sub-question is solved below; figures (bounding-box coordinates, the Gaussian-filter matrix, the step-edge plot) were extracted from the docx's embedded images since the raw text export drops picture content.</p>
+    </div>
+
+    <section class="section" id="b1">
+      <div class="section-header">
+        <span class="section-num">B1</span>
+        <h2 class="section-title">Optical Flow — Normal Flow from Brightness Constancy</h2>
+        <span class="src-badge src-exam">EC3 · Q1 <span class="marks-tag">3 marks</span></span>
+      </div>
+      <div class="theory-block">
+        <p><em>"In optical flow, using the brightness constancy equation I<sub>x</sub>·u + I<sub>y</sub>·v + I<sub>t</sub> = 0, calculate the motion vectors u and v for a pixel with the following values: I<sub>x</sub>=20, I<sub>y</sub>=30, and I<sub>t</sub>=15. Assume a 2×2 window and the least-squares solution. Explain your solution."</em></p>
+      </div>
+      <div class="step-list">
+        <li><p>All 4 pixels of the 2×2 window share the same (I<sub>x</sub>,I<sub>y</sub>,I<sub>t</sub>) → all 4 constraint rows are identical: <code>A = [[20,30],[20,30],[20,30],[20,30]]</code>, <code>b = [-15,-15,-15,-15]</code>.</p></li>
+        <li><p>Normal equations: <code>AᵀA = [[1600,2400],[2400,3600]]</code> — this is <strong>rank-1 (singular)</strong>, since every row is identical. The aperture problem is not resolved by repeating the same equation four times.</p></li>
+        <li><p>With AᵀA singular, take the minimum-norm least-squares solution of the single distinct equation <code>20u + 30v = −15</code>: <code>d = Aᵀ(AAᵀ)⁻¹b = (Ix,Iy)·(−It)/(Ix²+Iy²)</code>.</p></li>
+        <li><p>u = 20×(−15)/1300 = −300/1300 ≈ <strong>−0.231</strong>. v = 30×(−15)/1300 = −450/1300 ≈ <strong>−0.346</strong>.</p></li>
+        <li><p>This is the <strong>normal flow</strong> — magnitude |I<sub>t</sub>|/√(I<sub>x</sub>²+I<sub>y</sub>²) = 15/√1300 ≈ 0.416, direction along −(I<sub>x</sub>,I<sub>y</sub>).</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">u ≈ −0.231, v ≈ −0.346 (normal-flow component only).</span></div>
+      <div class="key-insight"><div class="ki-label">Explain-your-solution part</div><p>Because the window's gradient is uniform, the 2×2 window contributes no new directional information — the aperture problem is <em>not</em> resolved by window size alone; it requires pixels with genuinely different gradient directions (a corner). What's computed here is the perpendicular-to-edge component only; the along-edge component stays undetermined. This directly mirrors A7's eigenvalue test: a rank-1 AᵀA here is the algebraic signature of an "edge" (one non-zero eigenvalue), not a "corner."</p></div>
+    </section>
+
+    <section class="section" id="b2">
+      <div class="section-header">
+        <span class="section-num">B2</span>
+        <h2 class="section-title">IoU from Exam Figure — TP/FP Call</h2>
+        <span class="src-badge src-exam">EC3 · Q2 <span class="marks-tag">4 marks</span></span>
+      </div>
+      <div class="theory-block">
+        <p><em>"Determine the IoU between the predicted (red) and ground truth (green) bounding box shown in the figure. Given IoU threshold 0.5, will the predicted bbox be classified as True Positive?"</em></p>
+        <p>Figure coordinates (from the docx's embedded image): A=(50,50), B=(150,150) mark the red (predicted) box; C=(100,100), D=(200,200) mark the green (ground-truth) box.</p>
+      </div>
+      <div class="step-list">
+        <li><p>Predicted box: (50,50)–(150,150) → 100×100 = <strong>10,000</strong>.</p></li>
+        <li><p>GT box: (100,100)–(200,200) → 100×100 = <strong>10,000</strong>.</p></li>
+        <li><p>Intersection: x from max(50,100)=100 to min(150,200)=150 (width 50); y likewise 50 → 50×50 = <strong>2,500</strong>.</p></li>
+        <li><p>Union = 10,000 + 10,000 − 2,500 = <strong>17,500</strong>.</p></li>
+        <li><p>IoU = 2,500 / 17,500 ≈ <strong style="color:var(--rose)">0.143</strong>.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">IoU ≈ 0.14 &lt; 0.5 threshold → the prediction is classified False Positive, not True Positive.</span></div>
+    </section>
+
+    <section class="section" id="b3">
+      <div class="section-header">
+        <span class="section-num">B3</span>
+        <h2 class="section-title">K-Means Clustering — 3×3 Patch, One Iteration</h2>
+        <span class="src-badge src-exam">EC3 · Q4 <span class="marks-tag">4 + 2 marks</span></span>
+      </div>
+      <div class="theory-block">
+        <p><em>"A grayscale 256×256 image is segmented using K-Means, K=3. Initial centers C1=50, C2=120, C3=200. Given pixel intensities in a 3×3 patch: assign each pixel to the nearest cluster [4M]; compute new cluster centers after one iteration [2M]."</em></p>
+      </div>
+      <div class="demo-canvas-wrap">
+        <div class="mgrid" style="grid-template-columns:repeat(3,44px);">
+          <div class="cell c1">45</div><div class="cell c1">55</div><div class="cell c1">60</div>
+          <div class="cell c2">130</div><div class="cell c2">110</div><div class="cell c2">125</div>
+          <div class="cell c3">210</div><div class="cell c3">190</div><div class="cell c3">195</div>
+        </div>
+        <div style="flex:1;min-width:220px;font-family:var(--font-code);font-size:13px;color:var(--text2);">Color = nearest cluster after assignment (below).</div>
+      </div>
+      <div class="theory-block">
+        <h3>Part 1 — assignment (nearest of |x−50|, |x−120|, |x−200|)</h3>
+        <table class="he-table">
+          <thead><tr><th>Pixel</th><th>Dist→C1</th><th>Dist→C2</th><th>Dist→C3</th><th>Cluster</th></tr></thead>
+          <tbody>
+            <tr><td>45</td><td>5</td><td>75</td><td>155</td><td style="color:var(--rose)">C1</td></tr>
+            <tr><td>55</td><td>5</td><td>65</td><td>145</td><td style="color:var(--rose)">C1</td></tr>
+            <tr><td>60</td><td>10</td><td>60</td><td>140</td><td style="color:var(--rose)">C1</td></tr>
+            <tr><td>130</td><td>80</td><td>10</td><td>70</td><td style="color:var(--gold)">C2</td></tr>
+            <tr><td>110</td><td>60</td><td>10</td><td>90</td><td style="color:var(--gold)">C2</td></tr>
+            <tr><td>125</td><td>75</td><td>5</td><td>75</td><td style="color:var(--gold)">C2</td></tr>
+            <tr><td>210</td><td>160</td><td>90</td><td>10</td><td style="color:var(--teal)">C3</td></tr>
+            <tr><td>190</td><td>140</td><td>70</td><td>10</td><td style="color:var(--teal)">C3</td></tr>
+            <tr><td>195</td><td>145</td><td>75</td><td>5</td><td style="color:var(--teal)">C3</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="formula-block">
+        <div class="formula-label">Part 2 — new centers = mean of each cluster</div>
+<span class="formula-line f-rose">C1' = (45+55+60)/3 = 160/3 ≈ 53.33</span>
+<span class="formula-line f-gold">C2' = (130+110+125)/3 = 365/3 ≈ 121.67</span>
+<span class="formula-line f-teal">C3' = (210+190+195)/3 = 595/3 ≈ 198.33</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">C1={45,55,60}→53.33, C2={130,110,125}→121.67, C3={210,190,195}→198.33. Centers barely move — one more iteration converges.</span></div>
+    </section>
+
+    <section class="section" id="b4">
+      <div class="section-header">
+        <span class="section-num">B4</span>
+        <h2 class="section-title">Gaussian Low-Pass Kernel, σ=2</h2>
+        <span class="src-badge src-exam">EC3 · Q5 <span class="marks-tag">2 marks</span></span>
+      </div>
+      <div class="theory-block"><p><em>"Obtain the 3×3 Gaussian LPF kernel with σ=2."</em></p></div>
+      <div class="formula-block">
+<span class="formula-line f-gold">G(x,y) = 1/(2πσ²) · e^(−(x²+y²)/(2σ²)),  x,y ∈ {−1,0,1},  σ=2</span>
+<span class="formula-line f-dim">Unnormalized: center(0,0)→e⁰=1.000 · edge(dist²=1)→e^(−1/8)=0.8825 · corner(dist²=2)→e^(−2/8)=0.7788</span>
+<span class="formula-line f-dim">Sum = 4(0.7788) + 4(0.8825) + 1.000 = 7.6452 → divide every cell by this to normalize</span>
+      </div>
+      <div class="formula-block">
+        <div class="formula-label">Normalized 3×3 kernel (Σ = 1.00)</div>
+<span class="formula-line f-lime">0.1018   0.1154   0.1018
+0.1154   0.1308   0.1154
+0.1018   0.1154   0.1018</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Corner weight 0.1018, edge weight 0.1154, center weight 0.1308 — nearly flat because σ=2 is wide relative to a 3×3 window (a tighter σ=0.5 would concentrate far more weight at the center).</span></div>
+    </section>
+
+    <section class="section" id="b5">
+      <div class="section-header">
+        <span class="section-num">B5</span>
+        <h2 class="section-title">Zero-Crossings of the Second Derivative</h2>
+        <span class="src-badge src-exam">EC3 · Q5 <span class="marks-tag">2+1+1 marks</span></span>
+      </div>
+      <div class="theory-block">
+        <p><em>"Consider an image with a signal with two steps [values a→b at x₁, b→c at x₂]. Show the zero crossings in the second derivative [2M]. Draw them with the image [1M]. What do they signify? [1M]"</em></p>
+      </div>
+      <div class="step-list">
+        <li><p>First derivative of a step edge is an impulse (spike) at the step location — one spike at x₁, one at x₂.</p></li>
+        <li><p>Second derivative of a step is a positive/negative impulse pair straddling each step — it crosses zero exactly <strong>at x₁ and at x₂</strong>, sitting between the pair.</p></li>
+        <li><p>Signification: zero crossings of the second derivative mark the exact locations of intensity discontinuities (edges) — the core principle behind Laplacian-of-Gaussian (LoG) edge detection.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Zero crossings occur precisely at x₁ and x₂ — they locate the edges, independent of the step heights a,b,c.</span></div>
+    </section>
+
+    <section class="section" id="b6">
+      <div class="section-header">
+        <span class="section-num">B6</span>
+        <h2 class="section-title">Identify the 3×3 Filter</h2>
+        <span class="src-badge src-exam">EC3 · Q5 <span class="marks-tag">2 marks</span></span>
+      </div>
+      <div class="theory-block"><p><em>"Consider the following 3×3 filter. In two statements, explain its purpose."</em></p></div>
+      <div class="formula-block">
+        <div class="formula-label">Given kernel</div>
+<span class="formula-line f-gold">[  1   2   1 ]
+[  0   0   0 ]
+[ -1  -2  -1 ]</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">This is a Sobel-style horizontal-edge (vertical-gradient) operator — sign-flipped Sobel Gy. It weights the top row positive and bottom row negative, so it responds strongly wherever intensity changes moving down the image, i.e. it detects horizontal edges while being insensitive to vertical ones (the all-zero middle row and symmetric ±(1,2,1) weighting cancel out uniform regions and horizontal gradients).</span></div>
+    </section>
+
+    <section class="section" id="b7">
+      <div class="section-header">
+        <span class="section-num">B7</span>
+        <h2 class="section-title">Theory-Only Questions (Reference — Not Numerical)</h2>
+        <span class="src-badge src-exam">EC3 · full paper for completeness</span>
+      </div>
+      <div class="theory-block">
+        <p>Per the "numericals only" scope of this page, the EC3 paper's descriptive questions are listed for completeness but not worked here:</p>
+        <table class="he-table">
+          <tbody>
+            <tr class="theory-only-row"><td style="width:70px;">Q1</td><td>YOLO architecture vs. Faster R-CNN — speed/accuracy trade-offs and preferable scenarios <span class="marks-tag">3M</span></td></tr>
+            <tr class="theory-only-row"><td>Q3</td><td>Image representation — binary vs. grayscale vs. color, and effect on analysis technique choice <span class="marks-tag">2M</span></td></tr>
+            <tr class="theory-only-row"><td>Q3</td><td>Upsampling strategies + deconvolution output formula, explained <span class="marks-tag">4M</span></td></tr>
+            <tr class="theory-only-row"><td>Q4</td><td>Probabilistic clustering-based segmentation, explained <span class="marks-tag">4M</span></td></tr>
+            <tr class="theory-only-row"><td>Q4</td><td>U-Net vs. Mask R-CNN — architectural differences, strengths/weaknesses <span class="marks-tag">6M</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="set-divider"><span>Set C — New Practice Numericals (Session 9–15 Gaps, EC3-Style)</span></div>
+    <div class="theory-block">
+      <h3>Why these five</h3>
+      <p>Professor named two topics as examinable that were never worked on the board in any of the 8 post-midsem recordings: <strong>histogram equalization</strong> and <strong>corner detection</strong>. Both get a full numerical here (C1, C2). C3–C5 are reinforcement variants in the same question-and-mark-weightage style as the EC3 paper, covering the detection-metrics pipeline components (AP, NMS, confidence score) with fresh numbers not duplicated anywhere in Sets A or B.</p>
+    </div>
+
+    <section class="section" id="c1">
+      <div class="section-header">
+        <span class="section-num">C1</span>
+        <h2 class="section-title">Histogram Equalization</h2>
+        <span class="src-badge src-new">New <span class="marks-tag">6 marks</span></span>
+      </div>
+      <div class="theory-block">
+        <p><em>"A 64×64 image (4,096 pixels) has 8 gray levels (0–7) with histogram: n₀=790, n₁=1023, n₂=850, n₃=656, n₄=329, n₅=245, n₆=122, n₇=81. Compute the equalized gray levels."</em></p>
+      </div>
+      <table class="he-table">
+        <thead><tr><th>r<sub>k</sub></th><th>n<sub>k</sub></th><th>p(r<sub>k</sub>)</th><th>CDF c(r<sub>k</sub>)</th><th>s<sub>k</sub>=round(7·c)</th></tr></thead>
+        <tbody>
+          <tr><td>0</td><td>790</td><td>0.19</td><td>0.19</td><td>1</td></tr>
+          <tr><td>1</td><td>1023</td><td>0.25</td><td>0.44</td><td>3</td></tr>
+          <tr><td>2</td><td>850</td><td>0.21</td><td>0.65</td><td>5</td></tr>
+          <tr><td>3</td><td>656</td><td>0.16</td><td>0.81</td><td>6</td></tr>
+          <tr><td>4</td><td>329</td><td>0.08</td><td>0.89</td><td>6</td></tr>
+          <tr><td>5</td><td>245</td><td>0.06</td><td>0.95</td><td>7</td></tr>
+          <tr><td>6</td><td>122</td><td>0.03</td><td>0.98</td><td>7</td></tr>
+          <tr><td>7</td><td>81</td><td>0.02</td><td>1.00</td><td>7</td></tr>
+        </tbody>
+      </table>
+      <div class="step-list">
+        <li><p>PDF: p(r<sub>k</sub>) = n<sub>k</sub>/4096.</p></li>
+        <li><p>CDF: c(r<sub>k</sub>) = Σ<sub>j≤k</sub> p(r<sub>j</sub>) — running sum down the column.</p></li>
+        <li><p>Map to new level: s<sub>k</sub> = round((L−1)·c(r<sub>k</sub>)) with L−1=7.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Levels {0,1,2,3,4,5,6,7} map to {1,3,5,6,6,7,7,7}. Levels 4,5,6,7 all compress into the top of the range (6,7,7,7) — equalization spreads out the dense low levels and merges the sparse high ones, flattening the histogram.</span></div>
+      <div class="key-insight"><div class="ki-label">Why this is fair game</div><p>Named directly at Session G · 01:45:30 as an examinable numerical, but never worked on the board in any recording. This is the standard CDF-mapping drill — same mechanics for any histogram/level count.</p></div>
+    </section>
+
+    <section class="section" id="c2">
+      <div class="section-header">
+        <span class="section-num">C2</span>
+        <h2 class="section-title">Harris Corner Detection — Eigenvalues</h2>
+        <span class="src-badge src-new">New <span class="marks-tag">5 marks</span></span>
+      </div>
+      <div class="theory-block">
+        <p><em>"A window has four gradient samples (I<sub>x</sub>,I<sub>y</sub>): (2,1), (1,2), (3,1), (1,3). Compute the second-moment matrix M, its eigenvalues, and the Harris response R (k=0.04). Classify the point."</em></p>
+      </div>
+      <div class="step-list">
+        <li><p>ΣI<sub>x</sub>² = 4+1+9+1 = 15. ΣI<sub>y</sub>² = 1+4+1+9 = 15. ΣI<sub>x</sub>I<sub>y</sub> = 2+2+3+3 = 10.</p></li>
+        <li><p>M = [[15,10],[10,15]]. trace(M) = 30. det(M) = 15×15 − 10×10 = 125.</p></li>
+        <li><p>Eigenvalues: λ = trace/2 ± √((trace/2)² − det) = 15 ± √(225−125) = 15 ± 10 → <strong>λ₁=25, λ₂=5</strong>.</p></li>
+        <li><p>Both eigenvalues large (relative to noise floor) → <strong>corner</strong> candidate, confirm with Harris response.</p></li>
+        <li><p>R = det(M) − k·trace(M)² = 125 − 0.04×900 = 125 − 36 = <strong>89</strong>.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">λ₁=25, λ₂=5, R=89 &gt; 0 with large min(λ) → strong corner. (R≈0 would mean flat; R&lt;0 would mean edge.)</span></div>
+      <div class="key-insight"><div class="ki-label">Ties directly to A7</div><p>Same M = [[ΣIx²,ΣIxIy],[ΣIxIy,ΣIy²]] used for Lucas-Kanade trackability — a Harris "corner" here is exactly the "both eigenvalues large" case that makes LK solvable in A7's table.</p></div>
+    </section>
+
+    <section class="section" id="c3">
+      <div class="section-header">
+        <span class="section-num">C3</span>
+        <h2 class="section-title">9-Point AP — Fresh Variant (5 GT / 7 Detections)</h2>
+        <span class="src-badge src-new">New <span class="marks-tag">6 marks</span></span>
+      </div>
+      <div class="theory-block"><p><em>"5 ground-truth objects, 7 ranked detections, IoU threshold 0.5. Verdicts: TP, TP, FP, TP, FP, TP, TP. Compute the 9-point interpolated AP."</em></p></div>
+      <table class="he-table">
+        <thead><tr><th>Rank</th><th>Verdict</th><th>ΣTP</th><th>Precision</th><th>Recall</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td style="color:var(--lime)">TP</td><td>1</td><td>1.000</td><td>0.2</td></tr>
+          <tr><td>2</td><td style="color:var(--lime)">TP</td><td>2</td><td>1.000</td><td>0.4</td></tr>
+          <tr><td>3</td><td style="color:var(--rose)">FP</td><td>2</td><td>0.667</td><td>0.4</td></tr>
+          <tr><td>4</td><td style="color:var(--lime)">TP</td><td>3</td><td>0.750</td><td>0.6</td></tr>
+          <tr><td>5</td><td style="color:var(--rose)">FP</td><td>3</td><td>0.600</td><td>0.6</td></tr>
+          <tr><td>6</td><td style="color:var(--lime)">TP</td><td>4</td><td>0.667</td><td>0.8</td></tr>
+          <tr><td>7</td><td style="color:var(--lime)">TP</td><td>5</td><td>0.714</td><td>1.0</td></tr>
+        </tbody>
+      </table>
+      <div class="formula-block">
+        <div class="formula-label">9-point interpolation (r = 0.1 … 0.9)</div>
+<span class="formula-line f-teal">1.000, 1.000, 1.000, 1.000, 0.750, 0.750, 0.714, 0.714, 0.714</span>
+<span class="formula-line f-lime">AP = 7.643 / 9 ≈ 0.849</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">AP ≈ 0.849</span></div>
+    </section>
+
+    <section class="section" id="c4">
+      <div class="section-header">
+        <span class="section-num">C4</span>
+        <h2 class="section-title">Non-Max Suppression</h2>
+        <span class="src-badge src-new">New <span class="marks-tag">4 marks</span></span>
+      </div>
+      <div class="theory-block"><p><em>"Four candidate boxes on the same object: A(conf=0.95, reference), B(conf=0.90, IoU with A=0.70), C(conf=0.85, IoU with A=0.30), D(conf=0.60, IoU with A=0.55). NMS threshold=0.5. Which boxes survive?"</em></p></div>
+      <div class="step-list">
+        <li><p>Sort by confidence (already sorted): A, B, C, D. Keep A (highest confidence).</p></li>
+        <li><p>Suppress any remaining box whose IoU with A exceeds 0.5: B (0.70&gt;0.5) → suppressed. D (0.55&gt;0.5) → suppressed.</p></li>
+        <li><p>C (0.30&lt;0.5) survives A's pass. No higher-ranked survivor remains to compare it against → C is kept.</p></li>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">Kept: A, C. Suppressed: B, D (duplicates of A above threshold).</span></div>
+    </section>
+
+    <section class="section" id="c5">
+      <div class="section-header">
+        <span class="section-num">C5</span>
+        <h2 class="section-title">Confidence Score &amp; Dice — Quick-Fire</h2>
+        <span class="src-badge src-new">New <span class="marks-tag">2+2 marks</span></span>
+      </div>
+      <div class="theory-block"><p><em>(a) A cell has Pr(Object)=0.85 and its best box has IoU=0.62 with ground truth. What confidence should it be trained toward? (b) Two boxes have IoU=0.40. What is their Dice coefficient?</em></p></div>
+      <div class="formula-block">
+<span class="formula-line f-gold">(a) confidence = Pr(Object) × IoU = 0.85 × 0.62 = 0.527</span>
+<span class="formula-line f-teal">(b) Dice = 2·IoU / (1+IoU) = 2×0.40 / 1.40 ≈ 0.571</span>
+      </div>
+      <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">(a) 0.527  (b) 0.571 — Dice is always ≥ IoU for the same shapes, confirmed again here.</span></div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs (unused on this page but kept for consistency with other session pages) ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('a')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('b')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+</script>
+
+</body>
+</html>
