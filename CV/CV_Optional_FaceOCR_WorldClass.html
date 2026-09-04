@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Face Detection &amp; OCR — Deep Dive · CV Optional Topic</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px; --radius-lg: 22px; --radius-md: 16px; --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'F/O'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag-row { display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .meta-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--violet); background:rgba(192,132,252,0.12); display:inline-block; padding:4px 12px; border-radius:20px; border:1px solid rgba(192,132,252,0.3); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .src-optional { color:var(--violet); background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; min-width:120px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  input[type="number"] { width:70px; background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:13px; border-radius:6px; padding:5px 8px; }
+  input[type="text"] { width:100%; background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:14px; border-radius:6px; padding:8px 10px; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:10px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; cursor:pointer; }
+  .mgrid .cell:hover { border-color:var(--gold); }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .mgrid .cell.corner { background:rgba(125,211,252,0.25); color:var(--sky); border-color:var(--sky); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; text-align:center; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .toggle-row { display:flex; align-items:center; gap:0.6rem; font-family:var(--font-code); font-size:12px; color:var(--text2); }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") { root.setAttribute("data-theme", saved); }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Optional — Face Detection &amp; OCR</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Face Detection Fundamentals</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Detection, Recognition &amp; Verification</a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Viola-Jones Algorithm (2001)<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Modern Face Detection — DNN Era</span>
+  <a href="#s3" class="nav-link" data-section="s3">03 · MTCNN, RetinaFace &amp; FastFace</a>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Face Verification Metrics<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Optical Character Recognition</span>
+  <a href="#s5" class="nav-link" data-section="s5">05 · OCR Pipeline</a>
+  <a href="#s6" class="nav-link" data-section="s6">06 · OCR Metrics — CER/WER<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s7" class="nav-link" data-section="s7">Conceptual Deep Dives</a>
+  <a href="#s8" class="nav-link" data-section="s8">Exam Quiz (10 Q)</a>
+  <a href="#s9" class="nav-link" data-section="s9">Key Exam Takeaways</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <div class="hero-tag-row">
+      <span class="hero-tag">BITS WILP · AIMLCZG525 · Optional Topic · Face Detection &amp; OCR</span>
+      <span class="meta-tag">Optional</span>
+    </div>
+    <h1>Face Detection &amp; OCR<br><span>From Haar Cascades to Character-Level Metrics</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">Two applied computer-vision pipelines that never left production: how a face becomes a bounding box and then an identity, and how a page of text becomes a scored, correctable string — plus the exact metrics examiners expect you to compute by hand.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Source</strong>Course Notes — Optional Topic</div>
+      <div class="hero-meta-item"><strong>Scope</strong>Detection → Recognition → Verification</div>
+      <div class="hero-meta-item"><strong>Lineage</strong>Viola-Jones (2001) → Deep Detectors</div>
+      <div class="hero-meta-item"><strong>Applications</strong>Attendance, Banking KYC, Document OCR</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Haar Features</span>
+      <span class="topic-chip">Integral Image</span>
+      <span class="topic-chip">AdaBoost</span>
+      <span class="topic-chip">Attentional Cascade</span>
+      <span class="topic-chip">MTCNN</span>
+      <span class="topic-chip">RetinaFace</span>
+      <span class="topic-chip">FastFace</span>
+      <span class="topic-chip">TAR / FAR / FRR</span>
+      <span class="topic-chip">Top-K ID Rate</span>
+      <span class="topic-chip">CER / WER</span>
+      <span class="topic-chip">CTC</span>
+      <span class="topic-chip">LayoutLM</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide</h3>
+      <p>This page covers the <strong>Optional Topic: Face Detection &amp; OCR</strong> from CS2-25 AIMLCZG525. "Optional" here describes the topic's place in the syllabus, not its exam relevance — it is still fair game, and it leans on ideas you already built up across the core Object Detection sessions (bounding boxes, IoU, precision/recall) and applies them to two very concrete, very shippable systems: a face-detection/verification pipeline (attendance kiosks, phone unlock, banking KYC) and an OCR pipeline (invoice parsing, license-plate reading, document digitization).</p>
+      <p>The structure below moves the same way both systems actually run: first <em>find</em> the thing (detect a face / localise a text region), then <em>read</em> it (recognise an identity / recognise characters), then <em>score</em> how well you did (verification metrics / character-error metrics) — with one fully worked numeric example per metric family, matched by a live interactive calculator so you can rebuild the arithmetic yourself.</p>
+    </div>
+
+    <!-- ============ SECTION 01 — DETECTION / RECOGNITION / VERIFICATION ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Face Detection vs Recognition vs Verification</h2>
+        <span class="src-badge src-optional">Optional Topic — Course Notes</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — three different questions, three different jobs</h3>
+        <p><strong>Detection</strong> only answers "is there a face here, and where?" — its output is a bounding box (and, in modern detectors, a handful of facial landmarks), with no notion of identity at all. It's the same underlying task as the generic object detection you already studied, just specialized to one object category with far more regular geometry.</p>
+        <p><strong>Recognition / identification</strong> takes a detected face and answers "whose face is this?" — a <strong>1:N matching</strong> problem, comparing the probe face against every enrolled identity in a gallery (e.g. every employee on a company roster) and returning the closest match (or "unknown" if nothing is close enough).</p>
+        <p><strong>Verification</strong> is narrower and stricter: it answers a yes/no question — "is this face the same person as the one it claims to be?" — a <strong>1:1 matching</strong> problem, comparing exactly one probe against exactly one claimed identity's stored template. Unlocking a phone with your own enrolled face is verification; a police lineup search across a database is identification.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The attendance-system pipeline — detect, align, embed, match</h3>
+        <ol class="pipeline">
+          <li><strong>Detect</strong>
+            <p>Locate every face's bounding box (and landmarks) in the incoming camera frame — via a classical detector like Viola-Jones or a modern DNN detector (MTCNN, RetinaFace).</p></li>
+          <li><strong>Align</strong>
+            <p>Use the detected landmarks (eye centers, nose tip, mouth corners) to warp/rotate the cropped face into a canonical, frontal pose with the eyes horizontal — this removes pose, scale, and in-plane rotation variance <em>before</em> the network ever has to reason about identity.</p></li>
+          <li><strong>Embed</strong>
+            <p>Pass the aligned crop through an embedding network trained specifically to make same-identity faces land close together and different-identity faces land far apart in a fixed-length feature vector (e.g. 128-D or 512-D) — the actual "face representation" everything downstream operates on.</p></li>
+          <li><strong>Match</strong>
+            <p>Compare the new embedding against enrolled embeddings using a similarity measure (cosine similarity or Euclidean distance). For attendance, this is usually 1:N identification against the day's roster: the closest enrolled identity above a confidence threshold is marked present.</p></li>
+        </ol>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>The embedding step above is exactly what <strong>FaceNet</strong> (Schroff, Kalenichenko &amp; Philbin, CVPR 2015) popularized with its <em>triplet loss</em>: for an anchor face, a positive (same identity) and a negative (different identity), the loss directly pulls anchor-positive distance down and pushes anchor-negative distance up, rather than optimizing a classification objective. <strong>ArcFace</strong> (Deng et al., CVPR 2019) later improved on this with an additive angular margin loss operating directly on the angle between embeddings on a hypersphere, becoming one of the most widely deployed open-source face-recognition backbones.</p>
+        <p><cite>Schroff, Kalenichenko, Philbin, "FaceNet", CVPR 2015 · Deng, Guo, Xue, Zafeiriou, "ArcFace", CVPR 2019</cite></p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Detection vs Recognition vs Verification — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Detection = "where" (box, no identity). Recognition/identification = "who, out of N" (1:N). Verification = "is it them" (1:1). These three words are not interchangeable on an exam.</li>
+          <li>Alignment always uses <em>landmarks</em>, not the raw box — that's exactly why a detector that also outputs landmarks (MTCNN, RetinaFace) saves you a separate alignment-network stage.</li>
+          <li>Common mistake: assuming "detection accuracy" tells you anything about recognition accuracy — a system can localize every face perfectly and still misidentify all of them.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 — VIOLA-JONES (INTERACTIVE) ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Viola-Jones Algorithm (2001)</h2>
+        <span class="src-badge src-optional">Optional Topic — Course Notes</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — the first real-time face detector</h3>
+        <p>Paul Viola and Michael Jones (CVPR 2001) built the first face detector fast enough to run on 2001-era hardware — no GPUs, sub-GHz CPUs — by combining three separate ideas, each solving a different bottleneck: <strong>Haar-like features</strong> for cheap, interpretable local intensity cues; the <strong>integral image</strong> to compute those features in constant time; <strong>AdaBoost</strong> to automatically select the handful of features that actually matter; and an <strong>attentional cascade</strong> to avoid wasting compute on the overwhelming majority of image regions that obviously aren't faces.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Haar features — rectangle-based intensity differences</h3>
+        <p>A Haar-like feature is simply the sum of pixel intensities under one rectangle minus the sum under an adjacent rectangle, at some position and scale inside the detection window (classically 24×24 pixels). The value encodes a coarse local-contrast pattern rather than raw pixel values — for example, an "eye region" feature subtracts a lighter rectangle (cheeks / bridge of the nose) from a darker one (the eye sockets above them), since eyes are reliably darker than the skin just below them across almost every face, lighting condition, and skin tone. A 24×24 window admits well over 100,000 possible Haar rectangles once you vary position, scale, and orientation — far too many to evaluate exhaustively at every location and scale in a full image without the next two ideas.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Integral image — turning an O(area) sum into an O(1) lookup</div>
+<span class="formula-line"><span class="f-dim">Definition:</span>  <span class="f-gold">I(x,y) = Σ of all pixel intensities with x'≤x and y'≤y</span>  <span class="f-dim">(above-and-left, inclusive)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">For any axis-aligned rectangle with corners A (top-left), B (top-right), C (bottom-left), D (bottom-right):</span></span>
+<span class="formula-line">  <span class="f-lime">Σ(rectangle) = I(D) − I(B) − I(C) + I(A)</span></span>
+<span class="formula-line"><span class="f-dim">  (A's contribution is subtracted twice — by B and by C — so it is added back once.)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Cost: 4 array lookups + 3 add/subtract ops — independent of the rectangle's width or height.</span></span>
+<span class="formula-line"><span class="f-dim">A single 24×24 window evaluates thousands of Haar features across all scales; O(1) sums are what makes this tractable.</span></span>
+      </div>
+
+      <div class="interactive-demo" id="integralDemo">
+        <h4>⊞ Interactive · Integral Image Rectangle-Sum Calculator</h4>
+        <div class="demo-sub">A 5×5 patch of pixel intensities (darker rows at top simulate an eye region, brighter rows below simulate the cheek). Drag the four sliders to pick any rectangle by its (row,col) corners — the demo computes the sum two ways: brute-force pixel-by-pixel addition, and the O(1) integral-image formula above. Watch the number of raw operations diverge as the rectangle grows.</div>
+        <div class="slider-row"><span class="slider-label">Top row (r1)</span><input type="range" id="intR1" min="0" max="4" value="0" oninput="integralRender()"><span class="slider-val" id="intR1v">0</span></div>
+        <div class="slider-row"><span class="slider-label">Left col (c1)</span><input type="range" id="intC1" min="0" max="4" value="0" oninput="integralRender()"><span class="slider-val" id="intC1v">0</span></div>
+        <div class="slider-row"><span class="slider-label">Bottom row (r2)</span><input type="range" id="intR2" min="0" max="4" value="2" oninput="integralRender()"><span class="slider-val" id="intR2v">2</span></div>
+        <div class="slider-row"><span class="slider-label">Right col (c2)</span><input type="range" id="intC2" min="0" max="4" value="2" oninput="integralRender()"><span class="slider-val" id="intC2v">2</span></div>
+        <div class="demo-canvas-wrap">
+          <div class="mgrid" id="integralGrid" style="grid-template-columns:repeat(5,38px);"></div>
+          <div style="flex:1;min-width:260px;"><div class="demo-output" id="integralOut"></div></div>
+        </div>
+      </div>
+
+      <div class="theory-block">
+        <h3>AdaBoost — boosting a strong classifier out of weak features</h3>
+        <p>Any single Haar feature, thresholded on its own, is a <strong>weak classifier</strong> — only slightly better than chance. AdaBoost (Adaptive Boosting) is a general boosting meta-algorithm that, over many rounds, picks the single best-performing weak classifier from the entire pool of candidate Haar features, re-weights the training examples so misclassified ones matter more in the next round, and combines all the chosen weak classifiers into one weighted-majority-vote strong classifier. Viola and Jones' key empirical finding: AdaBoost only needed to select roughly <strong>200 Haar features</strong> out of the full candidate pool to build a classifier stage accurate enough to be useful — most of the ~100,000+ possible features turned out to be redundant or uninformative.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The attentional cascade — reject early, refine only what survives</h3>
+        <p>In any real image scanned at every position and scale, the overwhelming majority of candidate windows contain no face at all. Running one expensive, fully-featured classifier on every single window would waste almost all of its computation on windows it should have dismissed instantly. The attentional cascade instead chains many classifier stages of increasing complexity: <strong>stage 1 uses just 1-2 Haar features</strong> and is tuned to reject a large fraction of obvious non-face windows immediately while still passing nearly every true face through (very high recall, low precision by design). Only the surviving windows are passed to stage 2 (a few more features, slightly more discriminating), and so on. A window must pass <em>every</em> stage to be declared a face; failing any single stage halts computation for that window right there. Because most windows die in the first stage or two, the <em>average</em> compute per window stays tiny even though the final stages are individually expensive — this asymmetry is exactly what enabled real-time detection on 2001 hardware.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Active Appearance Models — the classical alternative</h3>
+        <p>Active Appearance Models (Cootes, Edwards &amp; Taylor, 1998-2001) take a different classical approach, aimed less at "is there a face" and more at precise landmark localization and expression analysis. An AAM learns a joint statistical model (via PCA) of how a face's <strong>shape</strong> (a set of landmark coordinates) and <strong>texture</strong> (pixel appearance, warped into a mean reference shape) co-vary across a training population. Fitting the model to a new image is an iterative optimization that simultaneously estimates landmark positions and reconstructs an appearance — this made AAMs the workhorse predecessor to today's deep landmark regressors for facial landmark detection, expression recognition, and lip-reading.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Viola-Jones — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Three ingredients, three separate jobs: Haar features (what to measure) + integral image (how to compute it in O(1)) + AdaBoost (which features to keep) + cascade (how to avoid wasting compute). Do not conflate AdaBoost with the cascade — AdaBoost selects features <em>within</em> a stage; the cascade arranges multiple boosted stages in sequence.</li>
+          <li>The integral image formula is a classic "compute one thing, reuse everywhere" trick — expect a direct numeric question giving you four corner values and asking for the rectangle sum.</li>
+          <li>Common mistake: thinking every stage of the cascade examines the same number of features. Early stages are deliberately cheap (1-2 features); later stages are progressively more expensive precisely because far fewer windows reach them.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 — DNN FACE DETECTION ARCHITECTURES ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">DNN Face Detection Architectures</h2>
+        <span class="src-badge src-optional">Optional Topic — Course Notes</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The three names you need cold</h3>
+        <table class="he-table">
+          <thead><tr><th>Model</th><th>Function</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">MTCNN</td><td>Three cascaded CNNs: proposal, refinement, landmarks</td></tr>
+            <tr><td style="color:var(--gold)">RetinaFace</td><td>Single-shot with extra landmark supervision; robust performance</td></tr>
+            <tr><td style="color:var(--gold)">FastFace</td><td>Edge-optimized detector for mobile/attendance systems</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="theory-block">
+        <h3>MTCNN — Multi-task Cascaded CNN, learned features replace Haar features</h3>
+        <p>MTCNN (Zhang, Zhang, Li &amp; Qiao, 2016) keeps the Viola-Jones "reject early, refine later" philosophy but replaces every hand-crafted piece with a learned one. Its three stages: <strong>P-Net (Proposal Network)</strong>, a small fully-convolutional net that slides over an image pyramid to quickly generate candidate face windows with a first-pass bounding-box regression; <strong>R-Net (Refine Network)</strong>, which takes P-Net's (still-noisy) candidates, filters out many more false positives, and tightens the boxes; and <strong>O-Net (Output Network)</strong>, the final and most capable stage, which further refines the box and additionally regresses <strong>5 facial landmarks</strong> (both eyes, nose tip, both mouth corners) — producing exactly the alignment input needed for the embed step in Section 01's pipeline, all within the detector itself.</p>
+      </div>
+
+      <div class="cnn-flow">
+        <div class="cnn-flow-node"><div class="cnn-flow-box input-box">Image<br>Pyramid</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b1">P-Net<br>propose</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b2">R-Net<br>refine</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b3">O-Net<br>output</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box output-box">Box +<br>5 landmarks</div></div>
+      </div>
+
+      <div class="theory-block">
+        <h3>RetinaFace — single-shot detection, landmarks as free auxiliary supervision</h3>
+        <p>RetinaFace (Deng et al., CVPR 2020) drops the multi-stage cascade structure entirely and detects faces in a <strong>single forward pass</strong>, extending a RetinaNet-style single-shot detector. Its key idea: during training, add extra prediction heads for 5 facial landmarks (and, in its full variant, dense 3D face vertices) as auxiliary regression targets alongside the box. This multi-task supervision doesn't need to be used at inference if you don't want the landmarks — but training against it makes the shared backbone's features noticeably better, giving RetinaFace markedly more robust detection on small, occluded, and extreme-pose faces than a box-only detector of similar size, while also handing you box + landmarks together in one pass (no separate alignment network needed).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>FastFace — trading a little accuracy for real-time, on-device speed</h3>
+        <p>"FastFace"-style detectors target the deployment reality of attendance kiosks and mobile devices: a compact, edge-optimized architecture (following the same lightweight-backbone design principles as MobileNet-family networks), built to be pruning- and quantization-friendly so it runs at real-time frame rates on cheap fixed hardware — an embedded camera or phone SoC — rather than requiring a GPU server. This is the same overall speed-vs-accuracy trade-off you saw with YOLO versus the R-CNN family: a small accuracy cost buys a large, often necessary, latency and power win.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Notice the direct parallel to the two-stage-vs-one-stage story from object detection: MTCNN is architecturally a (learned) cascade, much like Viola-Jones was a (hand-crafted) cascade — both reject early and refine late. RetinaFace instead collapses everything into one pass, the same structural move YOLO made relative to R-CNN. The lesson generalizes across the whole field: staged rejection was originally a compute-budget necessity; once backbones and training signal are strong enough, a well-supervised single shot can match or beat a cascade.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>DNN detectors — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>MTCNN's stage order is P-Net → R-Net → O-Net — proposal, then refine, then output+landmarks. Getting the order backwards is a classic wrong-answer trap.</li>
+          <li>RetinaFace's headline property is <em>joint landmark supervision inside a single-shot detector</em> — not "it's more accurate" in the abstract, but specifically more robust because the extra supervision improves the shared features.</li>
+          <li>Know WHY an edge-optimized detector (FastFace) exists at all: attendance kiosks and phones cannot assume GPU-class compute, so latency/power constraints, not raw accuracy, often drive the architecture choice.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 — FACE VERIFICATION METRICS (INTERACTIVE) ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Face Verification Metrics</h2>
+        <span class="src-badge src-optional">Optional Topic — Course Notes</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Detection quality still uses the metric you already know</h3>
+        <p>Before you can verify or recognize a face, you first need to have detected it well — and the bar for "detected well" is the same one from the core Object Detection sessions: <strong>IoU-based detection with a standard TP threshold of IoU ≥ 0.5</strong> between the predicted and ground-truth face box. Everything below this line assumes the box has already cleared that bar and is about scoring the <em>identity</em> decision on top of it.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">TAR, FAR, FRR — the confusion-matrix of a yes/no identity decision</div>
+<span class="formula-line"><span class="f-gold">TAR (True Acceptance Rate)</span>  <span class="f-dim">= genuine pairs correctly matched / total genuine pairs</span></span>
+<span class="formula-line"><span class="f-rose">FAR (False Acceptance Rate)</span>  <span class="f-dim">= impostor pairs incorrectly matched / total impostor pairs</span></span>
+<span class="formula-line"><span class="f-teal">FRR (False Rejection Rate)</span>  <span class="f-dim">= genuine pairs incorrectly rejected / total genuine pairs = 1 − TAR</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">A "genuine pair" = two photos of the SAME person. An "impostor pair" = two photos of DIFFERENT people.</span></span>
+<span class="formula-line"><span class="f-dim">Raising the similarity threshold needed to accept a match always trades TAR down against FAR down —</span></span>
+<span class="formula-line"><span class="f-dim">you cannot improve both simultaneously without a genuinely better embedding model.</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why report "TAR @ FAR = X" instead of one accuracy number</h3>
+        <p>Because every threshold choice trades TAR against FAR, an unconditional "accuracy" figure hides the operating point it was measured at. Different deployments tolerate wildly different false-acceptance risk: a phone's face-unlock can accept a slightly higher FAR for user convenience, while a <strong>banking</strong> authentication step authorizing a money transfer needs FAR pinned extremely low. The convention is therefore to fix FAR at a demanding value — commonly <strong>FAR = 10⁻³</strong> for banking-grade systems — and report whatever TAR is achievable at that exact operating point, written as <strong>"TAR @ FAR = 10⁻³"</strong>. Two systems should only ever be compared at the same FAR operating point; comparing a "TAR @ FAR=10⁻²" claim against a "TAR @ FAR=10⁻⁴" claim is comparing different problems.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Top-K identification rate — the 1:N counterpart</h3>
+        <p>TAR/FAR/FRR describe a 1:1 verification decision. For 1:N <em>identification</em>, the system ranks every gallery identity by similarity to the probe, and <strong>Top-K identification rate</strong> is the fraction of probe queries for which the correct identity appears anywhere within the top K ranked candidates. K=1 ("rank-1 accuracy") is the strictest version; K=5 or K=10 is more forgiving and common when a human reviewer inspects a short candidate list rather than trusting the system's single top guess outright.</p>
+      </div>
+
+      <div class="interactive-demo" id="tarFarDemo">
+        <h4>⊞ Interactive · TAR/FAR Operating-Point Slider</h4>
+        <div class="demo-sub">Illustrative ROC-style operating points showing the characteristic TAR/FAR trade-off shape (not measurements from a specific dataset). Drag through five similarity-score thresholds — watch TAR and FAR move in the same direction as the threshold, and FRR move opposite to TAR. The middle point marks the banking-grade FAR = 10⁻³ operating point.</div>
+        <div class="slider-row">
+          <span class="slider-label">Threshold</span>
+          <input type="range" id="tarFarSlider" min="0" max="4" value="2" oninput="tarFarRender()">
+          <span class="slider-val" id="tarFarThreshVal">0.90</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <div style="flex:1;min-width:220px;">
+            <div class="bar-chart" id="tarFarBars"></div>
+          </div>
+          <div style="flex:1;min-width:260px;"><div class="demo-output" id="tarFarOut"></div></div>
+        </div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Verification metrics — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>FRR = 1 − TAR always — if you're given one, you can compute the other with no extra information.</li>
+          <li>"TAR @ FAR = 10⁻³" is a single number, but it is meaningless without stating the FAR it was measured at — always ask "at what operating point?" before comparing two systems' TAR figures.</li>
+          <li>Common mistake: treating Top-K identification rate and TAR@FAR as interchangeable — one describes a ranked 1:N search, the other a thresholded 1:1 decision.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 — OCR PIPELINE ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Optical Character Recognition Pipeline</h2>
+        <span class="src-badge src-optional">Optional Topic — Course Notes</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — OCR is detection, then classification, then cleanup</h3>
+        <p>OCR mirrors the exact three-stage shape you've now seen twice: find the region, read the region, then fix likely mistakes using outside knowledge. The three stages are largely independent and swappable — you can pair a classical localizer with a transformer recognizer, or vice versa, depending on the deployment's document type and speed budget.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The three-stage pipeline</h3>
+        <ol class="pipeline">
+          <li><strong>Localisation</strong>
+            <p>Detect the bounding regions containing text (lines, words, or whole paragraphs) before any character is read. Approaches range from classical <strong>edge detection</strong> (fast, works on clean scanned documents with high contrast) to general-purpose <strong>YOLO-style object detectors</strong> repurposed to detect "text region" as a class, up to <strong>transformer-based document models</strong> like <strong>LayoutLM</strong> and <strong>DiT (Document Image Transformer)</strong>, which jointly reason about text position and visual layout for complex real-world documents (invoices, forms, multi-column pages).</p></li>
+          <li><strong>Recognition</strong>
+            <p>Given a localized text region, predict the actual character sequence it contains. Classical engines like <strong>Tesseract</strong> and <strong>EasyOCR</strong> use a <strong>CNN+LSTM</strong> backbone trained with a <strong>CTC (Connectionist Temporal Classification)</strong> loss, which lets the network predict a variable-length character sequence without needing per-character segmentation labels during training. Newer systems instead use <strong>transformer decoders</strong> that attend over the image features to autoregressively predict the character sequence, similar in spirit to image captioning.</p></li>
+          <li><strong>Post-processing</strong>
+            <p>Raw recognizer output is corrected using outside structure: <strong>language models</strong> re-rank plausible full-word or full-sentence completions, <strong>lexicons</strong> snap a near-miss output to the closest valid dictionary word, and <strong>regex patterns</strong> validate or correct output against a known format (e.g. a license-plate pattern, a date format, an invoice-number template) — resolving ambiguous glyphs (0/O, 1/l/I, 5/S) that the recognizer alone cannot reliably disambiguate from pixels.</p></li>
+        </ol>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p><strong>CTC</strong> (Graves, Fernández, Gomez &amp; Schmidhuber, ICML 2006) is the piece that makes the CNN+LSTM recognition stage trainable at all without character-level segmentation: it sums over every possible alignment between the network's frame-by-frame character predictions and the target string (using a special "blank" symbol to absorb repeated or empty frames), so you only ever need the correct output <em>string</em> as a label, never the exact pixel boundary of each character. This is exactly why classical OCR engines could be trained on whole-word or whole-line image/text pairs rather than requiring laborious per-character bounding-box annotation.</p>
+        <p><cite>Graves, Fernández, Gomez, Schmidhuber, "Connectionist Temporal Classification", ICML 2006</cite></p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>OCR pipeline — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Localisation and recognition are separately swappable stages — never assume one specific architecture (e.g. "YOLO") is required; know which class of tool belongs to which stage.</li>
+          <li>Post-processing is not optional polish — it's where ambiguous glyphs (0/O, 1/l/I) that are genuinely unresolvable from pixels alone get fixed using language/lexicon/format context.</li>
+          <li>Common mistake: conflating CTC with a model architecture. CTC is a <em>loss/alignment mechanism</em>, not a network — it can sit on top of any frame-wise sequence output.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 — OCR METRICS (INTERACTIVE) ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">OCR Metrics — CER, WER &amp; Localisation mAP</h2>
+        <span class="src-badge src-optional">Optional Topic — Course Notes</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Three metrics, three granularities</h3>
+        <table class="he-table">
+          <thead><tr><th>Metric</th><th>Definition</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--gold)">Character / Word Accuracy</td><td>Exact match at the specified granularity (character or whole word)</td></tr>
+            <tr><td style="color:var(--gold)">CER / WER</td><td>Edit-distance formula: (substitutions + insertions + deletions) / length</td></tr>
+            <tr><td style="color:var(--gold)">mAP for localisation</td><td>Detection accuracy of the text-region boxes, independent of recognition</td></tr>
+          </tbody>
+        </table>
+        <p style="color:var(--text2);">mAP for localisation reuses exactly the same IoU-and-precision-recall machinery from the core detection sections — it measures ONLY whether the text-region boxes were found, saying nothing about whether the characters inside them were read correctly. A pipeline can have excellent localisation mAP and terrible CER (boxes found perfectly, characters misread), or the reverse (a slightly loose box that still lets the recognizer read the text fine).</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Character / Word Error Rate — edit distance normalized by reference length</div>
+<span class="formula-line"><span class="f-gold">CER = (S + I + D) / N</span>   <span class="f-dim">— S=substitutions, I=insertions, D=deletions, N=character count of the ground-truth reference</span></span>
+<span class="formula-line"><span class="f-teal">WER</span>  <span class="f-dim">= identical formula, computed on words instead of characters</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">S, I, D come from the minimum-edit-distance (Levenshtein) alignment between the OCR output and the ground truth —</span></span>
+<span class="formula-line"><span class="f-dim">the SAME alignment used to measure how many single-character edits turn one string into the other.</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Worked example — GT "CAT", OCR output "COT"</h3>
+        <ol class="step-list">
+          <li><p>Align the strings character by character: position 1 <code>C</code>=<code>C</code> (match), position 2 <code>A</code> vs <code>O</code> (mismatch), position 3 <code>T</code>=<code>T</code> (match).</p></li>
+          <li><p>The mismatch at position 2 is a single <strong>substitution</strong>: S=1. There are no insertions or deletions needed: I=0, D=0.</p></li>
+          <li><p>Ground-truth length N = 3 characters.</p></li>
+          <li><p>CER = (S+I+D)/N = (1+0+0)/3 = 1/3 ≈ <strong style="color:var(--lime)">33%</strong>.</p></li>
+          <li><p>Word accuracy requires an <em>exact</em> string match — "COT" ≠ "CAT", so the whole word is wrong regardless of how close it looks: word accuracy = <strong style="color:var(--rose)">0</strong>.</p></li>
+        </ol>
+        <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">CER ≈ 33% (one substitution out of three characters). Word accuracy = 0 — a single wrong character still fails an exact-match word-level check.</span></div>
+      </div>
+
+      <div class="interactive-demo" id="cerDemo">
+        <h4>⊞ Interactive · Live CER / WER Calculator</h4>
+        <div class="demo-sub">Defaults reproduce the worked example above exactly (CER≈33%, word accuracy=0). Edit either string and watch the edit-distance breakdown, CER, WER, and word/character accuracy recompute live.</div>
+        <div class="slider-row"><span class="slider-label">Ground truth</span><input type="text" id="cerGT" value="CAT" oninput="cerRender()"></div>
+        <div class="slider-row"><span class="slider-label">OCR output</span><input type="text" id="cerOCR" value="COT" oninput="cerRender()"></div>
+        <div class="demo-output" id="cerOut"></div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>OCR metrics — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>CER's denominator is the GROUND-TRUTH length N, not the OCR output's length — a common numeric slip.</li>
+          <li>A low CER does not imply high word accuracy: one character wrong anywhere in a word still fails an exact-match word/field check (CAT/COT: CER≈33%, word accuracy=0).</li>
+          <li>Report CER/WER AND word/character accuracy together — for downstream systems needing exact values (invoice totals, plate numbers, account numbers), word accuracy is the number that actually matters operationally, even though CER is the more common training/benchmarking metric.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 — CONCEPTUAL DEEP DIVES ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Conceptual Deep Dives</h2>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Compare &amp; Contrast</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s7-a', this, 's7-ex')">Cascade vs Single-Shot</button>
+          <button class="tab-btn" onclick="showTab('s7-b', this, 's7-ex')">Verification Operating Points</button>
+          <button class="tab-btn" onclick="showTab('s7-c', this, 's7-ex')">CER vs Word Accuracy</button>
+        </div>
+
+        <div class="tab-panel active" id="s7-a" data-tab-group="s7-ex">
+          <div class="example-q">Viola-Jones and MTCNN both use staged/cascaded designs — so what actually changed between 2001 and 2016?</div>
+          <ol class="step-list">
+            <li><p>Viola-Jones' cascade rejects using hand-crafted Haar features, selected from a small fixed vocabulary of rectangle-difference templates by AdaBoost — the "features" themselves never change or learn.</p></li>
+            <li><p>MTCNN's staged design (P-Net → R-Net → O-Net) keeps the "reject early, refine later" philosophy, but each stage is now a full learned CNN operating directly on raw pixels, so the features themselves are learned end-to-end and can jointly regress both boxes and landmarks — something no hand-crafted feature set could do without an entirely separate model.</p></li>
+            <li><p>RetinaFace drops the staged/cascade structure entirely in favor of one single-shot network trained with rich auxiliary landmark supervision — proof that once the backbone and training signal are strong enough, explicit multi-stage rejection is no longer necessary for real-time speed.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Staged rejection was originally a compute-budget necessity for an era without GPUs. Deep single-shot detectors get their speed from raw model capacity and shared computation instead — the cascade idea didn't disappear, it got absorbed into a stronger backbone.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s7-b" data-tab-group="s7-ex">
+          <div class="example-q">Why can't you report one unconditional "accuracy" number for a face-verification system?</div>
+          <ol class="step-list">
+            <li><p>Verification is a threshold-based binary decision on a similarity score — every choice of threshold trades TAR against FAR; raise the threshold and FAR drops, but so does TAR.</p></li>
+            <li><p>Different deployments tolerate different false-acceptance risk: unlocking a personal phone can tolerate a slightly higher FAR for convenience, while a banking system authorizing a transfer needs FAR pinned very low, so a "banking-grade" claim must first fix FAR (e.g. 10⁻³) and only then ask what TAR is achievable there.</p></li>
+            <li><p>That's why the field reports paired "TAR @ FAR = X" operating points rather than one context-free accuracy figure — the same ROC-curve logic that underlies precision/recall trade-offs in ordinary object detection.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Any TAR number without a stated FAR (or vice versa) is close to meaningless — always ask "at what operating point?" before comparing two systems.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s7-c" data-tab-group="s7-ex">
+          <div class="example-q">The CAT/COT example gives CER≈33% but word accuracy=0% — which one should you trust?</div>
+          <ol class="step-list">
+            <li><p>CER is a fine-grained, partial-credit metric — it rewards getting most characters right even when the whole string isn't perfect, which is useful for gauging how "close" a recognizer is getting during development.</p></li>
+            <li><p>Word accuracy is all-or-nothing at the word/field level — for downstream systems that must match a value exactly (an invoice total, a license plate, an account number), one wrong character is just as catastrophic as ten, so CER's partial credit can be misleadingly optimistic about deployment readiness.</p></li>
+            <li><p>Reporting both separately lets you diagnose different failure modes: high CER with low word accuracy suggests the recognizer is far off; low CER with still-low word accuracy across many short fields (like plates) suggests small, individually minor character errors are quietly breaking every single field.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Pick the metric whose forgiveness profile matches how the output is actually used: per-character CER for benchmarking recognizer quality, per-word/per-field exact-match accuracy for deployment sign-off.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 — EXAM QUIZ ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Exam Quiz — 10 Questions</h2>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Integral image</span>
+          <div class="quiz-q-text">Why can Haar-like feature sums be computed in O(1) time regardless of the rectangle's size?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Haar features only ever use a single pixel</li>
+          <li><span class="opt-letter">B</span>The integral image lets any rectangle's sum be read off with 4 array lookups</li>
+          <li><span class="opt-letter">C</span>AdaBoost caches every feature value in advance</li>
+          <li><span class="opt-letter">D</span>The cascade skips computing features for most windows</li>
+        </ul>
+        <div class="quiz-reveal">Σ(rectangle) = I(D) − I(B) − I(C) + I(A) — four lookups and three additions, independent of the rectangle's width/height. <strong>A</strong> describes a trivial case, not the general mechanism. <strong>C</strong> confuses AdaBoost (feature selection) with the integral image (feature computation). <strong>D</strong> describes the cascade's benefit, which is a separate optimization on top.<span class="mistake">Common mistake</span>Mixing up which of the four Viola-Jones ingredients solves which specific bottleneck.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Attentional cascade</span>
+          <div class="quiz-q-text">Why do the earliest stages of the Viola-Jones cascade use only 1-2 Haar features?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>To maximize accuracy on the hardest examples</li>
+          <li><span class="opt-letter">B</span>Because early stages must be extremely fast to reject the large majority of obviously non-face windows immediately</li>
+          <li><span class="opt-letter">C</span>Because AdaBoost hard-codes exactly 2 features for every first stage by definition</li>
+          <li><span class="opt-letter">D</span>Because color images need fewer features than grayscale</li>
+        </ul>
+        <div class="quiz-reveal">Most scanned windows are background, not faces — a cheap 1-2-feature stage rejects most of them almost instantly while still passing nearly every true face through, keeping average compute per window tiny. <strong>A</strong> describes the later, more expensive stages instead. <strong>C</strong> and <strong>D</strong> are both fabricated constraints not part of the algorithm.<span class="mistake">Common mistake</span>Assuming every cascade stage does the same amount of work — the whole point is that they don't.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Verification vs identification</span>
+          <div class="quiz-q-text">What distinguishes face verification from face identification?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Verification is 1:N; identification is 1:1</li>
+          <li><span class="opt-letter">B</span>Verification is 1:1 (is this the claimed person, yes/no); identification is 1:N (who is this, out of a gallery)</li>
+          <li><span class="opt-letter">C</span>They are two names for the same task</li>
+          <li><span class="opt-letter">D</span>Verification never uses a threshold, identification always does</li>
+        </ul>
+        <div class="quiz-reveal">Verification checks one probe against one claimed identity's template (1:1); identification ranks a probe against every enrolled identity in a gallery (1:N). <strong>A</strong> has the ratios backwards. <strong>D</strong> is false — both use a similarity threshold or ranking cutoff.<span class="mistake">Common mistake</span>Using "recognition" and "verification" interchangeably in exam answers — they answer structurally different questions.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">MTCNN</span>
+          <div class="quiz-q-text">What are MTCNN's three cascaded stages, in the correct order?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>R-Net → P-Net → O-Net</li>
+          <li><span class="opt-letter">B</span>O-Net → R-Net → P-Net</li>
+          <li><span class="opt-letter">C</span>P-Net (proposal) → R-Net (refine) → O-Net (output + landmarks)</li>
+          <li><span class="opt-letter">D</span>Haar → AdaBoost → Cascade</li>
+        </ul>
+        <div class="quiz-reveal">P-Net proposes candidate windows from an image pyramid, R-Net filters/refines them, and O-Net produces the final box plus 5 facial landmarks. <strong>A</strong> and <strong>B</strong> reorder the stages incorrectly. <strong>D</strong> lists Viola-Jones components, not MTCNN's.<span class="mistake">Common mistake</span>Reversing the stage order — remember it as "coarse to fine": propose, then refine, then finalize.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">RetinaFace</span>
+          <div class="quiz-q-text">What is RetinaFace's key architectural addition relative to a plain single-shot detector?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>An external Selective-Search-style proposal stage</li>
+          <li><span class="opt-letter">B</span>Extra facial-landmark (and 3D vertex) supervision trained jointly with the box-regression head</li>
+          <li><span class="opt-letter">C</span>A three-stage cascade identical to MTCNN's</li>
+          <li><span class="opt-letter">D</span>Complete removal of anchor-based box prediction</li>
+        </ul>
+        <div class="quiz-reveal">RetinaFace adds landmark (and dense 3D vertex, in its full variant) regression as auxiliary training targets, which improves the shared backbone's features and yields more robust detection, especially on small/occluded/extreme-pose faces. <strong>A</strong> and <strong>C</strong> describe entirely different architectures. <strong>D</strong> is unrelated to what makes RetinaFace distinct.<span class="mistake">Common mistake</span>Describing RetinaFace as "just more accurate" without naming the actual mechanism (joint landmark supervision) that produces that robustness.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">TAR @ FAR</span>
+          <div class="quiz-q-text">A verification system reports "TAR @ FAR = 10⁻³ = 0.96." What does this mean?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>96% of all match attempts, genuine or impostor, are accepted</li>
+          <li><span class="opt-letter">B</span>At the threshold where only 0.1% of impostor pairs are wrongly accepted, 96% of genuine pairs are still correctly matched</li>
+          <li><span class="opt-letter">C</span>The system rejects 96% of genuine users</li>
+          <li><span class="opt-letter">D</span>FAR and TAR are independent numbers with no shared threshold</li>
+        </ul>
+        <div class="quiz-reveal">"TAR @ FAR=X" names one specific operating point on the ROC curve: fix the threshold so FAR equals X, then report the TAR achieved at that same threshold. <strong>A</strong> ignores that TAR and FAR are measured on different pair populations (genuine vs impostor). <strong>C</strong> confuses TAR with FRR. <strong>D</strong> is false — both are read off the same chosen threshold.<span class="mistake">Common mistake</span>Reading "TAR @ FAR=10⁻³" as an unconditional accuracy score rather than a specific, threshold-linked operating point.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">FRR</span>
+          <div class="quiz-q-text">A system's TAR at a given threshold is 0.93. What is its FRR at that same threshold?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>0.93</li>
+          <li><span class="opt-letter">B</span>Cannot be determined without knowing FAR</li>
+          <li><span class="opt-letter">C</span>0.07</li>
+          <li><span class="opt-letter">D</span>1.93</li>
+        </ul>
+        <div class="quiz-reveal">FRR = 1 − TAR = 1 − 0.93 = <strong>0.07</strong> — this relationship holds by definition at any single threshold, no FAR value needed. <strong>B</strong> wrongly assumes FRR depends on FAR (it doesn't — FRR only depends on TAR at the same threshold). <strong>A</strong> confuses FRR with TAR itself.<span class="mistake">Common mistake</span>Believing you need the full ROC curve to get FRR from TAR — at a single fixed threshold, it's simple subtraction.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">CER worked example</span>
+          <div class="quiz-q-text">Ground truth = "CAT", OCR output = "COT". What is the CER?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>0%</li>
+          <li><span class="opt-letter">B</span>≈33% (1 substitution / 3 characters)</li>
+          <li><span class="opt-letter">C</span>≈66%</li>
+          <li><span class="opt-letter">D</span>100%, since the word is entirely wrong</li>
+        </ul>
+        <div class="quiz-reveal">One substitution (A→O), zero insertions, zero deletions, ground-truth length 3: CER = (1+0+0)/3 ≈ <strong>33%</strong>. <strong>C</strong> would require 2 errors. <strong>D</strong> confuses CER (character-level, partial credit) with word accuracy (all-or-nothing).<span class="mistake">Common mistake</span>Reporting CER as if the whole word being "wrong" makes CER 100% — CER only counts actual character-level edits, not word-level correctness.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Word accuracy</span>
+          <div class="quiz-q-text">For the same "CAT" vs "COT" example, what is the word accuracy?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>67%</li>
+          <li><span class="opt-letter">B</span>33%</li>
+          <li><span class="opt-letter">C</span>0% — the entire word is wrong even though only one character differs</li>
+          <li><span class="opt-letter">D</span>100%</li>
+        </ul>
+        <div class="quiz-reveal">Word accuracy requires an EXACT string match; "COT" ≠ "CAT" regardless of how close the strings are character-by-character, so word accuracy = <strong>0</strong>. <strong>A</strong> and <strong>B</strong> both wrongly try to apply CER's partial-credit logic to word accuracy.<span class="mistake">Common mistake</span>Assuming a low CER guarantees a nonzero word accuracy — they are unrelated once any single character differs.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">OCR metrics</span>
+          <div class="quiz-q-text">Which metric evaluates ONLY the text-region localisation step, independent of whether the characters were read correctly?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>CER</li>
+          <li><span class="opt-letter">B</span>WER</li>
+          <li><span class="opt-letter">C</span>Word accuracy</li>
+          <li><span class="opt-letter">D</span>mAP for localisation</li>
+        </ul>
+        <div class="quiz-reveal">mAP for localisation reuses the IoU/precision-recall machinery from object detection to score only whether the text-region boxes were found — it says nothing about the recognized characters. <strong>A</strong>, <strong>B</strong>, and <strong>C</strong> all evaluate the RECOGNITION stage's output, not the localisation boxes.<span class="mistake">Common mistake</span>Assuming a single end-to-end OCR score exists — localisation and recognition quality must be reported and diagnosed separately.</div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 — KEY EXAM TAKEAWAYS ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Key Exam Takeaways</h2>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Face Detection &amp; OCR — five points to lock in before the exam</h4></div>
+        <ul class="exam-list">
+          <li><strong>Viola-Jones combines three distinct mechanisms:</strong> the integral image (O(1) rectangle sums), AdaBoost (selecting ~200 useful Haar features out of a huge candidate pool), and the attentional cascade (rejecting most non-face windows in 1-2 cheap features per stage) — know which mechanism solves which bottleneck.</li>
+          <li><strong>Modern face detectors are MTCNN and RetinaFace:</strong> MTCNN keeps a learned three-stage cascade (P-Net → R-Net → O-Net); RetinaFace collapses this into one single-shot pass with auxiliary landmark supervision. Verification is scored with <strong>TAR @ FAR</strong> operating points (e.g. TAR @ FAR=10⁻³ for banking-grade systems), never an unconditional accuracy number.</li>
+          <li><strong>OCR always requires localisation before recognition</strong> — detect the text region first (edge detection, YOLO-style detectors, or transformer document models like LayoutLM/DiT), then read the characters inside it (CNN+LSTM+CTC or transformer decoders); the two stages are scored with entirely separate metrics.</li>
+          <li><strong>CER quantifies errors via edit distance</strong> — CER = (substitutions+insertions+deletions)/N — and it is not the same signal as word accuracy: report BOTH character-level and word-level metrics, since a low CER (CAT/COT ≈ 33%) can still mean zero usable word accuracy for exact-match fields.</li>
+          <li><strong>These are real deployed systems, not toy examples:</strong> attendance systems (detect→align→embed→match), banking/KYC verification (TAR@FAR operating points), license-plate reading, and invoice/document parsing (localisation + recognition + lexicon/regex post-processing) all directly apply the pipelines and metrics above.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('a')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('b')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  if(!li) return;
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+  }
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO · Integral Image rectangle-sum calculator ================= */
+const pixMatrix = [
+  [20,25,30,25,20],
+  [15,10,10,10,15],
+  [40,45,50,45,40],
+  [60,65,70,65,60],
+  [80,85,90,85,80]
+];
+// Padded integral image: integ[r][c] = sum of pixMatrix[0..r-1][0..c-1]
+const N_INT = 5;
+const integ = Array.from({length:N_INT+1}, ()=>new Array(N_INT+1).fill(0));
+for(let r=0;r<N_INT;r++){
+  for(let c=0;c<N_INT;c++){
+    integ[r+1][c+1] = pixMatrix[r][c] + integ[r][c+1] + integ[r+1][c] - integ[r][c];
+  }
+}
+function integralGridBuild(r1,c1,r2,c2){
+  const g = document.getElementById('integralGrid'); g.innerHTML='';
+  for(let r=0;r<N_INT;r++){
+    for(let c=0;c<N_INT;c++){
+      const d=document.createElement('div'); d.className='cell';
+      d.textContent = pixMatrix[r][c];
+      const inRect = r>=r1 && r<=r2 && c>=c1 && c<=c2;
+      const isCorner = (r===r1&&c===c1)||(r===r1&&c===c2)||(r===r2&&c===c1)||(r===r2&&c===c2);
+      if(isCorner) d.classList.add('corner');
+      else if(inRect) d.classList.add('hot');
+      g.appendChild(d);
+    }
+  }
+}
+function integralRender(){
+  let r1 = +document.getElementById('intR1').value, c1 = +document.getElementById('intC1').value;
+  let r2 = +document.getElementById('intR2').value, c2 = +document.getElementById('intC2').value;
+  if(r2<r1) [r1,r2]=[r2,r1];
+  if(c2<c1) [c1,c2]=[c2,c1];
+  document.getElementById('intR1v').textContent=r1; document.getElementById('intC1v').textContent=c1;
+  document.getElementById('intR2v').textContent=r2; document.getElementById('intC2v').textContent=c2;
+  integralGridBuild(r1,c1,r2,c2);
+
+  // Brute force sum
+  let bruteSum = 0, ops = 0;
+  for(let r=r1;r<=r2;r++){ for(let c=c1;c<=c2;c++){ bruteSum += pixMatrix[r][c]; ops++; } }
+
+  // Formula-based sum using integral image corners
+  const A = integ[r1][c1];       // top-left corner (exclusive of rect, i.e. above-left)
+  const B = integ[r1][c2+1];     // top-right
+  const C = integ[r2+1][c1];     // bottom-left
+  const D = integ[r2+1][c2+1];   // bottom-right
+  const formulaSum = D - B - C + A;
+
+  document.getElementById('integralOut').innerHTML =
+    'Rectangle: rows ['+r1+'..'+r2+'], cols ['+c1+'..'+c2+'] &nbsp;('+(r2-r1+1)+'×'+(c2-c1+1)+' = '+((r2-r1+1)*(c2-c1+1))+' pixels)<br><br>'+
+    '<strong style="color:var(--sky)">Brute force:</strong> '+ops+' additions → sum = <strong style="color:var(--lime)">'+bruteSum+'</strong><br>'+
+    '<strong style="color:var(--gold)">Integral formula:</strong> D−B−C+A = '+D+'−'+B+'−'+C+'+'+A+' → sum = <strong style="color:var(--lime)">'+formulaSum+'</strong><br><br>'+
+    '<span style="color:var(--text3)">4 lookups + 3 add/sub, regardless of rectangle size — the larger the rectangle, the bigger the gap between '+ops+' brute-force additions and the fixed cost of 4 lookups.</span>';
+}
+
+/* ================= DEMO · TAR/FAR operating-point slider ================= */
+const tarFarData = [
+  {thresh:0.99, tar:0.82, far:0.00001, label:'0.99'},
+  {thresh:0.95, tar:0.91, far:0.0001,  label:'0.95'},
+  {thresh:0.90, tar:0.96, far:0.001,   label:'0.90 (banking-grade FAR=10⁻³)'},
+  {thresh:0.80, tar:0.985, far:0.01,   label:'0.80'},
+  {thresh:0.60, tar:0.999, far:0.05,   label:'0.60'}
+];
+function tarFarRender(){
+  const idx = +document.getElementById('tarFarSlider').value;
+  const d = tarFarData[idx];
+  document.getElementById('tarFarThreshVal').textContent = d.thresh.toFixed(2);
+  const bc = document.getElementById('tarFarBars'); bc.innerHTML='';
+  tarFarData.forEach((row,i)=>{
+    const col=document.createElement('div'); col.className='bar-col';
+    const hl = i===idx ? 'var(--gold)' : 'rgba(212,168,83,0.35)';
+    col.innerHTML='<div class="bar-fill" style="height:'+(row.tar*100)+'%;background:'+hl+'"></div><div class="bar-label">t='+row.thresh.toFixed(2)+'<br>TAR '+(row.tar*100).toFixed(1)+'%</div>';
+    bc.appendChild(col);
+  });
+  const frr = 1 - d.tar;
+  document.getElementById('tarFarOut').innerHTML =
+    'Threshold: <strong style="color:var(--gold)">'+d.thresh.toFixed(2)+'</strong> &nbsp;'+(idx===2?'<span style="color:var(--violet)">← banking operating point</span>':'')+'<br><br>'+
+    'TAR = <strong style="color:var(--lime)">'+(d.tar*100).toFixed(2)+'%</strong><br>'+
+    'FAR = <strong style="color:var(--rose)">'+(d.far*100).toFixed(4)+'%</strong> (≈ 10^'+Math.round(Math.log10(d.far))+')<br>'+
+    'FRR = 1 − TAR = <strong style="color:var(--sky)">'+(frr*100).toFixed(2)+'%</strong><br><br>'+
+    '<span style="color:var(--text3)">Raising the threshold always pulls TAR and FAR down together — there is no free lunch without a genuinely better embedding model.</span>';
+}
+
+/* ================= DEMO · CER/WER live calculator ================= */
+function editOps(a, b){
+  // Returns {distance, S, I, D} via standard Levenshtein DP with backtrace on arrays of tokens
+  const n = a.length, m = b.length;
+  const dp = Array.from({length:n+1}, ()=>new Array(m+1).fill(0));
+  for(let i=0;i<=n;i++) dp[i][0]=i;
+  for(let j=0;j<=m;j++) dp[0][j]=j;
+  for(let i=1;i<=n;i++){
+    for(let j=1;j<=m;j++){
+      if(a[i-1]===b[j-1]) dp[i][j] = dp[i-1][j-1];
+      else dp[i][j] = 1 + Math.min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  // Backtrace to classify S / I / D
+  let i=n, j=m, S=0, I=0, D=0;
+  while(i>0 || j>0){
+    if(i>0 && j>0 && a[i-1]===b[j-1]){ i--; j--; continue; }
+    if(i>0 && j>0 && dp[i][j]===dp[i-1][j-1]+1){ S++; i--; j--; continue; }
+    if(j>0 && dp[i][j]===dp[i][j-1]+1){ I++; j--; continue; }
+    if(i>0 && dp[i][j]===dp[i-1][j]+1){ D++; i--; continue; }
+    break;
+  }
+  return {distance:dp[n][m], S, I, D};
+}
+function cerRender(){
+  const gt = document.getElementById('cerGT').value;
+  const ocr = document.getElementById('cerOCR').value;
+  const gtChars = gt.split(''), ocrChars = ocr.split('');
+  const charOps = editOps(gtChars, ocrChars);
+  const cer = gtChars.length>0 ? charOps.distance/gtChars.length : 0;
+
+  const gtWords = gt.trim().length ? gt.trim().split(/\s+/) : [];
+  const ocrWords = ocr.trim().length ? ocr.trim().split(/\s+/) : [];
+  const wordOps = editOps(gtWords, ocrWords);
+  const wer = gtWords.length>0 ? wordOps.distance/gtWords.length : 0;
+
+  const wordAcc = (gt === ocr) ? 1 : 0;
+  const charAcc = gtChars.length>0 ? Math.max(0, 1 - cer) : 1;
+
+  document.getElementById('cerOut').innerHTML =
+    'Character-level: S='+charOps.S+', I='+charOps.I+', D='+charOps.D+', N='+gtChars.length+'<br>'+
+    'CER = ('+charOps.S+'+'+charOps.I+'+'+charOps.D+')/'+gtChars.length+' = <strong style="color:var(--lime);font-size:16px;">'+(cer*100).toFixed(1)+'%</strong><br><br>'+
+    'Word-level: S='+wordOps.S+', I='+wordOps.I+', D='+wordOps.D+', N='+gtWords.length+' word(s)<br>'+
+    'WER = <strong style="color:var(--sky);font-size:16px;">'+(gtWords.length>0 ? (wer*100).toFixed(1) : '0.0')+'%</strong><br><br>'+
+    'Exact word accuracy: <strong style="color:'+(wordAcc? 'var(--lime)':'var(--rose)')+'">'+(wordAcc*100).toFixed(0)+'%</strong> &nbsp;|&nbsp; Approx. character accuracy: <strong style="color:var(--teal)">'+(charAcc*100).toFixed(1)+'%</strong><br><br>'+
+    '<span style="color:var(--text3)">Default values reproduce the worked example: CER≈33.3%, word accuracy=0%. Try making OCR match GT exactly to see both metrics hit 0% error / 100% accuracy.</span>';
+}
+
+/* ---------- init all demos ---------- */
+integralRender(); tarFarRender(); cerRender();
+</script>
+
+</body>
+</html>

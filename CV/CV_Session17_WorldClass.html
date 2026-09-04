@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edge Devices for Computer Vision — Deep Dive · CV Session 17</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px; --radius-lg: 22px; --radius-md: 16px; --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV17'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; min-width:120px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  input[type="number"] { width:70px; background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:13px; border-radius:6px; padding:5px 8px; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:10px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; cursor:pointer; }
+  .mgrid .cell:hover { border-color:var(--gold); }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; text-align:center; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .toggle-row { display:flex; align-items:center; gap:0.6rem; font-family:var(--font-code); font-size:12px; color:var(--text2); }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") { root.setAttribute("data-theme", saved); }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title"><span class="meta-tag" style="display:inline-block;font-family:var(--font-code);font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold);background:var(--gold-dim);border:1px solid rgba(212,168,83,0.3);border-radius:4px;padding:2px 7px;margin-right:6px;vertical-align:middle;">Session 17</span>Edge Devices for CV</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Why Edge?</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Core Motivation</a>
+  <span class="nav-group-label">Hardware Landscape</span>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Hardware Classification<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Efficient Architectures</span>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Depthwise-Separable Convs<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Deployment Evaluation</span>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Performance Metrics</a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · System-Design Walkthrough</a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Conceptual Deep Dives</a>
+  <a href="#s7" class="nav-link" data-section="s7">Exam Quiz (10 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 17 · Edge Devices for Computer Vision</span>
+    <h1>Edge Devices<br><span>Deploying CV Inference at the Edge</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">From server racks to sensor nodes — why real CV systems increasingly run inference on the device that captured the pixels, which board fits which job, and how to answer a system-design question without reaching for a model that's too heavy to fly.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Source</strong>Session 17 course notes</div>
+      <div class="hero-meta-item"><strong>Prof</strong>BITS WILP Faculty</div>
+      <div class="hero-meta-item"><strong>Layout</strong>Single-topic deep dive</div>
+      <div class="hero-meta-item"><strong>Covers</strong>Session 17 only</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">ESP32-CAM</span>
+      <span class="topic-chip">Raspberry Pi</span>
+      <span class="topic-chip">OpenVINO / Movidius</span>
+      <span class="topic-chip">NVIDIA Jetson</span>
+      <span class="topic-chip">Google Coral / Edge TPU</span>
+      <span class="topic-chip">MobileNet</span>
+      <span class="topic-chip">Depthwise-Separable Conv</span>
+      <span class="topic-chip">INT8 Quantization</span>
+      <span class="topic-chip">FLOPs vs Latency</span>
+      <span class="topic-chip">System Design</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide</h3>
+      <p>Session 17 is the "where does the model actually run" session — it assumes you already know detection architectures (R-CNN family, YOLO, from Session 13) and evaluation metrics (IoU, mAP, from Sessions 13-14), and asks a new question: given a fixed board, a fixed power budget, and a fixed latency deadline, what model and hardware combination actually satisfies the constraint? Exams on this topic reward <em>arithmetic and hardware-matching fluency</em> — knowing the depthwise-separable convolution formula cold, knowing which chip needs INT8, and being able to write a constraint→hardware→model→metrics answer in under a minute.</p>
+    </div>
+
+    <!-- ============ SECTION 01 — CORE MOTIVATION ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Core Motivation — Why Not Just Call the Cloud?</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — a camera that has to think for itself</h3>
+        <p>The default architecture for a "smart camera" application used to be: capture a frame, upload it to a server, run a large model on a GPU cluster, ship the result back down. That pipeline is fine when a human is going to review the output later. It breaks the moment the system has to <em>act</em> on what it sees, or the moment the network itself becomes unreliable, expensive, or forbidden. Four largely independent constraints push inference physically onto the device holding the camera: <strong>latency</strong>, <strong>bandwidth</strong>, <strong>privacy / offline operation</strong>, and <strong>power / thermals</strong>. Every edge-deployment exam question is really asking you to identify which of these four is binding in a given scenario.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Latency — round-trip time you can't get back</h3>
+        <p>A cloud pipeline's total latency is <code>capture + upload + network round-trip + server inference + download</code>. Even if the server-side GPU is far faster per-frame than any edge board, the network round-trip usually dominates and — worse — is unreliable: a dropped packet, a congested cell tower, or a tunnel with no signal turns "slow" into "no detection at all." An edge pipeline collapses this to just <code>capture + local inference</code>, with no network term at all.</p>
+        <p>Real-time pedestrian detection in an autonomous vehicle is the canonical example: the car is moving the entire time the detector is "thinking," so every millisecond of pipeline latency converts directly into distance traveled blind — exactly the <code>distance = speed × time</code> arithmetic from the detector speed/accuracy comparisons in Session 13, except now the "time" term includes a network round trip that the vehicle has no control over.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Bandwidth — sending an answer, not a video</h3>
+        <p>Streaming raw or lightly compressed video is enormously more expensive than streaming what a detector actually needs to report. A worked, order-of-magnitude comparison for a 720p, 30 fps stream:</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Bandwidth, worked example — raw pixels vs. compressed video vs. detections-only</div>
+<span class="formula-line"><span class="f-dim">Raw uncompressed:</span>  1280×720×3 bytes/frame × 30 fps = 82,944,000 B/s ≈ <span class="f-rose">663 Mbps</span></span>
+<span class="formula-line"><span class="f-dim">H.264/H.265 compressed 720p30 (typical):</span>  roughly <span class="f-gold">2–5 Mbps</span> — still a real, continuous uplink cost</span>
+<span class="formula-line"><span class="f-dim">Detections only (≤20 boxes/frame, 6 numbers/box, 4 B/number):</span></span>
+<span class="formula-line">  20 × 6 × 4 = 480 B/frame × 30 fps = 14,400 B/s ≈ <span class="f-lime">0.115 Mbps</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">→ Sending boxes instead of compressed video is ~20–40× lighter; instead of raw pixels, ~5000× lighter.</span></span>
+      </div>
+
+      <div class="annotation">
+        <div class="annotation-label">Reading this the right way</div>
+        <p>The exact multiplier isn't the point to memorize — the pattern is: whatever you transmit scales with the size of the <em>representation</em>, not the size of the scene. A handful of floating-point numbers describing "person at (x,y), 0.94 confidence" costs almost nothing to move; the pixels that produced that answer cost a great deal. Running the model at the edge means you only ever have to move the cheap representation.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Privacy / offline operation — some pipelines can't phone home</h3>
+        <p>A factory floor doing defect inspection, a badge-free attendance system reading faces, or a drone that has flown out of radio range all share the same requirement: the vision pipeline must produce a usable answer with <strong>zero dependency on a network connection</strong>, either because none exists, because latency-sensitive control loops can't wait for one, or because raw video of people or proprietary equipment must never leave the premises. Edge inference isn't just faster in these cases — it's the only architecture that satisfies the constraint at all.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Power / thermals — the budget that picks the hardware</h3>
+        <p>A battery-powered drone or a fanless enclosure on a factory wall has a hard power ceiling; exceed it and the device either dies early or throttles its own clock speed to avoid overheating, silently degrading the very latency you were trying to guarantee. In practice, the power budget is often the <em>first</em> constraint that eliminates candidate hardware in a system-design question — a GPU workstation is disqualified before you even get to compare its accuracy.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — the exam always asks "why edge, not cloud"</div>
+        <p>Whenever a question describes a scenario, scan it for these four signatures: a moving system or safety loop → <strong>latency</strong>; a described video/camera feed with a mention of connectivity cost → <strong>bandwidth</strong>; a location with no reliable network, or a mention of sensitive footage → <strong>privacy/offline</strong>; a battery, drone, or "fanless"/"low-power" descriptor → <strong>power/thermals</strong>. Most real scenarios combine two or three of these at once — identify all of them before choosing hardware in Section 05.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 — HARDWARE CLASSIFICATION MATRIX ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Hardware Classification Matrix</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — a ladder, not a single "edge device"</h3>
+        <p>"Edge device" is not one thing. It spans a ladder from a $5 microcontroller that can barely hold a few hundred kilobytes of model weights, up to a purpose-built neural accelerator chip. Climbing the ladder buys you more raw compute and more framework flexibility, at the cost of more power draw, more money, and (for the microcontroller end) an operating system you don't even get to have. The exam expects you to recognize keywords — "ESP32," "OpenVINO," "TensorRT," "Edge TPU" — and instantly place them on this ladder.</p>
+      </div>
+
+      <table class="he-table">
+        <thead><tr><th>Class</th><th>Examples</th><th>Typical Application</th></tr></thead>
+        <tbody>
+          <tr><td>MCU + camera</td><td>ESP32-CAM</td><td>Tiny models, motion trigger, JPEG snapshot. Not YOLO-v8</td></tr>
+          <tr><td>Single-Board Computer (ARM)</td><td>Raspberry Pi, Banana Pi</td><td>OpenCV + small CNN (MobileNet, YOLO-nano) via Python/C++; USB camera support</td></tr>
+          <tr><td>Intel CPU / NUC</td><td>Core, Atom, NUC</td><td>OpenVINO + OneAPI; Movidius VPUs as USB accelerator</td></tr>
+          <tr><td>NVIDIA Jetson</td><td>Nano, TX2, Orin</td><td>CUDA/cuDNN, TensorRT, DeepStream for multi-camera pipelines</td></tr>
+          <tr><td>Google Coral</td><td>Edge TPU</td><td>INT8 TensorFlow Lite models only; highest inferences-per-second per watt with TPU compilation</td></tr>
+        </tbody>
+      </table>
+
+      <div class="theory-block">
+        <h3>What each rung actually buys you</h3>
+        <p><strong>MCU + camera (ESP32-CAM):</strong> no real operating system, kilobytes to low megabytes of RAM, and models measured in hundreds of kilobytes. Good for "is something moving" triggers or capturing a JPEG snapshot to hand off elsewhere — structurally incapable of running a modern detector like YOLOv8.</p>
+        <p><strong>Single-Board Computer / ARM (Raspberry Pi, Banana Pi):</strong> a full Linux userspace and a general-purpose ARM CPU. This is enough to run OpenCV plus a genuinely small CNN — MobileNet-class classifiers, YOLO-nano-class detectors — through ordinary Python or C++, with normal USB camera support. What it does <em>not</em> have is dedicated matrix-multiply silicon, so CPU-only inference on anything larger tends to blow through real-time latency budgets.</p>
+        <p><strong>Intel CPU / NUC (Core, Atom):</strong> paired with Intel's <strong>OpenVINO</strong> toolkit and OneAPI, these compile a trained network into a hardware-optimized inference graph. A <strong>Movidius</strong> Vision Processing Unit (VPU), plugged in as a USB accelerator (the Neural Compute Stick line), adds dedicated low-power inference silicon without needing a discrete GPU.</p>
+        <p><strong>NVIDIA Jetson (Nano, TX2, Orin):</strong> the most capable and most flexible class — real CUDA cores and, on newer boards, Tensor Cores, programmable with the same CUDA/cuDNN stack used on data-center GPUs. <strong>TensorRT</strong> compiles and optimizes a network for the specific Jetson chip; <strong>DeepStream</strong> is NVIDIA's SDK for building multi-camera pipelines (decode, batch, infer, track) that would otherwise require a lot of hand-written glue code.</p>
+        <p><strong>Google Coral (Edge TPU):</strong> a purpose-built ASIC that only executes INT8-quantized TensorFlow Lite graphs, but does so with the best inferences-per-second-per-watt of any class here — the trade is rigidity (fully quantize to INT8 and stay within Edge-TPU-supported ops, or the unsupported layers silently fall back to the host CPU and become the new bottleneck).</p>
+      </div>
+
+      <div class="interactive-demo" id="powerDemo">
+        <h4>⊞ Interactive · Match a Power Budget to a Hardware Class</h4>
+        <div class="demo-sub">Drag the slider to a power envelope (watts). The bars show each hardware class's typical operating range; the class(es) that comfortably contain your chosen wattage light up gold. Try 8W — the exact budget from the warehouse system-design example in Section 05.</div>
+        <div class="slider-row">
+          <span class="slider-label">Power budget</span>
+          <input type="range" id="powerSlider" min="0.3" max="30" step="0.1" value="8" oninput="powerRender()">
+          <span class="slider-val" id="powerVal">8.0 W</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <div style="flex:1;min-width:240px;">
+            <div class="bar-chart" id="powerBars" style="height:150px;"></div>
+          </div>
+          <div style="flex:1;min-width:260px;"><div class="demo-output" id="powerOut"></div></div>
+        </div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Published spec-sheet numbers back up the "Coral wins on efficiency" claim: Google states the Edge TPU ASIC performs 4 trillion (INT8) operations per second while drawing about 2 watts of chip power — roughly 2 TOPS per watt for the chip itself, before accounting for the rest of the board. NVIDIA's Jetson Orin line spans roughly 7-15W (Orin Nano) up to 15-60W (AGX Orin) depending on power mode, trading some of that per-watt efficiency for far higher absolute throughput and full CUDA generality — which is why DeepStream multi-camera pipelines target Jetson, not Coral.</p>
+        <p><cite>Google Coral Edge TPU performance specifications · NVIDIA Jetson Orin technical specifications</cite></p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Hardware matrix — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Memorize the toolchain names, not just the board names — "OpenVINO" and "Movidius" mean Intel, "TensorRT/DeepStream" means Jetson, "INT8 TFLite" means Coral.</li>
+          <li>ESP32-CAM appearing anywhere in a question about YOLO-v8 or any modern detector is a trap — the deck explicitly rules it out.</li>
+          <li>Coral's restriction is not "prefers INT8" — it is "INT8 TensorFlow Lite <em>only</em>." An FP32 model or an unsupported op forces a CPU fallback, defeating the point of buying the accelerator.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 — EFFICIENT ARCHITECTURES ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Efficient Model Architectures — Depthwise-Separable Convolutions</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — split "where" from "which channels"</h3>
+        <p>A standard convolution filter does two jobs simultaneously at every output pixel: it looks at a spatial neighborhood (e.g. 3×3) <em>and</em> it mixes information across every input channel to produce every output channel. <strong>MobileNet</strong> and <strong>Xception</strong> both ask: what if we split those two jobs into two separate, much cheaper operations? First a <strong>depthwise</strong> convolution applies one small spatial filter per channel independently (no cross-channel mixing at all), then a <strong>pointwise</strong> 1×1 convolution mixes channels together with no spatial extent. Chaining these two cheap steps approximates what the single expensive standard convolution did — this is exactly the trick that makes MobileNet-class networks small enough to run on a Raspberry Pi or Coral.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">The depthwise-separable convolution formula</div>
+<span class="formula-line"><span class="f-dim">Standard 3×3 convolution across C channels:</span>  <span class="f-gold">9·C² multiplications per pixel</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Depthwise-separable decomposition:</span></span>
+<span class="formula-line">  Depthwise 3×3:  <span class="f-teal">9·C multiplications</span>  <span class="f-dim">(one 3×3 filter per channel, no mixing)</span></span>
+<span class="formula-line">  Pointwise 1×1:  <span class="f-sky">C² multiplications</span>  <span class="f-dim">(mixes channels, no spatial extent)</span></span>
+<span class="formula-line">  Total:  <span class="f-lime">9·C + C²</span></span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Worked example — C = 256 channels</h3>
+        <ol class="step-list">
+          <li><p>Standard: 9 × 256² = 9 × 65,536 = <strong>589,824</strong> multiplications per pixel.</p></li>
+          <li><p>Depthwise: 9 × 256 = <strong>2,304</strong> multiplications per pixel.</p></li>
+          <li><p>Pointwise: 256² = <strong>65,536</strong> multiplications per pixel.</p></li>
+          <li><p>Depthwise-separable total: 2,304 + 65,536 = <strong>67,840</strong> multiplications per pixel.</p></li>
+          <li><p>Speedup ratio: 589,824 / 67,840 ≈ <strong style="color:var(--lime)">8.69×</strong>.</p></li>
+        </ol>
+        <div class="answer-box"><span class="answer-label">Answer</span><span class="answer-val">≈8.7× fewer multiplications at C=256 — matching the "roughly 8-9× computational efficiency" figure quoted for depthwise-separable convolutions versus a standard convolution.</span></div>
+      </div>
+
+      <div class="interactive-demo" id="dwsDemo">
+        <h4>⊞ Interactive · Standard vs. Depthwise-Separable FLOPs Calculator</h4>
+        <div class="demo-sub">Drag the channel count C and watch both computation totals and the speedup ratio update live. Notice the ratio climbs toward roughly 9× as C grows — the +9·C term in the depthwise-separable total becomes negligible next to C² once C is large.</div>
+        <div class="slider-row">
+          <span class="slider-label">Channels (C)</span>
+          <input type="range" id="dwsSlider" min="8" max="512" step="8" value="256" oninput="dwsRender()">
+          <span class="slider-val" id="dwsVal">256</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <div style="flex:1;min-width:240px;">
+            <div class="bar-chart" id="dwsBars" style="height:150px;"></div>
+          </div>
+          <div style="flex:1;min-width:260px;"><div class="demo-output" id="dwsOut"></div></div>
+        </div>
+      </div>
+
+      <div class="theory-block">
+        <h3>Detection-specific compression and quantization</h3>
+        <p><strong>YOLO-nano</strong> and <strong>YOLO-tiny</strong> apply the same "shrink the backbone" philosophy specifically to detection architectures — fewer layers, fewer channels, sometimes a smaller input resolution — trading some mAP for a large drop in latency and memory footprint, the same trade YOLO itself made against the R-CNN family in Session 13. On top of architectural compression, <strong>quantization to INT8</strong> — representing weights and activations with 8-bit integers instead of 32-bit floats — is critical for two specific hardware targets named in Section 02: it's mandatory for Coral (Edge TPU accepts INT8 TFLite only) and strongly recommended for OpenVINO deployments, where INT8 execution roughly quarters the memory footprint and lets fixed-point ALUs run at much higher throughput than floating-point units of the same silicon area.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>MobileNet's own paper generalizes the C=256 arithmetic above into a single reduction factor: for an N-channel output and a D<sub>k</sub>×D<sub>k</sub> kernel, depthwise-separable computation is <code>1/N + 1/D<sub>k</sub>²</code> times the standard convolution's cost. For the common D<sub>k</sub>=3 case, as N grows large the <code>1/N</code> term vanishes and the ratio approaches <code>1/9</code> — i.e. roughly a 9× reduction, consistent with the worked example above. Architectures on the opposite end of the spectrum — Meta's Segment Anything Model (SAM) and large Vision Transformers — remain squarely cloud-based; their attention mechanisms scale with sequence length in a way no current edge accelerator budget can absorb. The one crossover point worth knowing: a genuinely small variant, ViT-Tiny, is compact enough to execute on a Jetson Orin's TOPS budget, even though its full-size ViT siblings are not.</p>
+        <p><cite>Howard et al., "MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications," 2017 · Kirillov et al., "Segment Anything," ICCV 2023 · Dosovitskiy et al., "An Image is Worth 16x16 Words" (ViT), ICLR 2021</cite></p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Depthwise-separable convolutions — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Memorize the three terms exactly: standard = 9C², depthwise = 9C, pointwise = C² — a numeric question will hand you a channel count and expect all three plus the ratio.</li>
+          <li>Common mistake: forgetting to <em>add</em> the depthwise and pointwise terms together before comparing to the standard convolution — comparing standard against depthwise alone hugely overstates the speedup.</li>
+          <li>Know why the ratio approaches ~9× (not some other number) for large C: it's driven purely by the 9 in "9·C²" versus the dominant "C²" pointwise term, tying straight back to the 3×3 kernel size (D<sub>k</sub>²=9).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 — PERFORMANCE METRICS TO REPORT ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Performance Metrics to Report</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — one number is never the answer</h3>
+        <p>Reporting only accuracy, or only FLOPs, or only frames-per-second, always hides half of the deployment story. A complete evaluation of an edge CV system reports five distinct kinds of measurement, each answering a different question a reviewer or exam grader will ask.</p>
+      </div>
+
+      <table class="he-table">
+        <thead><tr><th>Metric</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Accuracy / mAP / mIoU</td><td>Determines task suitability</td></tr>
+          <tr><td>FLOPs</td><td>Theoretical compute per image</td></tr>
+          <tr><td>Memory footprint (FP32/FP16/INT8)</td><td>Verifies device RAM compatibility</td></tr>
+          <tr><td>Inference time on specified hardware</td><td>The only meaningful latency measurement — always pair model with board</td></tr>
+          <tr><td>Power (W) / inferences-per-second per Watt</td><td>Battery life and thermal constraints</td></tr>
+        </tbody>
+      </table>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — FLOPs alone is a trap</div>
+        <p>FLOPs is a theoretical count of multiply-accumulate operations — it says nothing about memory-bandwidth bottlenecks, kernel implementation quality, framework overhead, or thermal throttling, all of which shift real wall-clock latency independently of the FLOPs number. Two models with identical FLOPs can post very different latencies on the same board; the same model can post very different latencies on two different boards. This is precisely why "inference time" in the table above is qualified as "<em>on specified hardware</em>" — a latency number without a named board attached is not a valid answer to a deployment question.</p>
+        <p>A subtle version of this trap: depthwise-separable convolutions cut FLOPs by ~8-9× (Section 03), but on some accelerators the depthwise step is memory-bandwidth-bound rather than compute-bound, so the real measured speedup on that specific chip can come in noticeably below the FLOPs-based prediction. FLOPs bounds the theoretical best case; only a measurement on the actual board tells you the truth.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Inferences-per-second per Watt — worked example</div>
+<span class="formula-line"><span class="f-dim">Inferences-per-second per Watt = throughput (inferences/s) ÷ power draw (W)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Example: a Coral Edge TPU model running at 400 inferences/s while drawing 2W:</span></span>
+<span class="formula-line">  400 ÷ 2 = <span class="f-lime">200 inferences/s per Watt</span></span>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Metrics — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>If a question gives you FLOPs and asks "is this fast enough," the honest answer is "cannot be determined without a measured latency on the target board."</li>
+          <li>Memory footprint has to be checked per precision (FP32/FP16/INT8) — a model that fits in RAM at INT8 may not fit at FP32, and boards like the ESP32-CAM or a Raspberry Pi have hard RAM ceilings that FLOPs numbers won't reveal.</li>
+          <li>Always report power alongside speed — a detector that hits 100 FPS by drawing 60W is not a valid answer for a battery-powered drone, no matter how good its FPS number looks in isolation.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 — EXAM-STYLE SYSTEM DESIGN EXAMPLE ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Exam-Style System Design Walkthrough</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Scenario</h3>
+        <p>Warehouse bay occupancy detection; <strong>&lt;100ms latency</strong>, <strong>no cloud connectivity</strong>, <strong>~8W power envelope</strong>.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Solution architecture, piece by piece</h3>
+        <p><strong>Sensor:</strong> a fixed IP camera or Pi camera; 640×480 resolution is adequate for person detection at typical warehouse-bay standoff distances — no need to pay the compute cost of a higher resolution the detector doesn't need.</p>
+        <p><strong>Processing board:</strong> Coral or Jetson Nano. A Raspberry Pi 4 running CPU-only inference is insufficient for the 100ms budget — general-purpose ARM cores lack the parallel matrix-multiply throughput that a dedicated accelerator (Edge TPU) or a small GPU (Jetson Nano) provides, so the same detector that comfortably clears 100ms on Coral or Jetson can miss it by a wide margin on Pi-CPU alone.</p>
+        <p><strong>Model:</strong> INT8 YOLO-tiny or SSD-MobileNet — not Faster R-CNN (multi-stage, too slow for the deadline) and not SAM (a segmentation foundation model with far more compute than the task needs, and not detection-shaped output to begin with).</p>
+        <p><strong>Pipeline:</strong> capture → letterbox normalization → inference → NMS → geometric intersection check (person ∩ bay polygon) → GPIO alarm trigger; no video uplink at any stage — nothing about the pipeline requires transmitting a frame anywhere.</p>
+        <p><strong>Reported metrics:</strong> mAP @ IoU 0.5 on a domain-specific validation set (real warehouse-bay footage, not a generic benchmark); latency measured on the actual target board; wall-power consumption under load.</p>
+      </div>
+
+      <div class="pipeline">
+        <ol class="pipeline" style="list-style:none;">
+          <li><strong>Capture</strong><p>Grab a frame from the fixed camera at the bay.</p></li>
+          <li><strong>Letterbox normalization</strong><p>Resize/pad the frame to the detector's fixed input shape without distorting aspect ratio.</p></li>
+          <li><strong>Inference</strong><p>Run the quantized INT8 detector on-device.</p></li>
+          <li><strong>Non-Max Suppression</strong><p>Collapse duplicate overlapping boxes per class (Session 13's NMS, unchanged here).</p></li>
+          <li><strong>Geometric intersection check</strong><p>Test whether a detected person's box intersects the bay's defined polygon region — pure geometry, no further model inference needed.</p></li>
+          <li><strong>GPIO alarm trigger</strong><p>Flip a physical output pin to sound/light an alarm — the entire loop closes on-device, with no video ever leaving the board.</p></li>
+        </ol>
+      </div>
+
+      <div class="theory-block">
+        <h3>The answer template — memorize this order</h3>
+        <ol class="step-list">
+          <li><p><strong>Constraint identification</strong> — pull out every latency, bandwidth, privacy, and power constraint the question states or implies.</p></li>
+          <li><p><strong>Hardware class selection</strong> — use the constraints (especially the power budget and the latency deadline) to pick a rung on the Section 02 ladder.</p></li>
+          <li><p><strong>Model family choice</strong> — pick an architecture whose accuracy/speed profile fits the deadline, favoring MobileNet-style backbones or YOLO-tiny/nano variants for tight budgets.</p></li>
+          <li><p><strong>Quantization strategy</strong> — state whether INT8 is mandatory (Coral) or merely beneficial (OpenVINO/Jetson), and note the memory-footprint payoff.</p></li>
+          <li><p><strong>Device-side post-processing</strong> — describe what happens after the raw model output (NMS, geometry checks, alarms) entirely on-device, with no uplink.</p></li>
+          <li><p><strong>Three quantitative results</strong> — always close with exactly three numbers: an accuracy metric (mAP/IoU), a measured latency in milliseconds on the named board, and a power draw in watts.</p></li>
+        </ol>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>System design — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Reaching for Faster R-CNN or SAM in a <100ms edge answer is an instant red flag to a grader — name a lightweight, quantization-friendly model instead.</li>
+          <li>Forgetting to name a specific board (just saying "an edge device") loses credit — "Coral" or "Jetson Nano," not "some accelerator."</li>
+          <li>The answer isn't complete without the closing three numbers (mAP, ms, W) — a design description alone, with no quantitative claims, reads as incomplete.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 — CONCEPTUAL DEEP DIVES ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Conceptual Deep Dives</h2>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Compare &amp; Contrast</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s6-a', this, 's6-ex')">Pi vs Jetson at 100ms</button>
+          <button class="tab-btn" onclick="showTab('s6-b', this, 's6-ex')">FLOPs vs Measured Latency</button>
+          <button class="tab-btn" onclick="showTab('s6-c', this, 's6-ex')">Why INT8 Works</button>
+        </div>
+
+        <div class="tab-panel active" id="s6-a" data-tab-group="s6-ex">
+          <div class="example-q">Why does a Raspberry Pi 4 (CPU-only) struggle to hit a &lt;100ms detection deadline that a Jetson Nano clears comfortably, even running similar-sized models?</div>
+          <ol class="step-list">
+            <li><p>A CNN's core operation — convolution — is dominated by large numbers of independent multiply-accumulate operations that can, in principle, run in parallel across many small cores simultaneously.</p></li>
+            <li><p>A general-purpose ARM CPU (Pi 4) has a handful of cores optimized for sequential, branching, general-purpose code — it executes those multiply-accumulates mostly serially (with limited SIMD help), so wall-clock time scales close to linearly with FLOPs.</p></li>
+            <li><p>A Jetson Nano's CUDA cores are purpose-built for exactly this kind of massively parallel arithmetic — the same FLOPs count is spread across hundreds of cores at once, so measured latency comes in far below what the Pi's serial execution model achieves for an identical network.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Two boards can have "similar" advertised compute numbers and still differ by 5-10× in measured detector latency — parallelism, not raw FLOPs capacity, is what closes a tight latency budget.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s6-b" data-tab-group="s6-ex">
+          <div class="example-q">If Model A has fewer FLOPs than Model B, is Model A guaranteed to run faster on a given edge board?</div>
+          <ol class="step-list">
+            <li><p>Not necessarily. FLOPs counts arithmetic operations only — it says nothing about how much data has to move between memory and compute units, which is often the real bottleneck on small edge chips with limited memory bandwidth.</p></li>
+            <li><p>Depthwise convolutions are a concrete example: they're extremely FLOP-light (Section 03), but because each channel is processed with very little arithmetic per byte loaded, they can be memory-bandwidth-bound on some hardware, sometimes running slower in wall-clock terms than their tiny FLOPs count would suggest.</p></li>
+            <li><p>This is exactly why Section 04's metrics table insists on "inference time on specified hardware" as its own separate, mandatory row — FLOPs is a useful upper-bound estimate during design, but only a measurement on the real board is trustworthy for a latency claim.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>FLOPs predicts theoretical compute cost; only measured latency on the named board predicts what a deployed system will actually do.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s6-c" data-tab-group="s6-ex">
+          <div class="example-q">Why does quantizing a CV model's weights and activations from FP32 to INT8 usually preserve most of its accuracy, and why do edge accelerators specifically demand it?</div>
+          <ol class="step-list">
+            <li><p>CNN weights and activations are typically distributed over a narrow, well-behaved numeric range after training — mapping that range onto 256 integer levels (INT8) loses precision, but the loss is usually small relative to the model's existing tolerance for noise (the same tolerance that lets dropout and data augmentation work at all).</p></li>
+            <li><p>Edge accelerators (Coral's Edge TPU, and Movidius VPUs under OpenVINO) build their arithmetic units around fixed-point INT8 multiply-accumulate circuits rather than floating-point ones, because INT8 ALUs are smaller, cheaper, and far more power-efficient per operation — the entire "inferences-per-second per Watt" advantage from Section 02 depends on this design choice.</p></li>
+            <li><p>The trade-off surfaces at the edges of the distribution: a model with a few outlier activation values, or one that wasn't quantization-aware trained, can see a real accuracy drop — which is why "quantize to INT8" is a strategy to state explicitly in a system-design answer, not an assumption to leave silent.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>INT8 isn't just a memory-saving trick — it's the numeric format the fastest, most power-efficient edge silicon is physically built around.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 — EXAM QUIZ ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Exam Quiz — 10 Questions</h2>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Core motivation</span>
+          <div class="quiz-q-text">Streaming a compressed video feed to a cloud server instead of running detection on-device and transmitting only bounding boxes primarily wastes which resource?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Storage capacity on the camera itself</li>
+          <li><span class="opt-letter">B</span>Bandwidth</li>
+          <li><span class="opt-letter">C</span>GPU memory on the edge device</li>
+          <li><span class="opt-letter">D</span>Battery capacity of the cloud server</li>
+        </ul>
+        <div class="quiz-reveal">A compressed 720p30 stream costs on the order of 2-5 Mbps continuously, while a stream of detection boxes costs a small fraction of a Mbps — the gap is a bandwidth problem specifically. <strong>A</strong> and <strong>C</strong> describe unrelated resources. <strong>D</strong> is nonsensical — servers aren't battery-powered in this context.<span class="mistake">Common mistake</span>Confusing "bandwidth" with generic "network problems" — be ready to name the specific constraint (latency, bandwidth, privacy, or power) a scenario is testing.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Hardware matrix</span>
+          <div class="quiz-q-text">Which hardware class is explicitly called out as unable to run a modern detector like YOLO-v8?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>MCU + camera (ESP32-CAM)</li>
+          <li><span class="opt-letter">B</span>NVIDIA Jetson</li>
+          <li><span class="opt-letter">C</span>Google Coral (Edge TPU)</li>
+          <li><span class="opt-letter">D</span>Intel NUC with OpenVINO</li>
+        </ul>
+        <div class="quiz-reveal">The ESP32-CAM class is limited to tiny models, motion triggers, and JPEG snapshots — explicitly "not YOLO-v8." <strong>B</strong>, <strong>C</strong>, and <strong>D</strong> are all capable of running compressed/quantized modern detectors within their respective toolchains.<span class="mistake">Common mistake</span>Assuming any board with a camera port can run any detector — memory and compute ceilings rule out the MCU tier entirely.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Coral restriction</span>
+          <div class="quiz-q-text">What format must a model be in to run on Google Coral's Edge TPU?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Any PyTorch model, FP32 or FP16</li>
+          <li><span class="opt-letter">B</span>ONNX, any precision</li>
+          <li><span class="opt-letter">C</span>INT8-quantized TensorFlow Lite</li>
+          <li><span class="opt-letter">D</span>FP16 TensorRT engine</li>
+        </ul>
+        <div class="quiz-reveal">The Edge TPU only executes INT8-quantized TensorFlow Lite graphs — that's the whole restriction, stated directly in the hardware matrix. <strong>A</strong> and <strong>B</strong> ignore both the framework and precision requirement. <strong>D</strong> (TensorRT) is the Jetson toolchain, not Coral's.<span class="mistake">Common mistake</span>Thinking Coral "prefers" INT8 as an optimization — it's a hard requirement; unsupported ops or precisions fall back to a slow CPU path.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Depthwise-separable formula</span>
+          <div class="quiz-q-text">For C=128 channels and a 3×3 kernel, what is the standard convolution's multiplication cost per pixel?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>1,152</li>
+          <li><span class="opt-letter">B</span>16,384</li>
+          <li><span class="opt-letter">C</span>128</li>
+          <li><span class="opt-letter">D</span>147,456</li>
+        </ul>
+        <div class="quiz-reveal">Standard = 9·C² = 9 × 128² = 9 × 16,384 = <strong>147,456</strong>. <strong>A</strong> (1,152) is actually 9×128, the depthwise-only term. <strong>B</strong> (16,384) is just C², the pointwise term. <strong>C</strong> is just C.<span class="mistake">Common mistake</span>Mixing up which of the three terms (9C, C², 9C²) the question is asking for — always double-check whether "standard," "depthwise," or "pointwise" is named.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Depthwise-separable total</span>
+          <div class="quiz-q-text">For C=256, what is the total depthwise-separable computation per pixel (depthwise + pointwise combined)?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>589,824</li>
+          <li><span class="opt-letter">B</span>2,304</li>
+          <li><span class="opt-letter">C</span>67,840</li>
+          <li><span class="opt-letter">D</span>65,536</li>
+        </ul>
+        <div class="quiz-reveal">Depthwise = 9×256 = 2,304; pointwise = 256² = 65,536; total = 2,304 + 65,536 = <strong>67,840</strong>. <strong>A</strong> is the standard convolution's cost (what you're comparing against, not the answer). <strong>B</strong> and <strong>D</strong> are only one of the two terms each — forgetting to add them is the exact trap this question sets.<span class="mistake">Common mistake</span>Reporting only the depthwise term (2,304) as "the" depthwise-separable cost and forgetting the pointwise 1×1 step is also required.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Metrics</span>
+          <div class="quiz-q-text">A vendor reports "our model needs only 0.5 GFLOPs per image" and nothing else. What is missing before you can judge whether it meets a 50ms deadline?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Nothing — FLOPs alone determines latency</li>
+          <li><span class="opt-letter">B</span>Measured inference time on the specific target hardware</li>
+          <li><span class="opt-letter">C</span>The model's file format (ONNX vs. TensorFlow)</li>
+          <li><span class="opt-letter">D</span>The training dataset's size</li>
+        </ul>
+        <div class="quiz-reveal">FLOPs is a theoretical compute count only; memory bandwidth, kernel efficiency, and thermal throttling all affect real latency independently of it — the metrics table's own wording flags inference time on named hardware as "the only meaningful latency measurement." <strong>C</strong> and <strong>D</strong> don't determine runtime latency on a fixed board.<span class="mistake">Common mistake</span>Treating a FLOPs number as if it were already a latency claim — they answer different questions.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">System design</span>
+          <div class="quiz-q-text">For the warehouse bay-occupancy scenario (&lt;100ms, no cloud, ~8W), which board choice is explicitly called out as insufficient, and why?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Raspberry Pi 4, CPU-only — lacks the parallel throughput to hit the 100ms budget</li>
+          <li><span class="opt-letter">B</span>Jetson Nano — draws too much power for the 8W envelope</li>
+          <li><span class="opt-letter">C</span>Coral — cannot run detection models at all</li>
+          <li><span class="opt-letter">D</span>Intel NUC — has no camera support</li>
+        </ul>
+        <div class="quiz-reveal">The scenario explicitly rules out "Pi 4 CPU-only insufficient for 100ms budget" — general-purpose ARM cores lack the matrix-multiply parallelism a real-time detector needs at that deadline. <strong>B</strong> is false — Jetson Nano's 5W/10W power modes fit comfortably within 8W. <strong>C</strong> is false — Coral is explicitly one of the two recommended boards. <strong>D</strong> is an unrelated, invented objection.<span class="mistake">Common mistake</span>Assuming "it has a CPU, so it can run anything" — a deadline this tight specifically needs dedicated parallel inference silicon (Coral's TPU or Jetson's CUDA cores), not a general-purpose ARM core.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Answer template</span>
+          <div class="quiz-q-text">What is the correct order of the exam's system-design answer template?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Model choice → hardware selection → constraint identification → metrics → quantization → post-processing</li>
+          <li><span class="opt-letter">B</span>Metrics → constraint identification → hardware selection → model choice → quantization → post-processing</li>
+          <li><span class="opt-letter">C</span>Constraint identification → hardware class selection → model family choice → quantization strategy → device-side post-processing → three quantitative results</li>
+          <li><span class="opt-letter">D</span>Hardware selection → constraint identification → post-processing → model choice → quantization → metrics</li>
+        </ul>
+        <div class="quiz-reveal">The template is strictly sequential: identify constraints first (they determine everything downstream), then hardware, then model, then quantization strategy, then describe device-side post-processing, and close with three mandatory numbers. <strong>A</strong>, <strong>B</strong>, and <strong>D</strong> all reorder steps that depend on earlier ones — e.g. you cannot pick a model family before you've selected a hardware class it must run on.<span class="mistake">Common mistake</span>Starting an answer with "I'd use a Jetson Nano" before stating which constraints made that the right choice — always justify the constraint first.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Architecture scaling</span>
+          <div class="quiz-q-text">SAM and large Vision Transformers stay cloud-based, yet ViT-Tiny can run on a Jetson Orin. What best explains this split?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>SAM and large ViTs use convolutions, which edge boards can't execute at all</li>
+          <li><span class="opt-letter">B</span>ViT-Tiny is quantized to INT8 while SAM cannot be quantized</li>
+          <li><span class="opt-letter">C</span>Edge accelerators only support classification models, not segmentation</li>
+          <li><span class="opt-letter">D</span>Compute and memory scale with model/sequence size — a small-enough transformer variant fits an edge power/TOPS budget while the full-size versions don't</li>
+        </ul>
+        <div class="quiz-reveal">The dividing line is model scale, not architecture family — a Vision Transformer's attention computation grows with sequence length and model width, so a "Tiny" variant can fit inside a Jetson Orin's compute and memory budget while SAM and large ViTs simply require far more of both than any current edge accelerator provides. <strong>A</strong> is false — SAM and ViTs use attention, not convolutions, and edge boards can execute attention operations, just not at that scale. <strong>B</strong> and <strong>C</strong> are both fabricated claims not supported by the material.<span class="mistake">Common mistake</span>Assuming a whole architecture family is "edge-friendly" or "cloud-only" — the right unit of judgment is the specific variant's compute/memory footprint, not its family name.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Mandatory metrics</span>
+          <div class="quiz-q-text">A complete exam answer to a system-design question closes with exactly which three quantitative results?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Model file size, training epochs, and dataset size</li>
+          <li><span class="opt-letter">B</span>mAP/accuracy, measured milliseconds on the named board, and power draw in watts</li>
+          <li><span class="opt-letter">C</span>FLOPs, parameter count, and GPU memory used during training</li>
+          <li><span class="opt-letter">D</span>Frame resolution, frame rate, and codec used</li>
+        </ul>
+        <div class="quiz-reveal">The template closes with exactly three numbers: an accuracy metric (mAP/mIoU/accuracy), a measured latency in milliseconds on the specific target board, and a power draw in watts — the same three dimensions the Performance Metrics table (Section 04) insists must always be reported together. <strong>A</strong>, <strong>C</strong>, and <strong>D</strong> all substitute training-time or media-format details that don't answer "does this deployment meet its constraints."<span class="mistake">Common mistake</span>Substituting FLOPs for measured latency in the closing summary — FLOPs is theoretical, and the template specifically demands a measured number on hardware.</div>
+      </div>
+
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('a')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('b')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  if(!li) return;
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+  }
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO · Power budget → hardware class matcher ================= */
+const hwData = [
+  {name:'ESP32-CAM (MCU)', min:0.3, max:1.2, use:'Tiny models, motion trigger, JPEG snapshot only'},
+  {name:'Raspberry Pi / SBC', min:2.5, max:7, use:'OpenCV + MobileNet / YOLO-nano, CPU-only'},
+  {name:'Intel NUC + Movidius', min:5, max:20, use:'OpenVINO + Movidius VPU accelerator'},
+  {name:'NVIDIA Jetson (Nano→Orin)', min:5, max:30, use:'CUDA/TensorRT/DeepStream pipelines'},
+  {name:'Google Coral (Edge TPU)', min:2, max:4.5, use:'INT8 TFLite only, best inferences/s per W'}
+];
+function powerRender(){
+  const w = +document.getElementById('powerSlider').value;
+  document.getElementById('powerVal').textContent = w.toFixed(1)+' W';
+  const bc = document.getElementById('powerBars'); bc.innerHTML='';
+  const maxW = 30;
+  const matches = [];
+  hwData.forEach((row)=>{
+    const inRange = w>=row.min && w<=row.max;
+    if(inRange) matches.push(row.name);
+    const col=document.createElement('div'); col.className='bar-col';
+    const barColor = inRange ? 'var(--gold)' : 'rgba(212,168,83,0.25)';
+    const barHeightPct = (row.max/maxW*100);
+    col.innerHTML='<div class="bar-fill" style="height:'+barHeightPct+'%;background:'+barColor+';position:relative;">'+
+      '</div><div class="bar-label">'+row.name.replace(/ \(.*?\)/,'').replace(' / ','<br>')+'<br>'+row.min+'-'+row.max+'W</div>';
+    bc.appendChild(col);
+  });
+  document.getElementById('powerOut').innerHTML =
+    'Budget: <strong style="color:var(--gold)">'+w.toFixed(1)+' W</strong><br><br>'+
+    (matches.length
+      ? 'Fits: <strong style="color:var(--lime)">'+matches.join(', ')+'</strong>'
+      : '<strong style="color:var(--rose)">No listed class comfortably covers this wattage</strong> — nearest neighbors will throttle or run under-budget.')+
+    '<br><br><span style="color:var(--text3)">'+(Math.abs(w-8)<0.15 ? 'This is the warehouse scenario\'s exact 8W envelope — notice both Coral and Jetson Nano land inside range.' : 'Try 8W to reproduce the warehouse system-design example.')+'</span>';
+}
+
+/* ================= DEMO · Depthwise-separable FLOPs calculator ================= */
+function dwsRender(){
+  const C = +document.getElementById('dwsSlider').value;
+  document.getElementById('dwsVal').textContent = C;
+  const standard = 9*C*C;
+  const depthwise = 9*C;
+  const pointwise = C*C;
+  const total = depthwise + pointwise;
+  const ratio = standard/total;
+  const bc = document.getElementById('dwsBars'); bc.innerHTML='';
+  const maxVal = Math.max(standard, total);
+  const bars = [
+    {label:'Standard 3×3\n(9C²)', val:standard, color:'var(--rose)'},
+    {label:'Depthwise-Sep\n(9C+C²)', val:total, color:'var(--lime)'}
+  ];
+  bars.forEach(b=>{
+    const col=document.createElement('div'); col.className='bar-col';
+    const h = (b.val/maxVal*100);
+    col.innerHTML='<div class="bar-fill" style="height:'+h+'%;background:'+b.color+'"></div><div class="bar-label">'+b.label.replace('\n','<br>')+'<br>'+b.val.toLocaleString()+'</div>';
+    bc.appendChild(col);
+  });
+  document.getElementById('dwsOut').innerHTML =
+    'C = <strong style="color:var(--gold)">'+C+'</strong> channels, 3×3 kernel<br><br>'+
+    'Standard: 9×'+C+'² = <strong style="color:var(--rose)">'+standard.toLocaleString()+'</strong> mults/pixel<br>'+
+    'Depthwise: 9×'+C+' = <strong>'+depthwise.toLocaleString()+'</strong><br>'+
+    'Pointwise: '+C+'² = <strong>'+pointwise.toLocaleString()+'</strong><br>'+
+    'Total dw-sep: <strong style="color:var(--lime)">'+total.toLocaleString()+'</strong><br><br>'+
+    'Speedup ratio: <strong style="color:var(--lime);font-size:16px;">'+ratio.toFixed(2)+'×</strong><br>'+
+    '<span style="color:var(--text3)">'+(C===256 ? 'Default C=256 reproduces the worked example exactly: ≈8.69× speedup.' : 'As C grows, the ratio climbs toward ~9× — the +9C term becomes negligible next to C².')+'</span>';
+}
+
+/* ---------- init all demos ---------- */
+powerRender(); dwsRender();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIFT &amp; RANSAC — Deep Dive · CV Session 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px; --radius-lg: 22px; --radius-md: 16px; --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .meta-tag { display:inline-block; margin-top:0.6rem; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); border-radius:4px; padding:2px 8px; }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV7'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; min-width:120px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  input[type="number"] { width:70px; background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:13px; border-radius:6px; padding:5px 8px; }
+  select { background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:12px; border-radius:6px; padding:5px 8px; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:10px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; cursor:pointer; }
+  .mgrid .cell:hover { border-color:var(--gold); }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .mgrid .cell.candidate { background:var(--gold-dim); color:var(--gold); border-color:var(--gold); cursor:default; font-weight:700; }
+  .mgrid .cell.low { background:rgba(163,230,53,0.16); color:var(--lime); border-color:rgba(163,230,53,0.45); }
+  .mgrid .cell.high { background:rgba(248,113,113,0.14); color:var(--rose); border-color:rgba(248,113,113,0.45); }
+  .octave-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-bottom:0.35rem; text-align:center; }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; text-align:center; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .toggle-row { display:flex; align-items:center; gap:0.6rem; font-family:var(--font-code); font-size:12px; color:var(--text2); }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") { root.setAttribute("data-theme", saved); }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 7 — SIFT &amp; RANSAC</div>
+    <span class="meta-tag">Session 7</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Foundations</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Why Local Features Matter</a>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Invariance Requirements</a>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Detect → Describe → Match</a>
+  <span class="nav-group-label">SIFT — Scale-Invariant Feature Transform</span>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Scale-Space &amp; DoG<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · Extrema &amp; Localization<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Orientation &amp; 128-D Descriptor<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">RANSAC — Robust Fitting</span>
+  <a href="#s7" class="nav-link" data-section="s7">07 · The RANSAC Algorithm<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s8" class="nav-link" data-section="s8">08 · Parameters &amp; Applications<span class="lab-dot" title="Interactive"></span></a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s9" class="nav-link" data-section="s9">09 · Conceptual Deep Dives</a>
+  <a href="#s10" class="nav-link" data-section="s10">10 · Key Takeaways &amp; Exam Tips</a>
+  <a href="#s11" class="nav-link" data-section="s11">11 · Exam Quiz (10 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 7 · SIFT &amp; RANSAC</span>
+    <h1>Local Features &amp; Robust Fitting<br><span>SIFT · RANSAC</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">How a photograph gets reduced to a few hundred distinctive, matchable points — and how you fit a model to those matches when a large fraction of them are simply wrong.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Source</strong>CV7 · SIFT &amp; RANSAC deck</div>
+      <div class="hero-meta-item"><strong>Prof</strong>Dhruba Adhikary</div>
+      <div class="hero-meta-item"><strong>Course</strong>CS2-25 AIMLCZG525</div>
+      <div class="hero-meta-item"><strong>Covers</strong>Local feature detection/description/matching + robust model fitting</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Local Features</span>
+      <span class="topic-chip">Scale-Space</span>
+      <span class="topic-chip">Difference of Gaussians</span>
+      <span class="topic-chip">Scale-Space Extrema</span>
+      <span class="topic-chip">Keypoint Localization</span>
+      <span class="topic-chip">Orientation Histogram</span>
+      <span class="topic-chip">128-D Descriptor</span>
+      <span class="topic-chip">RANSAC</span>
+      <span class="topic-chip">Inliers / Outliers</span>
+      <span class="topic-chip">Homography Estimation</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide</h3>
+      <p>Session 7 covers two ideas that are taught back-to-back because they are used back-to-back in practice: <strong>SIFT</strong> (Scale-Invariant Feature Transform) tells you <em>what</em> to match between two images — a sparse set of distinctive, repeatable points, each carrying a descriptor vector. <strong>RANSAC</strong> (Random Sample Consensus) then tells you how to trust the resulting matches enough to <em>fit a geometric model</em> (a line, a homography, a fundamental matrix) even though many of those matches will be wrong.</p>
+      <p>This guide keeps the two halves in the order the source material presents them — local features first, robust fitting second — but repeatedly cross-references how they compose into a single working pipeline: <strong>detect → describe → match → fit robustly</strong>.</p>
+    </div>
+
+    <!-- ============ SECTION 01 — WHY LOCAL FEATURES MATTER ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Why Local Features Matter</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — three steps turn "two photos" into "one panorama"</h3>
+        <p>Take two overlapping photographs of the same scene taken from slightly different positions. To stitch them into one panorama, a computer needs to figure out <em>how</em> the second image is rotated, scaled, and shifted relative to the first — and it can't do that from raw pixels directly, because pixels shift entirely as the camera moves. The fix is a simple three-step recipe that underlies panorama stitching and a great deal of the rest of computer vision:</p>
+        <ol class="pipeline">
+          <li><strong>Extract features</strong>
+            <p>Find a sparse set of distinctive, repeatable points in each image — corners, blobs, textured patches — points that a detector will find again even if the image is rotated, scaled, or slightly relit.</p></li>
+          <li><strong>Match features</strong>
+            <p>For each feature in image A, find its most similar counterpart in image B by comparing descriptor vectors — turning "which pixels correspond?" into a nearest-neighbor search problem.</p></li>
+          <li><strong>Align images</strong>
+            <p>Use the matched point pairs to solve for the geometric transformation (translation, homography, etc.) that maps one image onto the other — this is exactly where RANSAC enters, because many of the "matches" from step 2 will be wrong.</p></li>
+        </ol>
+      </div>
+
+      <div class="theory-block">
+        <h3>Applications — the same recipe, many domains</h3>
+        <table class="he-table">
+          <thead><tr><th>Application</th><th>What local features provide</th></tr></thead>
+          <tbody>
+            <tr><td>Panorama / image stitching</td><td>Correspondences to solve for the homography that aligns overlapping views</td></tr>
+            <tr><td>3D reconstruction</td><td>Matched points across multiple views, triangulated into 3D structure (structure-from-motion)</td></tr>
+            <tr><td>AR motion tracking</td><td>Stable points to track frame-to-frame so virtual content stays anchored to the real world</td></tr>
+            <tr><td>Object recognition</td><td>A distinctive "signature" of local descriptors that identifies an object regardless of pose</td></tr>
+            <tr><td>Image retrieval</td><td>Compact per-image descriptor sets that can be indexed and searched at scale</td></tr>
+            <tr><td>Visual SLAM</td><td>Repeatable landmarks a robot can re-detect to localize itself and map its environment</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — four properties that make local features useful</div>
+        <p><strong>Locality:</strong> because each feature only depends on a small image patch, features are individually robust to occlusion and clutter elsewhere in the image — losing half the scene still leaves plenty of features intact.</p>
+        <p><strong>Quantity:</strong> a single image typically yields hundreds to thousands of features, giving redundancy: even if many individual matches are wrong or missed, enough good ones usually survive to solve the alignment problem.</p>
+        <p><strong>Distinctiveness:</strong> a good descriptor should be different enough across genuinely different patches that nearest-neighbor matching reliably finds the true correspondence rather than a lookalike.</p>
+        <p><strong>Real-time efficiency:</strong> detection, description, and matching are all designed to be fast enough to run live — a requirement inherited directly by every downstream use case (AR, SLAM, robotics) that cannot afford to "pause the world" while it computes.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 — INVARIANCE REQUIREMENTS ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Invariance Requirements</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — the same physical point, seen differently</h3>
+        <p>The whole point of a local feature is that the <em>same</em> physical point in the world should produce a matchable feature no matter how the camera or the lighting changed between two shots. That requirement splits cleanly into two families of invariance a detector/descriptor must survive.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">The two invariance families</div>
+<span class="formula-line"><span class="f-gold">Geometric invariance</span>  — survives changes in camera viewpoint/pose</span>
+<span class="formula-line">  · <span class="f-teal">Translation</span> — the object moves within the frame</span>
+<span class="formula-line">  · <span class="f-teal">Rotation</span> — the camera or object rotates in-plane</span>
+<span class="formula-line">  · <span class="f-teal">Scale</span> — the camera moves closer/farther, changing apparent size</span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-gold">Photometric invariance</span>  — survives changes in illumination/imaging</span>
+<span class="formula-line">  · <span class="f-sky">Brightness</span> — the whole scene gets darker/lighter</span>
+<span class="formula-line">  · <span class="f-sky">Exposure</span> — the camera's exposure setting changes</span>
+<span class="formula-line">  · <span class="f-sky">Contrast</span> — the dynamic range of intensities changes</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>How SIFT delivers each invariance</h3>
+        <table class="he-table">
+          <thead><tr><th>Invariance needed</th><th>SIFT mechanism</th></tr></thead>
+          <tbody>
+            <tr><td>Translation</td><td>Local detection — a feature is defined relative to its own neighborhood, not absolute image coordinates</td></tr>
+            <tr><td>Scale</td><td>Searching for extrema across the scale-space / DoG pyramid (Section 04) — each keypoint is found <em>at</em> its own characteristic scale</td></tr>
+            <tr><td>Rotation</td><td>Assigning a canonical dominant orientation to each keypoint (Section 06) and describing gradients relative to it</td></tr>
+            <tr><td>Brightness / contrast</td><td>Normalizing the final descriptor vector (unit length, then clamping and renormalizing) so uniform illumination changes cancel out</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Invariance — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Keep the two families straight: geometric (translation, rotation, scale) vs photometric (brightness, exposure, contrast) — a question may ask you to classify a given change into the right family.</li>
+          <li>Every invariance claim maps to a specific mechanism in the pipeline — don't just say "SIFT is scale invariant," be ready to say <em>why</em> (scale-space search) and <em>where</em> in the four-stage pipeline it happens.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 — DETECT / DESCRIBE / MATCH ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">The Three Core Components</h2>
+        <span class="src-badge src-slides">Foundations</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Every local-feature method decomposes into the same three jobs</h3>
+        <p>Regardless of the specific algorithm (SIFT, ORB, SURF, learned descriptors), a local-feature pipeline always separates into three distinct sub-problems, each with its own success criterion.</p>
+        <ol class="pipeline">
+          <li><strong>Detection</strong>
+            <p>Find <em>repeatable</em> interest points — locations that a detector will re-find in a second image of the same scene, despite viewpoint or lighting changes. Repeatability, not "interestingness" in any human sense, is the success metric.</p></li>
+          <li><strong>Description</strong>
+            <p>Extract a numeric vector descriptor summarizing the local appearance around each detected point, invariant to the transformations listed in Section 02, and distinctive enough to distinguish genuinely different points.</p></li>
+          <li><strong>Matching</strong>
+            <p>Given descriptor sets from two images, find correspondences — typically by nearest-neighbor search over descriptor vectors — to hand off to a robust geometric fitting step such as RANSAC.</p></li>
+        </ol>
+      </div>
+
+      <div class="cnn-flow">
+        <div class="cnn-flow-node"><div class="cnn-flow-box input-box">Image A<br>&amp; Image B</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b1">Detection<br>keypoints</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b2">Description<br>128-D vectors</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b3">Matching<br>nearest neighbor</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box output-box">RANSAC<br>robust fit</div></div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>A widely used refinement at the matching stage — beyond plain nearest-neighbor lookup — is <strong>Lowe's ratio test</strong>: for each descriptor in image A, compare the distance to its best match in image B against the distance to its second-best match, and accept the match only if the best is meaningfully closer (e.g. ratio &lt; 0.8). This filters out ambiguous matches where a point has several near-equally-good candidates, which are disproportionately likely to be wrong and would otherwise pollute the correspondence set handed to RANSAC.</p>
+        <p><cite>Lowe, "Distinctive Image Features from Scale-Invariant Keypoints", IJCV 2004</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 — SCALE-SPACE & DoG (INTERACTIVE) ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Scale-Space &amp; the Difference of Gaussians</h2>
+        <span class="src-badge src-slides">SIFT — Stage 0</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — "what scale is this blob at?"</h3>
+        <p>A stop sign photographed from 2 meters away and the same stop sign photographed from 20 meters away are the same object at two different apparent sizes. To detect it reliably regardless of distance, SIFT doesn't search only over image location <code>(x, y)</code> — it searches over a third axis too: <strong>scale (σ)</strong>. The image is progressively blurred with Gaussians of increasing σ, and interest points are sought as extrema across this combined <code>(x, y, σ)</code> volume, so that each detected keypoint comes with its own <em>characteristic scale</em> baked in.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Difference-of-Gaussians (DoG)</div>
+<span class="formula-line"><span class="f-gold">D(x, y, σ) = [G(x, y, kσ) − G(x, y, σ)] * I(x, y)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">G(x,y,σ)</span> = a 2-D Gaussian blur kernel of standard deviation σ</span>
+<span class="formula-line"><span class="f-dim">k</span>       = a fixed multiplicative scale step between adjacent Gaussian-blurred images</span>
+<span class="formula-line"><span class="f-dim">I(x,y)</span>  = the input image</span>
+<span class="formula-line"><span class="f-dim">D(x,y,σ)</span> = the image blurred at scale kσ, minus the same image blurred at scale σ</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why Difference-of-Gaussians instead of Laplacian-of-Gaussian?</h3>
+        <p>The theoretically "ideal" blob detector is the scale-normalized <strong>Laplacian of Gaussian (LoG)</strong> — it responds maximally at a blob's true characteristic scale and location. But computing a LoG response at every pixel and every scale directly is expensive: it requires convolving the image with a fresh second-derivative-of-Gaussian kernel at each scale.</p>
+        <p><strong>DoG approximates LoG almost for free.</strong> If you're already building a pyramid of Gaussian-blurred images at increasing σ (which many pipelines need anyway), then the difference between two adjacent Gaussian-blurred images is a close numerical approximation to the scale-normalized LoG — and computing it costs only a pixel-wise subtraction, no new convolution. Extrema in the resulting 3-D <code>(x, y, σ)</code> DoG volume identify blobs detected at their own natural scale.</p>
+      </div>
+
+      <div class="interactive-demo" id="octaveDemo">
+        <h4>⊞ Interactive · Extrema Search — 26 Neighbours Across Scale</h4>
+        <div class="demo-sub">The gold cell is a candidate keypoint in the middle DoG image. Its value is compared against all <strong>26 neighbours</strong>: 8 in the same scale, plus 9 in the scale above, plus 9 in the scale below. Click any of the 26 cells to toggle it between "lower" (lime) and "higher" (rose) than the candidate — watch the verdict update live.</div>
+        <div class="demo-canvas-wrap" style="gap:1.25rem;">
+          <div>
+            <div class="octave-label">Scale σ · above</div>
+            <div class="mgrid" id="gridAbove" style="grid-template-columns:repeat(3,38px);"></div>
+          </div>
+          <div>
+            <div class="octave-label">Scale σ · same (candidate)</div>
+            <div class="mgrid" id="gridSame" style="grid-template-columns:repeat(3,38px);"></div>
+          </div>
+          <div>
+            <div class="octave-label">Scale σ · below</div>
+            <div class="mgrid" id="gridBelow" style="grid-template-columns:repeat(3,38px);"></div>
+          </div>
+          <div style="flex:1;min-width:220px;"><div class="demo-output" id="octaveOut"></div></div>
+        </div>
+        <div style="margin-top:1rem;"><button class="demo-btn" onclick="octaveResetLow()">Set all 26 → lower (maximum)</button><button class="demo-btn" onclick="octaveResetHigh()">Set all 26 → higher (minimum)</button><button class="demo-btn" onclick="octaveRandomize()">Randomize (likely: not extrema)</button></div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>This "3×3×3 minus the center pixel = 26 comparisons" test is exactly Lowe's original 2004 formulation. It is deliberately cheap: a candidate point only needs to be strictly greater than, or strictly less than, <em>every one</em> of its 26 neighbours to be flagged as a scale-space extremum — a single neighbour that ties or crosses over is enough to disqualify it. Only points that survive this test proceed to keypoint localization (Section 05), where most of them will still be discarded for low contrast or edge-like structure.</p>
+        <p><cite>Lowe, "Distinctive Image Features from Scale-Invariant Keypoints", IJCV 2004</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 05 — EXTREMA DETECTION & LOCALIZATION (INTERACTIVE) ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">SIFT Stage 1-2 — Extrema Detection &amp; Keypoint Localization</h2>
+        <span class="src-badge src-slides">SIFT — Stages 1-2</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The four-stage SIFT pipeline, at a glance</h3>
+        <p>Lowe's SIFT (2004, University of British Columbia) runs as four sequential stages. Sections 05-06 of this guide walk through all four in order.</p>
+        <ol class="pipeline">
+          <li><strong>Scale-space extrema detection</strong>
+            <p>Search across location <em>and</em> scale simultaneously using the Difference-of-Gaussians pyramid; flag candidate keypoints as local extrema among their 26 neighbours (Section 04).</p></li>
+          <li><strong>Keypoint localization</strong>
+            <p>Refine each candidate's position and scale; reject low-contrast points and points that sit on an edge rather than a true corner/blob.</p></li>
+          <li><strong>Orientation assignment</strong>
+            <p>Build a local gradient-orientation histogram and assign the dominant peak as the keypoint's canonical orientation, enabling rotation invariance.</p></li>
+          <li><strong>Keypoint descriptor</strong>
+            <p>Build a 128-dimensional gradient-orientation descriptor in the rotated, scaled frame, then normalize it for illumination invariance.</p></li>
+        </ol>
+      </div>
+
+      <div class="theory-block">
+        <h3>Stage 2 in detail — throwing away unreliable candidates</h3>
+        <p>Not every scale-space extremum makes a good keypoint. Localization does two further jobs beyond simply confirming "this point is an extremum":</p>
+        <p><strong>Low-contrast rejection:</strong> a candidate whose DoG response magnitude <code>|D(x)|</code> is below a fixed threshold is discarded — a weak response is more likely to be noise than a genuine, stable structure, and would not survive re-detection under a slightly different image or lighting.</p>
+        <p><strong>Edge rejection (the Hessian ratio test):</strong> a point lying along a straight edge is poorly localized <em>along</em> the edge direction — its DoG response is strong in one direction but nearly flat in the perpendicular direction, so its exact position along the edge is ambiguous and unstable. This is tested with the 2×2 Hessian matrix of second derivatives at the candidate:</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Edge response test — principal curvature ratio</div>
+<span class="formula-line"><span class="f-gold">H = [ D<sub>xx</sub>  D<sub>xy</sub> ; D<sub>xy</sub>  D<sub>yy</sub> ]</span>   <span class="f-dim">(Hessian of the DoG response at the candidate)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Trace: </span><span class="f-teal">Tr(H) = D<sub>xx</sub> + D<sub>yy</sub> = α + β</span></span>
+<span class="formula-line"><span class="f-dim">Determinant: </span><span class="f-teal">Det(H) = D<sub>xx</sub>D<sub>yy</sub> − D<sub>xy</sub>² = αβ</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Reject the point as edge-like if:</span></span>
+<span class="formula-line">  <span class="f-rose">Tr(H)² / Det(H)  >  (r + 1)² / r</span>   <span class="f-dim">(commonly r = 10)</span></span>
+<span class="formula-line"><span class="f-dim">where α, β are the two principal curvatures (eigenvalues of H). A true corner/blob has α ≈ β; an edge has one curvature much larger than the other, making the ratio blow up.</span></span>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Localization — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Two independent rejection tests exist at this stage — low-contrast <em>and</em> edge response. A question may ask which specific test would reject a given example point; check both, they are not interchangeable.</li>
+          <li>Common mistake: assuming any extremum found in Stage 1 automatically becomes a keypoint. In practice, a large fraction of Stage-1 candidates are pruned here.</li>
+          <li>The edge test uses only the <em>ratio</em> Tr(H)²/Det(H), not the raw eigenvalues — this makes it scale-independent (it only cares about the relative shape of the local curvature, not its absolute magnitude).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 — ORIENTATION & 128-D DESCRIPTOR (INTERACTIVE) ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">SIFT Stage 3-4 — Orientation Assignment &amp; the 128-D Descriptor</h2>
+        <span class="src-badge src-slides">SIFT — Stages 3-4</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Stage 3 — giving every keypoint a canonical "up"</h3>
+        <p>Rotation invariance in SIFT does not come from a rotation-invariant descriptor formula — it comes from a much simpler trick: <strong>cancel the rotation before describing the point.</strong> Around each keypoint, gradient orientations are computed over a local neighborhood, weighted by their gradient magnitude and by a Gaussian window centered on the keypoint (so nearby pixels count more than far ones). These weighted orientations are accumulated into a histogram; the histogram's dominant peak becomes the keypoint's canonical orientation. From then on, everything about the descriptor is measured <em>relative to</em> this orientation, so rotating the whole image simply rotates the assigned canonical direction along with it — the relative geometry, and hence the descriptor, stays the same.</p>
+        <p>If the orientation histogram has more than one strong peak (a second peak within roughly 80% of the tallest one — common at corners where multiple edges meet), <strong>a separate keypoint is created for each dominant peak</strong>, all sharing the same location and scale but each with its own orientation. This trades a small increase in keypoint count for much greater matching stability at genuinely ambiguous points.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Stage 4 — turning the neighborhood into 128 numbers</h3>
+        <p>Once position, scale, and orientation are fixed, the descriptor is built entirely in that keypoint's own local, rotated, scaled reference frame: the neighborhood around the keypoint is divided into a <strong>4×4 grid</strong> of spatial subregions, and within each subregion, the local gradient orientations are accumulated into an <strong>8-bin orientation histogram</strong> (again weighted by gradient magnitude and a Gaussian window). Concatenating all 16 subregions' 8-bin histograms gives the final descriptor.</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Descriptor dimensionality</div>
+<span class="formula-line"><span class="f-gold">4 × 4 spatial grid × 8 orientation bins = 128-dimensional descriptor vector</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Illumination invariance:</span> the 128-D vector is normalized to unit length, so a uniform brightness/contrast scaling of the whole patch cancels out.</span>
+<span class="formula-line"><span class="f-dim">Non-linear illumination robustness:</span> any single component larger than a fixed clip threshold is capped, and the vector is renormalized — this limits the influence of a few very bright gradients (e.g. specular highlights) that a simple linear brightness change would not explain.</span>
+      </div>
+
+      <div class="interactive-demo" id="descDemo">
+        <h4>⊞ Interactive · The 4×4 Descriptor Grid</h4>
+        <div class="demo-sub">Each of the 16 cells below is one spatial subregion around a keypoint. Click a cell to reveal its own 8-bin gradient-orientation histogram — the building block that, concatenated across all 16 cells, becomes the 128-D descriptor.</div>
+        <div class="demo-canvas-wrap">
+          <div class="mgrid" id="descGrid" style="grid-template-columns:repeat(4,38px);"></div>
+          <div style="flex:1;min-width:260px;">
+            <div class="bar-chart" id="descBars"></div>
+            <div class="demo-output" id="descOut">Click a cell to see its 8-bin orientation histogram.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>The arithmetic 4×4×8=128 is one of the most exam-friendly facts in this entire syllabus precisely because it is so mechanical — but it is worth understanding <em>why</em> each factor is there: 4×4 spatial cells give the descriptor some tolerance to small position/pose errors (a slight misalignment still lands gradients in roughly the same cells), while 8 orientation bins per cell give enough angular resolution to discriminate edge directions without being so fine-grained that small rotation residuals after Stage 3 destroy the match.</p>
+        <p><cite>Lowe, "Distinctive Image Features from Scale-Invariant Keypoints", IJCV 2004</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 — THE RANSAC ALGORITHM (INTERACTIVE) ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">RANSAC — Robust Model Fitting</h2>
+        <span class="src-badge src-slides">RANSAC</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — why not just fit to all the matches?</h3>
+        <p>Feature matching (Section 03) is noisy: some fraction of the "matches" between two images are simply wrong — a repeated texture, an ambiguous descriptor, a genuinely unmatched point paired up anyway. Ordinary least-squares fitting is extremely sensitive to such outliers — a single bad match can drag a fitted line or homography far from the truth. RANSAC sidesteps this by <em>never trusting all the data at once</em>: it repeatedly guesses a model from a tiny random subset, and lets the full data vote on which guess was right.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>The four-step iterative process</h3>
+        <ol class="pipeline">
+          <li><strong>Sample</strong>
+            <p>Randomly pick the minimum number of points needed to define the model — 2 points for a line, 4 point-correspondences for a homography.</p></li>
+          <li><strong>Solve</strong>
+            <p>Fit the model exactly to that minimal sample (a closed-form solve — two points determine a line, four correspondences determine a homography).</p></li>
+          <li><strong>Score</strong>
+            <p>Count inliers — how many of <em>all</em> the data points lie within a preset distance threshold of the fitted model.</p></li>
+          <li><strong>Repeat &amp; keep best</strong>
+            <p>Repeat steps 1-3 many times; retain whichever sampled model achieved the most inliers. Optionally, re-fit the model one final time using all of that best model's inliers together, for a more accurate final estimate.</p></li>
+        </ol>
+      </div>
+
+      <div class="prof-quote">
+        <div class="prof-quote-label">Key principle</div>
+        <p>"All good matches are alike; every bad match is bad in its own way." Correct correspondences all agree with the same true geometric transformation — they form a consensus. Incorrect correspondences are wrong essentially at random, and rarely agree with each other on any single alternative model. This asymmetry is exactly what lets RANSAC tell inliers from outliers: inliers cluster around one model, outliers scatter.</p>
+      </div>
+
+      <div class="interactive-demo" id="ransacDemo">
+        <h4>⊞ Interactive · Run RANSAC Yourself — Sample → Solve → Score → Repeat</h4>
+        <div class="demo-sub">A scatter of points hides a true line among random outliers. Click "Run One Trial" to sample 2 random points, fit a line through them, and score it by counting inliers within the distance threshold. The best-scoring trial so far is kept and re-drawn in gold.</div>
+        <div class="slider-row">
+          <span class="slider-label">Inlier threshold (px)</span>
+          <input type="range" id="ransacThreshSlider" min="3" max="25" value="10" oninput="ransacRedraw()">
+          <span class="slider-val" id="ransacThreshVal">10</span>
+        </div>
+        <div class="demo-canvas-wrap">
+          <canvas id="ransacCanvas" width="320" height="240"></canvas>
+          <div style="flex:1;min-width:240px;"><div class="demo-output" id="ransacOut"></div></div>
+        </div>
+        <div style="margin-top:1rem;"><button class="demo-btn" onclick="ransacTrial()">Run One Trial</button><button class="demo-btn" onclick="ransacReset()">Reset (new points)</button></div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>RANSAC loop — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Memorize the exact order: Sample → Solve → Score → Repeat &amp; keep best. A shuffled-order multiple-choice question is a common trap.</li>
+          <li>Know the minimal sample size cold: 2 points for a line, 4 correspondences for a homography — other models (fundamental matrix: 7 or 8 points, depending on the solver) may appear as a numerical twist.</li>
+          <li>"Scoring" always means counting inliers under a fixed distance threshold — it is not the same as minimizing total fitting error over all points, which is what the final optional re-fit step does instead.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 — PARAMETERS, GUARANTEES & APPLICATIONS (INTERACTIVE) ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">RANSAC — Parameters, Guarantees &amp; Applications</h2>
+        <span class="src-badge src-slides">RANSAC</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>How many iterations are enough?</h3>
+        <p>Running "many" trials is not a free parameter to guess at — it can be derived from how bad you expect the data to be. If <code>e</code> is the expected fraction of outliers and <code>s</code> is the minimal sample size for the model, then the probability that a single random sample is entirely outlier-free is <code>(1−e)^s</code>, and the probability that <em>none</em> of <code>N</code> independent trials draws an all-inlier sample is <code>(1 − (1−e)^s)^N</code>. Setting that failure probability to <code>1 − p</code> (where <code>p</code> is the desired probability of success) and solving for <code>N</code> gives the standard formula:</p>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Required number of RANSAC iterations</div>
+<span class="formula-line"><span class="f-gold">N = log(1 − p) / log(1 − (1 − e)^s)</span></span>
+<span class="formula-line"><span class="f-dim">p</span> = desired probability that RANSAC succeeds (finds at least one all-inlier sample), e.g. 0.99</span>
+<span class="formula-line"><span class="f-dim">e</span> = expected fraction of outliers in the data</span>
+<span class="formula-line"><span class="f-dim">s</span> = minimal sample size for the model (2 for a line, 4 for a homography)</span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Worked example (line, s=2, p=0.99, e=0.4):</span></span>
+<span class="formula-line">  N = log(0.01) / log(1 − 0.6²) = log(0.01) / log(0.64) ≈ <span class="f-lime">10.3 → round up to 11 iterations</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">Worked example (homography, s=4, p=0.99, e=0.5):</span></span>
+<span class="formula-line">  N = log(0.01) / log(1 − 0.5⁴) = log(0.01) / log(0.9375) ≈ <span class="f-lime">71.4 → round up to 72 iterations</span></span>
+      </div>
+
+      <div class="interactive-demo" id="itersDemo">
+        <h4>⊞ Interactive · RANSAC Iteration-Count Calculator</h4>
+        <div class="demo-sub">Drag the outlier fraction and pick a sample size / success probability — watch how sharply the required iteration count grows as outliers increase or the model needs more points per sample.</div>
+        <div class="slider-row">
+          <span class="slider-label">Outlier fraction e</span>
+          <input type="range" id="itersE" min="5" max="90" value="40" oninput="itersRender()">
+          <span class="slider-val" id="itersEVal">0.40</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Sample size s</span>
+          <select id="itersS" onchange="itersRender()">
+            <option value="2">2 (line)</option>
+            <option value="4" selected>4 (homography)</option>
+            <option value="7">7 (fundamental matrix, 7-pt)</option>
+            <option value="8">8 (fundamental matrix, 8-pt)</option>
+          </select>
+          <span class="slider-label" style="min-width:auto;margin-left:1rem;">Success p</span>
+          <select id="itersP" onchange="itersRender()">
+            <option value="0.90">0.90</option>
+            <option value="0.95">0.95</option>
+            <option value="0.99" selected>0.99</option>
+            <option value="0.999">0.999</option>
+          </select>
+        </div>
+        <div class="demo-output" id="itersOut"></div>
+      </div>
+
+      <div class="theory-block">
+        <h3>The other free parameter — how big should the inlier threshold be?</h3>
+        <p>RANSAC's distance threshold decides who counts as an inlier during scoring. It should reflect the expected measurement noise in the data — commonly modeled as Gaussian — rather than being picked arbitrarily. A typical rule of thumb used for point-correspondence problems is a threshold around <strong>~3 pixels</strong>, tight enough to reject genuinely wrong matches but loose enough to tolerate ordinary localization noise in a correct match.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Guarantees, limitations &amp; where RANSAC is used</h3>
+        <table class="he-table">
+          <thead><tr><th>Aspect</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td>Reliability guarantee</td><td>Works reliably when outliers make up <strong>less than 50%</strong> of the data</td></tr>
+            <tr><td>Strengths</td><td>Simple to implement; general-purpose — applies to line/plane fitting, homography estimation, fundamental matrix estimation</td></tr>
+            <tr><td>Weaknesses</td><td>Requires tuning (threshold, iteration count); needs many iterations as outlier fraction grows; fails at very low inlier ratios (near or above 50% outliers)</td></tr>
+            <tr><td>Applications</td><td>Image alignment / panorama stitching, 3D reconstruction, motion/translation estimation, homography estimation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Parameters &amp; limits — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Be ready to plug numbers into <code>N = log(1−p) / log(1−(1−e)^s)</code> directly — this exact numerical computation is a very likely exam question, in either direction (given e,s,p find N; or given N,s,p find max tolerable e).</li>
+          <li>Common mistake: forgetting that <code>N</code> grows extremely fast with <code>e</code> and <code>s</code> — doubling <code>s</code> does not merely double the required iterations, it raises them by orders of magnitude at high outlier fractions.</li>
+          <li>"Works reliably below 50% outliers" is the single most quotable limitation of RANSAC — know it as a number, not just a vague qualitative statement.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 — CONCEPTUAL DEEP DIVES ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Conceptual Deep Dives</h2>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Compare &amp; Contrast</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s9-a', this, 's9-ex')">DoG vs LoG</button>
+          <button class="tab-btn" onclick="showTab('s9-b', this, 's9-ex')">Why 4×4×8, not 2×2×4?</button>
+          <button class="tab-btn" onclick="showTab('s9-c', this, 's9-ex')">RANSAC vs Least-Squares</button>
+        </div>
+
+        <div class="tab-panel active" id="s9-a" data-tab-group="s9-ex">
+          <div class="example-q">If LoG is the "ideal" blob detector, why does every practical SIFT implementation use DoG instead?</div>
+          <ol class="step-list">
+            <li><p>LoG requires convolving the image with a fresh second-derivative-of-Gaussian kernel at every scale you want to search — a genuinely new, relatively expensive convolution per scale level.</p></li>
+            <li><p>DoG only needs a subtraction between two Gaussian-blurred images that a scale-space pipeline is typically building anyway — the marginal cost of computing DoG at every level is essentially one array subtraction.</p></li>
+            <li><p>Because DoG is a close numerical approximation to the scale-normalized LoG (both are derived from the same underlying heat-equation-like diffusion process in scale-space), the accuracy loss from substituting one for the other is small relative to the compute savings.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>DoG is not "a different algorithm" from LoG — it's an efficient finite-difference approximation to the same underlying scale-space derivative. Recognizing this relationship, not just the two names, is what exam questions probe for.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s9-b" data-tab-group="s9-ex">
+          <div class="example-q">Why does SIFT's descriptor use a 4×4 spatial grid with 8 orientation bins rather than something coarser or finer?</div>
+          <ol class="step-list">
+            <li><p>A coarser grid (say 2×2) would be less sensitive to small positional misalignment after orientation normalization, but would throw away too much spatial structure to be distinctive — many different patches would look identical.</p></li>
+            <li><p>A much finer grid (say 8×8) would capture more spatial detail, but would become brittle to the same small misalignments it's trying to describe, and would balloon the descriptor's dimensionality (8×8×8 = 512) with diminishing distinctiveness returns.</p></li>
+            <li><p>4×4×8 = 128 was Lowe's empirically chosen balance point: enough spatial and angular resolution to be highly distinctive, while still tolerant of the residual pose error left over after Stage 3's orientation normalization.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Every dimensionality choice in a hand-crafted descriptor is a distinctiveness-vs-robustness trade-off — the same tension that motivates learned descriptors (which let training data pick the balance instead of a fixed formula).</p></div>
+        </div>
+
+        <div class="tab-panel" id="s9-c" data-tab-group="s9-ex">
+          <div class="example-q">Why can't you just fit a line/homography to all the matched points with ordinary least squares instead of running RANSAC?</div>
+          <ol class="step-list">
+            <li><p>Least-squares minimizes the sum of squared residuals over <em>every</em> point, including outliers — squaring means a single very-wrong outlier contributes an outsized share of the total error, pulling the fitted model toward it.</p></li>
+            <li><p>RANSAC never fits to all the data at once — it fits to a minimal, hopefully outlier-free sample, and only afterward checks how many of the remaining points agree. Outliers can only hurt the score of whichever trial happened to sample them, not distort every trial's fit.</p></li>
+            <li><p>The two techniques are complementary, not competing: a common final step re-runs ordinary least squares, but only on the inlier set RANSAC identified — getting least-squares' precision without its outlier sensitivity.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>RANSAC is best understood as an outlier-rejection wrapper around a plain fitting method, not a replacement for one — "sample-and-vote," then "fit cleanly" on what voting found.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — KEY TAKEAWAYS & EXAM TIPS ============ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">Key Takeaways &amp; Exam Tips</h2>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Key Takeaways</div>
+        <p><strong>The local-features pipeline is always detect → describe → match:</strong> whatever the specific algorithm, these three jobs stay separate, each with its own success criterion (repeatability, distinctiveness, efficient correspondence search).</p>
+        <p><strong>SIFT's sequence:</strong> DoG scale-space extrema detection → keypoint localization (contrast + edge rejection) → orientation assignment → 128-D descriptor. Know the order and what each stage fixes about the previous one's raw output.</p>
+        <p><strong>DoG approximates LoG</strong> almost for free, by subtracting adjacent Gaussian-blurred images; extrema in the resulting 3-D (x, y, σ) volume identify blobs at their own characteristic scale.</p>
+        <p><strong>RANSAC's loop:</strong> sample the minimal set → fit → count inliers → iterate → keep the best model (optionally re-fit on its inliers). It is robust as long as outliers stay under roughly 50% of the data.</p>
+        <p><strong>Exam pattern:</strong> this session mixes theory questions (name the stage, name the invariance, explain why a design choice was made) with numericals (compute the descriptor dimensionality, compute a RANSAC iteration count, evaluate the edge-rejection ratio) — expect both, and practice the arithmetic, not just the concepts.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Highest-yield numericals to drill before the exam</h4></div>
+        <ul class="exam-list">
+          <li>Descriptor dimensionality arithmetic: 4×4×8 = 128, and being able to redo it for a hypothetical different grid/bin count.</li>
+          <li>The 26-neighbour rule for scale-space extrema (8 same-scale + 9 above + 9 below), and correctly identifying whether a given toy grid of values is a max, a min, or neither.</li>
+          <li>Plugging numbers into <code>N = log(1−p) / log(1−(1−e)^s)</code> for both lines (s=2) and homographies (s=4), in both directions (solve for N, or solve for the maximum tolerable e given a fixed N).</li>
+          <li>The edge-rejection ratio test <code>Tr(H)²/Det(H) &gt; (r+1)²/r</code> — know what large vs small ratios mean physically (edge vs corner/blob), even if you are not asked to compute exact eigenvalues.</li>
+          <li>Stating RANSAC's ~50% outlier-tolerance limit precisely, and being able to justify it qualitatively from the iteration-count formula (as e → 1, N explodes).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 11 — EXAM QUIZ ============ -->
+    <section class="section" id="s11">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Exam Quiz — 10 Questions</h2>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">DoG formula</span>
+          <div class="quiz-q-text">What does D(x,y,σ) = [G(x,y,kσ) − G(x,y,σ)] * I(x,y) approximate?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>The image gradient magnitude</li>
+          <li><span class="opt-letter">B</span>A Harris corner response</li>
+          <li><span class="opt-letter">C</span>The scale-normalized Laplacian of Gaussian (LoG)</li>
+          <li><span class="opt-letter">D</span>The Hessian determinant</li>
+        </ul>
+        <div class="quiz-reveal">DoG is a cheap, subtraction-only approximation to the scale-normalized LoG blob detector. <strong>A</strong> and <strong>B</strong> describe unrelated feature-detection quantities (gradient magnitude and the Harris corner measure). <strong>D</strong> is used later, in the edge-rejection test (Section 05), not here.<span class="mistake">Common mistake</span>Confusing DoG with a generic "edge detector" — it is specifically a blob detector approximation.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Extrema test</span>
+          <div class="quiz-q-text">How many neighbouring samples is a scale-space extremum candidate compared against?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>8</li>
+          <li><span class="opt-letter">B</span>26</li>
+          <li><span class="opt-letter">C</span>9</li>
+          <li><span class="opt-letter">D</span>128</li>
+        </ul>
+        <div class="quiz-reveal">8 same-scale neighbours + 9 in the scale above + 9 in the scale below = <strong>26</strong>. <strong>A</strong> is only the same-scale ring. <strong>C</strong> is only one of the two adjacent scales. <strong>D</strong> is the descriptor's dimensionality, an unrelated number.<span class="mistake">Common mistake</span>Forgetting to include the same-scale ring and only counting the two adjacent scales (9+9=18) — the full comparison set is 8+9+9=26.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">RANSAC sample size</span>
+          <div class="quiz-q-text">What is the minimal sample size RANSAC needs to fit a homography?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>2</li>
+          <li><span class="opt-letter">B</span>3</li>
+          <li><span class="opt-letter">C</span>4</li>
+          <li><span class="opt-letter">D</span>8</li>
+        </ul>
+        <div class="quiz-reveal">A homography has 8 degrees of freedom, each point-correspondence supplies 2 constraints, so <strong>4</strong> correspondences exactly determine it. <strong>A (2)</strong> is the minimal sample for a line. <strong>D (8)</strong> is the minimal sample for the 8-point fundamental-matrix algorithm, a different model.<span class="mistake">Common mistake</span>Mixing up the minimal sample sizes across different models — line (2), homography (4), fundamental matrix (7 or 8) are all distinct numbers worth memorizing separately.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">SIFT pipeline order</span>
+          <div class="quiz-q-text">Which is the correct order of SIFT's four stages?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Scale-space extrema detection → keypoint localization → orientation assignment → descriptor</li>
+          <li><span class="opt-letter">B</span>Orientation assignment → scale-space extrema detection → descriptor → keypoint localization</li>
+          <li><span class="opt-letter">C</span>Keypoint localization → descriptor → scale-space extrema detection → orientation assignment</li>
+          <li><span class="opt-letter">D</span>Descriptor → orientation assignment → keypoint localization → scale-space extrema detection</li>
+        </ul>
+        <div class="quiz-reveal">You must first find candidate points (extrema detection), then clean them up (localization), before you can even define what "canonical orientation" or "descriptor" means for a point that might not survive to that stage. <strong>B, C, D</strong> all place description or orientation before a keypoint has even been confirmed to exist.<span class="mistake">Common mistake</span>Treating the four stages as independent, reorderable modules — each stage's output is required input to the next.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">RANSAC iterations</span>
+          <div class="quiz-q-text">For a line fit (s=2), p=0.99, and e=0.4 expected outliers, how many RANSAC iterations are needed (rounding up)?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>5</li>
+          <li><span class="opt-letter">B</span>17</li>
+          <li><span class="opt-letter">C</span>34</li>
+          <li><span class="opt-letter">D</span>11</li>
+        </ul>
+        <div class="quiz-reveal">N = log(1−0.99)/log(1−(1−0.4)²) = log(0.01)/log(1−0.36) = log(0.01)/log(0.64) ≈ 10.3, rounded up to <strong>11</strong>. <strong>B (17)</strong> and <strong>C (34)</strong> are the corresponding homography-style (s=4) numbers at nearby outlier fractions, mixed up with the wrong sample size.<span class="mistake">Common mistake</span>Plugging in s=4 out of habit (from the homography example) instead of the s=2 the question specifies for a line.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Edge rejection</span>
+          <div class="quiz-q-text">A candidate keypoint has Hessian eigenvalues α=50, β=2 (a strong edge-like structure). What does the ratio test Tr(H)²/Det(H) predict?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>The ratio will be very large, so the point is rejected as edge-like</li>
+          <li><span class="opt-letter">B</span>The ratio will be exactly 1, so the point is kept</li>
+          <li><span class="opt-letter">C</span>The ratio is undefined and the point is automatically kept</li>
+          <li><span class="opt-letter">D</span>The ratio only matters for low-contrast rejection, not edges</li>
+        </ul>
+        <div class="quiz-reveal">Tr(H)²/Det(H) = (α+β)²/(αβ) = 52²/100 = 27.04 — large, because α ≫ β (one curvature dominates, the signature of an edge). A true corner/blob has α≈β, keeping this ratio near its minimum value of 4. <strong>B</strong> would only hold if α=β. <strong>C</strong> is wrong — Det(H)=100 here, perfectly well-defined.<span class="mistake">Common mistake</span>Assuming a "strong" DoG response alone means a good keypoint — a strong response along an edge still fails the separate edge-ratio test.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Multiple orientations</span>
+          <div class="quiz-q-text">Why does SIFT create multiple keypoints at the same location/scale when the orientation histogram has two comparably strong peaks?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>To increase the descriptor's dimensionality from 128 to 256</li>
+          <li><span class="opt-letter">B</span>Because the DoG extrema test failed and needs a second attempt</li>
+          <li><span class="opt-letter">C</span>Because forcing a single ambiguous orientation would make the descriptor unstable/non-repeatable across images where the "true" dominant direction flips</li>
+          <li><span class="opt-letter">D</span>To compensate for low contrast at that point</li>
+        </ul>
+        <div class="quiz-reveal">At corners or junctions with two comparably strong gradient directions, picking one arbitrarily would make the resulting descriptor sensitive to noise that tips the histogram one way or the other between images — creating a keypoint per strong peak keeps both interpretations available for matching. <strong>A</strong> is false — each resulting keypoint is still exactly 128-D. <strong>B</strong> and <strong>D</strong> confuse this with the earlier extrema/contrast tests, which are unrelated to orientation.<span class="mistake">Common mistake</span>Thinking of this as an error-recovery mechanism rather than a deliberate robustness trade-off (more keypoints, each more stable).</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">RANSAC key principle</span>
+          <div class="quiz-q-text">"All good matches are alike; every bad match is bad in its own way" is the reasoning behind which step of RANSAC?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Sample — picking the minimal random subset</li>
+          <li><span class="opt-letter">B</span>Score — counting inliers against a fitted model</li>
+          <li><span class="opt-letter">C</span>Solve — fitting the model to the minimal sample</li>
+          <li><span class="opt-letter">D</span>None of the steps; it is unrelated to the algorithm mechanics</li>
+        </ul>
+        <div class="quiz-reveal">Scoring works precisely because inliers all agree with the same correct model (they cluster, "alike"), while outliers each disagree with it differently (they scatter, "in their own way") — that separation is what makes counting points within a distance threshold a meaningful way to distinguish a good model from a bad one. <strong>A</strong> and <strong>C</strong> are mechanical steps that don't depend on this asymmetry to function.<span class="mistake">Common mistake</span>Treating the quote as a general remark about the data rather than tying it to the specific mechanism (scoring/counting inliers) it justifies.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Outlier limit</span>
+          <div class="quiz-q-text">Why does the required iteration count N explode as the outlier fraction e approaches 1, rather than growing gently?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Because the inlier threshold must also shrink as e grows</li>
+          <li><span class="opt-letter">B</span>Because N is defined as a linear function of e</li>
+          <li><span class="opt-letter">C</span>It doesn't — N grows linearly with e in practice</li>
+          <li><span class="opt-letter">D</span>Because (1−e)^s shrinks exponentially in s, and N depends on the logarithm of (1 − that already-tiny number), which blows up as (1−e)^s → 0</li>
+        </ul>
+        <div class="quiz-reveal">As e→1, (1−e)^s→0, so log(1−(1−e)^s)→log(1)=0 — dividing by a value approaching zero drives N to infinity. This is why RANSAC's practical reliability is bounded: at very high outlier fractions, no realistic iteration budget finds an all-inlier sample often enough. <strong>A</strong> confuses two independent parameters. <strong>B</strong> and <strong>C</strong> both mischaracterize N's relationship to e as linear, when it is governed by an exponential-then-logarithm structure.<span class="mistake">Common mistake</span>Assuming iteration-count requirements scale gently/linearly with data quality — the formula's structure means they don't, especially as e crosses 50%.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Full pipeline</span>
+          <div class="quiz-q-text">In a panorama-stitching pipeline, which statement correctly places SIFT and RANSAC relative to each other?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>SIFT detects/describes/matches candidate correspondences first; RANSAC then robustly fits the homography from those (noisy) correspondences</li>
+          <li><span class="opt-letter">B</span>RANSAC first cleans the raw pixels; SIFT then detects keypoints on the cleaned image</li>
+          <li><span class="opt-letter">C</span>SIFT and RANSAC are two competing alternatives for the same step — a pipeline uses one or the other, never both</li>
+          <li><span class="opt-letter">D</span>RANSAC replaces the need for a descriptor entirely, matching keypoints directly by pixel location</li>
+        </ul>
+        <div class="quiz-reveal">SIFT produces the raw material (keypoint correspondences, some of them wrong) that RANSAC needs as input — RANSAC cannot run without a candidate correspondence set to sample from, and SIFT alone cannot safely estimate a global geometric transform in the presence of mismatches. They are sequential and complementary, not competitors. <strong>B</strong> and <strong>D</strong> invert or eliminate the actual dependency; <strong>C</strong> denies that they solve different problems (feature correspondence vs. robust geometric fitting).<span class="mistake">Common mistake</span>Studying SIFT and RANSAC as two disconnected topics rather than as adjacent stages of one working pipeline — most application-style exam questions test exactly this connection.</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('a')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('b')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  if(!li) return;
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+  }
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO · 26-neighbour scale-space extrema clicker ================= */
+let octaveState = { above: [1,1,1,1,1,1,1,1,1], same: [1,1,1,1,1,1,1,1], below: [1,1,1,1,1,1,1,1,1] };
+// state value: 1 = "lower than candidate" (lime), 0 = "higher than candidate" (rose)
+function octaveBuildGrid(id, count, clickable){
+  const g = document.getElementById(id); g.innerHTML='';
+  for(let i=0;i<count;i++){
+    const d=document.createElement('div'); d.className='cell'; d.dataset.i=i;
+    g.appendChild(d);
+  }
+}
+function octaveRenderGrid(id, arr, group){
+  const g = document.getElementById(id);
+  Array.from(g.children).forEach((cell,i)=>{
+    cell.classList.remove('low','high');
+    cell.classList.add(arr[i] ? 'low' : 'high');
+    cell.textContent = arr[i] ? '−' : '+';
+    cell.onclick = ()=>{ arr[i] = arr[i] ? 0 : 1; octaveRenderAll(); };
+  });
+}
+function octaveRenderAll(){
+  octaveRenderGrid('gridAbove', octaveState.above);
+  octaveRenderGrid('gridBelow', octaveState.below);
+  const sameGrid = document.getElementById('gridSame');
+  sameGrid.innerHTML='';
+  // 3x3 grid where center (index 4) is the fixed candidate, the other 8 are clickable
+  for(let i=0;i<9;i++){
+    const d=document.createElement('div'); d.className='cell';
+    if(i===4){
+      d.classList.add('candidate'); d.textContent='●';
+    } else {
+      const arrIdx = i<4 ? i : i-1;
+      d.classList.add(octaveState.same[arrIdx] ? 'low' : 'high');
+      d.textContent = octaveState.same[arrIdx] ? '−' : '+';
+      d.onclick = ()=>{ octaveState.same[arrIdx] = octaveState.same[arrIdx] ? 0 : 1; octaveRenderAll(); };
+    }
+    sameGrid.appendChild(d);
+  }
+  const all = [...octaveState.above, ...octaveState.same, ...octaveState.below];
+  const allLower = all.every(v=>v===1);
+  const allHigher = all.every(v=>v===0);
+  const lowerCount = all.filter(v=>v===1).length;
+  let verdict, verdictColor;
+  if(allLower){ verdict='LOCAL MAXIMUM — flagged as a candidate keypoint'; verdictColor='var(--lime)'; }
+  else if(allHigher){ verdict='LOCAL MINIMUM — flagged as a candidate keypoint'; verdictColor='var(--lime)'; }
+  else { verdict='NOT an extremum — discarded, no keypoint candidate here'; verdictColor='var(--rose)'; }
+  document.getElementById('octaveOut').innerHTML =
+    'Candidate vs its 26 neighbours:<br>'+
+    '<strong style="color:var(--lime)">'+lowerCount+'</strong> lower &nbsp;|&nbsp; <strong style="color:var(--rose)">'+(26-lowerCount)+'</strong> higher<br><br>'+
+    'Verdict: <strong style="color:'+verdictColor+'">'+verdict+'</strong><br><br>'+
+    '<span style="color:var(--text3)">An extremum requires ALL 26 neighbours to agree (all lower, or all higher) — a single neighbour that disagrees disqualifies the candidate.</span>';
+}
+function octaveResetLow(){ octaveState={above:Array(9).fill(1),same:Array(8).fill(1),below:Array(9).fill(1)}; octaveRenderAll(); }
+function octaveResetHigh(){ octaveState={above:Array(9).fill(0),same:Array(8).fill(0),below:Array(9).fill(0)}; octaveRenderAll(); }
+function octaveRandomize(){
+  const rnd=()=>Math.random()<0.5?1:0;
+  octaveState={above:Array(9).fill(0).map(rnd),same:Array(8).fill(0).map(rnd),below:Array(9).fill(0).map(rnd)};
+  octaveRenderAll();
+}
+octaveBuildGrid('gridAbove',9); octaveBuildGrid('gridBelow',9);
+octaveRenderAll();
+
+/* ================= DEMO · 4x4 descriptor grid + 8-bin histogram ================= */
+function descSeed(i){ let x = Math.sin(i*777.7)*10000; return x - Math.floor(x); }
+let descActive = -1;
+function descBuild(){
+  const g = document.getElementById('descGrid'); g.innerHTML='';
+  for(let i=0;i<16;i++){
+    const d=document.createElement('div'); d.className='cell'; d.dataset.i=i;
+    d.textContent = 'r'+(Math.floor(i/4)+1)+'c'+((i%4)+1);
+    d.onclick = ()=>{ descActive=i; descBuild(); descReport(i); };
+    if(i===descActive){ d.classList.add('hot'); }
+    g.appendChild(d);
+  }
+}
+function descReport(i){
+  const bins = [];
+  for(let b=0;b<8;b++) bins.push(0.15 + descSeed(i*8+b)*0.85);
+  const bc = document.getElementById('descBars'); bc.innerHTML='';
+  const maxV = Math.max(...bins);
+  bins.forEach((v,b)=>{
+    const col=document.createElement('div'); col.className='bar-col';
+    col.innerHTML='<div class="bar-fill" style="height:'+(v/maxV*100)+'%"></div><div class="bar-label">'+(b*45)+'°</div>';
+    bc.appendChild(col);
+  });
+  document.getElementById('descOut').innerHTML =
+    'Cell r'+(Math.floor(i/4)+1)+'c'+((i%4)+1)+' — 8 orientation-bin magnitudes shown above (bin centers every 45°).<br><br>'+
+    '<span style="color:var(--text3)">This one cell contributes 8 of the descriptor\'s 128 numbers. All 16 cells × 8 bins = <strong style="color:var(--lime)">128-D descriptor</strong>.</span>';
+}
+descBuild();
+
+/* ================= DEMO · RANSAC line-fitting simulator ================= */
+let ransacPoints = [];
+let ransacBest = null; // {a,b,c, inliers, p1, p2}
+let ransacTrials = 0;
+function ransacGeneratePoints(){
+  ransacPoints = [];
+  // true line: y = 0.55x + 40 (canvas coords, y down)
+  const trueM = 0.55, trueC = 40;
+  for(let i=0;i<16;i++){
+    const x = 15 + Math.random()*290;
+    const y = trueM*x + trueC + (Math.random()-0.5)*14;
+    ransacPoints.push({x, y, isOutlier:false});
+  }
+  for(let i=0;i<10;i++){
+    ransacPoints.push({x: 10+Math.random()*300, y: 10+Math.random()*220, isOutlier:true});
+  }
+}
+function lineFromTwoPoints(p1,p2){
+  // returns a,b,c such that a*x+b*y+c=0, normalized so a^2+b^2=1
+  let a = p2.y - p1.y, b = p1.x - p2.x, c = -(a*p1.x + b*p1.y);
+  const norm = Math.sqrt(a*a+b*b) || 1;
+  return {a:a/norm, b:b/norm, c:c/norm};
+}
+function pointLineDist(pt, line){ return Math.abs(line.a*pt.x + line.b*pt.y + line.c); }
+function ransacThresh(){ return +document.getElementById('ransacThreshSlider').value; }
+function ransacTrial(){
+  ransacTrials++;
+  const i1 = Math.floor(Math.random()*ransacPoints.length);
+  let i2 = Math.floor(Math.random()*ransacPoints.length);
+  while(i2===i1) i2 = Math.floor(Math.random()*ransacPoints.length);
+  const p1 = ransacPoints[i1], p2 = ransacPoints[i2];
+  const line = lineFromTwoPoints(p1,p2);
+  const thresh = ransacThresh();
+  const inliers = ransacPoints.filter(pt=>pointLineDist(pt,line) <= thresh);
+  const candidate = {...line, inlierCount: inliers.length, p1, p2};
+  if(!ransacBest || candidate.inlierCount > ransacBest.inlierCount){
+    ransacBest = candidate;
+  }
+  ransacRedraw(candidate);
+}
+function ransacRedraw(lastTrial){
+  const cv = document.getElementById('ransacCanvas'), g = cv.getContext('2d');
+  g.clearRect(0,0,cv.width,cv.height);
+  const thresh = ransacThresh();
+  document.getElementById('ransacThreshVal').textContent = thresh;
+  const bestInliers = ransacBest ? ransacPoints.filter(pt=>pointLineDist(pt,ransacBest) <= thresh) : [];
+  const bestInlierSet = new Set(bestInliers);
+  ransacPoints.forEach(pt=>{
+    g.beginPath();
+    g.arc(pt.x, pt.y, 4, 0, Math.PI*2);
+    g.fillStyle = bestInlierSet.has(pt) ? 'rgba(163,230,53,0.9)' : 'rgba(157,155,168,0.55)';
+    g.fill();
+  });
+  function drawLine(line, color, width, dash){
+    g.setLineDash(dash||[]);
+    g.strokeStyle = color; g.lineWidth = width;
+    g.beginPath();
+    if(Math.abs(line.b) > 1e-6){
+      const y0 = -(line.a*0+line.c)/line.b, y1 = -(line.a*cv.width+line.c)/line.b;
+      g.moveTo(0,y0); g.lineTo(cv.width,y1);
+    } else {
+      const x0 = -(line.c)/line.a;
+      g.moveTo(x0,0); g.lineTo(x0,cv.height);
+    }
+    g.stroke();
+    g.setLineDash([]);
+  }
+  if(lastTrial && lastTrial!==ransacBest){
+    drawLine(lastTrial, 'rgba(125,211,252,0.55)', 1.5, [4,3]);
+  }
+  if(ransacBest){
+    drawLine(ransacBest, 'rgba(212,168,83,0.95)', 2.5);
+  }
+  document.getElementById('ransacOut').innerHTML =
+    'Trials run: <strong style="color:var(--gold)">'+ransacTrials+'</strong><br>'+
+    'Total points: <strong>'+ransacPoints.length+'</strong> &nbsp;|&nbsp; Threshold: <strong>'+thresh+'px</strong><br><br>'+
+    (lastTrial ? 'Last trial inliers: <strong style="color:var(--sky)">'+lastTrial.inlierCount+'</strong><br>' : '')+
+    'Best-so-far inliers: <strong style="color:var(--lime);font-size:16px;">'+(ransacBest?bestInliers.length:0)+'</strong> / '+ransacPoints.length+'<br><br>'+
+    '<span style="color:var(--text3)">Gold solid = best model found so far. Sky dashed = the trial you just ran (if it wasn\'t the new best). Lime dots = inliers of the current best model.</span>';
+}
+function ransacReset(){ ransacGeneratePoints(); ransacBest=null; ransacTrials=0; ransacRedraw(); }
+ransacGeneratePoints();
+ransacRedraw();
+
+/* ================= DEMO · RANSAC iteration-count calculator ================= */
+function itersRender(){
+  const e = (+document.getElementById('itersE').value)/100;
+  const s = +document.getElementById('itersS').value;
+  const p = +document.getElementById('itersP').value;
+  document.getElementById('itersEVal').textContent = e.toFixed(2);
+  const inlierProb = Math.pow(1-e, s);
+  const denom = Math.log(1 - inlierProb);
+  let N;
+  if(inlierProb >= 1){ N = 1; }
+  else { N = Math.log(1-p) / denom; }
+  const Nrounded = Math.max(1, Math.ceil(N));
+  document.getElementById('itersOut').innerHTML =
+    'P(sample is all-inlier) = (1−e)<sup>s</sup> = (1−'+e.toFixed(2)+')<sup>'+s+'</sup> ≈ <strong style="color:var(--sky)">'+inlierProb.toFixed(4)+'</strong><br>'+
+    'N = log(1−'+p+') / log(1−'+inlierProb.toFixed(4)+')<br><br>'+
+    'Required iterations N ≈ <strong style="color:var(--lime);font-size:18px;">'+Nrounded+'</strong><br><br>'+
+    '<span style="color:var(--text3)">'+(e>0.6 ? 'At this outlier fraction, N is already growing very fast — small increases in e from here cost far more iterations than the same increase did at low e.' : 'Try dragging e above 0.6 and watch N start to explode.')+'</span>';
+}
+itersRender();
+</script>
+
+</body>
+</html>

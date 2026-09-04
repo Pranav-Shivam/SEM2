@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Bag of Words — Deep Dive · CV Session 14</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Newsreader:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0c0c0f; --bg2:#111116; --bg3:#16161c; --bg4:#1c1c24;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.12);
+    --gold:#d4a853; --gold-dim:rgba(212,168,83,0.15); --gold-glow:rgba(212,168,83,0.08);
+    --teal:#4ec9b0; --sky:#7dd3fc; --rose:#f87171; --lime:#a3e635; --violet:#c084fc;
+    --text:#e8e6e3; --text2:#9d9ba8; --text3:#6b6878;
+    --font-head:'Syne',sans-serif; --font-body:'Newsreader',serif; --font-code:'JetBrains Mono',monospace;
+    --sidebar:260px; --radius:10px;
+    color-scheme: dark;
+    --font-display: "Fraunces", serif;
+    --font-ui: "Space Grotesk", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+    --radius-xl: 28px; --radius-lg: 22px; --radius-md: 16px; --radius-sm: 12px;
+    --shadow-soft: 0 18px 48px rgba(8, 15, 28, 0.14);
+    --shadow-lift: 0 24px 60px rgba(7, 16, 34, 0.24);
+    --page-bg:
+      radial-gradient(circle at top left, rgba(71, 164, 255, 0.18), transparent 28%),
+      radial-gradient(circle at 85% 12%, rgba(255, 181, 86, 0.16), transparent 22%),
+      linear-gradient(180deg, #07111f 0%, #0b1625 42%, #0e1b2d 100%);
+    --surface: rgba(11, 20, 34, 0.78);
+    --surface-strong: rgba(15, 26, 43, 0.96);
+    --surface-soft: rgba(255, 255, 255, 0.05);
+    --surface-muted: rgba(151, 170, 199, 0.12);
+    --card-bg: rgba(13, 24, 40, 0.88);
+    --border-strong: rgba(186, 205, 232, 0.28);
+    --text-muted: #afbed4;
+    --text-faint: #7e90ab;
+    --accent: var(--gold);
+    --accent-2: var(--sky);
+    --accent-3: var(--teal);
+    --accent-4: var(--violet);
+    --success-bg: rgba(140, 231, 194, 0.14);
+    --success-text: #b9f6dd;
+    --tab-idle: rgba(255, 255, 255, 0.05);
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --chip-bg: rgba(255, 255, 255, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(255, 181, 86, 0.42), rgba(96, 192, 255, 0.25), rgba(203, 156, 255, 0.26));
+    --grid-line: rgba(255, 255, 255, 0.05);
+  }
+  html[data-theme="light"] {
+    color-scheme: light;
+    --page-bg:
+      radial-gradient(circle at top left, rgba(122, 187, 255, 0.25), transparent 28%),
+      radial-gradient(circle at 88% 12%, rgba(255, 192, 100, 0.28), transparent 24%),
+      linear-gradient(180deg, #f5f8fc 0%, #ecf3fb 50%, #e7eef7 100%);
+    --surface: rgba(255, 255, 255, 0.78);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --surface-soft: rgba(18, 42, 68, 0.05);
+    --surface-muted: rgba(38, 76, 124, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --border-strong: rgba(45, 80, 128, 0.24);
+    --text-muted: #4f6686;
+    --text-faint: #7185a3;
+    --success-bg: rgba(18, 136, 104, 0.1);
+    --success-text: #0c7258;
+    --tab-idle: rgba(19, 43, 73, 0.05);
+    --input-bg: rgba(19, 43, 73, 0.05);
+    --chip-bg: rgba(19, 43, 73, 0.07);
+    --hero-outline: linear-gradient(135deg, rgba(222, 141, 34, 0.32), rgba(36, 131, 219, 0.22), rgba(135, 80, 223, 0.2));
+    --grid-line: rgba(27, 48, 79, 0.06);
+    --shadow-soft: 0 18px 42px rgba(31, 64, 105, 0.10);
+    --shadow-lift: 0 24px 54px rgba(31, 64, 105, 0.14);
+    --bg:#f5f8fc; --bg2:#eef3fa; --bg3:#e7eef7; --bg4:#dfe8f3;
+    --border:rgba(19,43,73,0.10); --border2:rgba(19,43,73,0.16);
+    --gold:#b5721c; --gold-dim:rgba(181,114,28,0.14); --gold-glow:rgba(181,114,28,0.08);
+    --teal:#0f8a68; --sky:#1f6fb8; --rose:#c23a3a; --lime:#4f8a1f; --violet:#7a4bc4;
+    --text:#10233e; --text2:#4f6686; --text3:#7185a3;
+  }
+  body { background:var(--bg); font-family:var(--font-body); font-size:17px; line-height:1.75; overflow-x:hidden; color:var(--text); }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); opacity:0.04; pointer-events:none; z-index:9999; }
+  .hub-topbar { position:sticky; top:0; z-index:300; display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:0.65rem 1.5rem; background:var(--surface-strong); border-bottom:1px solid var(--border); box-shadow:var(--shadow-soft); }
+  .hub-brand { display:flex; align-items:center; gap:0.6rem; text-decoration:none; color:var(--text); font-family:var(--font-ui); font-size:13px; font-weight:600; letter-spacing:0.02em; }
+  .hub-brand-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:8px; background:var(--gold-dim); color:var(--gold); font-family:var(--font-mono); font-size:11px; font-weight:700; border:1px solid rgba(212,168,83,0.3); }
+  .hub-theme-toggle { display:inline-flex; align-items:center; gap:0.45rem; font-family:var(--font-mono); font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text2); background:var(--tab-idle); border:1px solid var(--border2); border-radius:999px; padding:6px 14px; cursor:pointer; transition:all 0.15s; }
+  .hub-theme-toggle:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .sidebar { position:fixed; left:0; top:50px; width:var(--sidebar); height:calc(100vh - 50px); background:var(--bg2); border-right:1px solid var(--border); overflow-y:auto; z-index:100; }
+  .sidebar-header { padding:1.5rem 1.25rem 1rem; position:sticky; top:0; background:var(--bg2); border-bottom:1px solid var(--border); z-index:10; }
+  .sidebar-logo { font-family:var(--font-code); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:0.4rem; }
+  .sidebar-title { font-family:var(--font-head); font-size:14px; font-weight:600; color:var(--text); }
+  .progress-wrap { padding:0.75rem 1.25rem; position:sticky; top:82px; background:var(--bg2); z-index:9; border-bottom:1px solid var(--border); }
+  .progress-label { font-family:var(--font-code); font-size:11px; color:var(--text3); display:flex; justify-content:space-between; margin-bottom:0.4rem; }
+  .progress-bar-bg { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--gold); width:0%; transition:width 0.3s; }
+  .nav-group-label { display:block; font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--text3); padding:0.75rem 1.25rem 0.25rem; margin-top:0.25rem; }
+  .nav-link { display:block; padding:0.45rem 1.25rem; font-family:var(--font-body); font-size:13px; color:var(--text2); text-decoration:none; border-left:2px solid transparent; transition:color 0.15s, background 0.15s, border-left-color 0.15s; }
+  .nav-link:hover { color:var(--text); background:var(--gold-glow); }
+  .nav-link.active { color:var(--gold); border-left-color:var(--gold); background:var(--gold-glow); }
+  .nav-link .lab-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--teal); margin-left:6px; vertical-align:middle; }
+  .main { margin-left:var(--sidebar); min-height:100vh; }
+  .hero { padding:4rem 4rem 3rem; border-bottom:1px solid var(--border); background:linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg3) 100%); position:relative; overflow:hidden; }
+  .hero::after { content:'CV14'; position:absolute; right:3rem; top:50%; transform:translateY(-50%); font-family:var(--font-head); font-size:12rem; font-weight:800; color:rgba(212,168,83,0.04); pointer-events:none; line-height:1; user-select:none; }
+  .hero-tag { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--gold); background:var(--gold-dim); display:inline-block; padding:4px 12px; border-radius:20px; margin-bottom:1.25rem; border:1px solid rgba(212,168,83,0.2); letter-spacing:0.08em; }
+  .hero h1 { font-family:var(--font-head); font-size:clamp(2.2rem, 4vw, 3.2rem); font-weight:800; line-height:1.1; margin-bottom:1rem; max-width:740px; }
+  .hero h1 span { color:var(--gold); }
+  .hero-meta { display:flex; gap:2rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .hero-meta-item { font-family:var(--font-code); font-size:12px; color:var(--text3); }
+  .hero-meta-item strong { color:var(--text2); display:block; margin-bottom:2px; font-weight:500; }
+  .hero-topics { display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.5rem; }
+  .topic-chip { font-family:var(--font-code); font-size:11px; padding:4px 10px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); background:var(--bg3); letter-spacing:0.04em; }
+  .content { padding:3rem 4rem; max-width:900px; }
+  .section { margin-bottom:5rem; opacity:0; transform:translateY(24px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .section.visible { opacity:1; transform:translateY(0); }
+  .section-header { display:flex; align-items:baseline; gap:1rem; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .section-num { font-family:var(--font-code); font-size:12px; color:var(--gold); background:var(--gold-dim); padding:2px 8px; border-radius:4px; flex-shrink:0; }
+  .section-title { font-family:var(--font-head); font-size:1.9rem; font-weight:700; color:var(--text); }
+  .src-badge { font-family:var(--font-code); font-size:9px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+  .src-slides { color:var(--gold); background:var(--gold-dim); border:1px solid rgba(212,168,83,0.3); }
+  .src-lab { color:var(--teal); background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); }
+  .theory-block { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin-bottom:1.5rem; }
+  .theory-block h3 { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--gold); margin-bottom:0.9rem; }
+  .theory-block p { color:var(--text); margin-bottom:0.75rem; }
+  .theory-block p:last-child { margin-bottom:0; }
+  .pipeline { counter-reset:pstep; list-style:none; margin:1.25rem 0; }
+  .pipeline li { counter-increment:pstep; position:relative; padding:0.9rem 1rem 0.9rem 3.2rem; margin-bottom:0.6rem; background:var(--bg4); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; }
+  .pipeline li::before { content:counter(pstep); position:absolute; left:0.9rem; top:0.9rem; font-family:var(--font-code); font-size:12px; font-weight:700; color:var(--bg); background:var(--gold); width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .pipeline li strong { color:var(--gold); font-family:var(--font-head); font-size:0.98rem; }
+  .pipeline li p { font-size:14px; color:var(--text2); margin:0.3rem 0 0; }
+  .pipeline li code { font-size:12px; }
+  .formula-block { background:var(--bg4); border:1px solid rgba(212,168,83,0.2); border-radius:8px; padding:1.25rem 1.5rem; margin:1rem 0; font-family:var(--font-code); overflow-x:auto; }
+  .formula-block .formula-label { font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text3); margin-bottom:0.6rem; }
+  .formula-line { font-size:15px; line-height:1.9; display:block; white-space:pre-wrap; }
+  .f-gold{color:var(--gold);} .f-teal{color:var(--teal);} .f-sky{color:var(--sky);} .f-rose{color:var(--rose);} .f-lime{color:var(--lime);} .f-violet{color:var(--violet);} .f-dim{color:var(--text3);}
+  .annotation { background:rgba(78,201,176,0.06); border-left:3px solid var(--teal); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .annotation-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--teal); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .annotation p { font-size:15px; color:var(--text2); font-style:italic; }
+  .prof-quote { background:rgba(125,211,252,0.06); border-left:3px solid var(--sky); border-radius:0 8px 8px 0; padding:0.9rem 1.25rem; margin:1rem 0; }
+  .prof-quote-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--sky); margin-bottom:0.4rem; letter-spacing:0.1em; }
+  .prof-quote p { font-size:15px; color:var(--text2); font-style:italic; }
+  .why-matters { background:linear-gradient(135deg, rgba(212,168,83,0.08) 0%, rgba(212,168,83,0.04) 100%); border:1px solid rgba(212,168,83,0.2); border-radius:var(--radius); padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .why-matters-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; letter-spacing:0.1em; }
+  .why-matters p { font-size:15px; color:var(--text); margin-bottom:0.5rem; }
+  .why-matters p:last-child { margin-bottom:0; }
+  .why-matters pre, .code-snippet { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:1rem 1.25rem; margin-top:0.75rem; font-family:var(--font-code); font-size:13px; overflow-x:auto; color:var(--text); line-height:1.7; }
+  .research-insight { background:rgba(163,230,53,0.05); border:1px solid rgba(163,230,53,0.2); border-left:3px solid var(--lime); border-radius:0 var(--radius) var(--radius) 0; padding:1.25rem 1.5rem; margin:1.5rem 0; }
+  .research-insight .ri-badge { font-family:var(--font-code); font-size:9px; font-weight:600; text-transform:uppercase; color:var(--lime); background:rgba(163,230,53,0.12); padding:3px 9px; border-radius:4px; border:1px solid rgba(163,230,53,0.25); letter-spacing:0.08em; display:inline-block; margin-bottom:0.7rem; }
+  .research-insight p { font-size:15px; color:var(--text2); margin-bottom:0.5rem; }
+  .research-insight p:last-child { margin-bottom:0; }
+  .research-insight cite { color:var(--lime); font-style:normal; font-family:var(--font-code); font-size:12px; }
+  .examples-section { margin:2rem 0; }
+  .examples-tabs { display:flex; gap:0; flex-wrap:wrap; }
+  .tab-btn { font-family:var(--font-code); font-size:12px; padding:8px 18px; border:1px solid var(--border); border-bottom:none; background:var(--bg3); color:var(--text3); cursor:pointer; border-radius:6px 6px 0 0; transition:all 0.15s; letter-spacing:0.05em; }
+  .tab-btn:hover { color:var(--text); background:var(--bg4); }
+  .tab-btn.active-easy { color:var(--lime); border-color:rgba(163,230,53,0.3); background:rgba(163,230,53,0.06); }
+  .tab-btn.active-medium { color:var(--gold); border-color:rgba(212,168,83,0.3); background:var(--gold-dim); }
+  .tab-btn.active-complex { color:var(--rose); border-color:rgba(248,113,113,0.3); background:rgba(248,113,113,0.06); }
+  .tab-panel { display:none; background:var(--bg2); border:1px solid var(--border); border-radius:0 var(--radius) var(--radius) var(--radius); padding:1.75rem 2rem; }
+  .tab-panel.active { display:block; }
+  .example-q { font-family:var(--font-head); font-size:1.05rem; font-weight:600; color:var(--text); margin-bottom:1rem; line-height:1.4; }
+  .step-list { counter-reset:steps; list-style:none; margin:1rem 0; }
+  .step-list li { counter-increment:steps; display:flex; gap:1rem; margin-bottom:1rem; align-items:flex-start; }
+  .step-list li::before { content:counter(steps); font-family:var(--font-code); font-size:11px; font-weight:600; color:var(--bg); background:var(--gold); width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:3px; }
+  .step-list li p { font-size:15px; color:var(--text); }
+  .answer-box { background:var(--bg4); border:1px solid rgba(163,230,53,0.25); border-radius:8px; padding:1rem 1.25rem; margin:1.25rem 0 0; display:flex; align-items:flex-start; gap:1rem; }
+  .answer-label { font-family:var(--font-code); font-size:11px; text-transform:uppercase; color:var(--lime); flex-shrink:0; margin-top:2px; letter-spacing:0.08em; }
+  .answer-val { font-family:var(--font-code); font-size:14px; color:var(--text); line-height:1.6; }
+  .key-insight { background:rgba(192,132,252,0.07); border-left:3px solid var(--violet); border-radius:0 8px 8px 0; padding:0.8rem 1.1rem; margin-top:1rem; }
+  .key-insight .ki-label { font-family:var(--font-code); font-size:10px; text-transform:uppercase; color:var(--violet); margin-bottom:0.3rem; letter-spacing:0.1em; }
+  .key-insight p { font-size:14px; color:var(--text2); line-height:1.6; }
+  .exam-alert { background:rgba(248,113,113,0.06); border:1px solid rgba(248,113,113,0.25); border-radius:var(--radius); padding:1.5rem 1.75rem; margin:2rem 0; }
+  .exam-alert-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .exam-badge { font-family:var(--font-code); font-size:10px; font-weight:600; text-transform:uppercase; color:var(--rose); background:rgba(248,113,113,0.12); padding:4px 10px; border-radius:4px; border:1px solid rgba(248,113,113,0.25); letter-spacing:0.08em; }
+  .exam-alert h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--rose); }
+  .exam-list { list-style:none; margin:0.5rem 0 0; }
+  .exam-list li { padding:0.3rem 0; font-size:15px; color:var(--text2); display:flex; gap:0.6rem; align-items:flex-start; }
+  .exam-list li::before { content:'→'; color:var(--rose); flex-shrink:0; margin-top:1px; }
+  .he-table { width:100%; border-collapse:collapse; font-family:var(--font-code); font-size:13px; margin:1rem 0; }
+  .he-table th { background:var(--bg4); color:var(--gold); padding:8px 12px; text-align:left; font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .he-table td { padding:7px 12px; color:var(--text); border-bottom:1px solid var(--border); vertical-align:top; font-size:13px; }
+  .he-table tr:hover td { background:var(--bg4); }
+  .cnn-flow { display:flex; align-items:center; gap:0; margin:1.5rem 0; overflow-x:auto; padding:0.5rem 0 1rem; }
+  .cnn-flow-node { display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .cnn-flow-box { padding:0.75rem 1rem; border-radius:8px; font-family:var(--font-code); font-size:11px; font-weight:600; text-align:center; letter-spacing:0.05em; min-width:90px; line-height:1.4; }
+  .cnn-flow-box.input-box { background:var(--bg4); border:1px solid var(--border2); color:var(--text2); }
+  .cnn-flow-box.b1 { background:rgba(212,168,83,0.12); border:1px solid rgba(212,168,83,0.35); color:var(--gold); }
+  .cnn-flow-box.b2 { background:rgba(78,201,176,0.1); border:1px solid rgba(78,201,176,0.3); color:var(--teal); }
+  .cnn-flow-box.b3 { background:rgba(125,211,252,0.1); border:1px solid rgba(125,211,252,0.3); color:var(--sky); }
+  .cnn-flow-box.b4 { background:rgba(192,132,252,0.1); border:1px solid rgba(192,132,252,0.3); color:var(--violet); }
+  .cnn-flow-box.output-box { background:rgba(163,230,53,0.1); border:1px solid rgba(163,230,53,0.3); color:var(--lime); }
+  .cnn-flow-label { font-family:var(--font-code); font-size:10px; color:var(--text3); margin-top:0.4rem; text-align:center; letter-spacing:0.06em; }
+  .cnn-flow-arrow { font-size:1.3rem; color:var(--text3); padding:0 0.35rem; flex-shrink:0; align-self:center; margin-bottom:1.4rem; }
+  .interactive-demo { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem 2rem; margin:1.5rem 0; }
+  .interactive-demo h4 { font-family:var(--font-head); font-size:1rem; font-weight:600; color:var(--teal); margin-bottom:0.4rem; }
+  .interactive-demo .demo-sub { font-size:13px; color:var(--text3); margin-bottom:1.25rem; }
+  .slider-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .slider-label { font-family:var(--font-code); font-size:12px; color:var(--text2); flex-shrink:0; min-width:130px; }
+  .slider-val { font-family:var(--font-code); font-size:12px; color:var(--gold); flex-shrink:0; min-width:48px; text-align:right; }
+  input[type="range"] { flex:1; -webkit-appearance:none; appearance:none; height:4px; background:var(--bg4); border-radius:2px; outline:none; min-width:120px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; }
+  input[type="range"]::-moz-range-thumb { width:16px; height:16px; background:var(--gold); border-radius:50%; cursor:pointer; border:none; }
+  input[type="number"] { width:70px; background:var(--bg4); border:1px solid var(--border2); color:var(--text); font-family:var(--font-code); font-size:13px; border-radius:6px; padding:5px 8px; }
+  .demo-output { background:var(--bg4); border-radius:8px; padding:1.25rem; margin-top:1rem; font-family:var(--font-code); font-size:13px; line-height:1.7; }
+  .demo-btn { font-family:var(--font-code); font-size:12px; padding:7px 16px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2); border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.05em; margin-right:0.5rem; }
+  .demo-btn:hover { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .demo-btn:disabled { opacity:0.35; cursor:not-allowed; }
+  .demo-btn.active-btn { color:var(--gold); border-color:rgba(212,168,83,0.4); background:var(--gold-glow); }
+  .mgrid { display:inline-grid; gap:3px; margin:0.5rem 0; font-family:var(--font-code); }
+  .mgrid .cell { width:38px; height:38px; display:flex; align-items:center; justify-content:center; font-size:10px; background:var(--bg3); border:1px solid var(--border); border-radius:4px; color:var(--text2); transition:all 0.2s; cursor:pointer; }
+  .mgrid .cell:hover { border-color:var(--gold); }
+  .mgrid .cell.hot { background:rgba(212,168,83,0.25); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.keep { background:rgba(163,230,53,0.2); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.kill { background:rgba(248,113,113,0.12); color:var(--text3); border-color:var(--border); }
+  .mgrid .cell.strong { background:rgba(163,230,53,0.25); color:var(--lime); border-color:var(--lime); }
+  .mgrid .cell.weak { background:rgba(212,168,83,0.2); color:var(--gold); border-color:var(--gold); }
+  .mgrid .cell.none { background:var(--bg3); color:var(--text3); }
+  .demo-canvas-wrap { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start; }
+  canvas { background:var(--bg); border:1px solid var(--border); border-radius:8px; max-width:100%; }
+  .bar-chart { display:flex; align-items:flex-end; gap:4px; height:130px; margin-top:0.75rem; padding:0 0.25rem; }
+  .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-fill { width:100%; background:linear-gradient(to top, var(--gold), rgba(212,168,83,0.4)); border-radius:3px 3px 0 0; transition:height 0.25s; min-height:2px; }
+  .bar-label { font-family:var(--font-code); font-size:9px; color:var(--text3); margin-top:4px; text-align:center; }
+  .meter-row { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; }
+  .meter-label { font-family:var(--font-code); font-size:11px; color:var(--text2); min-width:130px; flex-shrink:0; }
+  .meter-track { flex:1; height:10px; background:var(--bg4); border-radius:5px; overflow:hidden; border:1px solid var(--border); }
+  .meter-fill { height:100%; border-radius:5px; transition:width 0.25s; }
+  .meter-val { font-family:var(--font-code); font-size:11px; color:var(--text3); min-width:38px; text-align:right; }
+  .quiz-q { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:1.5rem 1.75rem; margin-bottom:1rem; }
+  .quiz-q-header { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .quiz-num { font-family:var(--font-code); font-size:11px; color:var(--bg); background:var(--gold); padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; font-weight:700; }
+  .diff-badge, .topic-badge { font-family:var(--font-code); font-size:10px; padding:2px 8px; border-radius:4px; flex-shrink:0; margin-top:3px; }
+  .diff-easy { background:rgba(163,230,53,0.12); color:var(--lime); border:1px solid rgba(163,230,53,0.25); }
+  .diff-medium { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(212,168,83,0.25); }
+  .diff-hard { background:rgba(248,113,113,0.12); color:var(--rose); border:1px solid rgba(248,113,113,0.25); }
+  .topic-badge { background:var(--bg4); color:var(--text3); border:1px solid var(--border); }
+  .quiz-q-text { font-family:var(--font-body); font-size:16px; color:var(--text); line-height:1.6; flex-basis:100%; margin-top:0.4rem; }
+  .quiz-options { list-style:none; margin:0.75rem 0; }
+  .quiz-options li { padding:0.5rem 0.75rem; border-radius:6px; font-size:14px; color:var(--text2); cursor:pointer; transition:all 0.15s; border:1px solid transparent; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.6rem; font-family:var(--font-body); }
+  .quiz-options li:hover { background:var(--bg3); border-color:var(--border2); color:var(--text); }
+  .quiz-options li.correct { background:rgba(163,230,53,0.08); border-color:rgba(163,230,53,0.3); color:var(--lime); pointer-events:none; }
+  .quiz-options li.wrong { background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); color:var(--rose); pointer-events:none; }
+  .quiz-options li.disabled { pointer-events:none; opacity:0.6; }
+  .opt-letter { font-family:var(--font-code); font-size:11px; width:20px; height:20px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .quiz-reveal { background:var(--bg4); border-radius:8px; padding:1rem 1.25rem; margin-top:0.75rem; font-size:14px; color:var(--text2); line-height:1.6; font-family:var(--font-body); display:none; }
+  .quiz-reveal.shown { display:block; }
+  .quiz-reveal .mistake { color:var(--rose); font-family:var(--font-code); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; display:block; margin:0.6rem 0 0.2rem; }
+  .scroll-top { position:fixed; bottom:2rem; right:2rem; width:44px; height:44px; background:var(--gold); color:var(--bg); border:none; border-radius:50%; font-size:1.2rem; cursor:pointer; z-index:200; opacity:0; transition:opacity 0.3s; pointer-events:none; display:flex; align-items:center; justify-content:center; font-weight:700; }
+  .scroll-top.visible { opacity:1; pointer-events:all; }
+  code { font-family:var(--font-code); font-size:0.88em; background:var(--bg4); padding:1px 5px; border-radius:3px; color:var(--teal); }
+  .callout-weight { display:flex; gap:1rem; flex-wrap:wrap; margin:1.5rem 0; }
+  .weight-card { flex:1; min-width:150px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .weight-card .wpct { font-family:var(--font-head); font-size:1.8rem; font-weight:800; }
+  .weight-card .wlbl { font-family:var(--font-code); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text3); margin-top:0.25rem; }
+  .toggle-row { display:flex; align-items:center; gap:0.6rem; font-family:var(--font-code); font-size:12px; color:var(--text2); }
+  .checkbox-row { display:flex; align-items:center; gap:0.5rem; font-family:var(--font-code); font-size:12px; color:var(--text2); margin-bottom:0.5rem; }
+  .checkbox-row input[type="checkbox"] { width:15px; height:15px; accent-color: var(--gold); cursor:pointer; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-track { background:var(--bg2); }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+  ::-webkit-scrollbar-thumb:hover { background:var(--text3); }
+  @media (max-width:900px) {
+    .sidebar { display:none; }
+    .main { margin-left:0; }
+    .hero { padding:2.5rem 1.5rem 2rem; }
+    .content { padding:2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hub-topbar">
+  <a class="hub-brand" href="../index.html">
+    <span class="hub-brand-badge">AI</span>
+    <span>M.Tech AIML Study Hub</span>
+  </a>
+  <button class="hub-theme-toggle" id="hubThemeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16" fill="currentColor">
+      <path d="M21 12.79A9 9 0 0 1 11.21 3c0-.34.02-.68.06-1.01a1 1 0 0 0-1.38-1.03A10 10 0 1 0 23.04 14.1a1 1 0 0 0-1.03-1.38c-.33.04-.67.07-1.01.07Z"/>
+    </svg>
+    <span id="hubThemeToggleText">Night mode</span>
+  </button>
+</header>
+<script>
+(function () {
+  const THEME_KEY = "study-hub-theme";
+  const root = document.documentElement;
+  const toggle = document.getElementById("hubThemeToggle");
+  const toggleText = document.getElementById("hubThemeToggleText");
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") { root.setAttribute("data-theme", saved); }
+  const syncLabel = () => {
+    const isLight = root.getAttribute("data-theme") === "light";
+    if (toggle) toggle.setAttribute("aria-pressed", String(isLight));
+    if (toggleText) toggleText.textContent = isLight ? "Light mode" : "Night mode";
+  };
+  syncLabel();
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      const isDark = root.getAttribute("data-theme") !== "light";
+      root.setAttribute("data-theme", isDark ? "light" : "dark");
+      localStorage.setItem(THEME_KEY, isDark ? "light" : "dark");
+      syncLabel();
+    });
+  }
+})();
+</script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">BITS WILP · AIMLCZG525</div>
+    <div class="sidebar-title">CV Session 14 — Visual Bag of Words</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>Reading Progress</span><span id="pct">0%</span></div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="pbar"></div></div>
+  </div>
+  <span class="nav-group-label">Foundations</span>
+  <a href="#s1" class="nav-link" data-section="s1">01 · Images as Orderless Documents</a>
+  <span class="nav-group-label">The BoW Pipeline</span>
+  <a href="#s2" class="nav-link" data-section="s2">02 · Detect, Describe &amp; Codebook<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s3" class="nav-link" data-section="s3">03 · Quantization &amp; Histograms<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s4" class="nav-link" data-section="s4">04 · Spatial Pyramid Matching<span class="lab-dot" title="Interactive"></span></a>
+  <a href="#s5" class="nav-link" data-section="s5">05 · Classification</a>
+  <span class="nav-group-label">Knowledge Representation</span>
+  <a href="#s6" class="nav-link" data-section="s6">06 · Hierarchy, Parts &amp; Attributes</a>
+  <span class="nav-group-label">Complementary Approaches</span>
+  <a href="#s7" class="nav-link" data-section="s7">07 · Syntactic Pattern Recognition</a>
+  <a href="#s8" class="nav-link" data-section="s8">08 · Scene Labelling</a>
+  <span class="nav-group-label">Applications &amp; Comparisons</span>
+  <a href="#s9" class="nav-link" data-section="s9">09 · Medical: Breast Tumour Patches</a>
+  <a href="#s10" class="nav-link" data-section="s10">10 · BoW vs Deep Learning</a>
+  <span class="nav-group-label">Synthesis</span>
+  <a href="#s11" class="nav-link" data-section="s11">Conceptual Deep Dives</a>
+  <a href="#s12" class="nav-link" data-section="s12">Exam Quiz (10 Q)</a>
+</div>
+
+<div class="main">
+
+  <div class="hero">
+    <span class="hero-tag">BITS WILP · AIMLCZG525 · Session 14 · Visual Bag of Words</span>
+    <h1>Visual Bag of Words<br><span>Knowledge Representation for Vision</span></h1>
+    <p style="color:var(--text2);font-size:1.1rem;max-width:640px;margin-top:.75rem;">How an image becomes a histogram of "visual words" — and why throwing away geometry on purpose is both BoW's biggest strength and the reason a whole family of complementary ideas (hierarchies, parts, grammars, scene labelling) exists to patch what it discards.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><strong>Session</strong>14</div>
+      <div class="hero-meta-item"><strong>Course</strong>CS2-25 AIMLCZG525</div>
+      <div class="hero-meta-item"><strong>Topic</strong>Visual Bag of Words &amp; Knowledge Representation</div>
+      <div class="hero-meta-item"><strong>Covers</strong>Pipeline, SPM, ontologies, grammars, scene labelling, medical BoW</div>
+    </div>
+    <div class="hero-topics">
+      <span class="topic-chip">Bag of Words</span>
+      <span class="topic-chip">SIFT / Harris / Dense Grid</span>
+      <span class="topic-chip">k-Means Codebook</span>
+      <span class="topic-chip">Vector Quantization</span>
+      <span class="topic-chip">VLAD / Fisher Vectors</span>
+      <span class="topic-chip">Spatial Pyramid Matching</span>
+      <span class="topic-chip">Semantic Hierarchy</span>
+      <span class="topic-chip">Constellation Models</span>
+      <span class="topic-chip">Attributes</span>
+      <span class="topic-chip">And-Or Graphs</span>
+      <span class="topic-chip">Scene Labelling</span>
+      <span class="topic-chip">MRF / CRF / FCN</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="theory-block" style="border-color:rgba(212,168,83,0.3);">
+      <h3>How to read this guide</h3>
+      <p>Session 14 sits at a hinge point in the course: it's the last major "classical" representation before deep learning fully takes over the pipeline, and it's also where the course explicitly zooms out to ask a bigger question — <em>how should a vision system represent what it knows about the world?</em> Bag of Words is the concrete, buildable answer for image classification; semantic hierarchies, part-whole models, attributes, syntactic grammars, and scene labelling are complementary answers to the same underlying question, each patching a different blind spot that plain BoW leaves open.</p>
+      <p>This guide follows that structure: first the BoW pipeline end-to-end (with the k-means codebook, quantization, spatial pyramid, and classification steps each getting their own section and, where useful, a live interactive demo), then the knowledge-representation ideas that sit alongside it, then a real diagnostic application, then a direct architectural contrast with deep learning, and finally synthesis and a 10-question exam quiz.</p>
+    </div>
+
+    <!-- ============ SECTION 01 — CORE CONCEPT ============ -->
+    <section class="section" id="s1">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">The Big Idea — Images as Orderless Documents</h2>
+        <span class="src-badge src-slides">Core Concept</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — steal the trick from text retrieval</h3>
+        <p>In text retrieval, a "bag of words" model represents a document purely by <em>which words appear and how often</em> — grammar, word order, and sentence structure are all thrown away. Two documents with identical word-count histograms are treated as equally relevant to a query, even if one is a coherent paragraph and the other is the same words shuffled into nonsense. That's a deliberate simplification: it's crude, but it's cheap, robust, and works astonishingly well for tasks like document classification and search.</p>
+        <p>Bag of Words for images makes exactly the same bet. Instead of asking "where exactly does this pattern occur, and how is it arranged relative to everything else," BoW asks only "<strong>what kinds of local visual stuff appeared in this image, and how much of each</strong>." An image becomes a histogram over a fixed vocabulary of "visual words," and two images with similar histograms are treated as visually similar — regardless of whether the underlying objects are in the same place, at the same scale, or in the same orientation.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>What exactly is a "visual word"?</h3>
+        <p>A visual word is <strong>not</strong> a real English word, and it isn't hand-defined by a person either. It's a <strong>cluster center</strong> discovered automatically by running k-means over a large pool of local image descriptors (e.g., SIFT descriptors) collected from training images. Each cluster center is a stand-in for a repeatable, recognizable local visual pattern — a corner, a blob of fur texture, an edge junction, a patch of brick — that tends to recur across many images. The full set of K cluster centers is called the <strong>codebook</strong> or <strong>visual vocabulary</strong>.</p>
+      </div>
+
+      <div class="he-table" style="overflow-x:auto;">
+        <table class="he-table">
+          <thead><tr><th>Text BoW</th><th>Visual BoW</th></tr></thead>
+          <tbody>
+            <tr><td>Document</td><td>Image</td></tr>
+            <tr><td>Word</td><td>Visual word (a codebook cluster center)</td></tr>
+            <tr><td>Vocabulary (fixed dictionary)</td><td>Codebook (learned via k-means, size K)</td></tr>
+            <tr><td>Word count in a document</td><td>Number of local descriptors quantized to that visual word</td></tr>
+            <tr><td>Word order / grammar</td><td>Discarded (until spatial pyramids partly reintroduce coarse position)</td></tr>
+            <tr><td>Document classifier (Naive Bayes, SVM)</td><td>Image classifier (SVM, kNN, linear classifier) over the histogram</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cnn-flow">
+        <div class="cnn-flow-node"><div class="cnn-flow-box input-box">Input<br>Image</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b1">Local<br>Descriptors</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b2">Codebook<br>Assignment</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box b3">K-bin<br>Histogram</div></div>
+        <div class="cnn-flow-arrow">→</div>
+        <div class="cnn-flow-node"><div class="cnn-flow-box output-box">SVM / kNN<br>Classifier</div></div>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — the invariance/geometry trade you're always making</div>
+        <p>Rigid, exact-position matching is brittle: rotate a cat, occlude it behind a chair leg, or photograph it slightly zoomed in, and pixel-exact template matching fails immediately. Pooling local evidence into one orderless histogram buys BoW <strong>translation, rotation, and partial-occlusion invariance almost for free</strong> — an object can move around the frame, and as long as its local visual words still show up somewhere, the histogram barely changes.</p>
+        <p>The cost is exactly symmetric: BoW <strong>cannot say where in the image anything is, or how parts relate to each other spatially</strong>. A photo of "sky above grass" and a (physically nonsensical) composite of "grass above sky" made from the same patches produce the <em>identical</em> histogram. Every other idea in this session — spatial pyramids, part-whole models, syntactic grammars, scene labelling — exists specifically to claw back some of that discarded structure without giving up BoW's invariance benefits entirely.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Visual words were introduced for image/video retrieval by Sivic &amp; Zisserman's "Video Google" (ICCV 2003), and formalized as a full classification pipeline (codebook + histogram + SVM) by Csurka, Dance, Fan, Willamowski &amp; Bray, "Visual Categorization with Bags of Keypoints" (ECCV Workshop on Statistical Learning in Computer Vision, 2004) — still the most commonly cited "origin paper" for BoW image classification. Both predate deep learning by roughly a decade and were, for several years, the dominant paradigm for image classification benchmarks like Caltech-101.</p>
+        <p><cite>Sivic &amp; Zisserman, "Video Google", ICCV 2003 · Csurka et al., ECCV-W 2004</cite></p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 02 — DETECT/DESCRIBE + CODEBOOK (INTERACTIVE) ============ -->
+    <section class="section" id="s2">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Step 1-2 — Detect &amp; Describe, Codebook Construction</h2>
+        <span class="src-badge src-slides">Pipeline Steps 1-2</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Step 1 — Detect &amp; Describe</h3>
+        <p>The pipeline starts by extracting a set of local descriptors from every training image, using one of three families of methods:</p>
+        <ol class="pipeline">
+          <li><strong>SIFT (Scale-Invariant Feature Transform)</strong>
+            <p>Finds "interesting," repeatable keypoints via a Difference-of-Gaussians scale-space, then describes each as a 128-d gradient-orientation histogram. Scale- and rotation-invariant by construction — the classic choice when descriptors must survive zoom and in-plane rotation.</p></li>
+          <li><strong>Harris corners</strong>
+            <p>Detects corner-like structure using the eigenvalues of the second-moment (structure) matrix — points where intensity changes sharply in two directions at once. Good at localizing distinctive junctions, but not inherently scale-invariant on its own.</p></li>
+          <li><strong>Dense grid sampling</strong>
+            <p>Skips "interestingness" detection entirely: place a descriptor (often still SIFT-style) at every point on a regular grid, regardless of whether that patch looks distinctive. Guarantees uniform coverage of low-gradient, texture-heavy regions (sky, grass, skin) that a keypoint detector would simply skip — a major reason dense sampling is preferred for whole-image classification tasks rather than sparse keypoint matching.</p></li>
+        </ol>
+      </div>
+
+      <div class="theory-block">
+        <h3>Step 2 — Codebook Construction via k-means</h3>
+        <p>Pool the local descriptors from a large sample of training images (potentially millions of descriptor vectors) and cluster them with <strong>k-means</strong>. Each of the resulting K cluster centers becomes one visual word; together they form the codebook.</p>
+        <ol class="pipeline">
+          <li><strong>Initialize</strong>
+            <p>Pick K initial cluster centers (commonly at random, or via a smarter seeding scheme like k-means++).</p></li>
+          <li><strong>Assign</strong>
+            <p>Assign every pooled descriptor to its nearest center by Euclidean distance.</p></li>
+          <li><strong>Update</strong>
+            <p>Recompute each center as the mean of all descriptors currently assigned to it.</p></li>
+          <li><strong>Repeat</strong>
+            <p>Iterate assign/update until the centers stop moving (convergence) or a max iteration count is reached.</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">k-means objective being minimized</div>
+<span class="formula-line"><span class="f-gold">J = Σ<sub>k=1..K</sub> Σ<sub>d ∈ cluster k</sub> ‖ d − c<sub>k</sub> ‖²</span></span>
+<span class="formula-line"><span class="f-dim">d = a local descriptor vector, c<sub>k</sub> = the k-th cluster center (visual word)</span></span>
+<span class="formula-line"> </span>
+<span class="formula-line"><span class="f-dim">K is a hyperparameter — typical range:</span>  <span class="f-lime">K ≈ 200 – 5000</span></span>
+      </div>
+
+      <div class="interactive-demo" id="kDemo">
+        <h4>⊞ Interactive · The Codebook Size K Slider</h4>
+        <div class="demo-sub">K is arguably the single most consequential hyperparameter in the whole pipeline. Drag through representative codebook sizes and watch the invariance/discriminability trade-off — and the k-means compute cost — shift.</div>
+        <div class="slider-row">
+          <span class="slider-label">Codebook size K</span>
+          <input type="range" id="kSlider" min="0" max="6" value="2" step="1" oninput="kRender()">
+          <span class="slider-val" id="kVal">200</span>
+        </div>
+        <div class="meter-row">
+          <span class="meter-label">Invariance</span>
+          <div class="meter-track"><div class="meter-fill" id="kInvBar" style="background:var(--sky);"></div></div>
+          <span class="meter-val" id="kInvVal"></span>
+        </div>
+        <div class="meter-row">
+          <span class="meter-label">Discriminability</span>
+          <div class="meter-track"><div class="meter-fill" id="kDiscBar" style="background:var(--lime);"></div></div>
+          <span class="meter-val" id="kDiscVal"></span>
+        </div>
+        <div class="meter-row">
+          <span class="meter-label">k-means compute cost</span>
+          <div class="meter-track"><div class="meter-fill" id="kCostBar" style="background:var(--rose);"></div></div>
+          <span class="meter-val" id="kCostVal"></span>
+        </div>
+        <div class="demo-output" id="kOut"></div>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Codebook size K — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>K is a bias-variance dial: too small → visual words are too generic, histograms lose the power to tell classes apart (underfitting). Too large → each word is over-specific, histograms become sparse and noise-sensitive, and generalization suffers (overfitting), on top of much slower k-means and quantization.</li>
+          <li>There is no closed-form "optimal K" — it's selected empirically via cross-validation, exactly like choosing the number of hidden units or trees in any other model.</li>
+          <li>Common mistake: assuming "bigger codebook = strictly better." It trades discriminability for robustness and compute — both directions have a real cost.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 03 — QUANTIZATION & HISTOGRAM (INTERACTIVE) ============ -->
+    <section class="section" id="s3">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Step 3-4 — Quantization &amp; Histogram Encoding</h2>
+        <span class="src-badge src-slides">Pipeline Steps 3-4</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Step 3 — Quantization: turning descriptors into word IDs</h3>
+        <p>Every local descriptor extracted from a new image is assigned to its nearest visual word in the codebook — this is <strong>vector quantization</strong>, exactly the "assign" step of k-means but now applied at test/encoding time against the fixed, already-trained codebook.</p>
+        <div class="formula-block" style="margin-top:0;">
+<span class="formula-line"><span class="f-gold">w(d) = argmin<sub>k</sub> ‖ d − c<sub>k</sub> ‖</span>   <span class="f-dim">— hard assignment: descriptor d is quantized to its single nearest codeword</span></span>
+        </div>
+        <p>Two refinements soften this hard, winner-take-all commitment:</p>
+        <p><strong>Soft assignment</strong> distributes a descriptor's weight across several nearby cluster centers (e.g., via a kernel weighted by distance) instead of committing 100% to the single nearest one. This reduces quantization error for descriptors that fall near a boundary between two clusters, where a hard assignment is essentially an arbitrary coin-flip.</p>
+        <p><strong>VLAD (Vector of Locally Aggregated Descriptors)</strong> goes further: instead of just counting how many descriptors land in each cluster, it accumulates the <em>residual vectors</em> (d − c<sub>k</sub>) for all descriptors assigned to cluster k. This encodes first-order information about how descriptors differ from their assigned center, not just how many there are — producing a much higher-dimensional, more discriminative encoding for the same K.</p>
+        <p><strong>Fisher Vectors</strong> generalize this further still: fit a Gaussian Mixture Model (GMM) over the descriptor space instead of hard k-means clusters, then encode an image by the gradient of the log-likelihood with respect to the GMM's parameters (mixture weights, means, variances). This captures both first- and second-order statistics and was, for a period just before deep CNN features took over, the state of the art for large-scale image classification.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Step 4 — Histogram Encoding &amp; Normalization</h3>
+        <p>Once every descriptor in an image has a word ID, build a <strong>K-bin histogram</strong> counting how many descriptors were quantized to each visual word. Raw counts, however, are scale-dependent (a bigger image with more descriptors just has bigger counts everywhere) — so the histogram is always normalized before being fed to a classifier.</p>
+        <div class="formula-block" style="margin-top:0;">
+<span class="formula-line"><span class="f-teal">L1 normalization:</span>  h<sub>k</sub> ← h<sub>k</sub> / Σ<sub>j</sub> h<sub>j</sub>   <span class="f-dim">— turns the histogram into a proper probability distribution; pairs naturally with a histogram-intersection or χ² kernel</span></span>
+<span class="formula-line"><span class="f-sky">L2 normalization:</span>  h<sub>k</sub> ← h<sub>k</sub> / ‖h‖₂   <span class="f-dim">— unit-length vector; the natural choice for cosine similarity / linear and RBF-kernel SVMs, and standard practice for high-dimensional VLAD/Fisher vectors</span></span>
+        </div>
+      </div>
+
+      <div class="interactive-demo" id="histDemo">
+        <h4>⊞ Interactive · Build a Visual-Word Histogram</h4>
+        <div class="demo-sub">20 local patches were detected in a toy image; each has already been quantized (colored) to one of 6 visual words in the codebook. Toggle the normalization scheme and watch the resulting histogram values change.</div>
+        <div class="demo-canvas-wrap">
+          <div class="mgrid" id="histGrid" style="grid-template-columns:repeat(5,38px);"></div>
+          <div style="flex:1;min-width:240px;">
+            <div>
+              <button class="demo-btn active-btn" id="btnRaw" onclick="histSetMode('raw')">Raw Counts</button>
+              <button class="demo-btn" id="btnL1" onclick="histSetMode('l1')">L1 Normalized</button>
+              <button class="demo-btn" id="btnL2" onclick="histSetMode('l2')">L2 Normalized</button>
+            </div>
+            <div class="bar-chart" id="histBars"></div>
+          </div>
+        </div>
+        <div class="demo-output" id="histOut"></div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>VLAD was introduced by Jégou, Douze, Schmid &amp; Pérez, "Aggregating local descriptors into a compact image representation" (CVPR 2010); the Fisher Vector encoding for image classification was popularized by Perronnin &amp; Dance, "Fisher Kernels on Visual Vocabularies for Image Categorization" (CVPR 2007), later scaled up in Perronnin, Sánchez &amp; Mensink, "Improving the Fisher Kernel for Large-Scale Image Classification" (ECCV 2010). Both are frequently cited as the strongest hand-engineered image representations right before CNN features (AlexNet, 2012) made them largely obsolete.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 04 — SPATIAL PYRAMID MATCHING (INTERACTIVE) ============ -->
+    <section class="section" id="s4">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Spatial Pyramid Matching — A Cheap Semantic Hierarchy of Layout</h2>
+        <span class="src-badge src-slides">Pipeline Step 4 (optional enhancement)</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — reintroducing "where," cheaply</h3>
+        <p>Plain BoW is so aggressively orderless that it literally cannot distinguish a photo of "sky above grass" from an (impossible) composite of "grass above sky" made of the same patches — both produce the identical histogram. <strong>Spatial Pyramid Matching (SPM)</strong> fixes this without giving up BoW's invariance benefits wholesale: instead of computing one histogram over the whole image, compute a separate K-bin histogram inside <em>each cell</em> of an increasingly fine grid, then concatenate all of those cell-histograms into one long feature vector.</p>
+        <ol class="pipeline">
+          <li><strong>Level 0 — 1×1 grid (the whole image)</strong>
+            <p>One K-bin histogram over the entire image — this is exactly plain BoW.</p></li>
+          <li><strong>Level 1 — 2×2 grid (4 cells)</strong>
+            <p>Split the image into quadrants; compute an independent K-bin histogram inside each quadrant.</p></li>
+          <li><strong>Level 2 — 4×4 grid (16 cells)</strong>
+            <p>Split further into a 4×4 grid of 16 cells; compute an independent K-bin histogram inside each.</p></li>
+          <li><strong>Concatenate</strong>
+            <p>Stack every cell's histogram, from every level, into one feature vector. The final descriptor now carries coarse positional information — which quadrant/cell each visual word tended to occur in — while every individual cell's histogram is still fully orderless internally.</p></li>
+        </ol>
+      </div>
+
+      <div class="formula-block">
+        <div class="formula-label">Final feature dimensionality</div>
+<span class="formula-line"><span class="f-dim">Cells per level:</span>  <span class="f-gold">1×1 → 1 cell</span>,  <span class="f-teal">2×2 → 4 cells</span>,  <span class="f-sky">4×4 → 16 cells</span></span>
+<span class="formula-line"><span class="f-dim">Total cells across all 3 levels:</span>  1 + 4 + 16 = <span class="f-lime">21</span></span>
+<span class="formula-line"><span class="f-dim">Final dimensionality:</span>  <span class="f-lime">K × 21</span>   <span class="f-dim">(e.g. K=200 → a 4200-dim feature vector)</span></span>
+      </div>
+
+      <div class="interactive-demo" id="pyrDemo">
+        <h4>⊞ Interactive · Toggle Pyramid Levels</h4>
+        <div class="demo-sub">Level 0 (the whole image) is always included — it's plain BoW. Toggle Level 1 and Level 2 on/off and watch the grid visualization and the total feature dimensionality update, using a fixed codebook size K = 200.</div>
+        <div class="checkbox-row"><input type="checkbox" id="pyrL0" checked disabled><label for="pyrL0">Level 0 — 1×1 (always on)</label></div>
+        <div class="checkbox-row"><input type="checkbox" id="pyrL1" checked onchange="pyrRender()"><label for="pyrL1">Level 1 — 2×2</label></div>
+        <div class="checkbox-row"><input type="checkbox" id="pyrL2" onchange="pyrRender()"><label for="pyrL2">Level 2 — 4×4</label></div>
+        <div class="demo-canvas-wrap" id="pyrGrids"></div>
+        <div class="demo-output" id="pyrOut"></div>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>Spatial Pyramid Matching is due to Lazebnik, Schmid &amp; Ponce, "Beyond Bags of Features: Spatial Pyramid Matching for Recognizing Natural Scene Categories" (CVPR 2006). Their pyramid <em>match kernel</em> also weights each level unevenly — coarser levels get weight 1/2<sup>L</sup> and finer levels get weight 1/2<sup>(L−l+1)</sup> (for a 3-level pyramid: weights 1/4, 1/4, 1/2 for levels 0, 1, 2 respectively) — because a match found at a fine cell necessarily implies a match at every coarser cell containing it, so naive summation would double-count fine-level agreement unless it's reweighted.</p>
+      </div>
+
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>Notice the structural echo with Section 06's semantic hierarchy: both ideas fight the "too orderless / too flat" problem with the same trick — a coarse-to-fine, multi-resolution structure. SPM applies it to <em>spatial layout</em> (1×1 → 2×2 → 4×4); semantic hierarchies apply the identical coarse-to-fine idea to <em>category structure</em> (animal → dog → poodle). Different axis, same design pattern.</p></div>
+    </section>
+
+    <!-- ============ SECTION 05 — CLASSIFICATION ============ -->
+    <section class="section" id="s5">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Step 5 — Classification</h2>
+        <span class="src-badge src-slides">Pipeline Step 5</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>From histogram to label</h3>
+        <p>Once every training image is reduced to a fixed-length vector — a K-dim histogram, or a K×21-dim spatial-pyramid feature — image classification collapses into ordinary vector classification. Three standard choices:</p>
+        <ol class="pipeline">
+          <li><strong>SVM</strong>
+            <p>The most common choice historically (used by both Csurka et al. 2004 and Lazebnik et al. 2006). Because plain dot-product similarity is a poor match for comparing two histograms/distributions, BoW-SVM pipelines typically use a <strong>histogram-intersection</strong> or <strong>χ² (chi-squared) kernel</strong> instead of a linear kernel, both of which are specifically designed to compare distributions.</p></li>
+          <li><strong>k-Nearest Neighbors (kNN)</strong>
+            <p>A simple, non-parametric baseline: compare a query histogram against all training histograms (again typically via χ² or Euclidean distance) and take a majority vote among the k closest.</p></li>
+          <li><strong>Linear classifiers</strong>
+            <p>Cheap and scale gracefully to very high-dimensional features — especially important once you move to VLAD, Fisher Vectors, or a spatial-pyramid feature with tens of thousands of dimensions. L2-normalized VLAD/Fisher encodings are specifically engineered to work well with a plain linear SVM, side-stepping the need for an expensive non-linear kernel altogether.</p></li>
+        </ol>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Classifier choice — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Codebook size K and classifier choice are two separate but coupled hyperparameters — a larger K produces sparser, higher-dimensional histograms that tend to favor linear classifiers over kernel SVMs (compute cost of a non-linear kernel grows with feature dimension and training-set size).</li>
+          <li>Know why a linear/dot-product kernel is a poor default for raw histogram counts: it doesn't respect the fact that histograms are distributions, not arbitrary vectors — hence χ²/intersection kernels, or L2-normalizing first.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 06 — KNOWLEDGE REPRESENTATION ============ -->
+    <section class="section" id="s6">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Knowledge Representation Mechanisms</h2>
+        <span class="src-badge src-slides">Beyond the Histogram</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — a histogram is a "flat," structure-blind representation</h3>
+        <p>A BoW/SPM histogram treats every visual word as an independent count — it has no built-in notion that a poodle is a kind of dog, no notion that legs must attach to a torso in a physically constrained way, and no way to transfer what it has learned about one class to help recognize a related but unseen class. Three complementary knowledge-representation mechanisms patch different pieces of this gap.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>1. Semantic Hierarchy / Ontology</h3>
+        <p>An explicit class hierarchy — e.g. <code>poodle ⊂ dog ⊂ animal</code> — organized as a tree or DAG (WordNet-style; this is literally how ImageNet's thousands of categories are structured). Two concrete payoffs:</p>
+        <p><strong>Transfer learning:</strong> a classifier that has learned strong general "dog" features from thousands of labeled dog photos can bootstrap recognition of a rarer sub-class like "poodle" using far fewer poodle-specific examples, because poodle inherits everything the model already knows about dog.</p>
+        <p><strong>Evidence propagation:</strong> strong visual evidence for "dog" in a region should raise belief in the parent class "animal" and lower belief in unrelated branches ("vehicle," "furniture") — reasoning that flows up and down the tree, rather than the 1,000+ leaf classes being treated as fully independent, mutually exclusive hypotheses.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>2. Part-Whole Relations</h3>
+        <p>Objects are represented as a set of <strong>parts</strong> plus a model of their <strong>relative spatial arrangement</strong> — exactly the structure a plain BoW histogram cannot express, since it only counts word occurrences and never their relative positions.</p>
+        <p><strong>Constellation models</strong> (Fergus, Perona &amp; Zisserman, "Object Class Recognition by Unsupervised Scale-Invariant Learning," CVPR 2003) represent an object class as a small number of parts, each with its own appearance model, plus a joint probabilistic model over their relative positions and scales.</p>
+        <p><strong>Pictorial structures</strong> (Felzenszwalb &amp; Huttenlocher, "Pictorial Structures for Object Recognition," IJCV 2005) model an object as parts connected by "springs" — a cost function that penalizes implausible deformations away from a rest configuration. This is the direct conceptual ancestor of the Deformable Parts Model (DPM) used as a detector baseline elsewhere in the course.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>3. Attributes</h3>
+        <p>Human-nameable, mid-level properties — <em>has-stripes</em>, <em>is-furry</em>, <em>has-wheels</em> — that cut <em>across</em> the class hierarchy rather than sitting inside it. Because attributes are shared across many classes, a model that has learned "has-stripes" from zebras and tigers can recognize a novel striped animal it has never been directly trained on — the classic <strong>zero-shot learning</strong> setup, formalized in Lampert, Nickisch &amp; Harmeling's Direct/Indirect Attribute Prediction (DAP/IAP) framework, "Learning to Detect Unseen Object Classes by Between-Class Attribute Transfer" (CVPR 2009).</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — generalization to rare or unseen categories</div>
+        <p>All three mechanisms share one motivation: real-world category distributions are heavy-tailed — a handful of common classes have abundant labeled data, while most classes have very little. Hierarchies, part-sharing, and attribute-sharing are all ways of letting a model exploit structure between classes so that data-rich classes can help data-poor or entirely unseen ones, instead of every class needing to be learned from scratch in isolation.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 07 — SYNTACTIC PATTERN RECOGNITION ============ -->
+    <section class="section" id="s7">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2 class="section-title">Syntactic Pattern Recognition &amp; Scene Grammars</h2>
+        <span class="src-badge src-slides">Complementary Approach</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — objects as sentences</h3>
+        <p><strong>Syntactic (structural) pattern recognition</strong> treats an object — or an entire scene — the way a linguist treats a sentence: built from primitive parts ("terminals," analogous to words) combined according to <strong>production rules</strong> ("grammar," analogous to syntax). This is a fundamentally different move from BoW's "count what's present" strategy: a grammar doesn't just ask <em>which</em> parts are present, it demands they appear in a <em>legal arrangement</em>.</p>
+        <p>The canonical example: a bicycle isn't simply "wheel-ish blob + wheel-ish blob + frame-ish blob" scattered anywhere in the image (which is roughly what a bag-of-parts count would look for) — it's specifically <strong>two wheels and a frame in one particular, legal spatial arrangement</strong> (both wheels below the frame, roughly parallel to each other, the frame connecting their axles). The grammar's production rules encode exactly which arrangements are legal and reject everything else, including plausible-looking-but-wrong configurations (e.g., one wheel stacked directly on top of the other).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Scene grammars — And-Or graphs</h3>
+        <p>This idea scales from single objects up to entire scenes via <strong>scene grammars</strong>, most notably formalized as <strong>And-Or graphs</strong> in Zhu &amp; Mumford's "A Stochastic Grammar of Images" (Foundations and Trends in Computer Graphics and Vision, 2006):</p>
+        <ol class="pipeline">
+          <li><strong>"And" node</strong>
+            <p>Says a scene or object decomposes into <em>all</em> of its children simultaneously — e.g., bicycle = wheel <strong>AND</strong> wheel <strong>AND</strong> frame. Every child must be present and correctly arranged for the parent to be valid.</p></li>
+          <li><strong>"Or" node</strong>
+            <p>Says a part can be realized in <em>any one</em> of several alternative ways — e.g., wheel = spoked-wheel <strong>OR</strong> solid-disc-wheel. This is how the grammar captures legitimate visual variation without treating every variant as an unrelated, separately-learned category.</p></li>
+          <li><strong>Parsing</strong>
+            <p>Interpreting an image means finding the most probable <em>derivation tree</em> through the And-Or graph that explains the observed image — recursively enforcing legality at every level of the compositional hierarchy, from whole scene down to primitive part.</p></li>
+        </ol>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>BoW vs syntactic grammars — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>BoW's orderless histogram has literally no mechanism to reject an illegal spatial arrangement of correct parts — a syntactic grammar's entire purpose is enforcing exactly that kind of global structural legality.</li>
+          <li>Know the And/Or distinction precisely: And = all children required (compositional necessity); Or = any one alternative suffices (legitimate variation).</li>
+          <li>Common mistake: confusing a scene grammar's "legal arrangement" constraint with a constellation model's "relative position" model (Section 06) — they're closely related in spirit but the grammar formalism is explicitly recursive/hierarchical (parts have sub-parts, scenes have objects have parts), while a constellation model is typically a single flat layer of parts.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 08 — SCENE LABELLING ============ -->
+    <section class="section" id="s8">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <h2 class="section-title">Scene Labelling — Appearance Meets Context</h2>
+        <span class="src-badge src-slides">Complementary Approach</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Intuition first — labelling every region, not just the whole image</h3>
+        <p><strong>Scene labelling</strong> (also called scene parsing or semantic labelling) assigns a class label to every region of an image jointly — historically, every superpixel or fixed-size patch; today, every single pixel — rather than producing one label for the whole image the way a BoW classifier does. It fuses two distinct sources of evidence:</p>
+        <p><strong>Local appearance:</strong> what does this specific region look like on its own? (e.g., a BoW-style visual-word histogram computed just within that region, feeding a per-region classifier.)</p>
+        <p><strong>Contextual compatibility:</strong> how consistent is this region's label with its neighbors' labels, given real-world regularities? (e.g., "sky sits above road," "road sits below car," "a keyboard sits on a desk, not floating on a ceiling.")</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Historical implementation — MRFs and CRFs</h3>
+        <p>This joint reasoning was classically implemented with probabilistic graphical models: <strong>Markov Random Fields (MRFs)</strong> or <strong>Conditional Random Fields (CRFs)</strong>, combining a <strong>unary term</strong> (per-region appearance likelihood, e.g. from a BoW-based per-region classifier) with a <strong>pairwise term</strong> (a learned or hand-designed compatibility cost between the labels of adjacent regions), solved via approximate inference such as graph cuts or belief propagation. Well-known examples include TextonBoost (Shotton, Winn, Rother &amp; Criminisi, ECCV 2006) and multiscale CRFs for image labeling (He, Zemel &amp; Carreira-Perpiñán, CVPR 2004).</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Modern implementation — Fully Convolutional Networks</h3>
+        <p>Modern approaches replace the explicit two-part appearance + hand-designed-context pipeline with <strong>Fully Convolutional Networks (FCNs)</strong> (Long, Shelhamer &amp; Darrell, "Fully Convolutional Networks for Semantic Segmentation," CVPR 2015): a single end-to-end network implicitly learns both local appearance <em>and</em> contextual regularities together — through its receptive field size and the statistics baked into training data — and directly outputs a dense per-pixel label map, with no separate hand-built CRF stage required.</p>
+      </div>
+
+      <div class="research-insight">
+        <span class="ri-badge">Research Enhanced</span>
+        <p>The MRF/CRF idea didn't vanish once FCNs arrived — it was partially re-attached on top. DeepLab v1/v2 (Chen, Papandreou, Kokkinos, Murphy &amp; Yuille, 2014/2016) famously bolted a fully-connected dense CRF onto an FCN's output as a post-processing refinement step, sharpening object boundaries that the FCN's coarse feature maps otherwise blur. This shows the "combine local appearance with contextual compatibility" principle from classical scene labelling persisting well into the deep learning era, just implemented in a hybrid rather than purely hand-designed form.</p>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 09 — MEDICAL APPLICATION ============ -->
+    <section class="section" id="s9">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <h2 class="section-title">Medical Application — Breast Tumour Patches</h2>
+        <span class="src-badge src-slides">Applied BoW</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>The pipeline: sliding-window patch classification</h3>
+        <p>A whole-slide histopathology image is far too large — often gigapixel-scale — to classify as a single unit. Instead, a window is <strong>slid across the slide</strong>, and each window (patch) is independently encoded as a BoW-style histogram over local texture descriptors and classified as <strong>tumour</strong> or <strong>normal</strong> tissue.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>Why BoW specifically helps here</h3>
+        <p>Histopathology slides show heavy <strong>stain-color variation</strong> across labs, staining batches, and even individual scanner calibration — H&amp;E-stained tissue can look meaningfully different in raw RGB from one hospital's slides to another's, purely as an artifact of the staining and imaging process rather than any real biological difference. A classifier trained directly on raw RGB pixel statistics is highly sensitive to exactly this kind of domain shift.</p>
+        <p>A BoW codebook built over local texture descriptors instead captures <strong>stable, largely stain-invariant local structure</strong> — nuclei density and packing, gland architecture, chromatin texture — because these gradient- or local-intensity-pattern-based descriptors substantially factor out absolute color. The same underlying tissue architecture produces similar visual-word statistics whether the slide happens to be stained a bit more purple or a bit more pink.</p>
+      </div>
+
+      <div class="theory-block">
+        <h3>From patch to slide: aggregation</h3>
+        <p>Evaluation aggregates the many per-patch predictions across an entire slide into one slide-level verdict, typically via:</p>
+        <p><strong>Majority voting:</strong> count what fraction of patches are classified tumour-positive and threshold that fraction to reach a whole-slide decision.</p>
+        <p><strong>Heatmaps:</strong> render a spatial map of per-patch tumour probability overlaid on the slide — clinically valuable in its own right, since it shows a pathologist <em>where</em> the suspicious tissue is located, not just a single global yes/no.</p>
+      </div>
+
+      <div class="exam-alert">
+        <div class="exam-alert-header"><span class="exam-badge">Exam Radar</span><h4>Medical BoW — exam radar</h4></div>
+        <ul class="exam-list">
+          <li>Know precisely <em>why</em> texture-based BoW beats raw RGB here — stain-color robustness, not just "texture is generally better."</li>
+          <li>Know the two-stage structure: a patch-level BoW classifier first, then a separate slide-level aggregation step (majority vote or heatmap) on top — this two-stage pattern generalizes to almost any "image too big to classify whole" problem.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 10 — BoW vs DEEP LEARNING ============ -->
+    <section class="section" id="s10">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <h2 class="section-title">BoW vs Deep Learning — A Fundamental Architectural Difference</h2>
+        <span class="src-badge src-slides">Synthesis</span>
+      </div>
+
+      <div class="theory-block">
+        <h3>Two different answers to "how much geometry should we keep?"</h3>
+        <p><strong>BoW discards exact geometry by design.</strong> At the histogram-pooling step, it deliberately throws away where within the image (or within a spatial-pyramid cell) any given visual word occurred — keeping only what kinds of local patterns are present and how many. Spatial pyramids only coarsen this trade-off; they never fully undo it.</p>
+        <p><strong>CNNs learn geometric invariances hierarchically, through architecture, rather than discarding geometry by a single fixed design choice.</strong> Early convolutional layers detect local, position-tied patterns (edges, corners) while still preserving a spatially-organized feature map. Successive convolution + pooling stages progressively build translation- and scale-tolerant, increasingly abstract and semantic features — but the network decides, end-to-end from data, exactly which invariances are worth learning and at what stage, rather than committing to "discard all position information" in one irreversible step the way BoW's histogram pooling does. Only at the very final classification stage (global pooling / fully-connected layers) does a CNN give up fine spatial structure entirely.</p>
+      </div>
+
+      <div class="why-matters">
+        <div class="why-matters-label">Why This Matters — this is architecture, not just a performance gap</div>
+        <p>It's tempting to describe the BoW → CNN transition purely in terms of accuracy numbers (CNNs simply score higher), but the more important distinction for understanding <em>why</em> is architectural: BoW is orderless by an explicit, hand-designed choice made once, at a fixed point in the pipeline. A CNN is never orderless by design — it retains spatial structure throughout most of its depth and only sacrifices it, gradually and adaptively, exactly where the training data says that sacrifice pays off.</p>
+      </div>
+
+      <div class="key-insight"><div class="ki-label">Key Insight</div><p>Section 04's spatial pyramid and a CNN's convolutional feature maps are solving the exact same underlying problem — "plain orderless pooling throws away too much" — via two very different mechanisms: one hand-designed and fixed (the pyramid grid, chosen before training), one learned end-to-end (the convolution + pooling hierarchy, shaped by training data itself).</p></div>
+    </section>
+
+    <!-- ============ SECTION 11 — CONCEPTUAL DEEP DIVES ============ -->
+    <section class="section" id="s11">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <h2 class="section-title">Conceptual Deep Dives</h2>
+      </div>
+
+      <div class="examples-section">
+        <div style="margin-bottom:1rem;"><span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">Compare &amp; Contrast</span></div>
+        <div class="examples-tabs">
+          <button class="tab-btn active-easy" onclick="showTab('s11-a', this, 's11-ex')">BoW vs Syntactic Grammars</button>
+          <button class="tab-btn" onclick="showTab('s11-b', this, 's11-ex')">Is SPM "Cheating" Geometry Back In?</button>
+          <button class="tab-btn" onclick="showTab('s11-c', this, 's11-ex')">Choosing K</button>
+        </div>
+
+        <div class="tab-panel active" id="s11-a" data-tab-group="s11-ex">
+          <div class="example-q">BoW and syntactic pattern recognition both decompose an image into local pieces — so why are they considered fundamentally different representations, not just two flavors of the same idea?</div>
+          <ol class="step-list">
+            <li><p>BoW's representation is a flat multiset: a histogram only records <em>how many</em> of each visual word occurred. It has no concept of "arrangement" at all — every permutation of the same parts produces the identical representation.</p></li>
+            <li><p>A syntactic grammar's representation is a derivation tree: it records not just which parts (terminals) are present, but which production rules combined them, which directly encodes legal spatial/compositional arrangement and rejects illegal ones.</p></li>
+            <li><p>So the difference isn't "more parts vs fewer parts" — it's "unordered multiset" vs "structured derivation," a difference in representational power, not just in accuracy.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>Any two representations that agree on "which parts are present" can still disagree completely on whether a given image is valid — arrangement information is exactly what separates them.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s11-b" data-tab-group="s11-ex">
+          <div class="example-q">Spatial Pyramid Matching adds position information back into BoW — does that mean SPM secretly abandons the "orderless" assumption?</div>
+          <ol class="step-list">
+            <li><p>SPM only adds <em>coarse, fixed-grid</em> position — which of a small, predetermined set of cells (1, 4, or 16) a descriptor fell into. It says nothing about position <em>within</em> a cell, and nothing about the relative position of two visual words inside the same cell.</p></li>
+            <li><p>Every individual cell's histogram is still fully orderless internally — SPM stacks multiple orderless histograms at different spatial granularities, it doesn't replace orderlessness with a real geometric model.</p></li>
+            <li><p>So SPM doesn't abandon the orderless assumption — it coarsens the resolution at which the assumption is applied, trading away a little bit of invariance (an object slightly shifted might now land in a different cell) for a little bit of positional discriminability.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"Adding position information" and "abandoning orderlessness" are not the same move — SPM is squarely in between plain BoW and a true part-whole geometric model like a constellation model.</p></div>
+        </div>
+
+        <div class="tab-panel" id="s11-c" data-tab-group="s11-ex">
+          <div class="example-q">Why can't you just pick the largest codebook size K your compute budget allows and call it done?</div>
+          <ol class="step-list">
+            <li><p>A larger K makes each visual word more specific — narrower clusters, capturing finer distinctions between local patterns. That sounds strictly better for discriminability.</p></li>
+            <li><p>But narrower clusters are also less robust: small amounts of image noise, lighting change, or viewpoint shift can now push a descriptor into a neighboring, "wrong" cluster more easily, since cluster boundaries are packed tighter together. Histograms also get sparser (most bins near-zero for any one image), which hurts distance-based classifiers and encourages overfitting to training-set-specific noise patterns.</p></li>
+            <li><p>This is exactly a bias-variance/model-capacity trade-off, the same shape of problem as choosing the number of hidden units in a network or the depth of a decision tree — more capacity is not free, and the right amount is found empirically via validation, not by maximizing compute spend.</p></li>
+          </ol>
+          <div class="key-insight"><div class="ki-label">Key Insight</div><p>"More capacity always helps" is one of the most common wrong instincts in ML — K is a textbook case where it visibly doesn't.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 12 — EXAM QUIZ ============ -->
+    <section class="section" id="s12">
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <h2 class="section-title">Exam Quiz — 10 Questions</h2>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q1</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Pipeline order</span>
+          <div class="quiz-q-text">What is the correct order of the BoW pipeline's five steps?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Detect &amp; Describe → Codebook Construction → Quantization → Histogram Encoding → Classification</li>
+          <li><span class="opt-letter">B</span>Codebook Construction → Detect &amp; Describe → Classification → Quantization → Histogram Encoding</li>
+          <li><span class="opt-letter">C</span>Quantization → Detect &amp; Describe → Histogram Encoding → Codebook Construction → Classification</li>
+          <li><span class="opt-letter">D</span>Detect &amp; Describe → Quantization → Codebook Construction → Classification → Histogram Encoding</li>
+        </ul>
+        <div class="quiz-reveal">The pipeline must extract local descriptors first (Detect &amp; Describe), cluster them into a codebook, then use that codebook to quantize new descriptors, build the histogram, and finally classify. <strong>B</strong> puts classification before the histogram even exists. <strong>C</strong> and <strong>D</strong> both try to quantize before the codebook exists, which is impossible — quantization requires the codebook's cluster centers as a reference.<span class="mistake">Common mistake</span>Forgetting that codebook construction (k-means, done once over pooled training descriptors) is a separate, earlier step from quantization (done per-image, per-descriptor, against that fixed codebook).</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q2</span><span class="diff-badge diff-easy">Easy</span><span class="topic-badge">Visual words</span>
+          <div class="quiz-q-text">What exactly is a "visual word"?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>A single raw pixel value</li>
+          <li><span class="opt-letter">B</span>A hand-labeled semantic category like "car" or "dog"</li>
+          <li><span class="opt-letter">C</span>A k-means cluster center in the space of local image descriptors</li>
+          <li><span class="opt-letter">D</span>A bounding box drawn by an annotator</li>
+        </ul>
+        <div class="quiz-reveal">A visual word is a codebook entry — one of the K cluster centers discovered automatically by k-means over pooled local descriptors (e.g. SIFT vectors), standing in for a recurring local visual pattern. <strong>A</strong> confuses it with raw pixel intensity. <strong>B</strong> confuses it with the final class label BoW is trying to predict. <strong>D</strong> confuses it with detection/localization annotation, unrelated to codebook construction.<span class="mistake">Common mistake</span>Assuming visual words are semantically meaningful or human-interpretable by design — they're purely a statistical clustering artifact, though they sometimes happen to correspond to interpretable patterns like "corner" or "fur texture."</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q3</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Sampling strategy</span>
+          <div class="quiz-q-text">For whole-image classification (as opposed to sparse keypoint matching), why is dense grid sampling often preferred over a keypoint detector like Harris or DoG (SIFT's detector)?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Dense sampling is always faster to compute than keypoint detection</li>
+          <li><span class="opt-letter">B</span>Keypoint detectors skip low-gradient, texture-heavy regions (sky, grass) that still carry useful classification signal; dense sampling guarantees uniform coverage</li>
+          <li><span class="opt-letter">C</span>Dense sampling is scale-invariant while keypoint detectors are not</li>
+          <li><span class="opt-letter">D</span>Keypoint detectors cannot produce SIFT-style descriptors</li>
+        </ul>
+        <div class="quiz-reveal">A keypoint detector deliberately fires only at "interesting," high-gradient locations — it will systematically skip smooth regions like sky or grass, even though those regions' textures can still be informative for classifying the whole scene. Dense sampling ignores "interestingness" and places a descriptor everywhere on a regular grid. <strong>A</strong> is not generally true (dense sampling usually produces far MORE descriptors, costing more compute downstream). <strong>C</strong> is backwards — SIFT's own detector is explicitly scale-invariant; dense sampling at one grid isn't. <strong>D</strong> is false — dense sampling commonly still uses a SIFT-style descriptor, just without SIFT's own keypoint detector.<span class="mistake">Common mistake</span>Assuming "detector-based is always better because it's smarter" — for classification (not matching/retrieval), uniform coverage often matters more than picking only the most distinctive points.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q4</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Normalization</span>
+          <div class="quiz-q-text">Why must a raw visual-word count histogram be normalized (L1 or L2) before being used for classification?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Raw counts scale with the number of descriptors extracted from an image, so an unnormalized histogram would make two visually similar images of different sizes/descriptor-densities look artificially different</li>
+          <li><span class="opt-letter">B</span>Normalization is required to make k-means converge</li>
+          <li><span class="opt-letter">C</span>Only normalized histograms can be visualized as bar charts</li>
+          <li><span class="opt-letter">D</span>Normalization converts the histogram into a spatial pyramid</li>
+        </ul>
+        <div class="quiz-reveal">Raw bin counts depend on how many total descriptors an image produced — a bigger image, or one sampled more densely, will have larger counts everywhere even if the underlying visual content is identical in proportion. Normalizing (L1: sum to 1; L2: unit length) removes this scale-dependence. <strong>B</strong> confuses histogram normalization (an encoding step) with k-means convergence (a separate, earlier clustering step). <strong>C</strong> and <strong>D</strong> are both fabricated, unrelated claims.<span class="mistake">Common mistake</span>Thinking L1 and L2 normalization are interchangeable — they pair with different downstream comparisons (L1 with histogram-intersection/χ² kernels, L2 with cosine similarity/linear kernels).</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q5</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">Spatial pyramid dims</span>
+          <div class="quiz-q-text">Using a codebook of K=200 and a 3-level spatial pyramid (1×1, 2×2, 4×4), what is the final feature vector's dimensionality?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>200</li>
+          <li><span class="opt-letter">B</span>800</li>
+          <li><span class="opt-letter">C</span>4200</li>
+          <li><span class="opt-letter">D</span>3200</li>
+        </ul>
+        <div class="quiz-reveal">Total cells across all 3 levels = 1 (1×1) + 4 (2×2) + 16 (4×4) = 21. Final dimensionality = K × 21 = 200 × 21 = <strong>4200</strong>. <strong>A (200)</strong> is just plain BoW with no pyramid (level 0 only). <strong>B (800)</strong> mistakenly uses only 4 total cells (200×4). <strong>D (3200)</strong> mistakenly uses only 16 cells (200×16), forgetting to include levels 0 and 1.<span class="mistake">Common mistake</span>Forgetting to sum cells across ALL levels (1+4+16=21) — a common slip is using only the finest level's cell count.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q6</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Semantic hierarchy</span>
+          <div class="quiz-q-text">A model trained mostly on generic "dog" images can recognize a rare sub-breed like "poodle" with only a handful of poodle-specific examples. Which knowledge-representation mechanism explains this most directly?</div></div>
+        <ul class="quiz-options" data-correct="3" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>Syntactic pattern recognition</li>
+          <li><span class="opt-letter">B</span>Scene labelling via CRF</li>
+          <li><span class="opt-letter">C</span>Spatial pyramid matching</li>
+          <li><span class="opt-letter">D</span>Semantic hierarchy / ontology, via transfer learning down the class tree</li>
+        </ul>
+        <div class="quiz-reveal">This is exactly the transfer-learning payoff of a semantic hierarchy: since poodle ⊂ dog, features and evidence learned for the broad "dog" class transfer directly to the rare "poodle" leaf class. <strong>A</strong> concerns legal spatial arrangement of parts, not category inheritance. <strong>B</strong> concerns per-region contextual labelling in a scene, unrelated to class hierarchy. <strong>C</strong> concerns spatial layout of visual words within an image, not category relationships.<span class="mistake">Common mistake</span>Confusing "attributes" (shared properties across classes, enabling zero-shot transfer to classes with NO training examples) with "semantic hierarchy" (an explicit parent-child structure enabling transfer to classes with FEW training examples) — both aid generalization, but via different mechanisms.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q7</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">And-Or graphs</span>
+          <div class="quiz-q-text">In a scene grammar's And-Or graph, what does an "Or" node represent?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>All child parts are required simultaneously for the parent to be valid</li>
+          <li><span class="opt-letter">B</span>Any one of several alternative realizations of a part is acceptable</li>
+          <li><span class="opt-letter">C</span>A pairwise compatibility cost between neighboring image regions</li>
+          <li><span class="opt-letter">D</span>The k-means cluster assignment of a descriptor</li>
+        </ul>
+        <div class="quiz-reveal">An "Or" node captures legitimate visual variation — e.g., wheel = spoked-wheel OR solid-disc-wheel — any one alternative satisfies that part of the grammar. <strong>A</strong> describes an "And" node instead (all children required — e.g., bicycle = wheel AND wheel AND frame). <strong>C</strong> describes the pairwise term in an MRF/CRF for scene labelling, a different mechanism entirely. <strong>D</strong> describes vector quantization in the BoW pipeline, unrelated to grammars.<span class="mistake">Common mistake</span>Mixing up And/Or with the unrelated MRF/CRF unary/pairwise terms from scene labelling — both are "combine multiple pieces of evidence" ideas but from different formalisms answering different questions (legality of structure vs. joint per-region labelling).</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q8</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Scene labelling</span>
+          <div class="quiz-q-text">What is the key architectural difference between classical MRF/CRF-based scene labelling and a modern Fully Convolutional Network (FCN) approach?</div></div>
+        <ul class="quiz-options" data-correct="0" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>MRF/CRF explicitly separates a unary appearance term and a pairwise context term, solved via approximate inference; an FCN learns appearance and context jointly, end-to-end, in one network</li>
+          <li><span class="opt-letter">B</span>MRF/CRF operates on whole images only, while FCNs operate on regions only</li>
+          <li><span class="opt-letter">C</span>FCNs cannot produce per-pixel output, only per-image labels</li>
+          <li><span class="opt-letter">D</span>MRF/CRF requires no training data, while FCNs require large labeled datasets</li>
+        </ul>
+        <div class="quiz-reveal">Classical scene labelling hand-designs two separate terms (unary appearance + pairwise context) and combines them via graph-based inference; an FCN instead learns a single end-to-end mapping from image to dense per-pixel labels, implicitly capturing both appearance and context through its receptive field and training data. <strong>B</strong> reverses the actual region/pixel granularities involved. <strong>C</strong> is false — FCNs are specifically designed for dense per-pixel output. <strong>D</strong> is false — MRF/CRF unary and pairwise terms are typically also learned from labeled training data.<span class="mistake">Common mistake</span>Assuming CRF post-processing (e.g. DeepLab's dense CRF on top of FCN output) means the two approaches are mutually exclusive — modern pipelines have combined them.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q9</span><span class="diff-badge diff-medium">Medium</span><span class="topic-badge">Medical BoW</span>
+          <div class="quiz-q-text">Why does a BoW texture-based codebook outperform raw RGB pixel classification for breast tumour histopathology patches?</div></div>
+        <ul class="quiz-options" data-correct="2" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>RGB images cannot be processed by k-means</li>
+          <li><span class="opt-letter">B</span>BoW histograms are always higher resolution than raw pixels</li>
+          <li><span class="opt-letter">C</span>Local texture descriptors (nuclei density, gland architecture) largely factor out absolute color, making BoW more robust to stain-color variation across labs/scanners than raw RGB statistics</li>
+          <li><span class="opt-letter">D</span>BoW requires no training data, unlike RGB-based classifiers</li>
+        </ul>
+        <div class="quiz-reveal">Histopathology slides vary heavily in stain color across labs, batches, and scanners — a purely color/RGB-based classifier is highly sensitive to this domain shift. Local texture/gradient-based descriptors quantized into a codebook capture structural patterns (nuclei packing, gland shape) that are much more stable across this color variation. <strong>A</strong> is false — k-means and descriptor extraction operate on RGB (or grayscale-derived) images just fine. <strong>B</strong> is a fabricated, irrelevant claim about resolution. <strong>D</strong> is false — the BoW classifier (SVM/kNN/etc.) is trained exactly like any other supervised model.<span class="mistake">Common mistake</span>Answering generically ("texture is more informative than color") instead of the specific, exam-relevant reason: stain-color domain shift robustness.</div>
+      </div>
+
+      <div class="quiz-q">
+        <div class="quiz-q-header"><span class="quiz-num">Q10</span><span class="diff-badge diff-hard">Hard</span><span class="topic-badge">BoW vs CNN</span>
+          <div class="quiz-q-text">What is the most precise way to describe the difference between how BoW and CNNs handle geometric/spatial information?</div></div>
+        <ul class="quiz-options" data-correct="1" onclick="pickOpt(event.target.closest('li'))">
+          <li><span class="opt-letter">A</span>CNNs simply achieve higher accuracy than BoW; there is no meaningful architectural difference in how they represent geometry</li>
+          <li><span class="opt-letter">B</span>BoW discards exact spatial position by a fixed, one-time design choice at the histogram-pooling step; CNNs preserve spatial structure through most of their depth and learn, end-to-end, which invariances to build and when</li>
+          <li><span class="opt-letter">C</span>BoW preserves more spatial information than CNNs because of spatial pyramid matching</li>
+          <li><span class="opt-letter">D</span>CNNs use k-means clustering internally to discard geometry, just like BoW</li>
+        </ul>
+        <div class="quiz-reveal">The BoW vs CNN distinction is architectural, not just a score difference: BoW makes one hand-designed, irreversible choice to pool away position at the histogram step (SPM only coarsens this, never removes it); a CNN's convolutional feature maps retain spatial layout across most of the network's depth, and the network learns from data exactly which invariances (translation, scale, etc.) to build and at which layer. <strong>A</strong> wrongly reduces an architectural difference to a pure accuracy gap. <strong>C</strong> is backwards — even with SPM, BoW still discards far more spatial detail than a CNN's feature maps retain. <strong>D</strong> is false — CNNs do not use k-means; their spatial handling comes from learned convolutional filters and pooling.<span class="mistake">Common mistake</span>Describing the BoW→CNN transition only in terms of "CNNs are more accurate" without being able to explain the underlying architectural/representational reason why.</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" aria-label="Scroll to top">↑</button>
+
+<script>
+/* ---------- Tabs ---------- */
+function showTab(panelId, btn, group){
+  document.querySelectorAll('[data-tab-group="'+group+'"]').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+  const tabs = btn.parentElement.querySelectorAll('.tab-btn');
+  tabs.forEach(t=>t.className='tab-btn');
+  if(panelId.endsWith('a')) btn.classList.add('active-easy');
+  else if(panelId.endsWith('b')) btn.classList.add('active-medium');
+  else btn.classList.add('active-complex');
+}
+
+/* ---------- Quiz ---------- */
+function pickOpt(li){
+  if(!li) return;
+  const ul = li.parentElement;
+  if(ul.dataset.done) return;
+  ul.dataset.done = '1';
+  const correct = parseInt(ul.dataset.correct,10);
+  const items = Array.from(ul.children);
+  const picked = items.indexOf(li);
+  items.forEach((it,i)=>{
+    it.classList.add('disabled');
+    if(i===correct) it.classList.add('correct');
+    if(i===picked && picked!==correct) it.classList.add('wrong');
+  });
+  const reveal = ul.nextElementSibling;
+  if(reveal && reveal.classList.contains('quiz-reveal')){
+    reveal.classList.add('shown');
+  }
+}
+
+/* ---------- Scroll progress + sidebar + scroll-top + fade-up ---------- */
+const sections = Array.from(document.querySelectorAll('.section'));
+const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+const pbar = document.getElementById('pbar'), pct = document.getElementById('pct');
+const scrollTopBtn = document.getElementById('scrollTop');
+function onScroll(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  const p = Math.min(100, Math.round(scrolled*100));
+  pbar.style.width = p+'%'; pct.textContent = p+'%';
+  scrollTopBtn.classList.toggle('visible', h.scrollTop > 600);
+  let cur = sections[0] ? sections[0].id : null;
+  for(const s of sections){ if(s.getBoundingClientRect().top <= 140) cur = s.id; }
+  navLinks.forEach(l=>l.classList.toggle('active', l.dataset.section===cur));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+scrollTopBtn.onclick = ()=>window.scrollTo({top:0,behavior:'smooth'});
+const io = new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+sections.forEach(s=>io.observe(s));
+window.addEventListener('load', onScroll);
+
+/* ================= DEMO · Codebook size K slider ================= */
+const kValues = [50, 100, 200, 500, 1000, 2000, 5000];
+function kRender(){
+  const idx = +document.getElementById('kSlider').value;
+  const K = kValues[idx];
+  document.getElementById('kVal').textContent = K;
+  // invariance falls, discriminability & cost rise, as K grows (normalized 0-100 across the slider range)
+  const t = idx / (kValues.length-1);
+  const inv = Math.round(100 - t*78);
+  const disc = Math.round(22 + t*78);
+  const cost = Math.round(8 + t*90);
+  document.getElementById('kInvBar').style.width = inv+'%';
+  document.getElementById('kDiscBar').style.width = disc+'%';
+  document.getElementById('kCostBar').style.width = cost+'%';
+  document.getElementById('kInvVal').textContent = inv+'%';
+  document.getElementById('kDiscVal').textContent = disc+'%';
+  document.getElementById('kCostVal').textContent = cost+'%';
+  let note;
+  if(idx<=1) note = 'Small codebook: words are generic and broadly reusable across images — very robust to noise and viewpoint change, but too coarse to tell visually-similar classes apart.';
+  else if(idx>=5) note = 'Large codebook: words are highly specific — great discriminative power on training data, but histograms become sparse, k-means and quantization get expensive, and generalization risk rises.';
+  else note = 'A "sweet spot" range for many classic benchmarks (e.g. Caltech-101-style tasks) — the exact best K is always found empirically via cross-validation, never derived analytically.';
+  document.getElementById('kOut').innerHTML =
+    'K = <strong style="color:var(--gold)">'+K+'</strong> visual words<br><br>'+
+    '<span style="color:var(--text3)">'+note+'</span>';
+}
+
+/* ================= DEMO · Histogram build + normalization ================= */
+const histWordColors = ['#d4a853','#4ec9b0','#7dd3fc','#f87171','#a3e635','#c084fc'];
+const histWordNames = ['W1','W2','W3','W4','W5','W6'];
+// fixed assignment of 20 patches to one of 6 words
+const histAssign = [0,1,0,2,3,0,1,4,0,5,2,1,0,3,4,0,1,2,0,5];
+let histMode = 'raw';
+function histBuildGrid(){
+  const g = document.getElementById('histGrid'); g.innerHTML='';
+  histAssign.forEach((w,i)=>{
+    const d = document.createElement('div');
+    d.className = 'cell';
+    d.style.background = histWordColors[w]+'33';
+    d.style.borderColor = histWordColors[w];
+    d.style.color = histWordColors[w];
+    d.textContent = histWordNames[w];
+    g.appendChild(d);
+  });
+}
+function histCounts(){
+  const counts = new Array(6).fill(0);
+  histAssign.forEach(w=>counts[w]++);
+  return counts;
+}
+function histSetMode(mode){
+  histMode = mode;
+  ['btnRaw','btnL1','btnL2'].forEach(id=>document.getElementById(id).classList.remove('active-btn'));
+  document.getElementById(mode==='raw'?'btnRaw':mode==='l1'?'btnL1':'btnL2').classList.add('active-btn');
+  histRender();
+}
+function histRender(){
+  const counts = histCounts();
+  let values = counts.slice();
+  let label = 'Raw counts';
+  if(histMode==='l1'){
+    const sum = counts.reduce((a,b)=>a+b,0);
+    values = counts.map(c=>sum>0?c/sum:0);
+    label = 'L1-normalized (sums to 1.0)';
+  } else if(histMode==='l2'){
+    const norm = Math.sqrt(counts.reduce((a,b)=>a+b*b,0));
+    values = counts.map(c=>norm>0?c/norm:0);
+    label = 'L2-normalized (unit length)';
+  }
+  const maxV = Math.max(...values, 0.0001);
+  const bc = document.getElementById('histBars'); bc.innerHTML='';
+  values.forEach((v,i)=>{
+    const col=document.createElement('div'); col.className='bar-col';
+    const h = (v/maxV*100);
+    const disp = histMode==='raw' ? v : v.toFixed(3);
+    col.innerHTML='<div class="bar-fill" style="height:'+h+'%;background:linear-gradient(to top,'+histWordColors[i]+','+histWordColors[i]+'55)"></div><div class="bar-label">'+histWordNames[i]+'<br>'+disp+'</div>';
+    bc.appendChild(col);
+  });
+  document.getElementById('histOut').innerHTML =
+    '<strong style="color:var(--gold)">'+label+'</strong><br><br>'+
+    'Raw counts: <strong>'+counts.join(', ')+'</strong> (word 1..6)<br><br>'+
+    '<span style="color:var(--text3)">'+(histMode==='raw' ? 'Raw counts depend on how many patches were detected — a bigger/denser image inflates every bin equally, which is why normalization is applied before classification.' : histMode==='l1' ? 'L1-normalized values sum to exactly 1.0, turning the histogram into a proper probability distribution — pairs naturally with a histogram-intersection or χ² kernel.' : 'L2-normalized values have unit Euclidean length — the natural choice for cosine similarity or a linear/RBF-kernel SVM.')+'</span>';
+}
+
+/* ================= DEMO · Spatial pyramid level toggle ================= */
+const PYR_K = 200;
+function pyrBuildGridViz(cells, label, color){
+  const wrap = document.createElement('div');
+  wrap.style.textAlign = 'center';
+  const cols = Math.sqrt(cells);
+  const g = document.createElement('div');
+  g.className = 'mgrid';
+  g.style.gridTemplateColumns = 'repeat('+cols+', 28px)';
+  for(let i=0;i<cells;i++){
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.style.width='28px'; c.style.height='28px'; c.style.cursor='default';
+    c.style.background = color+'22'; c.style.borderColor = color; c.style.color = color;
+    g.appendChild(c);
+  }
+  const lbl = document.createElement('div');
+  lbl.className = 'bar-label';
+  lbl.style.marginTop = '6px';
+  lbl.textContent = label;
+  wrap.appendChild(g); wrap.appendChild(lbl);
+  return wrap;
+}
+function pyrRender(){
+  const l1 = document.getElementById('pyrL1').checked;
+  const l2 = document.getElementById('pyrL2').checked;
+  const wrap = document.getElementById('pyrGrids');
+  wrap.innerHTML = '';
+  wrap.appendChild(pyrBuildGridViz(1, 'Level 0: 1×1 (1 cell)', '#d4a853'));
+  if(l1) wrap.appendChild(pyrBuildGridViz(4, 'Level 1: 2×2 (4 cells)', '#4ec9b0'));
+  if(l2) wrap.appendChild(pyrBuildGridViz(16, 'Level 2: 4×4 (16 cells)', '#7dd3fc'));
+  let totalCells = 1 + (l1?4:0) + (l2?16:0);
+  const totalDims = PYR_K * totalCells;
+  document.getElementById('pyrOut').innerHTML =
+    'Active levels: <strong style="color:var(--gold)">Level 0'+(l1?' + Level 1':'')+(l2?' + Level 2':'')+'</strong><br><br>'+
+    'Total cells = '+(1)+(l1?' + 4':'')+(l2?' + 16':'')+' = <strong style="color:var(--lime)">'+totalCells+'</strong><br>'+
+    'Final dimensionality = K × cells = 200 × '+totalCells+' = <strong style="color:var(--lime);font-size:16px;">'+totalDims+'</strong><br><br>'+
+    '<span style="color:var(--text3)">Adding a finer level always increases dimensionality fast (each level has 4× the cells of the one before it) — that is the direct cost of buying back coarse positional information.</span>';
+}
+
+/* ---------- init all demos ---------- */
+kRender(); histBuildGrid(); histRender(); pyrRender();
+</script>
+
+</body>
+</html>
